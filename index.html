@@ -586,37 +586,540 @@ function TabCiclo({feitos,cicloNum,onConcluir,onIrPara}){
 }
 
 // ─── TAB: STATS ──────────────────────────────────────────────
-function TabStats({horas}){
+function TabStats({horas,onAddHoras}){
+  const[aba,setAba]=useState('horas');
+  const[materia,setMateria]=useState('');
+  const[minutos,setMinutos]=useState('90');
+  const[salvo,setSalvo]=useState(false);
+  const[sessoes,setSessoes]=useState(()=>lsGet('sessoes',[]));
+  const[sForm,setSForm]=useState({mat:'',tipo:'',nq:'',acerto:'',obs:''});
+  const[sSalvo,setSSalvo]=useState(false);
+  const[reforcos,setReforcos]=useState(()=>lsGet('reforcos',[]));
+  const[rForm,setRForm]=useState({mat:'',oque:'',precisar:null});
+  const[rSalvo,setRSalvo]=useState(false);
+  const[fila,setFila]=useState(()=>lsGet('fila',[]));
+  const[fForm,setFForm]=useState({mat:'',modo:'',prior:'',quando:''});
+  const[fSalvo,setFSalvo]=useState(false);
+
   const todayStart=useMemo(()=>{const d=new Date();d.setHours(0,0,0,0);return d.getTime();},[]);
   const semStart=todayStart-6*86400000;
   const minHoje=horas.filter(e=>e.dt>=todayStart).reduce((s,e)=>s+e.min,0);
   const minSem=horas.filter(e=>e.dt>=semStart).reduce((s,e)=>s+e.min,0);
   const META=35*60;
+
+  const addManual=()=>{
+    const m=parseInt(minutos);
+    if(!materia.trim()||!m||m<=0)return;
+    onAddHoras({mat:materia.trim(),min:m,dt:Date.now()});
+    setMateria('');setMinutos('90');
+    setSalvo(true);setTimeout(()=>setSalvo(false),2000);
+  };
+  const salvarSessao=()=>{
+    if(!sForm.mat||!sForm.tipo)return;
+    const n=[...sessoes,{...sForm,dt:Date.now(),id:Date.now()}];
+    setSessoes(n);lsSet('sessoes',n);
+    setSForm({mat:'',tipo:'',nq:'',acerto:'',obs:''});
+    setSSalvo(true);setTimeout(()=>setSSalvo(false),2000);
+  };
+  const salvarReforco=()=>{
+    if(!rForm.mat||!rForm.oque||rForm.precisar===null)return;
+    const n=[...reforcos,{...rForm,dt:Date.now(),id:Date.now()}];
+    setReforcos(n);lsSet('reforcos',n);
+    setRForm({mat:'',oque:'',precisar:null});
+    setRSalvo(true);setTimeout(()=>setRSalvo(false),2000);
+  };
+  const salvarFila=()=>{
+    if(!fForm.mat||!fForm.modo||!fForm.prior||!fForm.quando)return;
+    const n=[...fila,{...fForm,dt:Date.now(),id:Date.now(),feito:false}];
+    setFila(n);lsSet('fila',n);
+    setFForm({mat:'',modo:'',prior:'',quando:''});
+    setFSalvo(true);setTimeout(()=>setFSalvo(false),2000);
+  };
+  const delFila=id=>{const n=fila.filter(f=>f.id!==id);setFila(n);lsSet('fila',n);};
+  const togFila=id=>{const n=fila.map(f=>f.id===id?{...f,feito:!f.feito}:f);setFila(n);lsSet('fila',n);};
+
+  const TIPOS=['Teoria','Questões','Teoria+Q','NotebookLM','Discursiva'];
+  const OQUES=['Questões','Áudio NLM','Leitura','Misto','Anki'];
+  const MODOS=['Áudio NLM','Leitura','Questões','Anki','Misto'];
+  const PRIORS=[{v:'urgente',l:'🔴 Urgente'},{v:'importante',l:'🟡 Import.'},{v:'normal',l:'🟢 Normal'}];
+  const QUANDO=['Hoje','Amanhã','Em 2d','Na semana'];
+  const PCOR={urgente:'#f87171',importante:'#fbbf24',normal:'#34d399'};
+
+  const SUB=[{id:'horas',l:'⏱ Horas'},{id:'sessoes',l:'📋 Sessões'},{id:'reforco',l:'🔄 Reforço'},{id:'fila',l:'⚡ Fila'}];
+
   return(
     <div>
-      <div style={{display:'flex',gap:8,marginBottom:16}}>
-        {[['Hoje',fmtMin(minHoje),'#60a5fa'],['Semana',fmtMin(minSem),'#fbbf24'],['Meta',fmtMin(META),'#34d399']].map(([l,v,c])=>(
-          <div key={l} style={{flex:1,padding:'14px 8px',borderRadius:12,background:`${c}08`,border:`1px solid ${c}20`,textAlign:'center'}}>
-            <div style={{fontSize:16,fontWeight:900,color:c,fontFamily:"'DM Mono',monospace"}}>{v}</div>
-            <div style={{fontSize:9,color:'#334155',marginTop:4}}>{l}</div>
+      {/* Sub-abas */}
+      <div style={{display:'flex',gap:4,marginBottom:14}}>
+        {SUB.map(s=>{const a=aba===s.id;return(
+          <button key={s.id} onClick={()=>setAba(s.id)} style={{flex:1,padding:'8px 3px',borderRadius:9,border:`1px solid ${a?'#fbbf24':'rgba(255,255,255,.07)'}`,background:a?'rgba(251,191,36,.12)':'transparent',color:a?'#fbbf24':'#334155',fontSize:9,fontWeight:700,fontFamily:"'DM Mono',monospace",cursor:'pointer'}}>{s.l}</button>
+        );})}
+      </div>
+
+      {aba==='horas'&&<div>
+        <div style={{display:'flex',gap:8,marginBottom:14}}>
+          {[['Hoje',fmtMin(minHoje),'#60a5fa'],['Semana',fmtMin(minSem),'#fbbf24'],['Meta','35h','#34d399']].map(([l,v,c])=>(
+            <div key={l} style={{flex:1,padding:'14px 8px',borderRadius:12,background:`${c}08`,border:`1px solid ${c}20`,textAlign:'center'}}>
+              <div style={{fontSize:16,fontWeight:900,color:c,fontFamily:"'DM Mono',monospace"}}>{v}</div>
+              <div style={{fontSize:9,color:'#334155',marginTop:4}}>{l}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{marginBottom:14}}>
+          <div style={{display:'flex',justifyContent:'space-between',marginBottom:5}}>
+            <span style={{fontSize:10,color:'#64748b'}}>Progresso semanal</span>
+            <span style={{fontSize:10,color:'#fbbf24',fontFamily:"'DM Mono',monospace"}}>{Math.round(minSem/META*100)}%</span>
+          </div>
+          <BarProg done={minSem} total={META} cor='#fbbf24' h={7}/>
+        </div>
+        <div style={{background:'rgba(251,191,36,.05)',border:'1px solid rgba(251,191,36,.2)',borderRadius:12,padding:'13px',marginBottom:12}}>
+          <div style={{fontSize:9,letterSpacing:'2px',color:'#fbbf24',fontFamily:"'DM Mono',monospace",marginBottom:10}}>➕ ADICIONAR TEMPO MANUAL</div>
+          <div style={{display:'flex',gap:8,marginBottom:8}}>
+            <input value={materia} onChange={e=>setMateria(e.target.value)} placeholder="Ex: AFO, Português..." style={{flex:1,padding:'9px 11px',borderRadius:8,border:'1px solid rgba(251,191,36,.2)',background:'rgba(251,191,36,.05)',color:'#c8d0e0',fontSize:12,outline:'none'}}/>
+            <input type="number" value={minutos} onChange={e=>setMinutos(e.target.value)} min="1" style={{width:65,padding:'9px',borderRadius:8,border:'1px solid rgba(251,191,36,.2)',background:'rgba(251,191,36,.05)',color:'#fbbf24',fontSize:13,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none'}}/>
+          </div>
+          <div style={{display:'flex',gap:5,marginBottom:8,flexWrap:'wrap'}}>
+            {[30,45,90,120].map(m=><button key={m} onClick={()=>setMinutos(String(m))} style={{padding:'4px 10px',borderRadius:6,border:`1px solid ${minutos==m?'#fbbf24':'rgba(251,191,36,.2)'}`,background:minutos==m?'rgba(251,191,36,.15)':'transparent',color:minutos==m?'#fbbf24':'#475569',fontSize:10,cursor:'pointer',fontFamily:"'DM Mono',monospace"}}>{m}min</button>)}
+          </div>
+          <button onClick={addManual} disabled={!materia.trim()} style={{width:'100%',padding:'11px',borderRadius:9,border:'none',background:materia.trim()?'linear-gradient(135deg,#fbbf24,#fbbf24)':'rgba(255,255,255,.05)',color:materia.trim()?'#050a14':'#1e293b',fontSize:12,fontWeight:800,cursor:'pointer'}}>
+            {salvo?'✅ Adicionado!':'+ Adicionar'}
+          </button>
+        </div>
+        <div style={{fontSize:9,letterSpacing:'2px',color:'#1e293b',fontFamily:"'DM Mono',monospace",marginBottom:8}}>ÚLTIMAS SESSÕES</div>
+        {horas.slice().reverse().slice(0,12).map((e,i)=>(
+          <div key={i} style={{display:'flex',justifyContent:'space-between',padding:'9px 12px',borderRadius:9,background:'rgba(255,255,255,.02)',border:'1px solid rgba(255,255,255,.05)',marginBottom:4}}>
+            <span style={{fontSize:12,color:'#64748b'}}>{e.mat||'Estudo'}</span>
+            <span style={{fontSize:12,color:'#fbbf24',fontFamily:"'DM Mono',monospace"}}>{fmtMin(e.min)}</span>
           </div>
         ))}
-      </div>
-      <div style={{marginBottom:14}}>
-        <div style={{display:'flex',justifyContent:'space-between',marginBottom:5}}>
-          <span style={{fontSize:10,color:'#64748b'}}>Progresso semanal</span>
-          <span style={{fontSize:10,color:'#fbbf24',fontFamily:"'DM Mono',monospace"}}>{Math.round(minSem/META*100)}%</span>
+        {horas.length===0&&<div style={{textAlign:'center',padding:'30px',color:'#1e293b',fontSize:12}}>Nenhuma hora registrada ainda.<br/>Use o Pomodoro ou adicione manualmente.</div>}
+      </div>}
+
+      {aba==='sessoes'&&<div>
+        <div style={{background:'rgba(96,165,250,.05)',border:'1px solid rgba(96,165,250,.2)',borderRadius:12,padding:'13px',marginBottom:12}}>
+          <div style={{fontSize:9,letterSpacing:'2px',color:'#60a5fa',fontFamily:"'DM Mono',monospace",marginBottom:10}}>📋 REGISTRAR SESSÃO DE ESTUDO</div>
+          <div style={{marginBottom:8}}>
+            <div style={{fontSize:9,color:'#334155',marginBottom:5}}>MATÉRIA</div>
+            <input value={sForm.mat} onChange={e=>setSForm(f=>({...f,mat:e.target.value}))} placeholder="Ex: AFO, Dir. Tributário..." style={{width:'100%',padding:'9px 11px',borderRadius:8,border:'1px solid rgba(96,165,250,.2)',background:'rgba(96,165,250,.04)',color:'#c8d0e0',fontSize:12,outline:'none',boxSizing:'border-box'}}/>
+          </div>
+          <div style={{marginBottom:8}}>
+            <div style={{fontSize:9,color:'#334155',marginBottom:5}}>TIPO</div>
+            <div style={{display:'flex',gap:5,flexWrap:'wrap'}}>
+              {TIPOS.map(t=><button key={t} onClick={()=>setSForm(f=>({...f,tipo:t}))} style={{padding:'6px 10px',borderRadius:7,border:`1px solid ${sForm.tipo===t?'#60a5fa':'rgba(255,255,255,.08)'}`,background:sForm.tipo===t?'rgba(96,165,250,.18)':'rgba(255,255,255,.03)',color:sForm.tipo===t?'#60a5fa':'#475569',fontSize:10,cursor:'pointer'}}>{t}</button>)}
+            </div>
+          </div>
+          <div style={{display:'flex',gap:8,marginBottom:8}}>
+            <div style={{flex:1}}>
+              <div style={{fontSize:9,color:'#334155',marginBottom:4}}>Nº QUESTÕES</div>
+              <input type="number" value={sForm.nq} onChange={e=>setSForm(f=>({...f,nq:e.target.value}))} min="0" placeholder="0" style={{width:'100%',padding:'8px',borderRadius:8,border:'1px solid rgba(96,165,250,.2)',background:'rgba(96,165,250,.04)',color:'#c8d0e0',fontSize:12,outline:'none',boxSizing:'border-box',textAlign:'center'}}/>
+            </div>
+            <div style={{flex:1}}>
+              <div style={{fontSize:9,color:'#334155',marginBottom:4}}>% ACERTO</div>
+              <input type="number" value={sForm.acerto} onChange={e=>setSForm(f=>({...f,acerto:e.target.value}))} min="0" max="100" placeholder="0" style={{width:'100%',padding:'8px',borderRadius:8,border:'1px solid rgba(96,165,250,.2)',background:'rgba(96,165,250,.04)',color:'#c8d0e0',fontSize:12,outline:'none',boxSizing:'border-box',textAlign:'center'}}/>
+            </div>
+          </div>
+          <textarea value={sForm.obs} onChange={e=>setSForm(f=>({...f,obs:e.target.value}))} rows={2} placeholder="Observações, dificuldades..." style={{width:'100%',padding:'9px',borderRadius:8,border:'1px solid rgba(96,165,250,.2)',background:'rgba(96,165,250,.04)',color:'#c8d0e0',fontSize:12,outline:'none',resize:'vertical',boxSizing:'border-box',marginBottom:10}}/>
+          <button onClick={salvarSessao} disabled={!sForm.mat||!sForm.tipo} style={{width:'100%',padding:'12px',borderRadius:9,border:'none',background:sForm.mat&&sForm.tipo?'linear-gradient(135deg,#60a5fa,#60a5fa)':'rgba(255,255,255,.05)',color:sForm.mat&&sForm.tipo?'#050a14':'#1e293b',fontSize:12,fontWeight:800,cursor:'pointer'}}>
+            {sSalvo?'✅ Salvo!':'💾 SALVAR SESSÃO'}
+          </button>
         </div>
-        <BarProg done={minSem} total={META} cor='#fbbf24' h={7}/>
-      </div>
-      <div style={{fontSize:9,letterSpacing:'2px',color:'#1e293b',fontFamily:"'DM Mono',monospace",marginBottom:8}}>ÚLTIMAS SESSÕES</div>
-      {horas.slice().reverse().slice(0,15).map((e,i)=>(
-        <div key={i} style={{display:'flex',justifyContent:'space-between',padding:'9px 12px',borderRadius:9,background:'rgba(255,255,255,.02)',border:'1px solid rgba(255,255,255,.05)',marginBottom:4}}>
-          <span style={{fontSize:12,color:'#64748b'}}>{e.mat||'Estudo'}</span>
-          <span style={{fontSize:12,color:'#fbbf24',fontFamily:"'DM Mono',monospace"}}>{fmtMin(e.min)}</span>
+        <div style={{fontSize:9,letterSpacing:'2px',color:'#1e293b',fontFamily:"'DM Mono',monospace",marginBottom:8}}>HISTÓRICO</div>
+        {[...sessoes].reverse().slice(0,10).map(s=>(
+          <div key={s.id} style={{padding:'9px 12px',borderRadius:10,background:'rgba(96,165,250,.04)',border:'1px solid rgba(96,165,250,.12)',marginBottom:5}}>
+            <div style={{display:'flex',justifyContent:'space-between',marginBottom:2}}>
+              <span style={{fontSize:12,color:'#c8d0e0',fontWeight:700}}>{s.mat}</span>
+              <span style={{fontSize:9,color:'#60a5fa',fontFamily:"'DM Mono',monospace"}}>{s.tipo}</span>
+            </div>
+            {(s.nq||s.acerto)&&<div style={{fontSize:10,color:'#475569'}}>{s.nq?`${s.nq} questões`:''}{s.acerto?` · ${s.acerto}% acerto`:''}</div>}
+            {s.obs&&<div style={{fontSize:10,color:'#334155',marginTop:2}}>{s.obs}</div>}
+          </div>
+        ))}
+        {sessoes.length===0&&<div style={{textAlign:'center',padding:'30px',color:'#1e293b',fontSize:12}}>Nenhuma sessão registrada.</div>}
+      </div>}
+
+      {aba==='reforco'&&<div>
+        <div style={{background:'rgba(167,139,250,.05)',border:'1px solid rgba(167,139,250,.2)',borderRadius:12,padding:'13px',marginBottom:12}}>
+          <div style={{fontSize:9,letterSpacing:'2px',color:'#a78bfa',fontFamily:"'DM Mono',monospace",marginBottom:10}}>🔄 REGISTRAR REFORÇO</div>
+          <div style={{marginBottom:8}}>
+            <div style={{fontSize:9,color:'#334155',marginBottom:4}}>MATÉRIA / ASSUNTO</div>
+            <input value={rForm.mat} onChange={e=>setRForm(f=>({...f,mat:e.target.value}))} placeholder="Ex: AFO — Receita Corrente" style={{width:'100%',padding:'9px 11px',borderRadius:8,border:'1px solid rgba(167,139,250,.2)',background:'rgba(167,139,250,.04)',color:'#c8d0e0',fontSize:12,outline:'none',boxSizing:'border-box'}}/>
+          </div>
+          <div style={{marginBottom:8}}>
+            <div style={{fontSize:9,color:'#334155',marginBottom:5}}>O QUE FEZ</div>
+            <div style={{display:'flex',gap:5,flexWrap:'wrap'}}>
+              {OQUES.map(t=><button key={t} onClick={()=>setRForm(f=>({...f,oque:t}))} style={{padding:'6px 10px',borderRadius:7,border:`1px solid ${rForm.oque===t?'#a78bfa':'rgba(255,255,255,.08)'}`,background:rForm.oque===t?'rgba(167,139,250,.18)':'rgba(255,255,255,.03)',color:rForm.oque===t?'#a78bfa':'#475569',fontSize:10,cursor:'pointer'}}>{t}</button>)}
+            </div>
+          </div>
+          <div style={{marginBottom:10}}>
+            <div style={{fontSize:9,color:'#334155',marginBottom:5}}>PRECISA FAZER DE NOVO?</div>
+            <div style={{display:'flex',gap:8}}>
+              <button onClick={()=>setRForm(f=>({...f,precisar:true}))} style={{flex:1,padding:'9px',borderRadius:8,border:`2px solid ${rForm.precisar===true?'#f87171':'rgba(255,255,255,.1)'}`,background:rForm.precisar===true?'rgba(248,113,113,.12)':'rgba(255,255,255,.03)',color:rForm.precisar===true?'#f87171':'#475569',fontSize:11,fontWeight:700,cursor:'pointer'}}>Sim, precisei</button>
+              <button onClick={()=>setRForm(f=>({...f,precisar:false}))} style={{flex:1,padding:'9px',borderRadius:8,border:`2px solid ${rForm.precisar===false?'#34d399':'rgba(255,255,255,.1)'}`,background:rForm.precisar===false?'rgba(52,211,153,.1)':'rgba(255,255,255,.03)',color:rForm.precisar===false?'#34d399':'#475569',fontSize:11,fontWeight:700,cursor:'pointer'}}>Não, tá bom ✅</button>
+            </div>
+          </div>
+          <button onClick={salvarReforco} disabled={!rForm.mat||!rForm.oque||rForm.precisar===null} style={{width:'100%',padding:'12px',borderRadius:9,border:'none',background:rForm.mat&&rForm.oque&&rForm.precisar!==null?'linear-gradient(135deg,#a78bfa,#a78bfa)':'rgba(255,255,255,.05)',color:rForm.mat&&rForm.oque&&rForm.precisar!==null?'#050a14':'#1e293b',fontSize:12,fontWeight:800,cursor:'pointer'}}>
+            {rSalvo?'✅ Salvo!':'💾 SALVAR REFORÇO'}
+          </button>
         </div>
-      ))}
-      {horas.length===0&&<div style={{textAlign:'center',padding:'40px',color:'#1e293b',fontSize:12}}>Nenhuma hora registrada ainda.<br/>Use o Pomodoro na aba Hoje.</div>}
+        <div style={{fontSize:9,letterSpacing:'2px',color:'#1e293b',fontFamily:"'DM Mono',monospace",marginBottom:8}}>HISTÓRICO</div>
+        {[...reforcos].reverse().slice(0,10).map(r=>(
+          <div key={r.id} style={{padding:'9px 12px',borderRadius:10,background:r.precisar?'rgba(248,113,113,.04)':'rgba(52,211,153,.04)',border:`1px solid ${r.precisar?'rgba(248,113,113,.15)':'rgba(52,211,153,.15)'}`,marginBottom:5,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+            <div><div style={{fontSize:12,color:'#c8d0e0',fontWeight:700}}>{r.mat}</div><div style={{fontSize:10,color:'#475569'}}>{r.oque}</div></div>
+            <span style={{fontSize:11,color:r.precisar?'#f87171':'#34d399'}}>{r.precisar?'🔄 revisar':'✅ ok'}</span>
+          </div>
+        ))}
+        {reforcos.length===0&&<div style={{textAlign:'center',padding:'30px',color:'#1e293b',fontSize:12}}>Nenhum reforço registrado.</div>}
+      </div>}
+
+      {aba==='fila'&&<div>
+        <div style={{background:'rgba(251,146,60,.05)',border:'1px solid rgba(251,146,60,.2)',borderRadius:12,padding:'13px',marginBottom:12}}>
+          <div style={{fontSize:9,letterSpacing:'2px',color:'#fb923c',fontFamily:"'DM Mono',monospace",marginBottom:10}}>⚡ ADICIONAR À FILA</div>
+          <div style={{marginBottom:8}}>
+            <div style={{fontSize:9,color:'#334155',marginBottom:4}}>MATÉRIA / ASSUNTO</div>
+            <input value={fForm.mat} onChange={e=>setFForm(f=>({...f,mat:e.target.value}))} placeholder="Ex: AFO — revisar 2 áudios NLM" style={{width:'100%',padding:'9px 11px',borderRadius:8,border:'1px solid rgba(251,146,60,.2)',background:'rgba(251,146,60,.04)',color:'#c8d0e0',fontSize:12,outline:'none',boxSizing:'border-box'}}/>
+          </div>
+          <div style={{marginBottom:8}}>
+            <div style={{fontSize:9,color:'#334155',marginBottom:5}}>MODO</div>
+            <div style={{display:'flex',gap:5,flexWrap:'wrap'}}>
+              {MODOS.map(m=><button key={m} onClick={()=>setFForm(f=>({...f,modo:m}))} style={{padding:'6px 10px',borderRadius:7,border:`1px solid ${fForm.modo===m?'#fb923c':'rgba(255,255,255,.08)'}`,background:fForm.modo===m?'rgba(251,146,60,.18)':'rgba(255,255,255,.03)',color:fForm.modo===m?'#fb923c':'#475569',fontSize:10,cursor:'pointer'}}>{m}</button>)}
+            </div>
+          </div>
+          <div style={{display:'flex',gap:8,marginBottom:10}}>
+            <div style={{flex:1}}>
+              <div style={{fontSize:9,color:'#334155',marginBottom:5}}>PRIORIDADE</div>
+              {PRIORS.map(p=><button key={p.v} onClick={()=>setFForm(f=>({...f,prior:p.v}))} style={{display:'block',width:'100%',padding:'7px 10px',borderRadius:7,border:`2px solid ${fForm.prior===p.v?PCOR[p.v]:'rgba(255,255,255,.07)'}`,background:fForm.prior===p.v?`${PCOR[p.v]}18`:'rgba(255,255,255,.02)',color:fForm.prior===p.v?PCOR[p.v]:'#475569',fontSize:11,fontWeight:700,cursor:'pointer',marginBottom:4,textAlign:'left'}}>{p.l}</button>)}
+            </div>
+            <div style={{flex:1}}>
+              <div style={{fontSize:9,color:'#334155',marginBottom:5}}>QUANDO</div>
+              {QUANDO.map(q=><button key={q} onClick={()=>setFForm(f=>({...f,quando:q}))} style={{display:'block',width:'100%',padding:'7px 10px',borderRadius:7,border:`1px solid ${fForm.quando===q?'#fb923c':'rgba(255,255,255,.07)'}`,background:fForm.quando===q?'rgba(251,146,60,.15)':'rgba(255,255,255,.02)',color:fForm.quando===q?'#fb923c':'#475569',fontSize:11,cursor:'pointer',marginBottom:4,textAlign:'left'}}>{q}</button>)}
+            </div>
+          </div>
+          <button onClick={salvarFila} disabled={!fForm.mat||!fForm.modo||!fForm.prior||!fForm.quando} style={{width:'100%',padding:'12px',borderRadius:9,border:'none',background:fForm.mat&&fForm.modo&&fForm.prior&&fForm.quando?'linear-gradient(135deg,#fb923c,#fb923c)':'rgba(255,255,255,.05)',color:fForm.mat&&fForm.modo&&fForm.prior&&fForm.quando?'#050a14':'#1e293b',fontSize:12,fontWeight:800,cursor:'pointer'}}>
+            {fSalvo?'✅ Adicionado!':'⚡ ADICIONAR NA FILA'}
+          </button>
+        </div>
+        <div style={{fontSize:9,letterSpacing:'2px',color:'#1e293b',fontFamily:"'DM Mono',monospace",marginBottom:8}}>FILA PENDENTE</div>
+        {fila.filter(f=>!f.feito).sort((a,b)=>{const o={urgente:0,importante:1,normal:2};return(o[a.prior]||2)-(o[b.prior]||2);}).map(f=>(
+          <div key={f.id} style={{padding:'9px 12px',borderRadius:10,background:`${PCOR[f.prior]||'#475569'}06`,border:`1px solid ${PCOR[f.prior]||'#475569'}25`,marginBottom:5,display:'flex',alignItems:'center',gap:8}}>
+            <div style={{width:8,height:8,borderRadius:'50%',background:PCOR[f.prior]||'#475569',flexShrink:0}}/>
+            <div style={{flex:1}}><div style={{fontSize:12,color:'#c8d0e0',fontWeight:700}}>{f.mat}</div><div style={{fontSize:9,color:'#475569'}}>{f.modo} · {f.quando}</div></div>
+            <button onClick={()=>togFila(f.id)} style={{padding:'4px 8px',borderRadius:6,border:'1px solid rgba(52,211,153,.3)',background:'transparent',color:'#34d399',fontSize:10,cursor:'pointer'}}>✓</button>
+            <button onClick={()=>delFila(f.id)} style={{padding:'4px 8px',borderRadius:6,border:'1px solid rgba(248,113,113,.2)',background:'transparent',color:'#f87171',fontSize:10,cursor:'pointer'}}>×</button>
+          </div>
+        ))}
+        {fila.filter(f=>!f.feito).length===0&&<div style={{textAlign:'center',padding:'20px',color:'#1e293b',fontSize:12}}>Fila vazia! ✅</div>}
+      </div>}
+    </div>
+  );
+}
+
+// ─── TAB: REVISÃO ────────────────────────────────────────────
+function TabRevisao(){
+  // ── TODOS os useState no topo ──────────────────────────────
+  const[aba,setAba]=useState('urgente');
+  const[urgentes,setUrgentes]=useState(()=>lsGet('rev_urgentes',[]));
+  const[semItems,setSemItems]=useState(()=>lsGet('rev_sem_items',[]));
+  const[feitas,setFeitas]=useState(()=>lsGet('rev_feitas',[]));
+  const[gurujaData,setGurujaData]=useState(()=>lsGet('guruja_data',null));
+  const[gurujaAnlise,setGurujaAnlise]=useState(()=>lsGet('guruja_anlise',''));
+  const[gurujaTxt,setGurujaTxt]=useState('');
+  const[gurujaLoad,setGurujaLoad]=useState(false);
+
+  // Forms
+  const[uForm,setUForm]=useState({mat:'',motivo:'',modo:'',stars:0});
+  const[uSalvoSt,setUSalvo]=useState(false);
+  const[sForm,setSForm]=useState({mat:'',dia:'',modo:''});
+  const[sSalvo,setSSalvo]=useState(false);
+
+  const dw=new Date().getDay();
+  const DIAS_REV=['Dom','Seg','Ter','Qua','Qui','Sex','Sab'];
+  const MODOS_REV=['Questões','Áudio NLM','Leitura','Anki','Misto','Flashcards'];
+  const MATS_GURUJA=[
+    {mat:'AFO',sigla:'AFO',peso:5,cor:'#f87171'},
+    {mat:'Contabilidade Pública',sigla:'CONT',peso:5,cor:'#a78bfa'},
+    {mat:'Auditoria Governamental',sigla:'AUDG',peso:5,cor:'#fb923c'},
+    {mat:'Controle Externo',sigla:'CEXT',peso:5,cor:'#86efac'},
+    {mat:'Dir. Administrativo',sigla:'DADM',peso:4,cor:'#c084fc'},
+    {mat:'Dir. Constitucional',sigla:'DCON',peso:4,cor:'#60a5fa'},
+    {mat:'Dir. Tributário',sigla:'DTRIB',peso:3,cor:'#f87171'},
+    {mat:'Raciocínio Lógico',sigla:'RL',peso:3,cor:'#38bdf8'},
+    {mat:'Português',sigla:'PORT',peso:3,cor:'#fbbf24'},
+    {mat:'TI / Análise de Dados',sigla:'TINFO',peso:2,cor:'#67e8f9'},
+    {mat:'Adm. Pública',sigla:'ADPU',peso:2,cor:'#fde68a'},
+    {mat:'Dir. Civil',sigla:'DCIV',peso:2,cor:'#fcd34d'},
+    {mat:'Dir. Processual Civil',sigla:'PROCV',peso:2,cor:'#6ee7b7'},
+    {mat:'Dir. Penal',sigla:'DPEN',peso:2,cor:'#fca5a5'},
+  ];
+
+  // ── AÇÕES ──────────────────────────────────────────────────
+  const addUrgente=()=>{
+    if(!uForm.mat||!uForm.stars||!uForm.modo)return;
+    const n=[...urgentes,{...uForm,id:Date.now(),dt:Date.now(),tipo:'urgente'}];
+    setUrgentes(n);lsSet('rev_urgentes',n);
+    setUForm({mat:'',motivo:'',modo:'',stars:0});
+    setUSalvo(true);setTimeout(()=>setUSalvo(false),2000);
+  };
+
+  const addSemana=()=>{
+    if(!sForm.mat||!sForm.dia||!sForm.modo)return;
+    const n=[...semItems,{...sForm,id:Date.now(),dt:Date.now(),feito:false,tipo:'semana'}];
+    setSemItems(n);lsSet('rev_sem_items',n);
+    setSForm({mat:'',dia:'',modo:''});
+    setSSalvo(true);setTimeout(()=>setSSalvo(false),2000);
+  };
+
+  const marcarFeitaUrgente=id=>{
+    const item=urgentes.find(u=>u.id===id);
+    if(!item)return;
+    const nu=urgentes.filter(u=>u.id!==id);
+    const nf=[...feitas,{...item,doneAt:Date.now(),origem:'urgente'}];
+    setUrgentes(nu);lsSet('rev_urgentes',nu);
+    setFeitas(nf);lsSet('rev_feitas',nf);
+  };
+  const marcarFeitaSemana=id=>{
+    const item=semItems.find(s=>s.id===id);
+    if(!item)return;
+    const ns=semItems.map(s=>s.id===id?{...s,feito:true}:s);
+    const nf=[...feitas,{...item,doneAt:Date.now(),origem:'semana'}];
+    setSemItems(ns);lsSet('rev_sem_items',ns);
+    setFeitas(nf);lsSet('rev_feitas',nf);
+  };
+  const delUrgente=id=>{const n=urgentes.filter(u=>u.id!==id);setUrgentes(n);lsSet('rev_urgentes',n);};
+  const delSemana=id=>{const n=semItems.filter(s=>s.id!==id);setSemItems(n);lsSet('rev_sem_items',n);};
+
+  // ── GURUJA: IA analisa dados colados ──────────────────────
+  const analisarGuruja=async()=>{
+    if(!gurujaTxt.trim()||gurujaLoad)return;
+    setGurujaLoad(true);
+    try{
+      const r=await chamarClaude(
+        `Você é coach de concursos especializada no método Guruja. Analise os dados de desempenho da Ritchely (TCE-RJ — Auditora de Controle Externo) e faça um cruzamento entre taxa de acerto e relevância da matéria para o concurso.
+Relevâncias TCE-RJ: AFO=5★, Contabilidade=5★, Auditoria=5★, Controle Externo=5★, Dir.Adm=4★, Dir.Const=4★, Dir.Tributário=3★, Português=3★, RL=3★, TI=2★, Adm.Pública=2★, Dir.Civil=2★, Dir.Processual=2★, Dir.Penal=2★.
+Responda APENAS JSON sem markdown:
+{"prioridades":[{"mat":"nome","taxa":85.0,"relevancia":5,"score_prioridade":8.5,"status":"critica|atencao|ok","acao":"o que fazer"}],"resumo":"2 frases diretas","alerta":"materia mais critica"}`,
+        [{role:'user',content:`Dados do Guruja:\n\n${gurujaTxt.slice(0,6000)}`}],
+        1200
+      );
+      const parsed=JSON.parse(r.replace(/```json|```/g,'').trim());
+      setGurujaData(parsed);lsSet('guruja_data',parsed);
+      setGurujaAnlise(parsed.resumo||'');lsSet('guruja_anlise',parsed.resumo||'');
+      setGurujaTxt('');
+    }catch(e){setGurujaAnlise(`❌ ${e.message}`);}
+    setGurujaLoad(false);
+  };
+
+  // ── CALENDÁRIO: agrega tudo por dia ──────────────────────
+  const calendarioSemana=useMemo(()=>{
+    const cal={};
+    DIAS_REV.forEach(d=>cal[d]=[]);
+    // Itens da semana
+    semItems.filter(s=>!s.feito).forEach(s=>{if(cal[s.dia])cal[s.dia].push({...s,cor:'#34d399',icone:'📅'});});
+    // Urgentes pendentes (todos os dias)
+    urgentes.forEach(u=>{DIAS_REV.forEach(d=>{cal[d].push({...u,cor:'#f87171',icone:'🚨',diasTodos:true});});});
+    return cal;
+  },[semItems,urgentes]);
+
+  const SUB=[
+    {id:'urgente',l:'🚨 Urgente'},
+    {id:'semana',l:'📅 Semana'},
+    {id:'guruja',l:'📊 Guruja'},
+    {id:'calendario',l:'🗓️ Agenda'},
+    {id:'feitas',l:'✅ Feitas'},
+  ];
+  const PCOR_U={5:'#f87171',4:'#fb923c',3:'#fbbf24',2:'#34d399',1:'#60a5fa'};
+
+  return(
+    <div>
+      <div style={{display:'flex',gap:3,marginBottom:14,overflowX:'auto',scrollbarWidth:'none'}}>
+        {SUB.map(s=>{const a=aba===s.id;return(
+          <button key={s.id} onClick={()=>setAba(s.id)} style={{flexShrink:0,padding:'8px 9px',borderRadius:9,border:`1px solid ${a?'#34d399':'rgba(255,255,255,.07)'}`,background:a?'rgba(52,211,153,.12)':'transparent',color:a?'#34d399':'#334155',fontSize:9,fontWeight:700,fontFamily:"'DM Mono',monospace",cursor:'pointer',whiteSpace:'nowrap'}}>{s.l}</button>
+        );})}
+      </div>
+
+      {/* ── URGENTE ─────────────────────────────────────────── */}
+      {aba==='urgente'&&<div>
+        <div style={{background:'rgba(248,113,113,.06)',border:'1px solid rgba(248,113,113,.25)',borderRadius:12,padding:'13px',marginBottom:12}}>
+          <div style={{fontSize:9,letterSpacing:'2px',color:'#f87171',fontFamily:"'DM Mono',monospace",marginBottom:10}}>🚨 PRECISO REVISAR COM URGÊNCIA</div>
+          <input value={uForm.mat} onChange={e=>setUForm(f=>({...f,mat:e.target.value}))} placeholder="Matéria / tópico específico..." style={{width:'100%',padding:'9px 11px',borderRadius:8,border:'1px solid rgba(248,113,113,.25)',background:'rgba(248,113,113,.06)',color:'#c8d0e0',fontSize:12,outline:'none',boxSizing:'border-box',marginBottom:8}}/>
+          <input value={uForm.motivo} onChange={e=>setUForm(f=>({...f,motivo:e.target.value}))} placeholder="Por que urgente?" style={{width:'100%',padding:'9px 11px',borderRadius:8,border:'1px solid rgba(248,113,113,.2)',background:'rgba(248,113,113,.04)',color:'#c8d0e0',fontSize:12,outline:'none',boxSizing:'border-box',marginBottom:8}}/>
+          <div style={{fontSize:9,color:'#334155',marginBottom:5}}>MODO DE REVISÃO</div>
+          <div style={{display:'flex',gap:5,flexWrap:'wrap',marginBottom:10}}>
+            {MODOS_REV.map(m=><button key={m} onClick={()=>setUForm(f=>({...f,modo:m}))} style={{padding:'5px 9px',borderRadius:7,border:`1px solid ${uForm.modo===m?'#f87171':'rgba(255,255,255,.08)'}`,background:uForm.modo===m?'rgba(248,113,113,.18)':'rgba(255,255,255,.03)',color:uForm.modo===m?'#f87171':'#475569',fontSize:10,cursor:'pointer'}}>{m}</button>)}
+          </div>
+          <div style={{fontSize:9,color:'#334155',marginBottom:6}}>NÍVEL DE URGÊNCIA</div>
+          <div style={{display:'flex',gap:5,marginBottom:10}}>
+            {[1,2,3,4,5].map(s=><button key={s} onClick={()=>setUForm(f=>({...f,stars:s}))} style={{flex:1,padding:'8px 4px',borderRadius:7,border:`1px solid ${uForm.stars>=s?'#f87171':'rgba(255,255,255,.08)'}`,background:uForm.stars>=s?'rgba(248,113,113,.2)':'rgba(255,255,255,.02)',fontSize:14,cursor:'pointer'}}>⭐</button>)}
+          </div>
+          <button onClick={addUrgente} disabled={!uForm.mat||!uForm.stars||!uForm.modo} style={{width:'100%',padding:'12px',borderRadius:9,border:'none',background:uForm.mat&&uForm.stars&&uForm.modo?'linear-gradient(135deg,#f87171,#f87171)':'rgba(255,255,255,.05)',color:uForm.mat&&uForm.stars&&uForm.modo?'#050a14':'#1e293b',fontSize:12,fontWeight:800,cursor:'pointer'}}>
+            {uSalvoSt?'✅ Adicionado!':'🚨 ADICIONAR URGÊNCIA'}
+          </button>
+        </div>
+        {urgentes.sort((a,b)=>b.stars-a.stars).map(u=>(
+          <div key={u.id} style={{padding:'12px 13px',borderRadius:11,background:'rgba(248,113,113,.06)',border:`2px solid ${u.stars>=4?'#f87171':'rgba(248,113,113,.25)'}`,marginBottom:7}}>
+            <div style={{display:'flex',justifyContent:'space-between',marginBottom:4}}>
+              <div style={{fontWeight:800,fontSize:13,color:'#e8edf5'}}>{u.mat}</div>
+              <span style={{fontSize:10}}>{'⭐'.repeat(u.stars)}</span>
+            </div>
+            {u.motivo&&<div style={{fontSize:11,color:'#475569',marginBottom:4}}>{u.motivo}</div>}
+            {u.modo&&<div style={{fontSize:10,padding:'3px 8px',borderRadius:5,background:'rgba(248,113,113,.12)',color:'#f87171',display:'inline-block',marginBottom:8}}>📌 {u.modo}</div>}
+            <div style={{display:'flex',gap:6}}>
+              <button onClick={()=>marcarFeitaUrgente(u.id)} style={{flex:1,padding:'8px',borderRadius:7,border:'none',background:'#34d399',color:'#050a14',fontSize:11,fontWeight:800,cursor:'pointer'}}>✓ Revisei!</button>
+              <button onClick={()=>delUrgente(u.id)} style={{padding:'8px 11px',borderRadius:7,border:'1px solid rgba(248,113,113,.3)',background:'transparent',color:'#f87171',fontSize:11,cursor:'pointer'}}>×</button>
+            </div>
+          </div>
+        ))}
+        {urgentes.length===0&&<div style={{textAlign:'center',padding:'30px',color:'#1e293b',fontSize:12}}>Nenhuma revisão urgente. ✅</div>}
+      </div>}
+
+      {/* ── SEMANA ──────────────────────────────────────────── */}
+      {aba==='semana'&&<div>
+        <div style={{background:'rgba(52,211,153,.05)',border:'1px solid rgba(52,211,153,.2)',borderRadius:12,padding:'13px',marginBottom:12}}>
+          <div style={{fontSize:9,letterSpacing:'2px',color:'#34d399',fontFamily:"'DM Mono',monospace",marginBottom:10}}>➕ AGENDAR REVISÃO</div>
+          <input value={sForm.mat} onChange={e=>setSForm(f=>({...f,mat:e.target.value}))} placeholder="Matéria / tópico..." style={{width:'100%',padding:'9px 11px',borderRadius:8,border:'1px solid rgba(52,211,153,.2)',background:'rgba(52,211,153,.04)',color:'#c8d0e0',fontSize:12,outline:'none',boxSizing:'border-box',marginBottom:8}}/>
+          <div style={{fontSize:9,color:'#334155',marginBottom:5}}>DIA DA SEMANA</div>
+          <div style={{display:'flex',gap:4,marginBottom:10}}>
+            {DIAS_REV.map((d,i)=>{const hj=i===dw;return(
+              <button key={d} onClick={()=>setSForm(f=>({...f,dia:d}))} style={{flex:1,padding:'7px 2px',borderRadius:7,border:`1px solid ${sForm.dia===d?'#34d399':hj?'rgba(255,255,255,.2)':'rgba(255,255,255,.07)'}`,background:sForm.dia===d?'rgba(52,211,153,.2)':hj?'rgba(255,255,255,.05)':'transparent',color:sForm.dia===d?'#34d399':hj?'#c8d0e0':'#334155',fontSize:9,fontWeight:sForm.dia===d?800:400,cursor:'pointer',fontFamily:"'DM Mono',monospace"}}>{d[0]}{hj?'·':''}</button>
+            );})}
+          </div>
+          <div style={{fontSize:9,color:'#334155',marginBottom:5}}>MODO</div>
+          <div style={{display:'flex',gap:5,flexWrap:'wrap',marginBottom:10}}>
+            {MODOS_REV.map(m=><button key={m} onClick={()=>setSForm(f=>({...f,modo:m}))} style={{padding:'5px 9px',borderRadius:7,border:`1px solid ${sForm.modo===m?'#34d399':'rgba(255,255,255,.08)'}`,background:sForm.modo===m?'rgba(52,211,153,.18)':'rgba(255,255,255,.03)',color:sForm.modo===m?'#34d399':'#475569',fontSize:10,cursor:'pointer'}}>{m}</button>)}
+          </div>
+          <button onClick={addSemana} disabled={!sForm.mat||!sForm.dia||!sForm.modo} style={{width:'100%',padding:'12px',borderRadius:9,border:'none',background:sForm.mat&&sForm.dia&&sForm.modo?'linear-gradient(135deg,#34d399,#34d399)':'rgba(255,255,255,.05)',color:sForm.mat&&sForm.dia&&sForm.modo?'#050a14':'#1e293b',fontSize:12,fontWeight:800,cursor:'pointer'}}>
+            {sSalvo?'✅ Adicionado!':'📅 AGENDAR'}
+          </button>
+        </div>
+        {/* Lista agrupada por dia */}
+        {DIAS_REV.map((d,i)=>{
+          const its=semItems.filter(s=>s.dia===d&&!s.feito);
+          if(!its.length)return null;
+          const hj=i===dw;
+          return(
+            <div key={d} style={{marginBottom:10}}>
+              <div style={{fontSize:9,fontWeight:800,color:hj?'#34d399':'#334155',fontFamily:"'DM Mono',monospace",marginBottom:5,letterSpacing:'1px'}}>{hj?'▶ ':''}{d.toUpperCase()}</div>
+              {its.map(s=>(
+                <div key={s.id} style={{padding:'9px 12px',borderRadius:9,background:hj?'rgba(52,211,153,.06)':'rgba(255,255,255,.02)',border:`1px solid ${hj?'rgba(52,211,153,.2)':'rgba(255,255,255,.06)'}`,marginBottom:4,display:'flex',alignItems:'center',gap:8}}>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:12,color:'#c8d0e0',fontWeight:700}}>{s.mat}</div>
+                    <div style={{fontSize:10,color:'#334155'}}>{s.modo}</div>
+                  </div>
+                  <button onClick={()=>marcarFeitaSemana(s.id)} style={{padding:'5px 10px',borderRadius:7,border:'none',background:'#34d399',color:'#050a14',fontSize:10,fontWeight:800,cursor:'pointer'}}>✓</button>
+                  <button onClick={()=>delSemana(s.id)} style={{padding:'5px 8px',borderRadius:7,border:'1px solid rgba(248,113,113,.25)',background:'transparent',color:'#f87171',fontSize:10,cursor:'pointer'}}>×</button>
+                </div>
+              ))}
+            </div>
+          );
+        })}
+        {semItems.filter(s=>!s.feito).length===0&&<div style={{textAlign:'center',padding:'30px',color:'#1e293b',fontSize:12}}>Nenhuma revisão agendada.</div>}
+      </div>}
+
+      {/* ── GURUJA ──────────────────────────────────────────── */}
+      {aba==='guruja'&&<div>
+        <div style={{background:'rgba(251,191,36,.05)',border:'1px solid rgba(251,191,36,.2)',borderRadius:12,padding:'13px',marginBottom:12}}>
+          <div style={{fontSize:9,letterSpacing:'2px',color:'#fbbf24',fontFamily:"'DM Mono',monospace",marginBottom:6}}>📊 ANÁLISE GURUJA × RELEVÂNCIA TCE-RJ</div>
+          <div style={{fontSize:11,color:'#475569',lineHeight:1.7,marginBottom:10}}>Cole os dados da tabela "Análise Geral" do Guruja (copie e cole o texto da tabela) ou descreva seu desempenho por matéria. A IA vai cruzar com a relevância do TCE-RJ e montar o plano de revisão.</div>
+          <textarea value={gurujaTxt} onChange={e=>setGurujaTxt(e.target.value)} rows={5} placeholder="Cole aqui os dados do Guruja: Disciplina | Questões | Acertos | Taxa..." style={{width:'100%',padding:'9px',borderRadius:8,border:'1px solid rgba(251,191,36,.25)',background:'rgba(251,191,36,.04)',color:'#c8d0e0',fontSize:11,outline:'none',resize:'vertical',boxSizing:'border-box',marginBottom:10}}/>
+          <button onClick={analisarGuruja} disabled={gurujaLoad||!gurujaTxt.trim()} style={{width:'100%',padding:'12px',borderRadius:9,border:'none',background:gurujaTxt.trim()?'linear-gradient(135deg,#fbbf24,#fbbf24)':'rgba(255,255,255,.05)',color:gurujaTxt.trim()?'#050a14':'#1e293b',fontSize:12,fontWeight:800,cursor:'pointer'}}>
+            {gurujaLoad?'⏳ Analisando...':'🤖 Analisar e priorizar'}
+          </button>
+        </div>
+        {gurujaData?.alerta&&(
+          <div style={{padding:'12px 13px',borderRadius:10,background:'rgba(248,113,113,.08)',border:'2px solid rgba(248,113,113,.4)',marginBottom:12}}>
+            <div style={{fontSize:9,color:'#f87171',fontFamily:"'DM Mono',monospace",marginBottom:4}}>🚨 ALERTA PRINCIPAL</div>
+            <div style={{fontSize:13,color:'#f87171',fontWeight:700}}>{gurujaData.alerta}</div>
+          </div>
+        )}
+        {gurujaData?.resumo&&(
+          <div style={{padding:'11px 13px',borderRadius:10,background:'rgba(251,191,36,.06)',border:'1px solid rgba(251,191,36,.2)',marginBottom:12}}>
+            <div style={{fontSize:11,color:'#fbbf24',lineHeight:1.7}}>{gurujaData.resumo}</div>
+          </div>
+        )}
+        {gurujaData?.prioridades&&[...gurujaData.prioridades].sort((a,b)=>(b.relevancia*100-b.taxa)-(a.relevancia*100-a.taxa)).map((p,i)=>{
+          const cor=p.status==='critica'?'#f87171':p.status==='atencao'?'#fbbf24':'#34d399';
+          return(
+            <div key={i} style={{padding:'11px 12px',borderRadius:11,background:`${cor}06`,border:`1px solid ${cor}30`,marginBottom:7}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:4}}>
+                <span style={{fontSize:13,fontWeight:800,color:cor}}>{p.mat}</span>
+                <div style={{display:'flex',gap:6,alignItems:'center'}}>
+                  <span style={{fontSize:10,color:'#475569',fontFamily:"'DM Mono',monospace"}}>{p.taxa}%</span>
+                  <span style={{fontSize:9,padding:'2px 6px',borderRadius:4,background:`${cor}22`,color:cor,fontFamily:"'DM Mono',monospace",fontWeight:700}}>{p.status?.toUpperCase()}</span>
+                </div>
+              </div>
+              <div style={{marginBottom:6}}>
+                <div style={{display:'flex',gap:6,marginBottom:4,alignItems:'center'}}>
+                  <span style={{fontSize:9,color:'#334155'}}>Relevância</span>
+                  <BarProg done={p.relevancia||0} total={5} cor={cor} h={3}/>
+                  <span style={{fontSize:9,color:cor,fontFamily:"'DM Mono',monospace",fontWeight:700}}>{'⭐'.repeat(p.relevancia||0)}</span>
+                </div>
+                <div style={{display:'flex',gap:6,alignItems:'center'}}>
+                  <span style={{fontSize:9,color:'#334155'}}>Acerto</span>
+                  <BarProg done={p.taxa||0} total={100} cor={cor} h={3}/>
+                </div>
+              </div>
+              {p.acao&&<div style={{fontSize:11,color:'#64748b',borderTop:`1px solid ${cor}18`,paddingTop:6}}>→ {p.acao}</div>}
+            </div>
+          );
+        })}
+        {!gurujaData&&<div style={{textAlign:'center',padding:'30px',color:'#1e293b',fontSize:12}}>Cole os dados do Guruja acima e clique em Analisar.</div>}
+      </div>}
+
+      {/* ── CALENDÁRIO ──────────────────────────────────────── */}
+      {aba==='calendario'&&<div>
+        <div style={{fontSize:9,letterSpacing:'2px',color:'#60a5fa',fontFamily:"'DM Mono',monospace",marginBottom:12}}>🗓️ VISÃO SEMANAL — REVISÕES + URGÊNCIAS</div>
+        {DIAS_REV.map((d,i)=>{
+          const hj=i===dw;
+          const revSem=semItems.filter(s=>s.dia===d&&!s.feito);
+          const urgCount=urgentes.length;
+          const total=revSem.length+(hj?urgCount:0);
+          return(
+            <div key={d} style={{marginBottom:8,borderRadius:12,overflow:'hidden',border:`1px solid ${hj?'rgba(96,165,250,.3)':'rgba(255,255,255,.06)'}`,opacity:i<dw?.6:1}}>
+              <div style={{padding:'7px 12px',background:hj?'rgba(96,165,250,.08)':'rgba(255,255,255,.02)',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                <span style={{fontSize:10,fontWeight:800,color:hj?'#60a5fa':'#334155',fontFamily:"'DM Mono',monospace"}}>{hj?'▶ ':''}{d.toUpperCase()}{hj?' — HOJE':''}</span>
+                <span style={{fontSize:9,color:'#334155',fontFamily:"'DM Mono',monospace"}}>{total} item{total!==1?'s':''}</span>
+              </div>
+              {revSem.map(s=>(
+                <div key={s.id} style={{padding:'7px 12px',borderTop:'1px solid rgba(255,255,255,.04)',display:'flex',alignItems:'center',gap:8}}>
+                  <span style={{fontSize:12}}>📅</span>
+                  <div style={{flex:1}}><div style={{fontSize:11,color:'#c8d0e0'}}>{s.mat}</div><div style={{fontSize:9,color:'#34d399'}}>{s.modo}</div></div>
+                  <button onClick={()=>marcarFeitaSemana(s.id)} style={{padding:'4px 8px',borderRadius:5,border:'none',background:'#34d399',color:'#050a14',fontSize:9,fontWeight:800,cursor:'pointer'}}>✓</button>
+                </div>
+              ))}
+              {hj&&urgentes.map(u=>(
+                <div key={u.id} style={{padding:'7px 12px',borderTop:'1px solid rgba(255,255,255,.04)',display:'flex',alignItems:'center',gap:8,background:'rgba(248,113,113,.03)'}}>
+                  <span style={{fontSize:12}}>🚨</span>
+                  <div style={{flex:1}}><div style={{fontSize:11,color:'#f87171'}}>{u.mat}</div><div style={{fontSize:9,color:'#f87171',opacity:.7}}>{u.modo} · {'⭐'.repeat(u.stars)}</div></div>
+                  <button onClick={()=>marcarFeitaUrgente(u.id)} style={{padding:'4px 8px',borderRadius:5,border:'none',background:'#34d399',color:'#050a14',fontSize:9,fontWeight:800,cursor:'pointer'}}>✓</button>
+                </div>
+              ))}
+              {total===0&&<div style={{padding:'8px 12px',fontSize:10,color:'#1e293b'}}>Sem revisões agendadas.</div>}
+            </div>
+          );
+        })}
+      </div>}
+
+      {/* ── FEITAS ──────────────────────────────────────────── */}
+      {aba==='feitas'&&<div>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
+          <div style={{fontSize:9,letterSpacing:'2px',color:'#34d399',fontFamily:"'DM Mono',monospace"}}>✅ REVISÕES CONCLUÍDAS</div>
+          <span style={{fontSize:10,color:'#34d399',fontFamily:"'DM Mono',monospace",fontWeight:700}}>{feitas.length} total</span>
+        </div>
+        {[...feitas].reverse().slice(0,20).map(f=>(
+          <div key={f.id||f.doneAt} style={{padding:'9px 12px',borderRadius:10,background:'rgba(52,211,153,.04)',border:'1px solid rgba(52,211,153,.12)',marginBottom:5}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+              <div>
+                <div style={{fontSize:12,color:'#34d399',fontWeight:700}}>{f.mat}</div>
+                <div style={{fontSize:9,color:'#334155'}}>{f.modo&&`${f.modo} · `}{f.origem==='urgente'?'🚨 urgente':'📅 semana'}{f.stars?` · ${'⭐'.repeat(f.stars)}`:''}</div>
+              </div>
+              <div style={{fontSize:9,color:'#1e293b',textAlign:'right',fontFamily:"'DM Mono',monospace"}}>
+                {f.doneAt?new Date(f.doneAt).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}):''}
+              </div>
+            </div>
+            {f.motivo&&<div style={{fontSize:10,color:'#334155',marginTop:3}}>{f.motivo}</div>}
+          </div>
+        ))}
+        {feitas.length===0&&<div style={{textAlign:'center',padding:'30px',color:'#1e293b',fontSize:12}}>Nenhuma revisão concluída ainda.</div>}
+      </div>}
     </div>
   );
 }
@@ -933,6 +1436,198 @@ function TabCasa(){
   );
 }
 
+// ─── TAB: AGENDA GERAL ───────────────────────────────────────
+function TabAgenda(){
+  const[view,setView]=useState('semana'); // 'hoje' | 'semana'
+  const now=new Date();
+  const dw=now.getDay();
+  const dk=getDK();
+  const DIAS=['Dom','Seg','Ter','Qua','Qui','Sex','Sab'];
+  const DIAS_FULL=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+
+  // ── Lê dados de TODAS as abas ────────────────────────────
+  const horas=lsGet('horas',[]);
+  const feitos=lsGet('feitos',[]);
+  const treinos=lsGet('treino_regs',[]);
+  const sessoes=lsGet('sessoes',[]);
+  const revUrgentes=lsGet('rev_urgentes',[]);
+  const revSemana=lsGet('rev_sem_items',[]);
+  const fila=lsGet('fila',[]).filter(f=>!f.feito);
+  const wakeH=lsGet('wakeH',10);
+  const wakeM=lsGet('wakeM',0);
+  const mit=lsGet('mit',[]);
+  const naval=lsGet(`naval_${dk}`,[]);
+  const kagenda=lsGet(`kagenda_${dk}`,{});
+  const hidra=lsGet(`hidra_${dk}`,0);
+  const tarefas=lsGet(`casa_t_${dk}`,[]);
+  const mercado=lsGet(`casa_m_${dk}`,'');
+  const planoComida=lsGet('plano_semana',null);
+
+  const todayStart=useMemo(()=>{const d=new Date();d.setHours(0,0,0,0);return d.getTime();},[]);
+  const semStart=todayStart-6*86400000;
+  const minHoje=horas.filter(e=>e.dt>=todayStart).reduce((s,e)=>s+e.min,0);
+  const minSem=horas.filter(e=>e.dt>=semStart).reduce((s,e)=>s+e.min,0);
+  const treinouHj=treinos.some(r=>r.dk===dk&&r.feito);
+  const navaisFalta=naval.filter(Boolean).length;
+  const tarefasUrg=tarefas.filter(t=>t.prior==='urgente'&&!t.done);
+  const tarefasPend=tarefas.filter(t=>!t.done);
+  const PCOR={urgente:'#f87171',importante:'#fbbf24',normal:'#60a5fa',study:'#a78bfa',treino:'#34d399',revisao:'#fb923c',naval:'#60a5fa',casa:'#fcd34d',comida:'#fb923c'};
+
+  // Agenda do dia atual
+  const AGENDA_DIA=useMemo(()=>{
+    const items=[];
+    // MIT
+    if(mit.length>0) items.push({t:'05:00',tipo:'study',icone:'✦',label:'MITs do dia',detalhe:mit.join(' · '),cor:'#fbbf24'});
+    // Anki
+    items.push({t:'05:00',tipo:'study',icone:'🃏',label:'Anki profundo',cor:'#a78bfa'});
+    // Blocos de estudo (agenda fixa)
+    const AGENDA_FIXA=AGENDA[dw]||[];
+    AGENDA_FIXA.forEach(a=>{
+      const c=KCOR[a.k]||'#475569';
+      items.push({t:a.t,tipo:a.k==='s'?'study':a.k==='e'?'treino':'outro',icone:a.k==='s'?'📚':a.k==='e'?'🏃':'⏰',label:a.l,cor:c});
+    });
+    // Revisões urgentes
+    revUrgentes.forEach(u=>items.push({t:'—',tipo:'revisao',icone:'🚨',label:u.mat,detalhe:`${u.modo||''} · ${'⭐'.repeat(u.stars)}`,cor:'#f87171'}));
+    // Revisões da semana no dia de hoje
+    revSemana.filter(s=>s.dia===DIAS[dw]&&!s.feito).forEach(s=>items.push({t:'—',tipo:'revisao',icone:'📚',label:s.mat,detalhe:s.modo,cor:'#34d399'}));
+    // Fila urgente
+    fila.filter(f=>f.quando==='Hoje'||f.prior==='urgente').forEach(f=>items.push({t:'—',tipo:'revisao',icone:'⚡',label:f.mat,detalhe:`${f.modo} · ${f.quando}`,cor:'#fb923c'}));
+    // Tarefas urgentes de casa
+    tarefasUrg.forEach(t=>items.push({t:'—',tipo:'casa',icone:'🚨',label:t.txt,cor:'#f87171'}));
+    // Kauê
+    if(kagenda.escola) items.push({t:`${pad(wakeH)}:${pad(wakeM)}`,tipo:'naval',icone:'⚓',label:`Kauê acorda ${pad(wakeH)}:${pad(wakeM)}`,cor:'#60a5fa'});
+    items.push({t:'18:00',tipo:'naval',icone:'⚓',label:'Kauê chega',cor:'#f87171'});
+    // Comida
+    const diaKey=DIAS_KEY[dw];
+    const planoHoje=planoComida?.semana?.[diaKey];
+    if(planoHoje?.almoco) items.push({t:'12:00',tipo:'comida',icone:'🍽️',label:`Almoço: ${planoHoje.almoco}`,cor:'#fb923c'});
+    if(planoHoje?.jantar) items.push({t:'19:00',tipo:'comida',icone:'🌙',label:`Jantar: ${planoHoje.jantar}`,cor:'#fb923c'});
+    return items.sort((a,b)=>{
+      const ta=a.t==='—'?'99:00':a.t;
+      const tb=b.t==='—'?'99:00':b.t;
+      return ta.localeCompare(tb);
+    });
+  },[mit,revUrgentes,revSemana,fila,tarefasUrg,kagenda,planoComida,wakeH,wakeM]);
+
+  // Visão semanal: agrega por dia
+  const semanaData=useMemo(()=>{
+    return DIAS.map((d,i)=>{
+      const items=[];
+      // Revisões agendadas
+      revSemana.filter(s=>s.dia===d&&!s.feito).forEach(s=>items.push({tipo:'revisao',icone:'📚',label:s.mat,detalhe:s.modo,cor:'#34d399',feito:false}));
+      // Urgentes (todos os dias)
+      if(revUrgentes.length>0) items.push({tipo:'revisao',icone:'🚨',label:`${revUrgentes.length} urgente${revUrgentes.length>1?'s':''}`,cor:'#f87171'});
+      // Fila do dia
+      fila.filter(f=>{
+        if(f.quando==='Hoje'&&i===dw)return true;
+        if(f.quando==='Amanhã'&&i===(dw+1)%7)return true;
+        if(f.quando==='Em 2d'&&i===(dw+2)%7)return true;
+        return false;
+      }).forEach(f=>items.push({tipo:'fila',icone:'⚡',label:f.mat,detalhe:f.modo,cor:'#fb923c'}));
+      // Tarefas de casa do dia atual
+      if(i===dw) tarefasPend.slice(0,3).forEach(t=>items.push({tipo:'casa',icone:'🏡',label:t.txt,cor:t.prior==='urgente'?'#f87171':t.prior==='importante'?'#fbbf24':'#60a5fa'}));
+      return{dia:d,diaFull:DIAS_FULL[i],i,items,hj:i===dw};
+    });
+  },[revSemana,revUrgentes,fila,tarefasPend,dw]);
+
+  return(
+    <div>
+      {/* Resumo do dia */}
+      <div style={{background:'linear-gradient(135deg,rgba(251,191,36,.08),rgba(5,10,20,.98))',border:'1px solid rgba(251,191,36,.2)',borderRadius:14,padding:'13px',marginBottom:14}}>
+        <div style={{fontSize:9,letterSpacing:'3px',color:'#fbbf24',fontFamily:"'DM Mono',monospace",marginBottom:8}}>📍 HOJE — {DIAS_FULL[dw].toUpperCase()}</div>
+        <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+          {[
+            [`⏱ ${fmtMin(minHoje)}`,minHoje>0?'#34d399':'#334155','hoje'],
+            [`📚 ${fmtMin(minSem)}/35h`,minSem>=35*60?'#34d399':'#fbbf24','semana'],
+            [`🏃 ${treinouHj?'feito':'pendente'}`,treinouHj?'#34d399':'#f87171','treino'],
+            [`🏡 ${tarefasPend.length} taref.`,tarefasUrg.length>0?'#f87171':'#60a5fa','casa'],
+            [`🚨 ${revUrgentes.length} rev.`,revUrgentes.length>0?'#f87171':'#334155','revisão'],
+            [`💧 ${(hidra*250/1000).toFixed(1)}L`,hidra*250>=3000?'#34d399':'#60a5fa','água'],
+          ].map(([l,c,t])=>(
+            <div key={t} style={{padding:'5px 9px',borderRadius:7,background:`${c}12`,border:`1px solid ${c}30`}}>
+              <div style={{fontSize:10,color:c,fontWeight:700}}>{l}</div>
+            </div>
+          ))}
+        </div>
+        {mit.length>0&&<div style={{marginTop:10,padding:'8px 10px',borderRadius:8,background:'rgba(251,191,36,.06)',border:'1px solid rgba(251,191,36,.15)'}}>
+          <div style={{fontSize:9,color:'rgba(251,191,36,.6)',fontFamily:"'DM Mono',monospace",marginBottom:4}}>✦ MITS DO DIA</div>
+          {mit.map((m,i)=><div key={i} style={{fontSize:11,color:'#c8d0e0',marginBottom:2}}>{i+1}. {m}</div>)}
+        </div>}
+      </div>
+
+      {/* Toggle hoje/semana */}
+      <div style={{display:'flex',gap:6,marginBottom:14}}>
+        {[['hoje','📅 Hoje'],['semana','🗓️ Semana']].map(([v,l])=>{
+          const a=view===v;
+          return <button key={v} onClick={()=>setView(v)} style={{flex:1,padding:'10px',borderRadius:10,border:`1px solid ${a?'#fbbf24':'rgba(255,255,255,.08)'}`,background:a?'rgba(251,191,36,.12)':'transparent',color:a?'#fbbf24':'#334155',fontSize:12,fontWeight:700,cursor:'pointer'}}>{l}</button>;
+        })}
+      </div>
+
+      {/* VISÃO: HOJE */}
+      {view==='hoje'&&<div>
+        {AGENDA_DIA.map((it,i)=>{
+          const c=it.cor||'#475569';
+          return(
+            <div key={i} style={{display:'flex',gap:10,padding:'9px 11px',borderRadius:10,background:`${c}06`,border:`1px solid ${c}18`,marginBottom:5,alignItems:'flex-start'}}>
+              <div style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:c,fontWeight:700,width:40,flexShrink:0,marginTop:1}}>{it.t}</div>
+              <span style={{fontSize:14,flexShrink:0}}>{it.icone}</span>
+              <div style={{flex:1}}>
+                <div style={{fontSize:12,color:it.tipo==='study'?'#c8d0e0':c,fontWeight:600}}>{it.label}</div>
+                {it.detalhe&&<div style={{fontSize:10,color:'#334155',marginTop:2}}>{it.detalhe}</div>}
+              </div>
+              <span style={{fontSize:8,padding:'2px 6px',borderRadius:4,background:`${c}18`,color:c,fontFamily:"'DM Mono',monospace",flexShrink:0}}>{it.tipo}</span>
+            </div>
+          );
+        })}
+        {/* Checklist casa */}
+        {tarefasPend.length>0&&(
+          <div style={{marginTop:10,padding:'11px',borderRadius:11,background:'rgba(96,165,250,.05)',border:'1px solid rgba(96,165,250,.18)'}}>
+            <div style={{fontSize:9,color:'#60a5fa',fontFamily:"'DM Mono',monospace",marginBottom:8}}>🏡 CASA — {tarefasPend.length} pendente{tarefasPend.length>1?'s':''}</div>
+            {tarefasPend.slice(0,5).map(t=>(
+              <div key={t.id} style={{fontSize:11,color:t.prior==='urgente'?'#f87171':t.prior==='importante'?'#fbbf24':'#64748b',marginBottom:3}}>
+                {t.prior==='urgente'?'🚨 ':t.prior==='importante'?'⚠️ ':'• '}{t.txt}
+              </div>
+            ))}
+          </div>
+        )}
+        {/* Naval */}
+        <div style={{marginTop:10,padding:'11px',borderRadius:11,background:'rgba(248,113,113,.05)',border:'1px solid rgba(248,113,113,.15)'}}>
+          <div style={{fontSize:9,color:'#f87171',fontFamily:"'DM Mono',monospace",marginBottom:6}}>⚓ KAUÊ — NOTURNO</div>
+          <div style={{fontSize:11,color:'#64748b'}}>{navaisFalta}/{NAVAL_ITEMS.length} itens do checklist naval ✓</div>
+          {kagenda.escola&&<div style={{fontSize:11,color:'#60a5fa',marginTop:3}}>🏫 Escola hoje</div>}
+          {kagenda.basquete&&<div style={{fontSize:11,color:'#34d399',marginTop:3}}>🏀 Basquete hoje</div>}
+        </div>
+        {mercado&&<div style={{marginTop:10,padding:'11px',borderRadius:11,background:'rgba(52,211,153,.04)',border:'1px solid rgba(52,211,153,.15)'}}>
+          <div style={{fontSize:9,color:'#34d399',fontFamily:"'DM Mono',monospace",marginBottom:5}}>🛒 SUPERMERCADO</div>
+          <div style={{fontSize:11,color:'#64748b',lineHeight:1.7}}>{mercado}</div>
+        </div>}
+      </div>}
+
+      {/* VISÃO: SEMANA */}
+      {view==='semana'&&<div>
+        {semanaData.map(({dia,diaFull,i,items,hj})=>(
+          <div key={dia} style={{marginBottom:8,borderRadius:12,overflow:'hidden',border:`1px solid ${hj?'rgba(251,191,36,.3)':'rgba(255,255,255,.06)'}`,opacity:i<dw&&!hj?.55:1}}>
+            <div style={{padding:'8px 13px',background:hj?'rgba(251,191,36,.07)':'rgba(255,255,255,.02)',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+              <span style={{fontSize:11,fontWeight:800,color:hj?'#fbbf24':'#334155',fontFamily:"'DM Mono',monospace"}}>{hj?'▶ ':''}{diaFull.toUpperCase()}{hj?' — HOJE':''}</span>
+              <span style={{fontSize:9,color:'#1e293b',fontFamily:"'DM Mono',monospace"}}>{items.length} item{items.length!==1?'s':''}</span>
+            </div>
+            {items.length===0&&<div style={{padding:'8px 13px',fontSize:11,color:'#1e293b'}}>Dia livre ✓</div>}
+            {items.map((it,j)=>(
+              <div key={j} style={{padding:'8px 13px',borderTop:'1px solid rgba(255,255,255,.04)',display:'flex',alignItems:'center',gap:8}}>
+                <span style={{fontSize:13}}>{it.icone}</span>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:11,color:it.cor,fontWeight:700}}>{it.label}</div>
+                  {it.detalhe&&<div style={{fontSize:9,color:'#334155'}}>{it.detalhe}</div>}
+                </div>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>}
+    </div>
+  );
+}
+
 // ─── MODAL CONFIGURAÇÕES ─────────────────────────────────────
 // IMPORTANTE: TODOS os useState estão no topo, sem exceção
 function ModalConfig({fechar}){
@@ -1178,7 +1873,7 @@ function App(){
   const prox=pendentes[0];
   const corPrx=prox?.tag?.includes('TRIÂNGULO')?'#fbbf24':prox?.cor||'#fbbf24';
 
-  const TABS=[{id:'ia',e:'🤖',l:'IA'},{id:'hoje',e:'🏠',l:'Hoje'},{id:'ciclo',e:'🔄',l:'Ciclo'},{id:'stats',e:'📊',l:'Stats'},{id:'kaue',e:'👦',l:'Kauê'},{id:'comida',e:'🍽️',l:'Comida'},{id:'treino',e:'🏃',l:'Treino'},{id:'casa',e:'🏡',l:'Casa'}];
+  const TABS=[{id:'ia',e:'🤖',l:'IA'},{id:'hoje',e:'🏠',l:'Hoje'},{id:'ciclo',e:'🔄',l:'Ciclo'},{id:'stats',e:'📊',l:'Stats'},{id:'revisao',e:'🧠',l:'Revisão'},{id:'agenda',e:'🗓️',l:'Agenda'},{id:'kaue',e:'👦',l:'Kauê'},{id:'comida',e:'🍽️',l:'Comida'},{id:'treino',e:'🏃',l:'Treino'},{id:'casa',e:'🏡',l:'Casa'}];
 
   const ativAlerta=diasSemTreinar!==null&&diasSemTreinar>=1;
   const chaveOK=getAK().startsWith('sk-ant');
@@ -1219,7 +1914,9 @@ function App(){
         {tab==='ia'   &&<TabIA    appCtx={appCtx} onMIT={saveMIT}/>}
         {tab==='hoje' &&<TabHoje  pendentes={pendentes} mit={mit} onConcluir={concluir} onAddHoras={addHoras}/>}
         {tab==='ciclo'&&<TabCiclo feitos={feitos} cicloNum={cicloNum} onConcluir={concluir} onIrPara={irPara}/>}
-        {tab==='stats'&&<TabStats horas={horas}/>}
+        {tab==='stats'&&<TabStats horas={horas} onAddHoras={addHoras}/>}
+        {tab==='revisao'&&<TabRevisao/>}
+        {tab==='agenda'&&<TabAgenda/>}
         {tab==='kaue' &&<TabKaue  wakeH={wakeH} wakeM={wakeM} onSaveWake={saveWake}/>}
         {tab==='comida'&&<TabComida/>}
         {tab==='treino'&&<TabTreino/>}
