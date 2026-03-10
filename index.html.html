@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="theme-color" content="#050a14"/>
+<meta name="application-name" content="RITY OS"/>
+<meta name="apple-mobile-web-app-title" content="RITY OS"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<link rel="manifest" href="manifest.json"/>
+<!-- Ícone Apple (inline SVG como data URI) -->
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%23050a14'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-size='300' font-family='serif'%3E⚖%3C/text%3E%3Ctext x='50%25' y='88%25' dominant-baseline='middle' text-anchor='middle' font-size='72' font-family='monospace' fill='%23fbbf24' font-weight='bold'%3ERTY OS%3C/text%3E%3C/svg%3E"/>
+<title>RITY OS · TCE-RJ</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Mono:wght@400;500;700&family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:#050a14;color:#c8d0e0;font-family:'DM Sans',sans-serif;overscroll-behavior:none}
+::-webkit-scrollbar{width:3px;background:#06080e}
+::-webkit-scrollbar-thumb{background:#1a2535;border-radius:3px}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+button:active{transform:scale(.97)}
+textarea,input{-webkit-appearance:none}
+input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<script>
+// Suprimir aviso Babel
+const _w=console.warn;console.warn=(...a)=>{if(String(a[0]||'').includes('Babel'))return;_w(...a);};
+</script>
+<script type="text/babel">
+const{useState,useEffect,useRef,useMemo,useCallback}=React;
+
+// ─── CONSTANTES ───────────────────────────────────────────────
+const CICLO=[
+  {id:1,dia:1,mat:"AFO",h:"1h30",cor:"#f87171",ic:"📘",tag:"PESADO ⭐⭐⭐⭐⭐",acao:"45min teoria · pausa · 45min questões",dica:"Abre o ciclo.\nReforços 5★: Receita, Despesa, Estágios.\nPara nos 45min. Levanta, anda."},
+  {id:2,dia:1,mat:"Dir. Administrativo",h:"1h30",cor:"#c084fc",ic:"📘",tag:"PESADO ⭐⭐⭐⭐",acao:"45min teoria · pausa · 45min questões",dica:"Técnica → jurídica.\nReforços: Terceiro Setor, Responsabilidade Civil."},
+  {id:3,dia:1,mat:"Contabilidade Pública",h:"1h30",cor:"#a78bfa",ic:"📒",tag:"PESADO ⭐⭐⭐⭐⭐",acao:"45min teoria · pausa · 45min questões",dica:"Mais pesada do TCE-RJ. Máx 1h30."},
+  {id:4,dia:2,mat:"Dir. Constitucional",h:"1h30",cor:"#60a5fa",ic:"📘",tag:"PESADO ⭐⭐⭐⭐",acao:"45min teoria · pausa · 45min questões",dica:"Dia 2 com jurídica.\nReforços: Direitos Sociais, Políticos."},
+  {id:5,dia:2,mat:"Auditoria / Controle Externo",h:"1h30",cor:"#fb923c",ic:"📗",tag:"PESADO ⭐⭐⭐⭐⭐",acao:"45min videoaula · pausa · 45min NotebookLM",dica:"Core do cargo.\nNotebookLM na 2ª metade: podcast ou quiz."},
+  {id:6,dia:2,mat:"Dir. Tributário",h:"1h30",cor:"#f87171",ic:"📘",tag:"MÉDIO ⭐⭐⭐",acao:"45min teoria · pausa · 45min questões",dica:"Competência, Legislação, Obrigação pt I."},
+  {id:7,dia:3,mat:"Raciocínio Lógico",h:"1h30",cor:"#38bdf8",ic:"🧩",tag:"MÉDIO ⭐⭐⭐",acao:"45min teoria · pausa · 45min questões",dica:"Nunca depois de jurídica densa. Abre dia 3 limpo."},
+  {id:8,dia:3,mat:"AFO 🔺",h:"1h30",cor:"#f87171",ic:"📘",tag:"TRIÂNGULO ⭐⭐⭐⭐⭐",acao:"45min questões · pausa · 45min revisão erros",dica:"Triângulo Meirelles. Só questões + análise erros."},
+  {id:9,dia:3,mat:"Português",h:"1h30",cor:"#fbbf24",ic:"📙",tag:"BÁSICO ⭐⭐⭐",acao:"45min teoria · pausa · 45min questões",dica:"Interpretação, Coesão, Semântica."},
+  {id:10,dia:4,mat:"Contabilidade 🔺",h:"1h30",cor:"#a78bfa",ic:"📒",tag:"TRIÂNGULO ⭐⭐⭐⭐⭐",acao:"45min questões · pausa · 45min revisão erros",dica:"Triângulo Meirelles. Só questões. Sem teoria nova."},
+  {id:11,dia:4,mat:"Adm. Pública",h:"1h30",cor:"#fde68a",ic:"📙",tag:"MÉDIO ⭐⭐⭐",acao:"45min teoria · pausa · 45min questões",dica:"Governabilidade e Governança."},
+  {id:12,dia:4,mat:"Discursivas",h:"1h30",cor:"#fb923c",ic:"✏️",tag:"TRANSVERSAL",acao:"45min estrutura · pausa · 45min redação completa",dica:"1ª metade: 3 argumentos.\n2ª metade: redação cronometrada."},
+  {id:13,dia:5,mat:"Auditoria 🔺",h:"1h30",cor:"#fb923c",ic:"📗",tag:"TRIÂNGULO ⭐⭐⭐⭐⭐",acao:"45min questões · pausa · 45min revisão erros",dica:"Triângulo. Questões + Anki bloco 5."},
+  {id:14,dia:5,mat:"Português 🔺",h:"1h30",cor:"#fbbf24",ic:"📙",tag:"TRIÂNGULO ⭐⭐⭐",acao:"45min questões · pausa · 45min revisão erros",dica:"Classifica erros: interpretação / gramática / coesão."},
+  {id:15,dia:5,mat:"TI / Análise de Dados",h:"1h30",cor:"#67e8f9",ic:"💻",tag:"MÉDIO ⭐⭐",acao:"45min teoria · pausa · 45min questões",dica:"Análise de Informações."},
+  {id:16,dia:6,mat:"Dir. Tributário 🔺",h:"1h30",cor:"#f87171",ic:"📘",tag:"TRIÂNGULO ⭐⭐⭐",acao:"45min questões · pausa · 45min revisão erros",dica:"Competência, Legislação, Obrigação."},
+  {id:17,dia:6,mat:"Raciocínio Lógico 🔺",h:"1h30",cor:"#38bdf8",ic:"🧩",tag:"TRIÂNGULO ⭐⭐⭐",acao:"45min teoria · pausa · 10 questões cronometradas",dica:"10 questões, 12min cada."},
+  {id:18,dia:6,mat:"Controle Externo",h:"1h30",cor:"#86efac",ic:"📋",tag:"ESPECÍFICO ⭐⭐⭐",acao:"45min teoria · pausa · 45min questões",dica:"Lei Orgânica TCE-RJ, competências."},
+  {id:19,dia:7,mat:"TI 🔺",h:"1h30",cor:"#67e8f9",ic:"💻",tag:"TRIÂNGULO ⭐⭐",acao:"45min questões · pausa · 45min revisão erros",dica:"Só questões."},
+  {id:20,dia:7,mat:"Dir. Civil",h:"1h30",cor:"#fcd34d",ic:"📙",tag:"LEVE ⭐⭐",acao:"45min teoria · pausa · 45min questões",dica:"Prescrição pós-STJ 2019."},
+  {id:21,dia:7,mat:"Dir. Processual Civil",h:"1h30",cor:"#6ee7b7",ic:"📘",tag:"LEVE ⭐⭐",acao:"45min teoria · pausa · 45min questões",dica:"Questões e 3C."},
+  {id:22,dia:8,mat:"Discursivas 🔺",h:"1h30",cor:"#fb923c",ic:"✏️",tag:"TRIÂNGULO TRANSVERSAL",acao:"45min estrutura · pausa · 45min redação completa",dica:"3h totais. Relê redação do bloco 12."},
+  {id:23,dia:8,mat:"Dir. Penal",h:"1h30",cor:"#fca5a5",ic:"⚖️",tag:"LEVE ⭐⭐",acao:"45min teoria · pausa · 45min questões",dica:"Fecha o ciclo."},
+];
+const N=CICLO.length;
+const NOMES_DIA=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+const DIAS_KEY=['Dom','Seg','Ter','Qua','Qui','Sex','Sab'];
+const KCOR={r:'#64748b',a:'#fbbf24',s:'#60a5fa',b:'#1e2d40',e:'#34d399',m:'#fb923c',w:'#a78bfa',f:'#f87171',d:'#34d399',z:'#0f172a'};
+const AGENDA={
+  1:[{t:"04:30",l:"⏰ Acordar · MIT do dia",k:"r"},{t:"05:00",l:"🃏 Anki profundo",k:"a"},{t:"05:30",l:"📚 Bloco 1",k:"s"},{t:"07:00",l:"☕ Descanso 30min",k:"b"},{t:"07:30",l:"📚 Bloco 2",k:"s"},{t:"09:00",l:"🏃 Corrida leve 35min",k:"e"},{t:"09:35",l:"🚿 Banho",k:"r"},{t:"09:55",l:"📚 Bloco 3",k:"s"},{t:"11:25",l:"🍽️ Almoço com Kauê",k:"m"},{t:"13:00",l:"💼 Trabalho",k:"w"},{t:"18:00",l:"⚓ Kauê chega",k:"f"},{t:"20:00",l:"📚 Bloco 4 NOTURNO",k:"s"},{t:"21:30",l:"😴 Dormir",k:"z"}],
+  2:[{t:"04:30",l:"⏰ Acordar",k:"r"},{t:"05:00",l:"🃏 Anki profundo",k:"a"},{t:"05:30",l:"📚 Bloco 1",k:"s"},{t:"07:00",l:"☕ Descanso",k:"b"},{t:"07:30",l:"📚 Bloco 2",k:"s"},{t:"09:00",l:"🏃 Corrida pesada 50min",k:"e"},{t:"09:50",l:"🚿 Banho",k:"r"},{t:"10:15",l:"📚 Bloco 3",k:"s"},{t:"11:45",l:"🍽️ Almoço",k:"m"},{t:"13:00",l:"💼 Trabalho",k:"w"},{t:"18:00",l:"⚓ Kauê chega",k:"f"},{t:"20:00",l:"📚 Bloco 4 NOTURNO",k:"s"},{t:"21:30",l:"😴 Dormir",k:"z"}],
+  3:[{t:"04:30",l:"⏰ Acordar",k:"r"},{t:"05:00",l:"🃏 Anki profundo",k:"a"},{t:"05:30",l:"📚 Bloco 1",k:"s"},{t:"07:00",l:"☕ Descanso",k:"b"},{t:"07:30",l:"📚 Bloco 2",k:"s"},{t:"09:00",l:"🏃 Corrida leve 35min",k:"e"},{t:"09:35",l:"🚿 Banho",k:"r"},{t:"09:55",l:"📚 Bloco 3",k:"s"},{t:"11:25",l:"🍽️ Almoço",k:"m"},{t:"12:00",l:"📚 Bloco 4",k:"s"},{t:"13:30",l:"✅ Estudo encerrado",k:"d"},{t:"18:00",l:"⚓ Kauê chega",k:"f"},{t:"21:30",l:"😴 Dormir",k:"z"}],
+  4:[{t:"04:30",l:"⏰ Acordar",k:"r"},{t:"05:00",l:"🃏 Anki profundo",k:"a"},{t:"05:30",l:"📚 Bloco 1",k:"s"},{t:"07:00",l:"☕ Descanso",k:"b"},{t:"07:30",l:"📚 Bloco 2",k:"s"},{t:"09:00",l:"🏃 Corrida pesada 50min",k:"e"},{t:"09:50",l:"🚿 Banho",k:"r"},{t:"10:15",l:"📚 Bloco 3",k:"s"},{t:"11:45",l:"🍽️ Almoço",k:"m"},{t:"12:15",l:"📚 Bloco 4",k:"s"},{t:"13:45",l:"✅ Estudo encerrado",k:"d"},{t:"18:00",l:"⚓ Kauê chega",k:"f"},{t:"21:30",l:"😴 Dormir",k:"z"}],
+  5:[{t:"04:30",l:"⏰ Acordar",k:"r"},{t:"05:00",l:"🃏 Anki profundo",k:"a"},{t:"05:30",l:"📚 Bloco 1",k:"s"},{t:"07:00",l:"☕ Descanso",k:"b"},{t:"07:30",l:"📚 Bloco 2",k:"s"},{t:"09:00",l:"☕ Descanso",k:"b"},{t:"09:30",l:"📚 Bloco 3",k:"s"},{t:"11:00",l:"🍽️ Almoço",k:"m"},{t:"13:00",l:"💼 Trabalho",k:"w"},{t:"18:00",l:"⚓ Kauê chega",k:"f"},{t:"20:00",l:"📚 Bloco 4 NOTURNO",k:"s"},{t:"21:30",l:"😴 Dormir",k:"z"}],
+  6:[{t:"04:30",l:"⏰ Acordar",k:"r"},{t:"05:00",l:"🃏 Anki profundo",k:"a"},{t:"05:30",l:"📚 Bloco 1",k:"s"},{t:"07:00",l:"☕ Descanso",k:"b"},{t:"07:30",l:"📚 Bloco 2",k:"s"},{t:"09:00",l:"☕ Descanso",k:"b"},{t:"09:30",l:"📚 Bloco 3",k:"s"},{t:"11:00",l:"🍽️ Almoço",k:"m"},{t:"11:30",l:"📚 Bloco 4",k:"s"},{t:"13:00",l:"✅ Estudo encerrado",k:"d"},{t:"13:30",l:"🛒 Mercado · 🍳 Cozinha",k:"r"},{t:"21:30",l:"😴 Dormir",k:"z"}],
+  0:[{t:"04:30",l:"⏰ Acordar",k:"r"},{t:"05:00",l:"🃏 Anki profundo",k:"a"},{t:"05:30",l:"🏃 Corrida longa 60min",k:"e"},{t:"06:30",l:"🚿 Banho",k:"r"},{t:"06:50",l:"📚 Bloco 1",k:"s"},{t:"08:20",l:"☕ Descanso",k:"b"},{t:"08:50",l:"📚 Bloco 2",k:"s"},{t:"10:20",l:"☕ Descanso",k:"b"},{t:"10:50",l:"📚 Bloco 3",k:"s"},{t:"12:20",l:"🍽️ Almoço + planejamento",k:"m"},{t:"13:30",l:"🌅 TARDE LIVRE — você e o Kauê",k:"f"},{t:"21:30",l:"😴 Dormir",k:"z"}],
+};
+const NAVAL_ITEMS=["✅ Material escolar separado","📚 Lição de casa feita","🎒 Mochila organizada","⏰ Alarme programado","📵 Sem tela após 20h30","😴 Na cama às 21h"];
+
+// ─── UTILS ────────────────────────────────────────────────────
+const pad=n=>String(n).padStart(2,'0');
+const fH=d=>`${pad(d.getHours())}:${pad(d.getMinutes())}`;
+const fmtMin=m=>m<=0?'0min':m>=60?`${Math.floor(m/60)}h${m%60?m%60+'min':''}`:`${m}min`;
+const getDK=()=>{const d=new Date();return`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;};
+// ─── CLOUD DB (localStorage + Supabase sync) ─────────────────
+const SUPA_URL_LS='__supa_url__';
+const SUPA_KEY_LS='__supa_key__';
+let _sc=null; // supabase client
+let _syncCBs=[];
+let _syncSt='idle';
+
+const Sync={
+  onStatus(fn){_syncCBs.push(fn);},
+  _emit(s){_syncSt=s;_syncCBs.forEach(fn=>fn(s));},
+  isOk(){return _sc!==null;},
+  isConfigured(){return !!(localStorage.getItem(SUPA_URL_LS)&&localStorage.getItem(SUPA_KEY_LS));},
+  getCfg(){return{url:localStorage.getItem(SUPA_URL_LS)||'',key:localStorage.getItem(SUPA_KEY_LS)||''};},
+  saveCfg(url,key){localStorage.setItem(SUPA_URL_LS,url.trim());localStorage.setItem(SUPA_KEY_LS,key.trim());},
+  async init(){
+    if(!this.isConfigured())return false;
+    if(typeof window.supabase==='undefined'){this._emit('offline');return false;}
+    try{
+      const{url,key}=this.getCfg();
+      _sc=window.supabase.createClient(url,key);
+      this._emit('syncing');
+      const{data,error}=await _sc.from('rity_os').select('key,value');
+      if(error)throw error;
+      // Mesclar dados da nuvem no localStorage (nuvem vence se mais recente)
+      (data||[]).forEach(r=>{
+        try{localStorage.setItem(r.key,JSON.stringify(r.value));}catch{}
+      });
+      this._emit('ok');
+      return true;
+    }catch(e){console.warn('Sync:',e.message);_sc=null;this._emit('error');return false;}
+  },
+  push(k,v){
+    if(!_sc)return;
+    _sc.from('rity_os').upsert({key:k,value:v,updated_at:new Date().toISOString()},{onConflict:'key'})
+      .then(({error})=>{if(!error)this._emit('ok');else this._emit('error');})
+      .catch(()=>this._emit('error'));
+    this._emit('syncing');
+  }
+};
+
+const lsGet=(k,def=null)=>{try{const v=localStorage.getItem(k);return v!==null?JSON.parse(v):def;}catch{return def;}};
+const lsSet=(k,v)=>{
+  try{localStorage.setItem(k,JSON.stringify(v));}catch{}
+  Sync.push(k,v); // sync em background, não bloqueia
+};
+
+// ─── API CLAUDE ───────────────────────────────────────────────
+const ANTHR_KEY_LS='__anthr_key__';
+const getAK=()=>localStorage.getItem(ANTHR_KEY_LS)||'';
+const setAK=v=>localStorage.setItem(ANTHR_KEY_LS,v.trim());
+
+async function chamarClaude(systemPrompt,msgs,maxTokens=800){
+  const k=getAK();
+  if(!k)throw new Error('Chave da IA não configurada. Vá em ⚙️ → IA para configurar.');
+  const headers={'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'};
+  if(k.startsWith('sk-ant'))headers['x-api-key']=k;
+  else headers['Authorization']=`Bearer ${k}`;
+  const res=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',headers,
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:maxTokens,system:systemPrompt,messages:msgs})
+  });
+  if(!res.ok){const err=await res.text();throw new Error(`API ${res.status}: ${err.slice(0,200)}`);}
+  const data=await res.json();
+  if(data.error)throw new Error(data.error.message||'Erro da API');
+  return data.content?.filter(b=>b.type==='text').map(b=>b.text).join('\n')||'';
+}
+
+// ─── PRIMITIVOS ───────────────────────────────────────────────
+const Chip=({label,cor,sm})=>(
+  <span style={{fontSize:sm?7:9,fontWeight:800,letterSpacing:'1px',padding:sm?'1px 5px':'2px 8px',borderRadius:3,whiteSpace:'nowrap',background:`${cor}22`,color:cor,border:`1px solid ${cor}44`,fontFamily:"'DM Mono',monospace"}}>{label}</span>
+);
+const BarProg=({done,total,cor='#fbbf24',h=3})=>{
+  const p=total>0?Math.min(100,Math.round(done/total*100)):0;
+  return(
+    <div style={{flex:1,height:h,background:'rgba(255,255,255,.06)',borderRadius:h,overflow:'hidden'}}>
+      <div style={{width:`${p}%`,height:'100%',background:cor,borderRadius:h,transition:'width .5s ease'}}/>
+    </div>
+  );
+};
+
+// ─── ERROR BOUNDARY ──────────────────────────────────────────
+class ErrorBoundary extends React.Component{
+  constructor(p){super(p);this.state={crashed:false,msg:''};}
+  static getDerivedStateFromError(e){return{crashed:true,msg:String(e)};}
+  render(){
+    if(this.state.crashed)return(
+      <div style={{position:'fixed',inset:0,background:'#050a14',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:24,gap:16,textAlign:'center'}}>
+        <div style={{fontSize:40}}>⚠️</div>
+        <div style={{fontFamily:"'DM Serif Display',serif",color:'#fbbf24',fontSize:20}}>Algo deu errado</div>
+        <div style={{fontSize:11,color:'#475569',maxWidth:320,lineHeight:1.8,fontFamily:"'DM Mono',monospace"}}>{this.state.msg}</div>
+        <button onClick={()=>window.location.reload()} style={{padding:'12px 28px',borderRadius:10,border:'none',background:'#fbbf24',color:'#050a14',fontSize:13,fontWeight:800,cursor:'pointer'}}>🔄 Recarregar</button>
+      </div>
+    );
+    return this.props.children;
+  }
+}
+
+// ─── POMODORO ────────────────────────────────────────────────
+function beep(tipo){
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    const notas=tipo==='pausa'?[[660,0,.2],[660,.25,.2]]:[[880,0,.15],[1108,.18,.15],[1320,.36,.25]];
+    notas.forEach(([f,d,dur])=>{
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.frequency.value=f;
+      g.gain.setValueAtTime(0,ctx.currentTime+d);
+      g.gain.linearRampToValueAtTime(.3,ctx.currentTime+d+.02);
+      g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+d+dur);
+      o.connect(g);g.connect(ctx.destination);
+      o.start(ctx.currentTime+d);o.stop(ctx.currentTime+d+dur+.05);
+    });
+  }catch(e){}
+}
+
+function Pomodoro({cor,onFase}){
+  const c=cor||'#fbbf24';
+  const FASES=[{l:'1ª METADE',d:45*60,e:'📖'},{l:'PAUSA',d:10*60,e:'🚶'},{l:'2ª METADE',d:45*60,e:'✏️'}];
+  const[fase,setFase]=useState(0);
+  const[secs,setSecs]=useState(FASES[0].d);
+  const[rodando,setRodando]=useState(false);
+  const[feito,setFeito]=useState(false);
+  const endRef=useRef(null);
+  const timerRef=useRef(null);
+  const disparouRef=useRef(false);
+  const cur=FASES[fase];
+
+  const limparTimer=()=>{clearInterval(timerRef.current);timerRef.current=null;};
+
+  useEffect(()=>{
+    if(!rodando){limparTimer();return;}
+    disparouRef.current=false;
+    timerRef.current=setInterval(()=>{
+      const r=Math.max(0,Math.round((endRef.current-Date.now())/1000));
+      setSecs(r);
+      if(r===0&&!disparouRef.current){
+        disparouRef.current=true;
+        limparTimer();
+        setRodando(false);
+        setFeito(true);
+        beep(fase===1?'pausa':'done');
+        if(fase!==1&&onFase)onFase(45);
+      }
+    },400);
+    return limparTimer;
+  },[rodando,fase]);
+
+  const iniciar=()=>{endRef.current=Date.now()+secs*1000;setRodando(true);setFeito(false);disparouRef.current=false;};
+  const pausar=()=>{limparTimer();setSecs(Math.max(0,Math.round((endRef.current-Date.now())/1000)));endRef.current=null;setRodando(false);};
+  const proxFase=()=>{limparTimer();const n=(fase+1)%3;setFase(n);setSecs(FASES[n].d);setRodando(false);setFeito(false);disparouRef.current=false;};
+  const irFase=i=>{limparTimer();setFase(i);setSecs(FASES[i].d);setRodando(false);setFeito(false);};
+  const reiniciar=()=>{limparTimer();setSecs(cur.d);setRodando(false);setFeito(false);};
+
+  const mm=Math.floor(secs/60);const ss_=secs%60;
+  const pct=Math.max(0,Math.min(1,1-secs/cur.d));
+  const r=40;const circ=2*Math.PI*r;
+  return(
+    <div style={{padding:'13px',borderRadius:13,background:`${c}08`,border:`1px solid ${c}22`,marginBottom:12}}>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10,flexWrap:'wrap',gap:4}}>
+        <span style={{fontSize:9,letterSpacing:'2px',color:c,fontFamily:"'DM Mono',monospace",fontWeight:800}}>⏱ POMODORO 45·10·45</span>
+        <div style={{display:'flex',gap:4}}>
+          {FASES.map((f,i)=>(
+            <button key={i} onClick={()=>irFase(i)} style={{padding:'2px 7px',borderRadius:4,cursor:'pointer',fontSize:8,fontFamily:"'DM Mono',monospace",fontWeight:700,background:fase===i?`${c}22`:'transparent',color:fase===i?c:'#334155',border:`1px solid ${fase===i?c+'44':'rgba(255,255,255,.06)'}`,transition:'all .15s'}}>
+              {f.e} {f.l}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div style={{display:'flex',alignItems:'center',gap:16}}>
+        <div style={{position:'relative',width:88,height:88,flexShrink:0}}>
+          <svg width="88" height="88" style={{transform:'rotate(-90deg)'}}>
+            <circle cx="44" cy="44" r={r} fill="none" stroke="rgba(255,255,255,.06)" strokeWidth="5"/>
+            <circle cx="44" cy="44" r={r} fill="none" stroke={feito?'#34d399':c} strokeWidth="5"
+              strokeDasharray={circ} strokeDashoffset={circ*(1-pct)} strokeLinecap="round"
+              style={{transition:'stroke-dashoffset .4s linear'}}/>
+          </svg>
+          <div style={{position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center'}}>
+            <div style={{fontSize:19,fontWeight:900,fontFamily:"'DM Mono',monospace",color:feito?'#34d399':rodando?'#fff':c,lineHeight:1}}>{pad(mm)}:{pad(ss_)}</div>
+            <div style={{fontSize:8,color:'#334155',marginTop:1}}>{Math.round(pct*100)}%</div>
+          </div>
+        </div>
+        <div style={{flex:1}}>
+          <div style={{fontSize:12,fontWeight:700,color:feito?'#34d399':'#c8d0e0',marginBottom:10}}>
+            {feito?`✅ ${cur.l} concluída!`:rodando?`${cur.e} ${cur.l}...`:cur.l}
+          </div>
+          <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+            {feito?(
+              <button onClick={proxFase} style={{padding:'8px 14px',borderRadius:8,border:'none',cursor:'pointer',background:'linear-gradient(135deg,#34d399,#34d399)',color:'#050a14',fontSize:11,fontWeight:800,fontFamily:"'DM Mono',monospace"}}>
+                {fase<2?'PRÓXIMA →':'🏆 FEITO'}
+              </button>
+            ):(
+              <button onClick={rodando?pausar:iniciar} style={{padding:'8px 14px',borderRadius:8,border:'none',cursor:'pointer',background:rodando?`${c}18`:`linear-gradient(135deg,${c},${c})`,color:rodando?c:'#050a14',fontSize:11,fontWeight:800,fontFamily:"'DM Mono',monospace"}}>
+                {rodando?'⏸ PAUSAR':'▶ INICIAR'}
+              </button>
+            )}
+            <button onClick={reiniciar} style={{padding:'8px 10px',borderRadius:8,border:`1px solid ${c}30`,background:'transparent',color:c,fontSize:11,cursor:'pointer'}}>↺</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── TAB: IA ASSESSORA ────────────────────────────────────────
+function TabIA({appCtx,onMIT}){
+  const[hist,setHist]=useState([]);
+  const[carregando,setCarregando]=useState(false);
+  const inputRef=useRef(null);
+  const finalRef=useRef(null);
+
+  // Restaurar histórico do dia
+  useEffect(()=>{
+    const dk=getDK();
+    if(lsGet('ia_dk','')=== dk){
+      setHist(lsGet('ia_hist',[])||[]);
+    }else{
+      lsSet('ia_hist',[]);lsSet('ia_dk',dk);
+    }
+  },[]);
+
+  // Scroll automático
+  useEffect(()=>{finalRef.current?.scrollIntoView({behavior:'smooth'});},[hist,carregando]);
+
+  function buildSystem(){
+    const d=new Date();
+    const treinos={0:'CORRIDA LONGA 60min + tarde livre',1:'CORRIDA LEVE 35min',2:'CORRIDA PESADA 50min',3:'CORRIDA LEVE 35min',4:'CORRIDA PESADA 50min',5:'DESCANSO',6:'sem treino'};
+    const trabalha=[1,2,5].includes(d.getDay());
+    return `Você é a Assessora IA pessoal da Ritchely — mentora de alto desempenho para o concurso TCE-RJ (Auditora de Controle Externo).
+PERFIL: Ritchely, 38 anos, mãe solteira do Kauê (13a, preparando Colégio Naval). Ciclo Meirelles Opção 3 (23 blocos ~34h). Meta: 35h+/semana. Acorda 04:30h. Dieta cetogênica/low carb, meta perder 15kg.
+AGORA: ${NOMES_DIA[d.getDay()]} ${fH(d)} | Ciclo ${appCtx.cicloNum} | Blocos ${appCtx.feitosN}/${N} | Hoje: ${fmtMin(appCtx.minHoje)} | Semana: ${fmtMin(appCtx.minSemana)}.
+Treino hoje: ${treinos[d.getDay()]}. Trabalho hoje: ${trabalha?'SIM 13h-18h':'NÃO'}.
+ESTILO: Direta, calorosa, sem frases vazias. Máx 100 palavras. Uma ação concreta sempre.
+EXTRA: Se mencionar os 3 MITs do dia, inclua no final: MIT:["tarefa1","tarefa2","tarefa3"]`;
+  }
+
+  async function enviar(texto){
+    if(carregando||!texto.trim())return;
+    setCarregando(true);
+    const nova=[...hist,{role:'user',content:texto}];
+    setHist(nova);lsSet('ia_hist',nova);
+    try{
+      const resposta=await chamarClaude(buildSystem(),nova.slice(-18));
+      // Extrair MIT se houver
+      const mitMatch=resposta.match(/MIT:\["([^"]+)","([^"]+)","([^"]+)"\]/);
+      if(mitMatch)onMIT([mitMatch[1],mitMatch[2],mitMatch[3]]);
+      const limpo=resposta.replace(/MIT:\[.*?\]/g,'').trim();
+      const nova2=[...nova,{role:'assistant',content:limpo}];
+      setHist(nova2);lsSet('ia_hist',nova2);
+    }catch(e){
+      const nova2=[...nova,{role:'assistant',content:`❌ ${e.message}`}];
+      setHist(nova2);lsSet('ia_hist',nova2);
+    }
+    setCarregando(false);
+    setTimeout(()=>inputRef.current?.focus(),100);
+  }
+
+  function iniciarDia(){
+    const d=new Date();
+    const treinos={0:'corrida longa + tarde livre',1:'corrida leve',2:'corrida pesada',3:'corrida leve',4:'corrida pesada',5:'descanso',6:'sem treino'};
+    setHist([]);lsSet('ia_hist',[]);
+    enviar(`Bom dia! ${NOMES_DIA[d.getDay()]}, ${fH(d)}. Treino: ${treinos[d.getDay()]}. Ciclo ${appCtx.cicloNum}, blocos ${appCtx.feitosN}/${N}. Semana: ${fmtMin(appCtx.minSemana)}. Pode fazer check-in?`);
+  }
+
+  const ATALHOS=[
+    ['📋 MITs','Quais são as 3 tarefas mais importantes que ainda não fiz hoje?'],
+    ['🎯 Próx. bloco','Qual bloco devo estudar agora?'],
+    ['😮‍💨 Travada','Estou travada. Qual o mínimo que devo fazer agora?'],
+    ['📊 Semana','Como está minha semana? Vou bater 35h?'],
+    ['⚓ Kauê','Dica rápida para apoiar o Kauê hoje.'],
+    ['🍽️ Comida','O que comer agora na cetogênica?'],
+  ];
+
+  return(
+    <div style={{display:'flex',flexDirection:'column',height:'calc(100dvh - 155px)'}}>
+      {/* Cabeçalho */}
+      <div style={{background:'linear-gradient(135deg,rgba(30,20,10,.95),rgba(10,7,3,.98))',border:'1px solid rgba(251,191,36,.15)',borderRadius:13,padding:'11px 13px',marginBottom:8,display:'flex',justifyContent:'space-between',alignItems:'center',flexShrink:0}}>
+        <div>
+          <div style={{fontSize:8,color:'rgba(251,191,36,.5)',letterSpacing:'3px',fontFamily:"'DM Mono',monospace",fontWeight:700}}>ASSESSORA IA · TCE-RJ</div>
+          <div style={{fontFamily:"'DM Serif Display',serif",color:'#f0e6d0',fontSize:15,marginTop:2}}>Check-in · Plano · Suporte</div>
+        </div>
+        <button onClick={iniciarDia} style={{background:'linear-gradient(135deg,#c8850a,#fbbf24)',border:'none',borderRadius:9,padding:'8px 13px',fontFamily:"'DM Mono',monospace",fontSize:11,fontWeight:800,color:'#050a14',cursor:'pointer'}}>
+          {hist.length>0?'🔄 Novo dia':'☀️ Começar dia'}
+        </button>
+      </div>
+      {/* Atalhos */}
+      <div style={{overflowX:'auto',scrollbarWidth:'none',marginBottom:8,flexShrink:0}}>
+        <div style={{display:'flex',gap:5,width:'max-content',padding:'1px 0'}}>
+          {ATALHOS.map(([l,p])=>(
+            <button key={l} onClick={()=>enviar(p)} style={{background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.08)',borderRadius:18,padding:'6px 11px',whiteSpace:'nowrap',fontSize:11,color:'#64748b',cursor:'pointer',fontFamily:"'DM Mono',monospace"}}>{l}</button>
+          ))}
+        </div>
+      </div>
+      {/* Mensagens */}
+      <div style={{flex:1,overflowY:'auto',display:'flex',flexDirection:'column',gap:9,paddingBottom:6}}>
+        {hist.length===0&&(
+          <div style={{textAlign:'center',padding:'40px 20px'}}>
+            <div style={{fontSize:40,marginBottom:12}}>☀️</div>
+            <div style={{fontFamily:"'DM Serif Display',serif",fontSize:18,color:'#c8d0e0',marginBottom:8}}>Bom dia, Ritchely!</div>
+            <div style={{fontSize:12,color:'#334155',lineHeight:1.7}}>Toque em <strong style={{color:'#fbbf24'}}>"Começar dia"</strong> para o check-in matinal.<br/>Ou use um atalho acima.</div>
+          </div>
+        )}
+        {hist.map((m,i)=>{
+          const user=m.role==='user';
+          return(
+            <div key={i} style={{display:'flex',justifyContent:user?'flex-end':'flex-start'}}>
+              <div style={{background:user?'linear-gradient(135deg,#1a2540,#1e2d50)':'rgba(255,255,255,.04)',border:user?'none':'1px solid rgba(255,255,255,.08)',borderRadius:user?'14px 14px 4px 14px':'14px 14px 14px 4px',padding:'10px 13px',maxWidth:'85%',fontSize:13,lineHeight:1.7,color:user?'#c8d8f8':'#b8c0d0'}}>
+                {!user&&<div style={{fontSize:8,color:'rgba(251,191,36,.6)',letterSpacing:'2px',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:5}}>✦ ASSESSORA</div>}
+                <span dangerouslySetInnerHTML={{__html:m.content.replace(/\n/g,'<br/>')}}/>
+              </div>
+            </div>
+          );
+        })}
+        {carregando&&(
+          <div style={{display:'flex'}}>
+            <div style={{background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.08)',borderRadius:'14px 14px 14px 4px',padding:'14px 16px',display:'flex',gap:5,alignItems:'center'}}>
+              {[0,1,2].map(i=><div key={i} style={{width:7,height:7,borderRadius:'50%',background:'#fbbf24',animation:'pulse 1.2s ease-in-out infinite',animationDelay:`${i*.2}s`}}/>)}
+            </div>
+          </div>
+        )}
+        <div ref={finalRef}/>
+      </div>
+      {/* Input */}
+      <div style={{display:'flex',gap:8,paddingTop:8,borderTop:'1px solid rgba(255,255,255,.06)',flexShrink:0}}>
+        <textarea ref={inputRef} placeholder="Fale com sua assessora..." rows={1}
+          onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();const v=e.target.value.trim();if(v){e.target.value='';e.target.style.height='auto';enviar(v);}}}}
+          onInput={e=>{e.target.style.height='auto';e.target.style.height=Math.min(e.target.scrollHeight,80)+'px';}}
+          style={{flex:1,border:'1px solid rgba(255,255,255,.1)',borderRadius:20,padding:'10px 13px',fontFamily:"'DM Sans',sans-serif",fontSize:13,color:'#c8d0e0',background:'rgba(255,255,255,.04)',resize:'none',outline:'none',lineHeight:1.5}}/>
+        <button onClick={()=>{const el=inputRef.current;if(el?.value.trim()){const v=el.value.trim();el.value='';el.style.height='auto';enviar(v);}}}
+          style={{width:42,height:42,borderRadius:'50%',background:'linear-gradient(135deg,#c8850a,#fbbf24)',border:'none',fontSize:18,cursor:'pointer',flexShrink:0,color:'#050a14',fontWeight:900,alignSelf:'flex-end'}}>↑</button>
+      </div>
+    </div>
+  );
+}
+
+// ─── TAB: HOJE ───────────────────────────────────────────────
+function TabHoje({pendentes,mit,onConcluir,onAddHoras}){
+  const[sel,setSel]=useState(null);
+  const d=new Date();
+  const agenda=AGENDA[d.getDay()]||[];
+  const agora=d.getHours()*60+d.getMinutes();
+  const ativo=sel!=null?CICLO.find(c=>c.id===sel):pendentes[0]||null;
+  const cor=ativo?.tag?.includes('TRIÂNGULO')?'#fbbf24':ativo?.cor||'#fbbf24';
+  const itemAtual=agenda.findIndex((it,i)=>{
+    const[h,m]=it.t.split(':').map(Number);
+    const nx=agenda[i+1];
+    if(!nx)return agora>=h*60+m;
+    const[nh,nm]=nx.t.split(':').map(Number);
+    return agora>=h*60+m&&agora<nh*60+nm;
+  });
+  return(
+    <div>
+      {mit.length>0&&(
+        <div style={{background:'rgba(251,191,36,.06)',border:'1px solid rgba(251,191,36,.2)',borderRadius:12,padding:'12px 14px',marginBottom:14}}>
+          <div style={{fontSize:9,letterSpacing:'3px',color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:8}}>✦ MIT DO DIA — via Assessora IA</div>
+          {mit.map((t,i)=>(
+            <div key={i} style={{fontSize:12,color:'#c8d0e0',marginBottom:4,display:'flex',gap:8}}>
+              <span style={{color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontSize:10,flexShrink:0}}>{i+1}.</span>
+              <span>{t}</span>
+            </div>
+          ))}
+        </div>
+      )}
+      {ativo?(
+        <div style={{borderRadius:14,border:`2px solid ${cor}30`,background:`linear-gradient(150deg,${cor}08,rgba(5,10,20,.98) 60%)`,marginBottom:14,overflow:'hidden'}}>
+          <div style={{padding:'12px 14px 10px',background:`${cor}10`,borderBottom:`1px solid ${cor}18`,display:'flex',alignItems:'flex-start',gap:12}}>
+            <span style={{fontSize:24,flexShrink:0}}>{ativo.ic}</span>
+            <div style={{flex:1}}>
+              <div style={{display:'flex',gap:6,marginBottom:5,flexWrap:'wrap'}}><Chip label={ativo.tag} cor={cor}/><Chip label={`B${ativo.id}/${N}`} cor="#1e293b" sm/></div>
+              <div style={{fontSize:18,fontWeight:900,color:'#e8edf5',lineHeight:1.1,fontFamily:"'DM Serif Display',serif"}}>{ativo.mat}</div>
+              <div style={{fontSize:11,color:'#475569',marginTop:3}}>{ativo.acao}</div>
+            </div>
+            <div style={{padding:'7px 10px',borderRadius:9,background:`${cor}15`,border:`1px solid ${cor}30`,textAlign:'center',flexShrink:0}}>
+              <div style={{fontSize:16,fontWeight:900,fontFamily:"'DM Mono',monospace",color:cor}}>{ativo.h}</div>
+              <div style={{fontSize:8,color:'#1e293b',letterSpacing:'1px',fontFamily:"'DM Mono',monospace"}}>TEMPO</div>
+            </div>
+          </div>
+          <div style={{padding:'12px 14px 14px'}}>
+            <div style={{marginBottom:12,padding:'9px 11px',borderRadius:9,background:`${cor}05`,border:`1px solid ${cor}15`}}>
+              <div style={{fontSize:9,color:`${cor}80`,fontFamily:"'DM Mono',monospace",letterSpacing:'1.5px',marginBottom:4}}>📌 FOCO DO BLOCO</div>
+              {ativo.dica.split('\n').map((l,i)=><div key={i} style={{fontSize:11,color:'#64748b',lineHeight:1.7}}>{l}</div>)}
+            </div>
+            <Pomodoro cor={cor} onFase={min=>onAddHoras({mat:ativo.mat,min,dt:Date.now()})}/>
+            {pendentes.length>1&&(
+              <div style={{marginBottom:10}}>
+                <div style={{fontSize:9,color:'#1e293b',fontFamily:"'DM Mono',monospace",letterSpacing:'2px',marginBottom:6}}>OUTROS PENDENTES</div>
+                {pendentes.slice(1,5).map(s=>{const c=s.tag?.includes('TRIÂNGULO')?'#fbbf24':s.cor;return(
+                  <button key={s.id} onClick={()=>setSel(s.id===sel?null:s.id)} style={{display:'flex',alignItems:'center',gap:8,padding:'7px 10px',borderRadius:8,border:`1px solid ${sel===s.id?c:c+'22'}`,background:sel===s.id?`${c}10`:'transparent',cursor:'pointer',textAlign:'left',width:'100%',marginBottom:4}}>
+                    <span style={{fontSize:13}}>{s.ic}</span>
+                    <div style={{flex:1}}><div style={{fontSize:11,fontWeight:sel===s.id?700:400,color:sel===s.id?'#e8edf5':'#475569'}}>{s.mat}</div><div style={{fontSize:8,color:'#1e293b',fontFamily:"'DM Mono',monospace"}}>B{s.id} · {s.h}</div></div>
+                  </button>
+                );})}
+              </div>
+            )}
+            <button onClick={()=>{onConcluir(ativo.id);setSel(null);}} style={{width:'100%',padding:'13px',borderRadius:11,border:'none',cursor:'pointer',background:`linear-gradient(135deg,${cor}cc,${cor})`,color:'#050a14',fontSize:14,fontWeight:900,letterSpacing:'3px',fontFamily:"'DM Mono',monospace"}}>✓ CONCLUÍDO — PRÓXIMO</button>
+          </div>
+        </div>
+      ):(
+        <div style={{textAlign:'center',padding:'40px 20px'}}><div style={{fontSize:40,marginBottom:12}}>🏆</div><div style={{fontFamily:"'DM Serif Display',serif",fontSize:18,color:'#fbbf24'}}>Ciclo completo!</div></div>
+      )}
+      <div style={{fontSize:9,letterSpacing:'3px',color:'#1e293b',fontFamily:"'DM Mono',monospace",marginBottom:8}}>AGENDA — {NOMES_DIA[d.getDay()].toUpperCase()}</div>
+      {agenda.map((it,i)=>{const c=KCOR[it.k]||'#475569';const ag=i===itemAtual;return(
+        <div key={i} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 10px',borderRadius:9,background:ag?`${c}10`:'rgba(255,255,255,.015)',border:`1px solid ${ag?c+'35':'rgba(255,255,255,.04)'}`,opacity:i<itemAtual?.5:1,marginBottom:3}}>
+          <div style={{fontFamily:"'DM Mono',monospace",fontSize:11,color:c,fontWeight:ag?800:400,width:38,flexShrink:0}}>{it.t}</div>
+          <div style={{width:3,height:3,borderRadius:'50%',background:c,flexShrink:0}}/>
+          <div style={{fontSize:12,color:ag?'#e8edf5':'#64748b',fontWeight:ag?600:400,flex:1}}>{it.l}</div>
+          {ag&&<span style={{fontSize:8,color:c,fontFamily:"'DM Mono',monospace",fontWeight:700}}>AGORA</span>}
+        </div>
+      );})}
+    </div>
+  );
+}
+
+// ─── TAB: CICLO ──────────────────────────────────────────────
+function TabCiclo({feitos,cicloNum,onConcluir,onIrPara}){
+  const[aberto,setAberto]=useState(null);
+  const[confJaFiz,setConfJaFiz]=useState(null);
+  const[confIr,setConfIr]=useState(null);
+  const fSet=new Set(feitos);
+  const prox=CICLO.find(s=>!fSet.has(s.id));
+  const dias={};CICLO.forEach(s=>(dias[s.dia]||(dias[s.dia]=[])).push(s));
+  return(
+    <div>
+      <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:10}}><BarProg done={feitos.length} total={N} h={4}/><span style={{fontSize:10,color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:700,flexShrink:0}}>{feitos.length}/{N}</span></div>
+      <div style={{display:'flex',gap:6,marginBottom:14}}>
+        {[[N,'blocos'],['~34h','por ciclo'],['8-9d','duração'],[`#${cicloNum}`,'atual']].map(([v,l],i)=>(
+          <div key={i} style={{flex:1,padding:'8px 4px',borderRadius:9,textAlign:'center',background:'rgba(251,191,36,.04)',border:'1px solid rgba(251,191,36,.1)'}}>
+            <div style={{fontSize:12,fontWeight:900,color:'#fbbf24',fontFamily:"'DM Mono',monospace",lineHeight:1}}>{v}</div>
+            <div style={{fontSize:8,color:'#1e293b',marginTop:2}}>{l}</div>
+          </div>
+        ))}
+      </div>
+      {Object.entries(dias).map(([dia,slots])=>{
+        const temAt=slots.some(s=>s===prox);const feito=slots.every(s=>fSet.has(s.id));
+        return(
+          <div key={dia} style={{marginBottom:8,borderRadius:12,overflow:'hidden',border:`1px solid ${temAt?'rgba(251,191,36,.3)':'rgba(255,255,255,.06)'}`}}>
+            <div style={{padding:'6px 12px',background:temAt?'rgba(251,191,36,.08)':feito?'rgba(52,211,153,.04)':'rgba(255,255,255,.02)',display:'flex',alignItems:'center',gap:8}}>
+              <span style={{fontSize:10,fontWeight:800,fontFamily:"'DM Mono',monospace",color:temAt?'#fbbf24':feito?'#34d399':'#1e293b'}}>{feito?'✓ ':''}DIA {dia}</span>
+              <div style={{flex:1,height:1,background:'rgba(255,255,255,.04)'}}/>
+              <span style={{fontSize:9,color:'#1e293b',fontFamily:"'DM Mono',monospace"}}>{slots.length} blocos</span>
+            </div>
+            {slots.map((s,si)=>{
+              const done=fSet.has(s.id);const isAt=!done&&s===prox;const tri=s.tag?.includes('TRIÂNGULO');const c=tri?'#fbbf24':s.cor;const open=aberto===s.id;
+              return(
+                <div key={s.id}>
+                  <div onClick={()=>setAberto(open?null:s.id)} style={{padding:'9px 12px',cursor:'pointer',opacity:!done&&!isAt?.4:1,borderTop:si>0?'1px solid rgba(255,255,255,.03)':'none',background:done?'rgba(52,211,153,.03)':isAt?`${c}08`:'transparent',display:'flex',alignItems:'center',gap:10}}>
+                    <div style={{width:20,height:20,borderRadius:'50%',flexShrink:0,border:`2px solid ${done?'#34d399':isAt?c:'#0f172a'}`,background:done?'#34d399':isAt?c:'transparent',display:'flex',alignItems:'center',justifyContent:'center',fontSize:8,color:'#050a14',fontWeight:900}}>{done?'✓':isAt?'▶':s.id}</div>
+                    <span style={{fontSize:13,flexShrink:0}}>{s.ic}</span>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontSize:12,fontWeight:700,color:done?'#1e3a2a':isAt?'#e8edf5':'#475569',textDecoration:done?'line-through':'none'}}>{s.mat}</div>
+                      <div style={{fontSize:10,color:'#1e293b'}}>{s.acao}</div>
+                    </div>
+                    <div style={{flexShrink:0}}>
+                      <Chip label={done?'✓':tri?'🔺':'·'} cor={done?'#1e3a2a':tri?'#fbbf24':s.cor} sm/>
+                    </div>
+                  </div>
+                  {open&&(
+                    <div style={{padding:'9px 12px 11px 44px',background:'rgba(0,0,0,.2)',borderTop:'1px solid rgba(255,255,255,.04)'}}>
+                      {s.dica.split('\n').map((l,j)=><div key={j} style={{fontSize:11,color:'#64748b',lineHeight:1.7}}>{l}</div>)}
+                      <div style={{display:'flex',gap:7,marginTop:8}}>
+                        {!done&&!isAt&&<button onClick={()=>setConfIr(s.id)} style={{padding:'5px 12px',borderRadius:6,border:`1px solid ${c}44`,background:`${c}10`,color:c,fontSize:10,fontWeight:700,cursor:'pointer'}}>Ir para este →</button>}
+                        {!done&&<button onClick={()=>setConfJaFiz(s.id)} style={{padding:'5px 12px',borderRadius:6,border:'1px solid rgba(52,211,153,.3)',background:'rgba(52,211,153,.08)',color:'#34d399',fontSize:10,fontWeight:700,cursor:'pointer'}}>✓ Já fiz</button>}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        );
+      })}
+      {/* Modal confirmação Já fiz */}
+      {confJaFiz!==null&&(
+        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.85)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:100,padding:20}}>
+          <div style={{background:'#0c1220',border:'1px solid rgba(52,211,153,.25)',borderRadius:16,padding:'22px 20px',maxWidth:300,width:'100%'}}>
+            <div style={{fontSize:14,fontWeight:700,color:'#e8edf5',marginBottom:6}}>Marcar como concluído?</div>
+            <div style={{fontSize:12,color:'#475569',marginBottom:18}}>{CICLO.find(s=>s.id===confJaFiz)?.mat}</div>
+            <div style={{display:'flex',gap:8}}>
+              <button onClick={()=>setConfJaFiz(null)} style={{flex:1,padding:'11px',borderRadius:8,border:'1px solid rgba(255,255,255,.08)',background:'transparent',color:'#475569',fontSize:11,cursor:'pointer'}}>Cancelar</button>
+              <button onClick={()=>{onConcluir(confJaFiz);setConfJaFiz(null);setAberto(null);}} style={{flex:1,padding:'11px',borderRadius:8,border:'none',background:'#34d399',color:'#050a14',fontSize:11,fontWeight:800,cursor:'pointer'}}>✓ Confirmar</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Modal confirmação Ir para */}
+      {confIr!==null&&(
+        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.85)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:100,padding:20}}>
+          <div style={{background:'#0c1220',border:'1px solid rgba(251,191,36,.25)',borderRadius:16,padding:'22px 20px',maxWidth:300,width:'100%'}}>
+            <div style={{fontSize:14,fontWeight:700,color:'#fbbf24',marginBottom:6}}>Ir para este bloco?</div>
+            <div style={{fontSize:12,color:'#475569',marginBottom:6}}>{CICLO.find(s=>s.id===confIr)?.mat}</div>
+            <div style={{fontSize:11,color:'#f87171',marginBottom:18}}>Blocos anteriores serão marcados como feitos.</div>
+            <div style={{display:'flex',gap:8}}>
+              <button onClick={()=>setConfIr(null)} style={{flex:1,padding:'11px',borderRadius:8,border:'1px solid rgba(255,255,255,.08)',background:'transparent',color:'#475569',fontSize:11,cursor:'pointer'}}>Cancelar</button>
+              <button onClick={()=>{onIrPara(confIr);setConfIr(null);setAberto(null);}} style={{flex:1,padding:'11px',borderRadius:8,border:'none',background:'#fbbf24',color:'#050a14',fontSize:11,fontWeight:800,cursor:'pointer'}}>→ Ir</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── TAB: STATS ──────────────────────────────────────────────
+function TabStats({horas}){
+  const todayStart=useMemo(()=>{const d=new Date();d.setHours(0,0,0,0);return d.getTime();},[]);
+  const semStart=todayStart-6*86400000;
+  const minHoje=horas.filter(e=>e.dt>=todayStart).reduce((s,e)=>s+e.min,0);
+  const minSem=horas.filter(e=>e.dt>=semStart).reduce((s,e)=>s+e.min,0);
+  const META=35*60;
+  return(
+    <div>
+      <div style={{display:'flex',gap:8,marginBottom:16}}>
+        {[['Hoje',fmtMin(minHoje),'#60a5fa'],['Semana',fmtMin(minSem),'#fbbf24'],['Meta',fmtMin(META),'#34d399']].map(([l,v,c])=>(
+          <div key={l} style={{flex:1,padding:'14px 8px',borderRadius:12,background:`${c}08`,border:`1px solid ${c}20`,textAlign:'center'}}>
+            <div style={{fontSize:16,fontWeight:900,color:c,fontFamily:"'DM Mono',monospace"}}>{v}</div>
+            <div style={{fontSize:9,color:'#334155',marginTop:4}}>{l}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{marginBottom:14}}>
+        <div style={{display:'flex',justifyContent:'space-between',marginBottom:5}}>
+          <span style={{fontSize:10,color:'#64748b'}}>Progresso semanal</span>
+          <span style={{fontSize:10,color:'#fbbf24',fontFamily:"'DM Mono',monospace"}}>{Math.round(minSem/META*100)}%</span>
+        </div>
+        <BarProg done={minSem} total={META} cor='#fbbf24' h={7}/>
+      </div>
+      <div style={{fontSize:9,letterSpacing:'2px',color:'#1e293b',fontFamily:"'DM Mono',monospace",marginBottom:8}}>ÚLTIMAS SESSÕES</div>
+      {horas.slice().reverse().slice(0,15).map((e,i)=>(
+        <div key={i} style={{display:'flex',justifyContent:'space-between',padding:'9px 12px',borderRadius:9,background:'rgba(255,255,255,.02)',border:'1px solid rgba(255,255,255,.05)',marginBottom:4}}>
+          <span style={{fontSize:12,color:'#64748b'}}>{e.mat||'Estudo'}</span>
+          <span style={{fontSize:12,color:'#fbbf24',fontFamily:"'DM Mono',monospace"}}>{fmtMin(e.min)}</span>
+        </div>
+      ))}
+      {horas.length===0&&<div style={{textAlign:'center',padding:'40px',color:'#1e293b',fontSize:12}}>Nenhuma hora registrada ainda.<br/>Use o Pomodoro na aba Hoje.</div>}
+    </div>
+  );
+}
+
+// ─── TAB: KAUÊ ───────────────────────────────────────────────
+function TabKaue({wakeH,wakeM,onSaveWake}){
+  const dk=getDK();
+  const[wH,setWH]=useState(wakeH);
+  const[wM,setWM]=useState(wakeM);
+  const[naval,setNaval]=useState(()=>lsGet(`naval_${dk}`,[false,false,false,false,false,false]));
+  const[agenda,setAgenda]=useState(()=>lsGet(`kagenda_${dk}`,{escola:false,almoco:false,naval:false,basquete:false}));
+  const[temas,setTemas]=useState(()=>lsGet(`ktemas_${dk}`,[false,false,false,false,false]));
+
+  const toggleNaval=i=>{const n=[...naval];n[i]=!n[i];setNaval(n);lsSet(`naval_${dk}`,n);};
+  const toggleAgenda=(k,v)=>{const n={...agenda,[k]:v};setAgenda(n);lsSet(`kagenda_${dk}`,n);};
+  const toggleTema=i=>{const n=[...temas];n[i]=!n[i];setTemas(n);lsSet(`ktemas_${dk}`,n);};
+
+  const AGENDA_K=[{k:'escola',l:'🏫 Escola'},{k:'almoco',l:'🍽️ Almoço juntos'},{k:'naval',l:'⚓ Vai ao Naval'},{k:'basquete',l:'🏀 Basquete'}];
+  const TEMAS_K=['Como foi o dia na escola?','Revisou algo do Naval hoje?','Treino de basquete?','Algo difícil aconteceu?','O que te animou hoje?'];
+
+  return(
+    <div>
+      <div style={{background:'linear-gradient(135deg,rgba(248,113,113,.08),rgba(5,10,20,.98))',border:'1px solid rgba(248,113,113,.2)',borderRadius:14,padding:'14px',marginBottom:14}}>
+        <div style={{fontSize:9,letterSpacing:'3px',color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:12}}>⚓ KAUÊ — 13 ANOS · COLÉGIO NAVAL</div>
+        <div style={{fontSize:9,color:'#1e293b',fontFamily:"'DM Mono',monospace",marginBottom:6}}>HORÁRIO DE ACORDAR</div>
+        <div style={{display:'flex',gap:8,alignItems:'center',marginBottom:14}}>
+          <input type="number" min="0" max="23" value={wH} onChange={e=>setWH(Number(e.target.value))} style={{width:55,padding:'8px',borderRadius:8,border:'1px solid rgba(248,113,113,.25)',background:'rgba(248,113,113,.06)',color:'#f87171',fontSize:16,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none'}}/>
+          <span style={{color:'#f87171',fontSize:18,fontWeight:900}}>:</span>
+          <input type="number" min="0" max="59" value={wM} onChange={e=>setWM(Number(e.target.value))} style={{width:55,padding:'8px',borderRadius:8,border:'1px solid rgba(248,113,113,.25)',background:'rgba(248,113,113,.06)',color:'#f87171',fontSize:16,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none'}}/>
+          <button onClick={()=>onSaveWake(wH,wM)} style={{padding:'9px 16px',borderRadius:8,border:'none',background:'#f87171',color:'#050a14',fontSize:11,fontWeight:800,cursor:'pointer'}}>Salvar</button>
+          <span style={{fontSize:12,color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:700}}>atual: {pad(wakeH)}:{pad(wakeM)}</span>
+        </div>
+        <div style={{fontSize:9,color:'#1e293b',fontFamily:"'DM Mono',monospace",marginBottom:6}}>AGENDA HOJE</div>
+        <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
+          {AGENDA_K.map(({k,l})=>(
+            <button key={k} onClick={()=>toggleAgenda(k,!agenda[k])} style={{padding:'7px 11px',borderRadius:8,border:`1px solid ${agenda[k]?'#f87171':'rgba(255,255,255,.08)'}`,background:agenda[k]?'rgba(248,113,113,.18)':'rgba(255,255,255,.03)',color:agenda[k]?'#f87171':'#475569',fontSize:11,fontWeight:700,cursor:'pointer'}}>{l}</button>
+          ))}
+        </div>
+      </div>
+      <div style={{background:'rgba(251,191,36,.05)',border:'1px solid rgba(251,191,36,.2)',borderRadius:12,padding:'13px',marginBottom:12}}>
+        <div style={{fontSize:9,letterSpacing:'2px',color:'#fbbf24',fontFamily:"'DM Mono',monospace",marginBottom:10}}>💬 TEMAS DE CONVERSA</div>
+        {TEMAS_K.map((t,i)=>(
+          <div key={i} onClick={()=>toggleTema(i)} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 10px',borderRadius:9,marginBottom:4,cursor:'pointer',background:temas[i]?'rgba(52,211,153,.06)':'rgba(255,255,255,.02)',border:`1px solid ${temas[i]?'rgba(52,211,153,.2)':'rgba(255,255,255,.05)'}`}}>
+            <div style={{width:16,height:16,borderRadius:'50%',flexShrink:0,border:`2px solid ${temas[i]?'#34d399':'rgba(255,255,255,.15)'}`,background:temas[i]?'#34d399':'transparent',display:'flex',alignItems:'center',justifyContent:'center',fontSize:8,color:'#050a14',fontWeight:900}}>{temas[i]?'✓':''}</div>
+            <span style={{fontSize:12,color:temas[i]?'#34d399':'#64748b',textDecoration:temas[i]?'line-through':'none'}}>{t}</span>
+          </div>
+        ))}
+      </div>
+      <div style={{background:'rgba(96,165,250,.05)',border:'1px solid rgba(96,165,250,.2)',borderRadius:12,padding:'13px'}}>
+        <div style={{fontSize:9,letterSpacing:'2px',color:'#60a5fa',fontFamily:"'DM Mono',monospace",marginBottom:10}}>⚓ CHECKLIST NAVAL NOTURNO</div>
+        {NAVAL_ITEMS.map((it,i)=>(
+          <div key={i} onClick={()=>toggleNaval(i)} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 10px',borderRadius:9,marginBottom:4,cursor:'pointer',background:naval[i]?'rgba(52,211,153,.06)':'rgba(255,255,255,.02)',border:`1px solid ${naval[i]?'rgba(52,211,153,.2)':'rgba(255,255,255,.04)'}`}}>
+            <div style={{width:16,height:16,borderRadius:'50%',flexShrink:0,border:`2px solid ${naval[i]?'#34d399':'rgba(255,255,255,.15)'}`,background:naval[i]?'#34d399':'transparent',display:'flex',alignItems:'center',justifyContent:'center',fontSize:8,color:'#050a14',fontWeight:900}}>{naval[i]?'✓':''}</div>
+            <span style={{fontSize:12,color:naval[i]?'#34d399':'#64748b',textDecoration:naval[i]?'line-through':'none'}}>{it}</span>
+          </div>
+        ))}
+        <div style={{marginTop:6,fontSize:11,color:'#475569'}}>{naval.filter(Boolean).length}/{NAVAL_ITEMS.length} itens ✓</div>
+      </div>
+    </div>
+  );
+}
+
+// ─── TAB: COMIDA ─────────────────────────────────────────────
+function TabComida(){
+  const dk=getDK();const dw=new Date().getDay();
+  const[aba,setAba]=useState('hoje');
+  const[plano,setPlano]=useState(()=>lsGet('plano_semana',null));
+  const[txt,setTxt]=useState('');
+  const[loadP,setLoadP]=useState(false);
+  const[hidra,setHidra]=useState(()=>lsGet(`hidra_${dk}`,0));
+  const[jejum,setJejum]=useState(()=>lsGet(`jejum_${dk}`,{fez:null,horas:''}));
+  const[seguiu,setSeguiu]=useState(()=>lsGet(`seguiu_${dk}`,null));
+  const[iaResp,setIaResp]=useState(()=>lsGet(`ci_ia_${dk}`,''));
+  const[loadCI,setLoadCI]=useState(false);
+
+  const ML=250;const MAX=12;const META=3000;const mlAtual=hidra*ML;
+  const diaKey=DIAS_KEY[dw];
+  const planoHoje=plano?.semana?.[diaKey];
+
+  async function gerarPlano(){
+    if(!txt.trim()||loadP)return;
+    setLoadP(true);
+    try{
+      const r=await chamarClaude(
+        `Você é nutricionista especializada em low carb/cetogênico. Ritchely, 38a, jejum IF, meta -15kg, treina 6x/sem. Com base no texto, organize plano semanal. Responda APENAS JSON sem markdown: {"semana":{"Dom":{"cafe":"","almoco":"","lanche":"","jantar":"","dica":""},"Seg":{},"Ter":{},"Qua":{},"Qui":{},"Sex":{},"Sab":{}}}`,
+        [{role:'user',content:`Meu plano:\n\n${txt.slice(0,4000)}`}]
+      );
+      const p=JSON.parse(r.replace(/```json|```/g,'').trim());
+      setPlano(p);lsSet('plano_semana',p);setTxt('');setAba('plano');
+    }catch(e){alert(`Erro: ${e.message}`);}
+    setLoadP(false);
+  }
+
+  async function enviarCI(){
+    if(loadCI||seguiu===null)return;
+    setLoadCI(true);
+    try{
+      const r=await chamarClaude(
+        `Nutricionista/coach da Ritchely. Cetogênica, meta -15kg. Direta, empática, máx 80 palavras. Se não seguiu: 1 sugestão prática. Se seguiu: celebra + dica amanhã.`,
+        [{role:'user',content:`Plano (${NOMES_DIA[dw]}): ${planoHoje?JSON.stringify(planoHoje):'não definido'}. Seguiu: ${seguiu?'SIM':'NÃO'}. Jejum: ${jejum.fez?`SIM ${jejum.horas}h`:'NÃO'}. Água: ${mlAtual}ml/3000ml.`}]
+      );
+      setIaResp(r);lsSet(`ci_ia_${dk}`,r);
+    }catch(e){setIaResp(`❌ ${e.message}`);}
+    setLoadCI(false);
+  }
+
+  const addCopo=()=>{const n=Math.min(16,hidra+1);setHidra(n);lsSet(`hidra_${dk}`,n);};
+  const remCopo=()=>{const n=Math.max(0,hidra-1);setHidra(n);lsSet(`hidra_${dk}`,n);};
+  const savJejum=(fez,horas)=>{const j={fez,horas};setJejum(j);lsSet(`jejum_${dk}`,j);};
+
+  const SUB=[{id:'hoje',l:'🍽️ Hoje'},{id:'plano',l:'📅 Semana'},{id:'checkin',l:'✅ Check-in'},{id:'upload',l:'📤 Upload'}];
+  return(
+    <div>
+      <div style={{display:'flex',gap:5,marginBottom:14}}>
+        {SUB.map(s=>{const a=aba===s.id;return <button key={s.id} onClick={()=>setAba(s.id)} style={{flex:1,padding:'8px 3px',borderRadius:9,border:`1px solid ${a?'#fb923c':'rgba(255,255,255,.07)'}`,background:a?'rgba(251,146,60,.12)':'transparent',color:a?'#fb923c':'#1e293b',fontSize:9,fontWeight:700,fontFamily:"'DM Mono',monospace",cursor:'pointer'}}>{s.l}</button>;})}
+      </div>
+      {aba==='hoje'&&<div>
+        <div style={{background:'linear-gradient(135deg,rgba(251,146,60,.1),rgba(5,10,20,.98))',border:'1px solid rgba(251,146,60,.22)',borderRadius:14,padding:'13px',marginBottom:12}}>
+          <div style={{fontSize:9,letterSpacing:'3px',color:'#fb923c',fontFamily:"'DM Mono',monospace",marginBottom:2}}>🍽️ CARDÁPIO — {NOMES_DIA[dw].toUpperCase()}</div>
+          {planoHoje?[['☀️ Café','cafe','#fbbf24'],['🌤️ Almoço','almoco','#fb923c'],['🌥️ Lanche','lanche','#a78bfa'],['🌙 Jantar','jantar','#60a5fa']].map(([l,k,c])=>(
+            <div key={k} style={{padding:'10px 11px',borderRadius:10,background:`${c}08`,border:`1px solid ${c}20`,marginBottom:7}}>
+              <div style={{fontSize:10,fontWeight:700,color:c,marginBottom:3}}>{l}</div>
+              <div style={{fontSize:13,color:'#e8edf5',fontWeight:600}}>{planoHoje[k]||'—'}</div>
+            </div>
+          )):<div style={{textAlign:'center',padding:'20px',borderRadius:10,background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.07)'}}>
+            <div style={{fontSize:24,marginBottom:8}}>📤</div>
+            <div style={{fontSize:12,color:'#475569',lineHeight:1.8}}>Sem plano. Vá em <strong style={{color:'#fb923c'}}>Upload</strong>.</div>
+            <button onClick={()=>setAba('upload')} style={{marginTop:10,padding:'8px 16px',borderRadius:8,border:'1px solid rgba(251,146,60,.3)',background:'rgba(251,146,60,.1)',color:'#fb923c',fontSize:11,fontWeight:700,cursor:'pointer'}}>Ir para Upload →</button>
+          </div>}
+        </div>
+        <div style={{background:'rgba(167,139,250,.05)',border:'1px solid rgba(167,139,250,.18)',borderRadius:12,padding:'13px',marginBottom:12}}>
+          <div style={{fontSize:9,letterSpacing:'2px',color:'#a78bfa',fontFamily:"'DM Mono',monospace",marginBottom:10}}>⏳ JEJUM INTERMITENTE</div>
+          <div style={{display:'flex',gap:7,marginBottom:8}}>
+            <button onClick={()=>savJejum(true,jejum.horas)} style={{flex:1,padding:'10px',borderRadius:9,border:`1px solid ${jejum.fez===true?'#a78bfa':'rgba(255,255,255,.1)'}`,background:jejum.fez===true?'rgba(167,139,250,.18)':'rgba(255,255,255,.03)',color:jejum.fez===true?'#a78bfa':'#475569',fontSize:12,fontWeight:700,cursor:'pointer'}}>✅ Fiz jejum</button>
+            <button onClick={()=>savJejum(false,'')} style={{flex:1,padding:'10px',borderRadius:9,border:`1px solid ${jejum.fez===false?'#f87171':'rgba(255,255,255,.1)'}`,background:jejum.fez===false?'rgba(248,113,113,.12)':'rgba(255,255,255,.03)',color:jejum.fez===false?'#f87171':'#475569',fontSize:12,fontWeight:700,cursor:'pointer'}}>❌ Não fiz</button>
+          </div>
+          {jejum.fez===true&&<div style={{display:'flex',gap:5,flexWrap:'wrap'}}>{['12','14','16','18','20','24'].map(h=><button key={h} onClick={()=>savJejum(true,h)} style={{padding:'5px 9px',borderRadius:7,border:`1px solid ${jejum.horas===h?'#a78bfa':'rgba(167,139,250,.2)'}`,background:jejum.horas===h?'rgba(167,139,250,.2)':'transparent',color:jejum.horas===h?'#a78bfa':'#475569',fontSize:11,cursor:'pointer'}}>{h}h</button>)}</div>}
+        </div>
+        <div style={{background:'rgba(96,165,250,.05)',border:'1px solid rgba(96,165,250,.18)',borderRadius:12,padding:'13px'}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
+            <div style={{fontSize:9,letterSpacing:'2px',color:'#60a5fa',fontFamily:"'DM Mono',monospace"}}>💧 HIDRATAÇÃO</div>
+            <div style={{fontFamily:"'DM Mono',monospace",fontSize:14,fontWeight:900,color:mlAtual>=META?'#34d399':'#60a5fa'}}>{(mlAtual/1000).toFixed(2).replace('.',',')}L / 3L</div>
+          </div>
+          <div style={{display:'flex',gap:4,marginBottom:10,flexWrap:'wrap'}}>
+            {Array.from({length:MAX}).map((_,i)=>(
+              <div key={i} onClick={()=>{if(i===hidra-1)remCopo();else if(i>=hidra){const n=Math.min(16,i+1);setHidra(n);lsSet(`hidra_${dk}`,n);}}} style={{width:28,height:36,borderRadius:5,border:`2px solid ${i<hidra?'#60a5fa':'rgba(96,165,250,.15)'}`,background:i<hidra?'rgba(96,165,250,.15)':'rgba(96,165,250,.03)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,cursor:'pointer'}}>
+                {i<hidra?'💧':'·'}
+              </div>
+            ))}
+          </div>
+          <BarProg done={Math.min(mlAtual,META)} total={META} cor={mlAtual>=META?'#34d399':'#60a5fa'} h={5}/>
+          <div style={{display:'flex',gap:8,marginTop:10}}>
+            <button onClick={remCopo} style={{flex:1,padding:'9px',borderRadius:8,border:'1px solid rgba(96,165,250,.2)',background:'transparent',color:'#60a5fa',fontSize:16,cursor:'pointer'}}>−</button>
+            <button onClick={addCopo} style={{flex:2,padding:'9px',borderRadius:8,border:'none',background:mlAtual>=META?'rgba(52,211,153,.15)':'linear-gradient(135deg,#60a5faaa,#60a5fa)',color:mlAtual>=META?'#34d399':'#050a14',fontSize:11,fontWeight:800,cursor:'pointer'}}>{mlAtual>=META?`✅ Meta! ${(mlAtual/1000).toFixed(1)}L`:'+ 250ml'}</button>
+          </div>
+        </div>
+      </div>}
+      {aba==='plano'&&<div>
+        {plano?.semana?Object.entries(plano.semana).map(([d,r])=>(
+          <div key={d} style={{marginBottom:10,padding:'12px',borderRadius:12,background:'rgba(255,255,255,.02)',border:`1px solid ${d===diaKey?'rgba(251,146,60,.4)':'rgba(255,255,255,.06)'}`}}>
+            <div style={{fontSize:10,fontWeight:800,color:d===diaKey?'#fb923c':'#64748b',fontFamily:"'DM Mono',monospace",marginBottom:8}}>{d===diaKey?'▶ ':''}{d}</div>
+            {[['☀️','cafe'],['🌤️','almoco'],['🌥️','lanche'],['🌙','jantar']].map(([e,k])=>r[k]?<div key={k} style={{fontSize:12,color:'#c8d0e0',marginBottom:3}}>{e} {r[k]}</div>:null)}
+          </div>
+        )):<div style={{textAlign:'center',padding:'40px',color:'#1e293b',fontSize:12}}>Sem plano. Use a aba Upload.</div>}
+      </div>}
+      {aba==='checkin'&&<div>
+        <div style={{padding:'14px',borderRadius:12,background:'rgba(52,211,153,.05)',border:'1px solid rgba(52,211,153,.2)',marginBottom:12}}>
+          <div style={{fontSize:9,letterSpacing:'2px',color:'#34d399',fontFamily:"'DM Mono',monospace",marginBottom:10}}>✅ CHECK-IN DIÁRIO</div>
+          <div style={{fontSize:12,color:'#64748b',marginBottom:10}}>Você seguiu o plano hoje?</div>
+          <div style={{display:'flex',gap:8,marginBottom:12}}>
+            <button onClick={()=>{setSeguiu(true);lsSet(`seguiu_${dk}`,true);}} style={{flex:1,padding:'11px',borderRadius:9,border:`2px solid ${seguiu===true?'#34d399':'rgba(255,255,255,.1)'}`,background:seguiu===true?'rgba(52,211,153,.18)':'rgba(255,255,255,.03)',color:seguiu===true?'#34d399':'#475569',fontSize:12,fontWeight:800,cursor:'pointer'}}>✅ Sim!</button>
+            <button onClick={()=>{setSeguiu(false);lsSet(`seguiu_${dk}`,false);}} style={{flex:1,padding:'11px',borderRadius:9,border:`2px solid ${seguiu===false?'#f87171':'rgba(255,255,255,.1)'}`,background:seguiu===false?'rgba(248,113,113,.12)':'rgba(255,255,255,.03)',color:seguiu===false?'#f87171':'#475569',fontSize:12,fontWeight:800,cursor:'pointer'}}>❌ Não</button>
+          </div>
+          <button onClick={enviarCI} disabled={loadCI||seguiu===null} style={{width:'100%',padding:'12px',borderRadius:9,border:'none',background:seguiu!==null?'linear-gradient(135deg,#34d399,#34d399)':'rgba(255,255,255,.05)',color:seguiu!==null?'#050a14':'#1e293b',fontSize:12,fontWeight:800,cursor:'pointer'}}>{loadCI?'⏳ Gerando...':'🤖 Feedback da IA'}</button>
+        </div>
+        {iaResp&&<div style={{padding:'13px',borderRadius:12,background:'rgba(251,191,36,.05)',border:'1px solid rgba(251,191,36,.2)'}}><div style={{fontSize:9,color:'#fbbf24',fontFamily:"'DM Mono',monospace",marginBottom:8}}>✦ NUTRICIONISTA IA</div><div style={{fontSize:13,color:'#c8d0e0',lineHeight:1.8}}>{iaResp}</div></div>}
+      </div>}
+      {aba==='upload'&&<div>
+        <div style={{padding:'14px',borderRadius:12,background:'rgba(251,146,60,.05)',border:'1px solid rgba(251,146,60,.2)'}}>
+          <div style={{fontSize:9,letterSpacing:'2px',color:'#fb923c',fontFamily:"'DM Mono',monospace",marginBottom:8}}>📤 GERAR PLANO SEMANAL</div>
+          <div style={{fontSize:12,color:'#475569',lineHeight:1.7,marginBottom:10}}>Cole aqui o que quer comer essa semana — alimentos disponíveis, restrições. A IA monta o plano.</div>
+          <textarea value={txt} onChange={e=>setTxt(e.target.value)} rows={5} placeholder="Ex: tenho frango, ovos, brócolis, queijo..." style={{width:'100%',padding:'10px',borderRadius:9,border:'1px solid rgba(251,146,60,.25)',background:'rgba(251,146,60,.05)',color:'#c8d0e0',fontSize:12,outline:'none',resize:'vertical',marginBottom:10,boxSizing:'border-box'}}/>
+          <button onClick={gerarPlano} disabled={loadP||!txt.trim()} style={{width:'100%',padding:'12px',borderRadius:9,border:'none',background:txt.trim()?'linear-gradient(135deg,#fb923c,#fb923c)':'rgba(255,255,255,.05)',color:txt.trim()?'#050a14':'#1e293b',fontSize:12,fontWeight:800,cursor:'pointer'}}>{loadP?'⏳ Gerando...':'🤖 Gerar plano'}</button>
+        </div>
+      </div>}
+    </div>
+  );
+}
+
+// ─── TAB: TREINO ─────────────────────────────────────────────
+function TabTreino(){
+  const dk=getDK();
+  const[regs,setRegs]=useState(()=>lsGet('treino_regs',[]));
+  const[form,setForm]=useState({ativ:'',horario:'',dur:'',obs:'',feito:null});
+  const[salvo,setSalvo]=useState(false);
+
+  const hj=useMemo(()=>{const d=new Date();d.setHours(0,0,0,0);return d.getTime();},[]);
+  const diasSem=useMemo(()=>{
+    const f=regs.filter(r=>r.feito&&r.dtMs);
+    if(!f.length)return null;
+    const ult=f.reduce((mx,r)=>r.dtMs>mx?r.dtMs:mx,0);
+    return Math.floor((hj-ult)/86400000);
+  },[regs,hj]);
+  const treinouHj=regs.some(r=>r.dk===dk&&r.feito);
+  const nivel=diasSem===null?0:diasSem>=2?2:diasSem>=1?1:0;
+
+  const ATIVS=['🏃 Corrida leve','🏃 Corrida pesada','🏃 Corrida longa','🏋️ Musculação','🤸 Mobilidade','🚶 Caminhada'];
+
+  const salvar=()=>{
+    if(!form.ativ||form.feito===null)return;
+    const novo={...form,dk,dtMs:hj,id:Date.now()};
+    const n=[...regs,novo];setRegs(n);lsSet('treino_regs',n);
+    setForm({ativ:'',horario:'',dur:'',obs:'',feito:null});
+    setSalvo(true);setTimeout(()=>setSalvo(false),2000);
+  };
+  const del=id=>{const n=regs.filter(r=>r.id!==id);setRegs(n);lsSet('treino_regs',n);};
+
+  return(
+    <div>
+      {nivel>=2&&<div style={{marginBottom:12,padding:'12px 14px',borderRadius:12,background:'rgba(248,113,113,.12)',border:'2px solid #f87171',animation:'pulse 2s infinite'}}><div style={{fontSize:12,fontWeight:900,color:'#f87171',fontFamily:"'DM Mono',monospace",marginBottom:4}}>🚨 {diasSem} DIAS SEM TREINAR — PRIORIDADE TOTAL</div><div style={{fontSize:11,color:'rgba(248,113,113,.8)'}}>Mesmo 20 minutos contam. Coloque o treino como prioridade absoluta hoje.</div></div>}
+      {nivel===1&&<div style={{marginBottom:12,padding:'11px 13px',borderRadius:11,background:'rgba(251,191,36,.08)',border:'1px solid rgba(251,191,36,.4)'}}><div style={{fontSize:11,fontWeight:800,color:'#fbbf24',marginBottom:3}}>⚠️ 1 DIA SEM TREINAR</div><div style={{fontSize:11,color:'rgba(251,191,36,.8)'}}>Tente encaixar algo hoje, mesmo que leve.</div></div>}
+      {treinouHj&&<div style={{marginBottom:12,padding:'10px 13px',borderRadius:10,background:'rgba(52,211,153,.08)',border:'1px solid rgba(52,211,153,.3)'}}><div style={{fontSize:11,fontWeight:800,color:'#34d399'}}>✅ Treino registrado hoje!</div></div>}
+
+      <div style={{background:'rgba(96,165,250,.04)',border:'1px solid rgba(96,165,250,.18)',borderRadius:12,padding:'13px',marginBottom:12}}>
+        <div style={{fontSize:9,letterSpacing:'2px',color:'#60a5fa',fontFamily:"'DM Mono',monospace",marginBottom:10}}>➕ REGISTRAR ATIVIDADE</div>
+        <div style={{marginBottom:8}}>
+          <div style={{display:'flex',flexWrap:'wrap',gap:5,marginBottom:6}}>
+            {ATIVS.map(a=><button key={a} onClick={()=>setForm(f=>({...f,ativ:a}))} style={{padding:'5px 9px',borderRadius:7,border:`1px solid ${form.ativ===a?'#60a5fa':'rgba(255,255,255,.08)'}`,background:form.ativ===a?'rgba(96,165,250,.18)':'rgba(255,255,255,.03)',color:form.ativ===a?'#60a5fa':'#475569',fontSize:10,cursor:'pointer'}}>{a}</button>)}
+          </div>
+          <input value={ATIVS.includes(form.ativ)?'':form.ativ} onChange={e=>setForm(f=>({...f,ativ:e.target.value}))} placeholder="Ou digitar..." style={{width:'100%',padding:'8px 11px',borderRadius:8,border:'1px solid rgba(255,255,255,.08)',background:'rgba(255,255,255,.04)',color:'#c8d0e0',fontSize:12,outline:'none',boxSizing:'border-box'}}/>
+        </div>
+        <div style={{display:'flex',gap:8,marginBottom:10}}>
+          <div style={{flex:1}}><div style={{fontSize:9,color:'#1e293b',marginBottom:4}}>HORÁRIO</div><input type="time" value={form.horario} onChange={e=>setForm(f=>({...f,horario:e.target.value}))} style={{width:'100%',padding:'8px 11px',borderRadius:8,border:'1px solid rgba(255,255,255,.08)',background:'rgba(255,255,255,.04)',color:'#c8d0e0',fontSize:12,outline:'none',boxSizing:'border-box'}}/></div>
+          <div style={{flex:1}}><div style={{fontSize:9,color:'#1e293b',marginBottom:4}}>MIN</div><input type="number" min="1" value={form.dur} onChange={e=>setForm(f=>({...f,dur:e.target.value}))} placeholder="45" style={{width:'100%',padding:'8px 11px',borderRadius:8,border:'1px solid rgba(255,255,255,.08)',background:'rgba(255,255,255,.04)',color:'#c8d0e0',fontSize:12,outline:'none',boxSizing:'border-box'}}/></div>
+        </div>
+        <div style={{display:'flex',gap:8,marginBottom:10}}>
+          <button onClick={()=>setForm(f=>({...f,feito:true}))} style={{flex:1,padding:'10px',borderRadius:9,border:`2px solid ${form.feito===true?'#34d399':'rgba(255,255,255,.1)'}`,background:form.feito===true?'rgba(52,211,153,.18)':'rgba(255,255,255,.03)',color:form.feito===true?'#34d399':'#475569',fontSize:12,fontWeight:800,cursor:'pointer'}}>✅ Fiz!</button>
+          <button onClick={()=>setForm(f=>({...f,feito:false}))} style={{flex:1,padding:'10px',borderRadius:9,border:`2px solid ${form.feito===false?'#f87171':'rgba(255,255,255,.1)'}`,background:form.feito===false?'rgba(248,113,113,.12)':'rgba(255,255,255,.03)',color:form.feito===false?'#f87171':'#475569',fontSize:12,fontWeight:800,cursor:'pointer'}}>❌ Não fiz</button>
+        </div>
+        <button onClick={salvar} disabled={!form.ativ||form.feito===null} style={{width:'100%',padding:'12px',borderRadius:9,border:'none',background:form.ativ&&form.feito!==null?'linear-gradient(135deg,#60a5fa,#60a5fa)':'rgba(255,255,255,.05)',color:form.ativ&&form.feito!==null?'#050a14':'#1e293b',fontSize:12,fontWeight:800,cursor:'pointer'}}>{salvo?'✅ Salvo!':'💾 Salvar registro'}</button>
+      </div>
+
+      <div style={{fontSize:9,letterSpacing:'2px',color:'#1e293b',fontFamily:"'DM Mono',monospace",marginBottom:8}}>HISTÓRICO</div>
+      {[...regs].reverse().slice(0,14).map(r=>(
+        <div key={r.id} style={{display:'flex',alignItems:'center',gap:10,padding:'9px 12px',borderRadius:10,background:r.feito?'rgba(52,211,153,.04)':'rgba(248,113,113,.04)',border:`1px solid ${r.feito?'rgba(52,211,153,.15)':'rgba(248,113,113,.15)'}`,marginBottom:5}}>
+          <span style={{fontSize:16}}>{r.feito?'✅':'❌'}</span>
+          <div style={{flex:1}}>
+            <div style={{fontSize:12,color:'#c8d0e0',fontWeight:600}}>{r.ativ}</div>
+            <div style={{fontSize:10,color:'#334155'}}>{r.dk}{r.dur?` · ${r.dur}min`:''}</div>
+          </div>
+          <button onClick={()=>del(r.id)} style={{padding:'3px 8px',borderRadius:5,border:'1px solid rgba(248,113,113,.2)',background:'transparent',color:'#f87171',fontSize:10,cursor:'pointer'}}>×</button>
+        </div>
+      ))}
+      {regs.length===0&&<div style={{textAlign:'center',padding:'30px',color:'#1e293b',fontSize:12}}>Nenhum registro ainda.</div>}
+    </div>
+  );
+}
+
+// ─── TAB: CASA ───────────────────────────────────────────────
+function TabCasa(){
+  const dk=getDK();
+  const defT=[{id:1,txt:'Limpeza da casa',prior:'normal',done:false},{id:2,txt:'Louça do dia',prior:'normal',done:false},{id:3,txt:'Roupa',prior:'normal',done:false}];
+  const[tarefas,setTarefas]=useState(()=>lsGet(`casa_t_${dk}`,defT));
+  const[novo,setNovo]=useState('');
+  const[prior,setPrior]=useState('normal');
+  const[mercado,setMercado]=useState(()=>lsGet(`casa_m_${dk}`,''));
+  const[urgente,setUrgente]=useState(()=>lsGet(`casa_u_${dk}`,''));
+
+  const addT=()=>{if(!novo.trim())return;const n=[...tarefas,{id:Date.now(),txt:novo.trim(),prior,done:false}];setTarefas(n);lsSet(`casa_t_${dk}`,n);setNovo('');};
+  const togT=id=>{const n=tarefas.map(t=>t.id===id?{...t,done:!t.done}:t);setTarefas(n);lsSet(`casa_t_${dk}`,n);};
+  const delT=id=>{const n=tarefas.filter(t=>t.id!==id);setTarefas(n);lsSet(`casa_t_${dk}`,n);};
+  const COR={urgente:'#f87171',importante:'#fbbf24',normal:'#60a5fa'};
+
+  return(
+    <div>
+      {tarefas.filter(t=>t.prior==='urgente'&&!t.done).length>0&&(
+        <div style={{marginBottom:12,padding:'12px 14px',borderRadius:12,background:'rgba(248,113,113,.12)',border:'2px solid rgba(248,113,113,.5)'}}>
+          <div style={{fontSize:11,fontWeight:900,color:'#f87171',fontFamily:"'DM Mono',monospace",marginBottom:6}}>🚨 URGENTE</div>
+          {tarefas.filter(t=>t.prior==='urgente'&&!t.done).map(t=><div key={t.id} style={{fontSize:12,color:'#f87171',marginBottom:2}}>• {t.txt}</div>)}
+        </div>
+      )}
+      <div style={{background:'rgba(96,165,250,.04)',border:'1px solid rgba(96,165,250,.18)',borderRadius:12,padding:'13px',marginBottom:12}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
+          <div style={{fontSize:9,letterSpacing:'2px',color:'#60a5fa',fontFamily:"'DM Mono',monospace"}}>🏡 TAREFAS DO DIA</div>
+          <span style={{fontSize:10,color:'#60a5fa',fontFamily:"'DM Mono',monospace"}}>{tarefas.filter(t=>t.done).length}/{tarefas.length}</span>
+        </div>
+        {tarefas.map(t=>(
+          <div key={t.id} style={{display:'flex',alignItems:'center',gap:9,padding:'8px 10px',borderRadius:9,background:t.done?'rgba(52,211,153,.04)':'rgba(255,255,255,.02)',border:`1px solid ${t.done?'rgba(52,211,153,.15)':'rgba(255,255,255,.05)'}`,marginBottom:4}}>
+            <div onClick={()=>togT(t.id)} style={{width:18,height:18,borderRadius:'50%',flexShrink:0,border:`2px solid ${t.done?'#34d399':COR[t.prior]}`,background:t.done?'#34d399':'transparent',display:'flex',alignItems:'center',justifyContent:'center',fontSize:8,color:'#050a14',fontWeight:900,cursor:'pointer'}}>{t.done?'✓':''}</div>
+            <div style={{flex:1,fontSize:12,color:t.done?'#334155':'#c8d0e0',textDecoration:t.done?'line-through':'none',cursor:'pointer'}} onClick={()=>togT(t.id)}>{t.txt}</div>
+            <Chip label={t.prior} cor={COR[t.prior]} sm/>
+            <button onClick={()=>delT(t.id)} style={{padding:'2px 6px',borderRadius:4,border:'1px solid rgba(255,255,255,.06)',background:'transparent',color:'#334155',fontSize:10,cursor:'pointer'}}>×</button>
+          </div>
+        ))}
+        <div style={{display:'flex',gap:7,marginTop:8}}>
+          <input value={novo} onChange={e=>setNovo(e.target.value)} onKeyDown={e=>e.key==='Enter'&&addT()} placeholder="Nova tarefa..." style={{flex:1,padding:'8px 10px',borderRadius:8,border:'1px solid rgba(96,165,250,.2)',background:'rgba(96,165,250,.04)',color:'#c8d0e0',fontSize:12,outline:'none'}}/>
+          <select value={prior} onChange={e=>setPrior(e.target.value)} style={{padding:'8px',borderRadius:8,border:'1px solid rgba(255,255,255,.08)',background:'#0c1220',color:'#c8d0e0',fontSize:11,outline:'none',cursor:'pointer'}}>
+            <option value="normal">Normal</option>
+            <option value="importante">Importante</option>
+            <option value="urgente">Urgente</option>
+          </select>
+          <button onClick={addT} style={{padding:'8px 14px',borderRadius:8,border:'none',background:'#60a5fa',color:'#050a14',fontSize:14,fontWeight:900,cursor:'pointer'}}>+</button>
+        </div>
+      </div>
+      {[['🛒 Supermercado',mercado,v=>{setMercado(v);lsSet(`casa_m_${dk}`,v);},'#34d399'],
+        ['🚨 Urgente/Imprevisto',urgente,v=>{setUrgente(v);lsSet(`casa_u_${dk}`,v);},'#f87171']
+      ].map(([l,val,set,c])=>(
+        <div key={l} style={{background:`${c}04`,border:`1px solid ${c}22`,borderRadius:12,padding:'12px',marginBottom:10}}>
+          <div style={{fontSize:9,letterSpacing:'2px',color:c,fontFamily:"'DM Mono',monospace",marginBottom:8}}>{l}</div>
+          <textarea value={val} onChange={e=>set(e.target.value)} rows={2} placeholder="Anotações..." style={{width:'100%',padding:'8px',borderRadius:8,border:`1px solid ${c}25`,background:`${c}08`,color:'#c8d0e0',fontSize:12,outline:'none',resize:'vertical',boxSizing:'border-box'}}/>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── MODAL CONFIGURAÇÕES ─────────────────────────────────────
+// IMPORTANTE: TODOS os useState estão no topo, sem exceção
+function ModalConfig({fechar}){
+  const[aba,setAba]=useState('ia');
+  const[msg,setMsg]=useState('');
+  const[akVal,setAkVal]=useState(getAK);
+  const[importTxt,setImportTxt]=useState('');
+  const[confirmarDel,setConfirmarDel]=useState(false);
+
+  const ABAS=[{id:'ia',l:'🤖 IA'},{id:'cloud',l:'☁️ Nuvem'},{id:'backup',l:'📦 Backup'},{id:'import',l:'📥 Restaurar'},{id:'info',l:'ℹ️ Info'}];
+  const[cfgUrl,setCfgUrl]=useState(()=>Sync.getCfg().url);
+  const[cfgKey,setCfgKey]=useState(()=>Sync.getCfg().key);
+  const[cfgLoad,setCfgLoad]=useState(false);
+
+  function salvarChave(){setAK(akVal);setMsg('✅ Chave salva!');setTimeout(()=>setMsg(''),3000);}
+  function exportar(){
+    try{
+      const d={};
+      for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);try{d[k]=JSON.parse(localStorage.getItem(k));}catch{d[k]=localStorage.getItem(k);}}
+      const blob=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      const dt=new Date();
+      a.href=url;a.download=`rity-backup-${dt.getDate()}-${dt.getMonth()+1}-${dt.getFullYear()}.json`;
+      a.click();URL.revokeObjectURL(url);
+      setMsg('✅ Backup exportado!');
+    }catch(e){setMsg('❌ Erro ao exportar.');}
+  }
+  function importar(){
+    try{
+      const d=JSON.parse(importTxt);
+      Object.entries(d).forEach(([k,v])=>localStorage.setItem(k,typeof v==='string'?v:JSON.stringify(v)));
+      setMsg('✅ Restaurado! Recarregando...');
+      setTimeout(()=>window.location.reload(),1500);
+    }catch(e){setMsg('❌ JSON inválido.');}
+  }
+  function importFile(e){
+    const f=e.target.files[0];if(!f)return;
+    const r=new FileReader();r.onload=ev=>setImportTxt(ev.target.result);r.readAsText(f);
+  }
+  function apagarTudo(){
+    if(!confirmarDel){setConfirmarDel(true);return;}
+    localStorage.clear();
+    setMsg('🗑️ Apagado. Recarregando...');
+    setTimeout(()=>window.location.reload(),1500);
+  }
+
+  return(
+    <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.9)',zIndex:300,display:'flex',alignItems:'flex-end',justifyContent:'center'}} onClick={e=>{if(e.target===e.currentTarget)fechar();}}>
+      <div style={{background:'#0c1220',borderRadius:'20px 20px 0 0',border:'1px solid rgba(255,255,255,.1)',padding:'20px 18px 40px',width:'100%',maxWidth:520,maxHeight:'90dvh',overflowY:'auto'}}>
+        <div style={{width:40,height:4,borderRadius:2,background:'rgba(255,255,255,.15)',margin:'0 auto 16px'}}/>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
+          <div>
+            <div style={{fontSize:8,letterSpacing:'3px',color:'rgba(251,191,36,.5)',fontFamily:"'DM Mono',monospace"}}>RITY OS · v4.0</div>
+            <div style={{fontFamily:"'DM Serif Display',serif",fontSize:18,color:'#f0e6d0',marginTop:2}}>Configurações</div>
+          </div>
+          <button onClick={fechar} style={{width:32,height:32,borderRadius:'50%',border:'1px solid rgba(255,255,255,.1)',background:'rgba(255,255,255,.05)',color:'#475569',fontSize:16,cursor:'pointer'}}>✕</button>
+        </div>
+
+        <div style={{display:'flex',gap:4,marginBottom:16,overflowX:'auto',scrollbarWidth:'none'}}>
+          {ABAS.map(s=>{const a=aba===s.id;return(
+            <button key={s.id} onClick={()=>{setAba(s.id);setMsg('');setConfirmarDel(false);}} style={{flex:1,minWidth:70,padding:'8px 4px',borderRadius:8,border:`1px solid ${a?'#fbbf24':'rgba(255,255,255,.07)'}`,background:a?'rgba(251,191,36,.1)':'transparent',color:a?'#fbbf24':'#334155',fontSize:9,fontWeight:700,fontFamily:"'DM Mono',monospace",cursor:'pointer',whiteSpace:'nowrap'}}>{s.l}</button>
+          );})}
+        </div>
+
+        {aba==='ia'&&(
+          <div>
+            <div style={{padding:'12px',borderRadius:10,background:akVal.startsWith('sk-ant')?'rgba(52,211,153,.07)':'rgba(248,113,113,.07)',border:`1px solid ${akVal.startsWith('sk-ant')?'rgba(52,211,153,.3)':'rgba(248,113,113,.3)'}`,marginBottom:14,fontSize:12,color:akVal.startsWith('sk-ant')?'#34d399':'#f87171',fontWeight:700}}>
+              {akVal.startsWith('sk-ant')?'✅ Chave configurada — IA Assessora funcionando':'❌ Chave ausente — IA offline'}
+            </div>
+            <div style={{background:'rgba(167,139,250,.05)',border:'1px solid rgba(167,139,250,.18)',borderRadius:12,padding:'14px'}}>
+              <div style={{fontSize:9,letterSpacing:'2px',color:'#a78bfa',fontFamily:"'DM Mono',monospace",marginBottom:8}}>🔑 CHAVE ANTHROPIC (CLAUDE)</div>
+              <div style={{fontSize:11,color:'#475569',lineHeight:1.7,marginBottom:10}}>Obtenha em <strong style={{color:'#c8d0e0'}}>console.anthropic.com</strong> → API Keys. Começa com <code style={{color:'#a78bfa'}}>sk-ant-...</code></div>
+              <input value={akVal} onChange={e=>setAkVal(e.target.value)} type="password" placeholder="sk-ant-api03-..." style={{width:'100%',padding:'10px 12px',borderRadius:9,border:'1px solid rgba(167,139,250,.25)',background:'rgba(167,139,250,.06)',color:'#c8d0e0',fontSize:12,outline:'none',boxSizing:'border-box',marginBottom:10,fontFamily:"'DM Mono',monospace"}}/>
+              <button onClick={salvarChave} disabled={!akVal.trim()} style={{width:'100%',padding:'12px',borderRadius:9,border:'none',background:akVal.trim()?'linear-gradient(135deg,#a78bfa,#a78bfa)':'rgba(255,255,255,.05)',color:akVal.trim()?'#050a14':'#1e293b',fontSize:12,fontWeight:800,cursor:'pointer'}}>💾 Salvar chave da IA</button>
+            </div>
+            <div style={{marginTop:12,padding:'11px',borderRadius:10,background:'rgba(255,255,255,.02)',border:'1px solid rgba(255,255,255,.06)',fontSize:11,color:'#334155',lineHeight:1.7}}>
+              💡 A chave fica salva neste dispositivo/navegador. Em outro aparelho, cole a mesma chave uma vez em ⚙️ → IA.
+            </div>
+          </div>
+        )}
+
+        {aba==='cloud'&&(
+          <div>
+            <div style={{padding:'12px',borderRadius:10,background:Sync.isConfigured()?'rgba(52,211,153,.07)':'rgba(251,191,36,.06)',border:`1px solid ${Sync.isConfigured()?'rgba(52,211,153,.25)':'rgba(251,191,36,.2)'}`,marginBottom:14,fontSize:12,color:Sync.isConfigured()?'#34d399':'#fbbf24',fontWeight:700}}>
+              {Sync.isConfigured()?'☁️ Nuvem configurada — dados sincronizando':'⚠️ Sem nuvem — dados apenas neste dispositivo'}
+            </div>
+            <div style={{background:'rgba(96,165,250,.05)',border:'1px solid rgba(96,165,250,.18)',borderRadius:12,padding:'14px',marginBottom:12}}>
+              <div style={{fontSize:9,letterSpacing:'2px',color:'#60a5fa',fontFamily:"'DM Mono',monospace",marginBottom:10}}>🔑 CREDENCIAIS SUPABASE</div>
+              <div style={{fontSize:11,color:'#475569',lineHeight:1.7,marginBottom:12}}>Acesse <strong style={{color:'#c8d0e0'}}>supabase.com</strong> → seu projeto → Settings → API para copiar as credenciais.</div>
+              <div style={{marginBottom:10}}>
+                <div style={{fontSize:9,color:'#60a5fa',fontFamily:"'DM Mono',monospace",marginBottom:4}}>PROJECT URL</div>
+                <input value={cfgUrl} onChange={e=>setCfgUrl(e.target.value)} placeholder="https://xxxxxxxx.supabase.co" style={{width:'100%',padding:'9px 11px',borderRadius:8,border:'1px solid rgba(96,165,250,.2)',background:'rgba(96,165,250,.05)',color:'#c8d0e0',fontSize:11,outline:'none',boxSizing:'border-box'}}/>
+              </div>
+              <div style={{marginBottom:12}}>
+                <div style={{fontSize:9,color:'#60a5fa',fontFamily:"'DM Mono',monospace",marginBottom:4}}>ANON PUBLIC KEY</div>
+                <input value={cfgKey} onChange={e=>setCfgKey(e.target.value)} placeholder="sb_publishable_... ou eyJhbGci..." style={{width:'100%',padding:'9px 11px',borderRadius:8,border:'1px solid rgba(96,165,250,.2)',background:'rgba(96,165,250,.05)',color:'#c8d0e0',fontSize:11,outline:'none',boxSizing:'border-box'}}/>
+              </div>
+              <button onClick={async()=>{
+                if(!cfgUrl.trim()||!cfgKey.trim())return;
+                setCfgLoad(true);
+                Sync.saveCfg(cfgUrl,cfgKey);
+                const ok=await Sync.init();
+                setCfgLoad(false);
+                setMsg(ok?'✅ Conectado! Dados sincronizando...':'❌ Erro de conexão. Verifique as credenciais.');
+              }} disabled={cfgLoad||!cfgUrl.trim()||!cfgKey.trim()} style={{width:'100%',padding:'12px',borderRadius:9,border:'none',background:cfgUrl.trim()&&cfgKey.trim()?'linear-gradient(135deg,#60a5fa,#60a5fa)':'rgba(255,255,255,.05)',color:cfgUrl.trim()&&cfgKey.trim()?'#050a14':'#1e293b',fontSize:12,fontWeight:800,cursor:'pointer'}}>
+                {cfgLoad?'⏳ Conectando...':'☁️ Salvar e conectar'}
+              </button>
+            </div>
+            <div style={{padding:'11px',borderRadius:10,background:'rgba(255,255,255,.02)',border:'1px solid rgba(255,255,255,.06)',fontSize:11,color:'#334155',lineHeight:1.8}}>
+              💡 A tabela necessária no Supabase é: <code style={{color:'#60a5fa'}}>rity_os</code> (key text PK, value jsonb, updated_at timestamptz).<br/>
+              Configure com RLS público ou desative RLS para uso pessoal.
+            </div>
+          </div>
+        )}
+
+        {aba==='backup'&&(
+          <div>
+            <div style={{padding:'14px',borderRadius:12,background:'rgba(52,211,153,.05)',border:'1px solid rgba(52,211,153,.2)',marginBottom:12}}>
+              <div style={{fontSize:9,letterSpacing:'2px',color:'#34d399',fontFamily:"'DM Mono',monospace",marginBottom:6}}>📦 EXPORTAR BACKUP</div>
+              <div style={{fontSize:12,color:'#475569',lineHeight:1.7,marginBottom:12}}>Salva todos seus dados locais em JSON. Faça sempre antes de uma atualização.</div>
+              <button onClick={exportar} style={{width:'100%',padding:'13px',borderRadius:10,border:'none',background:'linear-gradient(135deg,#34d399,#34d399)',color:'#050a14',fontSize:13,fontWeight:800,cursor:'pointer'}}>⬇️ Baixar backup</button>
+            </div>
+            <div style={{padding:'14px',borderRadius:12,background:'rgba(248,113,113,.04)',border:'1px solid rgba(248,113,113,.15)'}}>
+              <div style={{fontSize:9,letterSpacing:'2px',color:'#f87171',fontFamily:"'DM Mono',monospace",marginBottom:6}}>🗑️ APAGAR TUDO</div>
+              <div style={{fontSize:12,color:'#475569',marginBottom:10}}>Remove todos os dados locais. Somente para recomeçar do zero.</div>
+              {!confirmarDel
+                ?<button onClick={apagarTudo} style={{width:'100%',padding:'11px',borderRadius:9,border:'2px solid rgba(248,113,113,.4)',background:'transparent',color:'#f87171',fontSize:12,fontWeight:800,cursor:'pointer'}}>⚠️ Apagar todos os dados</button>
+                :<div style={{display:'flex',gap:8}}>
+                  <button onClick={()=>setConfirmarDel(false)} style={{flex:1,padding:'11px',borderRadius:9,border:'1px solid rgba(255,255,255,.1)',background:'transparent',color:'#475569',fontSize:12,cursor:'pointer'}}>Cancelar</button>
+                  <button onClick={apagarTudo} style={{flex:1,padding:'11px',borderRadius:9,border:'none',background:'#f87171',color:'#050a14',fontSize:12,fontWeight:800,cursor:'pointer'}}>✓ Confirmar</button>
+                </div>}
+            </div>
+          </div>
+        )}
+
+        {aba==='import'&&(
+          <div style={{background:'rgba(96,165,250,.05)',border:'1px solid rgba(96,165,250,.2)',borderRadius:12,padding:'14px'}}>
+            <div style={{fontSize:9,letterSpacing:'2px',color:'#60a5fa',fontFamily:"'DM Mono',monospace",marginBottom:6}}>📥 RESTAURAR BACKUP</div>
+            <label style={{display:'block',padding:'14px',borderRadius:9,border:'2px dashed rgba(96,165,250,.3)',background:'rgba(96,165,250,.04)',textAlign:'center',cursor:'pointer',marginBottom:10}}>
+              <div style={{fontSize:20,marginBottom:4}}>📂</div>
+              <div style={{fontSize:11,color:'#64748b'}}>Escolher arquivo .json</div>
+              <input type="file" accept=".json" onChange={importFile} style={{display:'none'}}/>
+            </label>
+            <div style={{textAlign:'center',fontSize:10,color:'#1e293b',marginBottom:8}}>— ou cole o JSON —</div>
+            <textarea value={importTxt} onChange={e=>setImportTxt(e.target.value)} rows={4} placeholder='{"feitos":[],...}' style={{width:'100%',padding:'9px',borderRadius:8,border:'1px solid rgba(96,165,250,.25)',background:'rgba(96,165,250,.05)',color:'#c8d0e0',fontSize:11,outline:'none',resize:'vertical',boxSizing:'border-box',marginBottom:10}}/>
+            <button onClick={importar} disabled={!importTxt.trim()} style={{width:'100%',padding:'12px',borderRadius:9,border:'none',background:importTxt.trim()?'linear-gradient(135deg,#60a5fa,#60a5fa)':'rgba(255,255,255,.05)',color:importTxt.trim()?'#050a14':'#1e293b',fontSize:12,fontWeight:800,cursor:'pointer'}}>📥 Restaurar</button>
+          </div>
+        )}
+
+        {aba==='info'&&(
+          <div style={{display:'flex',flexDirection:'column',gap:8}}>
+            {[['RITY OS','v4.0 — reconstruído'],['Ciclo','Meirelles Opção 3 · 23 blocos'],['Meta semanal','35h+ de estudo'],['Dieta','Low carb · Cetogênico · Jejum IF'],['Kauê','13 anos · Preparatório Colégio Naval'],['Concurso','TCE-RJ — Auditora de Controle Externo']].map(([k,v])=>(
+              <div key={k} style={{display:'flex',justifyContent:'space-between',padding:'10px 12px',borderRadius:9,background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.06)'}}>
+                <span style={{fontSize:10,color:'#334155',fontFamily:"'DM Mono',monospace",fontWeight:700}}>{k}</span>
+                <span style={{fontSize:11,color:'#64748b',textAlign:'right',maxWidth:'65%'}}>{v}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {msg&&<div style={{marginTop:14,padding:'11px 13px',borderRadius:9,background:'rgba(52,211,153,.1)',border:'1px solid rgba(52,211,153,.3)',fontSize:12,color:'#34d399',fontWeight:700,textAlign:'center'}}>{msg}</div>}
+      </div>
+    </div>
+  );
+}
+
+// ─── APP RAIZ ────────────────────────────────────────────────
+function App(){
+  // ── estado global (todos os useState juntos no topo) ──
+  const[feitos,setFeitos]=useState([]);
+  const[cicloNum,setCicloNum]=useState(1);
+  const[horas,setHoras]=useState([]);
+  const[mit,setMit]=useState([]);
+  const[wakeH,setWakeH]=useState(10);
+  const[wakeM,setWakeM]=useState(0);
+  const[tab,setTab]=useState('ia');
+  const[clock,setClock]=useState(new Date());
+  const[showCfg,setShowCfg]=useState(false);
+  const[trofeu,setTrofeu]=useState(false);
+  const[syncSt,setSyncSt]=useState('idle');
+
+  // Boot: carregar dados
+  useEffect(()=>{
+    Sync.onStatus(s=>setSyncSt(s));
+    if(Sync.isConfigured()){
+      Sync.init().then(ok=>{
+        if(ok){
+          // Recarregar dados da nuvem após sync inicial
+          setFeitos(lsGet('feitos',[]));
+          setCicloNum(lsGet('cicloNum',1));
+          setHoras(lsGet('horas',[]));
+          setMit(lsGet('mit',[]));
+          setWakeH(lsGet('wakeH',10));
+          setWakeM(lsGet('wakeM',0));
+        }
+      });
+    }
+    setFeitos(lsGet('feitos',[]));
+    setCicloNum(lsGet('cicloNum',1));
+    setHoras(lsGet('horas',[]));
+    setMit(lsGet('mit',[]));
+    setWakeH(lsGet('wakeH',10));
+    setWakeM(lsGet('wakeM',0));
+    const tick=setInterval(()=>setClock(new Date()),1000);
+    return()=>clearInterval(tick);
+  },[]);
+
+  // Computados
+  const feitosSet=useMemo(()=>new Set(feitos),[feitos]);
+  const pendentes=useMemo(()=>CICLO.filter(s=>!feitosSet.has(s.id)),[feitosSet]);
+  const todayStart=useMemo(()=>{const d=new Date();d.setHours(0,0,0,0);return d.getTime();},[clock.toDateString()]);
+  const semStart=todayStart-6*86400000;
+  const minHoje=useMemo(()=>horas.filter(e=>e.dt>=todayStart).reduce((s,e)=>s+e.min,0),[horas,todayStart]);
+  const minSemana=useMemo(()=>horas.filter(e=>e.dt>=semStart).reduce((s,e)=>s+e.min,0),[horas,semStart]);
+
+  const regsAtuais=useMemo(()=>lsGet('treino_regs',[]),[tab]);
+  const diasSemTreinar=useMemo(()=>{
+    const f=regsAtuais.filter(r=>r.feito&&r.dtMs);
+    if(!f.length)return null;
+    const ult=f.reduce((mx,r)=>r.dtMs>mx?r.dtMs:mx,0);
+    const d=new Date();d.setHours(0,0,0,0);
+    return Math.floor((d.getTime()-ult)/86400000);
+  },[regsAtuais]);
+
+  const appCtx={cicloNum,feitosN:feitos.length,N,pendentes,minHoje,minSemana};
+
+  // Ações
+  const concluir=id=>{
+    const n=[...feitos,id];
+    if(n.length>=N){
+      lsSet('feitos',[]);lsSet('cicloNum',cicloNum+1);
+      setFeitos([]);setCicloNum(c=>c+1);
+      setTrofeu(true);setTimeout(()=>setTrofeu(false),4000);
+    }else{lsSet('feitos',n);setFeitos(n);}
+  };
+  const irPara=idx=>{const ids=CICLO.slice(0,idx).map(s=>s.id);lsSet('feitos',ids);setFeitos(ids);setTab('hoje');};
+  const addHoras=e=>{const n=[...horas,e];lsSet('horas',n);setHoras(n);};
+  const saveMIT=itens=>{lsSet('mit',itens);setMit(itens);};
+  const saveWake=(h,m)=>{setWakeH(h);setWakeM(m);lsSet('wakeH',h);lsSet('wakeM',m);};
+
+  const pct=Math.round(feitos.length/N*100);
+  const prox=pendentes[0];
+  const corPrx=prox?.tag?.includes('TRIÂNGULO')?'#fbbf24':prox?.cor||'#fbbf24';
+
+  const TABS=[{id:'ia',e:'🤖',l:'IA'},{id:'hoje',e:'🏠',l:'Hoje'},{id:'ciclo',e:'🔄',l:'Ciclo'},{id:'stats',e:'📊',l:'Stats'},{id:'kaue',e:'👦',l:'Kauê'},{id:'comida',e:'🍽️',l:'Comida'},{id:'treino',e:'🏃',l:'Treino'},{id:'casa',e:'🏡',l:'Casa'}];
+
+  const ativAlerta=diasSemTreinar!==null&&diasSemTreinar>=1;
+  const chaveOK=getAK().startsWith('sk-ant');
+
+  return(
+    <div style={{minHeight:'100dvh',background:'#050a14',display:'flex',flexDirection:'column'}}>
+      {/* ── HEADER ── */}
+      <div style={{padding:'10px 14px 8px',background:'#07101f',borderBottom:'1px solid rgba(255,255,255,.06)',flexShrink:0}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:6}}>
+          <div style={{display:'flex',alignItems:'center',gap:8}}>
+            <div style={{fontFamily:"'DM Serif Display',serif",fontSize:17,color:'#fbbf24',letterSpacing:'1px'}}>RITY OS</div>
+            <span style={{fontSize:8,fontWeight:800,letterSpacing:'2px',padding:'2px 6px',borderRadius:3,background:'rgba(251,191,36,.1)',color:'rgba(251,191,36,.6)',border:'1px solid rgba(251,191,36,.2)',fontFamily:"'DM Mono',monospace"}}>TCE-RJ</span>
+            <div title={syncSt==='ok'?'Nuvem OK':syncSt==='syncing'?'Sincronizando...':syncSt==='error'?'Erro de sync':'Offline'} style={{width:7,height:7,borderRadius:'50%',background:syncSt==='ok'?'#34d399':syncSt==='syncing'?'#fbbf24':syncSt==='error'?'#f87171':'#334155',transition:'background .4s',cursor:'default'}}/>
+            {!chaveOK&&<span onClick={()=>setShowCfg(true)} style={{fontSize:8,padding:'2px 6px',borderRadius:3,background:'rgba(248,113,113,.12)',color:'#f87171',border:'1px solid rgba(248,113,113,.3)',cursor:'pointer',fontFamily:"'DM Mono',monospace"}}>⚠️ SEM CHAVE IA</span>}
+          </div>
+          <div style={{display:'flex',alignItems:'center',gap:10}}>
+            <div style={{textAlign:'right'}}>
+              <div style={{fontSize:16,fontWeight:900,fontFamily:"'DM Mono',monospace",color:'#c8d0e0',lineHeight:1}}>{fH(clock)}</div>
+              <div style={{fontSize:8,color:'#334155',lineHeight:1,marginTop:2}}>{fmtMin(minHoje)} hoje · {fmtMin(minSemana)}/sem</div>
+            </div>
+            <button id="btn-instalar" onClick={()=>window.instalarApp&&window.instalarApp()} style={{display:'none',alignItems:'center',gap:4,padding:'5px 10px',borderRadius:8,border:'1px solid rgba(96,165,250,.4)',background:'rgba(96,165,250,.12)',color:'#60a5fa',fontSize:10,fontWeight:800,cursor:'pointer',fontFamily:"'DM Mono',monospace"}}>📲 Instalar</button>
+            <button onClick={()=>setShowCfg(true)} style={{width:30,height:30,borderRadius:'50%',border:'1px solid rgba(255,255,255,.1)',background:'rgba(255,255,255,.04)',color:'#475569',fontSize:14,cursor:'pointer'}}>⚙️</button>
+          </div>
+        </div>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:5}}>
+          <div style={{display:'flex',gap:5,flexWrap:'wrap'}}>
+            <span style={{fontSize:8,fontWeight:700,padding:'2px 6px',borderRadius:3,background:'rgba(96,165,250,.1)',color:'#60a5fa',fontFamily:"'DM Mono',monospace"}}>⏱ {fmtMin(minSemana)}</span>
+            <span style={{fontSize:8,fontWeight:700,padding:'2px 6px',borderRadius:3,background:'rgba(251,191,36,.1)',color:'#fbbf24',fontFamily:"'DM Mono',monospace"}}>B{feitos.length}/{N}</span>
+            {ativAlerta&&<span style={{fontSize:8,fontWeight:700,padding:'2px 6px',borderRadius:3,background:diasSemTreinar>=2?'rgba(248,113,113,.12)':'rgba(251,191,36,.1)',color:diasSemTreinar>=2?'#f87171':'#fbbf24',fontFamily:"'DM Mono',monospace",cursor:'pointer'}} onClick={()=>setTab('treino')}>{diasSemTreinar>=2?'🚨':'⚠️'} {diasSemTreinar}d s/treino</span>}
+          </div>
+          <span style={{fontSize:9,color:'#334155',fontFamily:"'DM Mono',monospace"}}>{pct}% · ciclo {cicloNum}</span>
+        </div>
+        <BarProg done={feitos.length} total={N} cor={corPrx} h={3}/>
+      </div>
+
+      {/* ── CONTEÚDO ── */}
+      <div style={{flex:1,overflowY:'auto',padding:'14px 14px 0'}}>
+        {tab==='ia'   &&<TabIA    appCtx={appCtx} onMIT={saveMIT}/>}
+        {tab==='hoje' &&<TabHoje  pendentes={pendentes} mit={mit} onConcluir={concluir} onAddHoras={addHoras}/>}
+        {tab==='ciclo'&&<TabCiclo feitos={feitos} cicloNum={cicloNum} onConcluir={concluir} onIrPara={irPara}/>}
+        {tab==='stats'&&<TabStats horas={horas}/>}
+        {tab==='kaue' &&<TabKaue  wakeH={wakeH} wakeM={wakeM} onSaveWake={saveWake}/>}
+        {tab==='comida'&&<TabComida/>}
+        {tab==='treino'&&<TabTreino/>}
+        {tab==='casa' &&<TabCasa/>}
+        <div style={{height:72}}/>
+      </div>
+
+      {/* ── NAV BOTTOM ── */}
+      <div style={{position:'fixed',bottom:0,left:0,right:0,background:'#07101f',borderTop:'1px solid rgba(255,255,255,.07)',display:'flex',overflowX:'auto',scrollbarWidth:'none',zIndex:50}}>
+        {TABS.map(t=>{
+          const a=tab===t.id;
+          const badge=(t.id==='treino'&&ativAlerta)?diasSemTreinar:0;
+          return(
+            <button key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,minWidth:46,padding:'8px 2px 6px',border:'none',background:'transparent',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:2,position:'relative'}}>
+              {badge>0&&<div style={{position:'absolute',top:4,right:'12%',width:14,height:14,borderRadius:'50%',background:diasSemTreinar>=2?'#f87171':'#fbbf24',display:'flex',alignItems:'center',justifyContent:'center',fontSize:7,color:'#050a14',fontWeight:900}}>{badge}</div>}
+              <span style={{fontSize:a?18:16,transition:'font-size .15s'}}>{t.e}</span>
+              <span style={{fontSize:8,fontFamily:"'DM Mono',monospace",fontWeight:a?800:400,color:a?'#fbbf24':'#334155',transition:'color .15s'}}>{t.l}</span>
+              {a&&<div style={{position:'absolute',top:0,left:'15%',right:'15%',height:2,borderRadius:1,background:'#fbbf24'}}/>}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* ── TROFÉU ── */}
+      {trofeu&&(
+        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.92)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:200,flexDirection:'column',gap:16}} onClick={()=>setTrofeu(false)}>
+          <div style={{fontSize:64}}>🏆</div>
+          <div style={{fontFamily:"'DM Serif Display',serif",color:'#fbbf24',fontSize:26,textAlign:'center'}}>Ciclo {cicloNum-1} completo!</div>
+          <div style={{fontSize:13,color:'#64748b'}}>Iniciando ciclo {cicloNum}...</div>
+        </div>
+      )}
+
+      {/* ── CONFIG ── */}
+      {showCfg&&<ModalConfig fechar={()=>setShowCfg(false)}/>}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <ErrorBoundary><App/></ErrorBoundary>
+);
+</script>
+<script>
+// ── PWA: Registrar Service Worker ──
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('sw.js')
+      .then(()=>console.log('SW registrado'))
+      .catch(e=>console.warn('SW falhou:',e));
+  });
+}
+
+// ── PWA: Botão "Instalar app" ──
+let _deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();
+  _deferredPrompt=e;
+  // Mostrar botão instalar se existir
+  const btn=document.getElementById('btn-instalar');
+  if(btn)btn.style.display='flex';
+});
+window.addEventListener('appinstalled',()=>{
+  _deferredPrompt=null;
+  const btn=document.getElementById('btn-instalar');
+  if(btn)btn.style.display='none';
+});
+window.instalarApp=async()=>{
+  if(!_deferredPrompt)return;
+  _deferredPrompt.prompt();
+  const{outcome}=await _deferredPrompt.userChoice;
+  _deferredPrompt=null;
+  const btn=document.getElementById('btn-instalar');
+  if(btn)btn.style.display='none';
+};
+</script>
+
+<script>
+// ── SERVICE WORKER (PWA offline) ──────────────────────────────
+if('serviceWorker' in navigator){
+  const swCode = `
+const CACHE = 'rity-os-v4';
+const ASSETS = [
+  self.registration.scope,
+  'https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Mono:wght@400;500;700&family=DM+Sans:wght@400;600;700&display=swap',
+  'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js'
+];
+self.addEventListener('install', e => {
+  e.waitUntil(
+    caches.open(CACHE).then(cache => cache.addAll(ASSETS).catch(()=>{}))
+  );
+  self.skipWaiting();
+});
+self.addEventListener('activate', e => {
+  e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));
+  self.clients.claim();
+});
+self.addEventListener('fetch', e => {
+  e.respondWith(
+    caches.match(e.request).then(cached => cached || fetch(e.request).catch(() => cached))
+  );
+});
+`;
+  const blob = new Blob([swCode], {type:'application/javascript'});
+  const swUrl = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swUrl).catch(()=>{});
+}
+</script>
+</body>
+</html>
