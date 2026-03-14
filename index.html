@@ -41,29 +41,31 @@ const{useState,useEffect,useRef,useMemo,useCallback}=React;
 
 // ─── CONSTANTES ───────────────────────────────────────────────
 const CICLO=[
-  {id:1,dia:1,mat:"AFO",h:"1h30",cor:"#f87171",ic:"📘",tag:"PESADO ⭐⭐⭐⭐⭐",acao:"45min teoria · pausa · 45min questões",dica:"Abre o ciclo.\nReforços 5★: Receita, Despesa, Estágios.\nPara nos 45min. Levanta, anda."},
-  {id:2,dia:1,mat:"Dir. Administrativo",h:"1h30",cor:"#c084fc",ic:"📘",tag:"PESADO ⭐⭐⭐⭐",acao:"45min teoria · pausa · 45min questões",dica:"Técnica → jurídica.\nReforços: Terceiro Setor, Responsabilidade Civil."},
-  {id:3,dia:1,mat:"Contabilidade Pública",h:"1h30",cor:"#a78bfa",ic:"📒",tag:"PESADO ⭐⭐⭐⭐⭐",acao:"45min teoria · pausa · 45min questões",dica:"Mais pesada do TCE-RJ. Máx 1h30."},
-  {id:4,dia:2,mat:"Dir. Constitucional",h:"1h30",cor:"#60a5fa",ic:"📘",tag:"PESADO ⭐⭐⭐⭐",acao:"45min teoria · pausa · 45min questões",dica:"Dia 2 com jurídica.\nReforços: Direitos Sociais, Políticos."},
-  {id:5,dia:2,mat:"Auditoria / Controle Externo",h:"1h30",cor:"#fb923c",ic:"📗",tag:"PESADO ⭐⭐⭐⭐⭐",acao:"45min videoaula · pausa · 45min NotebookLM",dica:"Core do cargo.\nNotebookLM na 2ª metade: podcast ou quiz."},
-  {id:6,dia:2,mat:"Dir. Tributário",h:"1h30",cor:"#f87171",ic:"📘",tag:"MÉDIO ⭐⭐⭐",acao:"45min teoria · pausa · 45min questões",dica:"Competência, Legislação, Obrigação pt I."},
-  {id:7,dia:3,mat:"Raciocínio Lógico",h:"1h30",cor:"#38bdf8",ic:"🧩",tag:"MÉDIO ⭐⭐⭐",acao:"45min teoria · pausa · 45min questões",dica:"Nunca depois de jurídica densa. Abre dia 3 limpo."},
-  {id:8,dia:3,mat:"AFO 🔺",h:"1h30",cor:"#f87171",ic:"📘",tag:"TRIÂNGULO ⭐⭐⭐⭐⭐",acao:"45min questões · pausa · 45min revisão erros",dica:"Triângulo Meirelles. Só questões + análise erros."},
-  {id:9,dia:3,mat:"Português",h:"1h30",cor:"#fbbf24",ic:"📙",tag:"BÁSICO ⭐⭐⭐",acao:"45min teoria · pausa · 45min questões",dica:"Interpretação, Coesão, Semântica."},
-  {id:10,dia:4,mat:"Contabilidade 🔺",h:"1h30",cor:"#a78bfa",ic:"📒",tag:"TRIÂNGULO ⭐⭐⭐⭐⭐",acao:"45min questões · pausa · 45min revisão erros",dica:"Triângulo Meirelles. Só questões. Sem teoria nova."},
-  {id:11,dia:4,mat:"Adm. Pública",h:"1h30",cor:"#fde68a",ic:"📙",tag:"MÉDIO ⭐⭐⭐",acao:"45min teoria · pausa · 45min questões",dica:"Governabilidade e Governança."},
-  {id:12,dia:4,mat:"Discursivas",h:"1h30",cor:"#fb923c",ic:"✏️",tag:"TRANSVERSAL",acao:"45min estrutura · pausa · 45min redação completa",dica:"1ª metade: 3 argumentos.\n2ª metade: redação cronometrada."},
-  {id:13,dia:5,mat:"Auditoria 🔺",h:"1h30",cor:"#fb923c",ic:"📗",tag:"TRIÂNGULO ⭐⭐⭐⭐⭐",acao:"45min questões · pausa · 45min revisão erros",dica:"Triângulo. Questões + Anki bloco 5."},
-  {id:14,dia:5,mat:"Português 🔺",h:"1h30",cor:"#fbbf24",ic:"📙",tag:"TRIÂNGULO ⭐⭐⭐",acao:"45min questões · pausa · 45min revisão erros",dica:"Classifica erros: interpretação / gramática / coesão."},
-  {id:15,dia:5,mat:"TI / Análise de Dados",h:"1h30",cor:"#67e8f9",ic:"💻",tag:"MÉDIO ⭐⭐",acao:"45min teoria · pausa · 45min questões",dica:"Análise de Informações."},
-  {id:16,dia:6,mat:"Dir. Tributário 🔺",h:"1h30",cor:"#f87171",ic:"📘",tag:"TRIÂNGULO ⭐⭐⭐",acao:"45min questões · pausa · 45min revisão erros",dica:"Competência, Legislação, Obrigação."},
-  {id:17,dia:6,mat:"Raciocínio Lógico 🔺",h:"1h30",cor:"#38bdf8",ic:"🧩",tag:"TRIÂNGULO ⭐⭐⭐",acao:"45min teoria · pausa · 10 questões cronometradas",dica:"10 questões, 12min cada."},
-  {id:18,dia:6,mat:"Controle Externo",h:"1h30",cor:"#86efac",ic:"📋",tag:"ESPECÍFICO ⭐⭐⭐",acao:"45min teoria · pausa · 45min questões",dica:"Lei Orgânica TCE-RJ, competências."},
-  {id:19,dia:7,mat:"TI 🔺",h:"1h30",cor:"#67e8f9",ic:"💻",tag:"TRIÂNGULO ⭐⭐",acao:"45min questões · pausa · 45min revisão erros",dica:"Só questões."},
-  {id:20,dia:7,mat:"Dir. Civil",h:"1h30",cor:"#fcd34d",ic:"📙",tag:"LEVE ⭐⭐",acao:"45min teoria · pausa · 45min questões",dica:"Prescrição pós-STJ 2019."},
-  {id:21,dia:7,mat:"Dir. Processual Civil",h:"1h30",cor:"#6ee7b7",ic:"📘",tag:"LEVE ⭐⭐",acao:"45min teoria · pausa · 45min questões",dica:"Questões e 3C."},
-  {id:22,dia:8,mat:"Discursivas 🔺",h:"1h30",cor:"#fb923c",ic:"✏️",tag:"TRIÂNGULO TRANSVERSAL",acao:"45min estrutura · pausa · 45min redação completa",dica:"3h totais. Relê redação do bloco 12."},
-  {id:23,dia:8,mat:"Dir. Penal",h:"1h30",cor:"#fca5a5",ic:"⚖️",tag:"LEVE ⭐⭐",acao:"45min teoria · pausa · 45min questões",dica:"Fecha o ciclo."},
+  {id:1,dia:1,mat:"TI / Análise de Dados",h:"1h30",cor:"#67e8f9",ic:"💻",tag:"URGENTE ATRASADA ⭐⭐",acao:"45min teoria · pausa · 45min questões CRONOMETRADAS",dica:"🚨 3x atrasada no Guruja — abre o ciclo.\nCérebro fresco para medir desempenho real.\n2ª metade obrigatoriamente questões: 2min cada."},
+  {id:2,dia:1,mat:"Dir. Civil",h:"1h30",cor:"#fcd34d",ic:"📙",tag:"ATRASADA ⭐⭐",acao:"45min teoria · pausa · 45min questões",dica:"T→J ✅ Atrasada no Guruja.\nGuruja: 89% mas atrasada — manutenção urgente.\nFoco: Prescrição pós-STJ 2019."},
+  {id:3,dia:1,mat:"Controle Externo",h:"1h30",cor:"#86efac",ic:"📋",tag:"URGENTE ATRASADA ⭐⭐⭐⭐⭐",acao:"45min teoria (legislação) · pausa · 45min questões",dica:"J→T ✅ Core do cargo. Atrasada no Guruja.\nFoco: Lei Orgânica TCE-RJ, competências, fiscalização.\nAnote erros para o bloco 🔺."},
+  {id:4,dia:2,mat:"Dir. Penal",h:"1h30",cor:"#fca5a5",ic:"⚖️",tag:"ATRASADA ⭐⭐",acao:"45min teoria · pausa · 45min questões",dica:"T→J ✅ Atrasada no Guruja.\nManutenção. Não é prioritário para TCE-RJ.\nFoco: Ilicitude e Culpabilidade."},
+  {id:5,dia:2,mat:"Adm. Pública",h:"1h30",cor:"#fde68a",ic:"📙",tag:"ATRASADA ⭐⭐⭐",acao:"45min teoria · pausa · 45min questões",dica:"J→A ✅ 2x atrasada no Guruja.\nGuruja: 74% — atenção.\nFoco: Governabilidade, Governança, Qualidade, Transparência."},
+  {id:6,dia:2,mat:"Dir. Processual Civil",h:"1h30",cor:"#6ee7b7",ic:"📘",tag:"ATRASADA ⭐⭐",acao:"45min teoria · pausa · 45min questões",dica:"A→J ✅ Atrasada no Guruja.\nGuruja: 96,4% mas atrasada — revisão rápida.\nFoco: Competência, Recursos."},
+  {id:7,dia:3,mat:"Raciocínio Lógico",h:"1h30",cor:"#38bdf8",ic:"🧩",tag:"ATRASADA ⭐⭐⭐",acao:"45min teoria · pausa · 45min questões",dica:"J→E ✅ Atrasada no Guruja. ⭐⭐⭐⭐⭐ Relevância.\nCérebro muda de modo cognitivo.\nNunca junto com TI ou Mat.Financeira."},
+  {id:8,dia:3,mat:"Português",h:"1h30",cor:"#fbbf24",ic:"📙",tag:"ATRASADA ⭐⭐⭐",acao:"45min teoria · pausa · 45min questões",dica:"E→V ✅ Atrasada no Guruja.\nGuruja: 76% e 79% — oscilando.\nClassifica erro: interpretação / gramática / coesão."},
+  {id:9,dia:3,mat:"Discursivas",h:"1h30",cor:"#fb923c",ic:"✏️",tag:"ATRASADA TRANSVERSAL",acao:"45min estrutura · pausa · 45min redação completa",dica:"V→W ✅ Atrasada no Guruja. ⭐⭐⭐⭐⭐ Relevância.\nTema: Licitações Públicas (está no Guruja).\nGuarda o texto — compara com bloco 22."},
+  {id:10,dia:4,mat:"AFO",h:"1h30",cor:"#f87171",ic:"📘",tag:"PESADO ⭐⭐⭐⭐⭐",acao:"45min teoria · pausa · 45min questões",dica:"W→T ✅ Técnica pesada volta aqui.\nFoco: Receita, Despesa, Estágios.\nPara nos 45min. Levanta, anda."},
+  {id:11,dia:4,mat:"Dir. Constitucional",h:"1h30",cor:"#60a5fa",ic:"📘",tag:"PESADO ⭐⭐⭐⭐",acao:"45min teoria · pausa · 45min questões",dica:"T→J ✅\nGuruja: 79% e 86% — irregular.\nFoco: Direitos Sociais, Políticos, Princípios."},
+  {id:12,dia:4,mat:"Contabilidade Pública",h:"1h30",cor:"#a78bfa",ic:"📒",tag:"PESADO ⭐⭐⭐⭐⭐",acao:"45min teoria · pausa · 45min questões",dica:"J→T ✅ Matéria mais pesada do TCE-RJ.\nMáx 1h30. Sem estender.\nNunca junto com AFO sem jurídica no meio."},
+  {id:13,dia:5,mat:"Dir. Administrativo",h:"1h30",cor:"#c084fc",ic:"📘",tag:"PESADO ⭐⭐⭐⭐",acao:"45min teoria · pausa · 45min questões",dica:"T→J ✅\nGuruja: 81% — manter pressão.\nFoco: Terceiro Setor, Responsabilidade Civil, Serviços Públicos."},
+  {id:14,dia:5,mat:"Auditoria Governamental",h:"1h30",cor:"#fb923c",ic:"📗",tag:"PESADO ⭐⭐⭐⭐⭐",acao:"45min videoaula · pausa · 45min NotebookLM",dica:"J→T ✅ Core do cargo.\nGuruja: 72% no Planejamento — ponto crítico.\nNotebookLM 2ª metade. Anote erros para o bloco 🔺."},
+  {id:15,dia:5,mat:"Dir. Tributário",h:"1h30",cor:"#f87171",ic:"📘",tag:"MANUTENÇÃO ⭐⭐⭐",acao:"45min teoria · pausa · 45min questões",dica:"T→J ✅\nGuruja: 92,8% — solidíssimo. 1 bloco só.\nFoco: Obrigação Tributária pt II."},
+  {id:16,dia:6,mat:"Raciocínio Lógico 🔺",h:"1h30",cor:"#38bdf8",ic:"🧩",tag:"TRIÂNGULO ⭐⭐⭐",acao:"45min teoria · pausa · 10 questões cronometradas",dica:"J→E ✅ Triângulo. Base: bloco 7.\n10 questões, 12min cada — treina velocidade.\nNunca no mesmo dia que Mat. Financeira."},
+  {id:17,dia:6,mat:"AFO 🔺",h:"1h30",cor:"#f87171",ic:"📘",tag:"TRIÂNGULO ⭐⭐⭐⭐⭐",acao:"45min questões · pausa · 45min revisão erros",dica:"E→T ✅ Triângulo Meirelles. Base: bloco 10.\nAbra o Caderno de Erros antes.\nSó questões. Foco nos tópicos errados."},
+  {id:18,dia:6,mat:"Português 🔺",h:"1h30",cor:"#fbbf24",ic:"📙",tag:"TRIÂNGULO ⭐⭐⭐",acao:"45min questões · pausa · 45min revisão erros",dica:"T→V ✅ Triângulo. Base: bloco 8.\nSó questões CEBRASPE/FGV.\nClassifica erros. Anki: 1 card por erro."},
+  {id:19,dia:7,mat:"Contabilidade 🔺",h:"1h30",cor:"#a78bfa",ic:"📒",tag:"TRIÂNGULO ⭐⭐⭐⭐⭐",acao:"45min questões · pausa · 45min revisão erros",dica:"V→T ✅ Triângulo Meirelles. Base: bloco 12.\nSó questões. Sem teoria nova.\nAbra o Caderno de Erros antes."},
+  {id:20,dia:7,mat:"Mat. Financeira 🆕",h:"1h30",cor:"#34d399",ic:"💰",tag:"NOVO ⭐⭐⭐⭐",acao:"45min aula base · pausa · 45min NotebookLM",dica:"T→E ✅ Entrada suave para matéria nova.\nNunca estudou — sem pressão.\n1ª metade: juros simples/compostos, VP, VF, taxa nominal vs efetiva.\n2ª metade: NotebookLM — cria áudio. Ouça no tempo morto."},
+  {id:21,dia:7,mat:"TI 🔺",h:"1h30",cor:"#67e8f9",ic:"💻",tag:"TRIÂNGULO ⭐⭐",acao:"45min questões · pausa · 45min revisão erros",dica:"E→T ✅ Triângulo. Base: bloco 1.\nVerifica se desempenho melhorou vs bloco 1.\nRegistra % para acompanhar evolução."},
+  {id:22,dia:8,mat:"Discursivas 🔺",h:"1h30",cor:"#fb923c",ic:"✏️",tag:"TRIÂNGULO TRANSVERSAL",acao:"45min estrutura · pausa · 45min redação completa",dica:"T→W ✅ Triângulo. Base: bloco 9.\nRelê a redação do bloco 9.\nEscolhe tema diferente — Controle Externo ou AFO.\nCompara as duas redações."},
+  {id:23,dia:8,mat:"Controle Externo 🔺🔺",h:"1h30",cor:"#86efac",ic:"📋",tag:"URGENTE TRIÂNGULO ⭐⭐⭐⭐⭐",acao:"45min questões TCE · pausa · 45min revisão erros",dica:"W→T ✅ 2º bloco de Controle Externo. Base: bloco 3.\nSó questões TCE-RJ.\nAbra o Caderno de Erros do bloco 3.\nEste bloco define se vai subir de 74%."},
+  {id:24,dia:9,mat:"Mat. Financeira 🔺 🆕",h:"1h30",cor:"#34d399",ic:"💰",tag:"NOVO TRIÂNGULO ⭐⭐⭐⭐",acao:"8-10 questões básicas · pausa · revisão erros + Anki",dica:"T→E ✅ PROTOCOLO ESPECIAL. Base: bloco 20.\nSem pressão — objetivo é mapear.\n8-10 questões nível fácil/médio. Sem cronômetro.\nCada erro: por que errou + 1 card Anki."},
+  {id:25,dia:9,mat:"Auditoria 🔺",h:"1h30",cor:"#fb923c",ic:"📗",tag:"TRIÂNGULO ⭐⭐⭐⭐⭐",acao:"45min questões específicas · pausa · 45min revisão erros",dica:"E→T ✅ Fecha o ciclo. Base: bloco 14.\nFOCO CRÍTICO: Planejamento de Auditoria (72%).\nAbra o Caderno de Erros — só questões dos tópicos errados.\n♻️ Volta pro bloco 1 imediatamente."},
 ];
 const N=CICLO.length;
 const NOMES_DIA=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
@@ -496,6 +498,7 @@ function TabEstudo({feitos,cicloNum,horas,onConcluir,onIrPara,onAddHoras,mit,pla
   const[gurujaLoad,setGurujaLoad]=useState(false);
   const[confJaFiz,setConfJaFiz]=useState(null);
   const[confIr,setConfIr]=useState(null);
+  const[cicloAbertos,setCicloAbertos]=useState(()=>new Set());
 
   // Planejamento semanal
   const[metaHoras,setMetaHoras]=useState(()=>lsGet('meta_horas_sem',35));
@@ -593,7 +596,7 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
     setGurujaLoad(false);
   };
 
-  const SUB=[{id:'foco',l:'🎯 Foco'},{id:'registro',l:'📝 Registro'},{id:'stats',l:'📊 Stats'},{id:'plano',l:'📅 Plano'}];
+  const SUB=[{id:'foco',l:'🎯 Foco'},{id:'registro',l:'📝 Registro'},{id:'ciclo',l:'🔄 Ciclo'},{id:'stats',l:'📊 Stats'},{id:'plano',l:'📅 Plano'}];
   const PCOR={5:'#f87171',4:'#fb923c',3:'#fbbf24',2:'#34d399',1:'#60a5fa'};
 
   return(
@@ -775,7 +778,94 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
       </div>}
 
       {/* ── REVISÃO ──────────────────────────────────────────── */}
-            {aba==='stats'&&<div>
+      {/* CICLO COMPLETO */}
+      {aba==='ciclo'&&<div>
+        {/* Barra de progresso */}
+        <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:10}}>
+          <BarProg done={feitos.length} total={N} cor={ativo?.tag?.includes('TRIÂNGULO')?'#fbbf24':ativo?.cor||'#fbbf24'} h={5}/>
+          <span style={{fontSize:11,color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:700,flexShrink:0}}>{feitos.length}/{N}</span>
+        </div>
+        <div style={{display:'flex',gap:6,marginBottom:14}}>
+          {[[N,'blocos'],['~37h','por ciclo'],['9-10d','duração'],[`#${cicloNum}`,'atual']].map(([v,l],i)=>(
+            <div key={i} style={{flex:1,padding:'8px 4px',borderRadius:9,textAlign:'center',background:'rgba(251,191,36,.04)',border:'1px solid rgba(251,191,36,.1)'}}>
+              <div style={{fontSize:12,fontWeight:900,color:'#fbbf24',fontFamily:"'DM Mono',monospace",lineHeight:1}}>{v}</div>
+              <div style={{fontSize:8,color:'#1e293b',marginTop:2}}>{l}</div>
+            </div>
+          ))}
+        </div>
+        {/* Blocos agrupados por dia */}
+        {Array.from({length:9},(_,dIdx)=>dIdx+1).map(dia=>{
+          const blocosDia=CICLO.filter(s=>s.dia===dia);
+          if(!blocosDia.length)return null;
+          const todoDone=blocosDia.every(s=>feitosSet.has(s.id));
+          const temAtivo=blocosDia.some(s=>s===ativo);
+          return(
+            <div key={dia} style={{marginBottom:8,borderRadius:12,overflow:'hidden',border:`1px solid ${temAtivo?'rgba(251,191,36,.3)':todoDone?'rgba(52,211,153,.2)':'rgba(255,255,255,.06)'}`}}>
+              {/* Header do dia */}
+              <div style={{padding:'7px 12px',background:temAtivo?'rgba(251,191,36,.07)':todoDone?'rgba(52,211,153,.05)':'rgba(255,255,255,.02)',display:'flex',alignItems:'center',gap:8}}>
+                <span style={{fontSize:10,fontWeight:800,fontFamily:"'DM Mono',monospace",color:temAtivo?'#fbbf24':todoDone?'#34d399':'#334155'}}>
+                  {todoDone?'✓ ':temAtivo?'▶ ':''}DIA {dia}
+                </span>
+                <div style={{flex:1,height:1,background:'rgba(255,255,255,.04)'}}/>
+                <span style={{fontSize:9,color:'#1e293b',fontFamily:"'DM Mono',monospace"}}>{blocosDia.length} blocos</span>
+              </div>
+              {/* Blocos do dia */}
+              {blocosDia.map((s,si)=>{
+                const done=feitosSet.has(s.id);
+                const isAtivo=!done&&s===ativo;
+                const tri=s.tag?.includes('TRIÂNGULO')||s.tag?.includes('URGENTE');
+                const c=tri?'#fbbf24':s.cor;
+                const aberto=cicloAbertos.has(s.id)||(isAtivo&&!cicloAbertos.has(-s.id));
+                const toggleAberto=()=>setCicloAbertos(prev=>{
+                  const n=new Set(prev);
+                  if(aberto){n.delete(s.id);if(isAtivo)n.add(-s.id);}
+                  else{n.add(s.id);n.delete(-s.id);}
+                  return n;
+                });
+                return(
+                  <div key={s.id} style={{borderTop:si>0?'1px solid rgba(255,255,255,.04)':'none'}}>
+                    {/* Linha do bloco */}
+                    <div onClick={toggleAberto} style={{padding:'9px 12px',cursor:'pointer',opacity:!done&&!isAtivo?.45:1,background:done?'rgba(52,211,153,.03)':isAtivo?`${c}08`:'transparent',display:'flex',alignItems:'center',gap:9}}>
+                      {/* Badge número */}
+                      <div style={{width:22,height:22,borderRadius:'50%',flexShrink:0,border:`2px solid ${done?'#34d399':isAtivo?c:'rgba(255,255,255,.12)'}`,background:done?'#34d399':isAtivo?`${c}25`:'transparent',display:'flex',alignItems:'center',justifyContent:'center',fontSize:8,color:done?'#050a14':isAtivo?c:'#334155',fontWeight:900}}>
+                        {done?'✓':isAtivo?'▶':s.id}
+                      </div>
+                      <span style={{fontSize:14,flexShrink:0}}>{s.ic}</span>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{fontSize:12,fontWeight:700,color:done?'#1e3a2a':isAtivo?'#e8edf5':'#475569',textDecoration:done?'line-through':'none',lineHeight:1.3}}>{s.mat}</div>
+                        <div style={{fontSize:9,color:'#334155',marginTop:1}}>{s.acao}</div>
+                      </div>
+                      <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:3,flexShrink:0}}>
+                        <Chip label={done?'✓ feito':tri?'🔺':s.tag.split(' ')[0]} cor={done?'#1e3a2a':tri?'#fbbf24':s.cor} sm/>
+                        <span style={{fontSize:8,color:'#334155',fontFamily:"'DM Mono',monospace"}}>{aberto?'▲':'▼'}</span>
+                      </div>
+                    </div>
+                    {/* Expandido */}
+                    {aberto&&<div style={{padding:'10px 12px 12px 43px',background:'rgba(0,0,0,.15)',borderTop:'1px solid rgba(255,255,255,.04)'}}>
+                      {s.dica.split('\n').map((l,j)=>(
+                        <div key={j} style={{fontSize:11,color:'#64748b',lineHeight:1.8,marginBottom:j<s.dica.split('\n').length-1?0:0}}>{l}</div>
+                      ))}
+                      {/* Botões de ação */}
+                      {!done&&<div style={{display:'flex',gap:7,marginTop:10}}>
+                        {isAtivo?(
+                          <button onClick={e=>{e.stopPropagation();setConfJaFiz(s.id);}} style={{flex:1,padding:'9px',borderRadius:9,border:'none',background:`linear-gradient(135deg,${c},${c})`,color:'#050a14',fontSize:11,fontWeight:800,cursor:'pointer',fontFamily:"'DM Mono',monospace"}}>✓ JÁ FIZ</button>
+                        ):(
+                          <>
+                            <button onClick={e=>{e.stopPropagation();setConfIr(s.id);}} style={{flex:1,padding:'9px',borderRadius:9,border:`1px solid ${c}44`,background:`${c}12`,color:c,fontSize:11,fontWeight:700,cursor:'pointer'}}>→ Ir para este</button>
+                            <button onClick={e=>{e.stopPropagation();setConfJaFiz(s.id);}} style={{flex:1,padding:'9px',borderRadius:9,border:'1px solid rgba(52,211,153,.3)',background:'rgba(52,211,153,.08)',color:'#34d399',fontSize:11,fontWeight:700,cursor:'pointer'}}>✓ Já fiz</button>
+                          </>
+                        )}
+                      </div>}
+                    </div>}
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })}
+      </div>}
+
+      {aba==='stats'&&<div>
         <div style={{display:'flex',gap:8,marginBottom:14}}>
           {[['Hoje',fmtMin(minHoje),'#60a5fa'],['Semana',fmtMin(minSem),'#fbbf24'],['Meta','35h','#34d399']].map(([l,v,c])=>(
             <div key={l} style={{flex:1,padding:'14px 8px',borderRadius:12,background:`${c}08`,border:`1px solid ${c}20`,textAlign:'center'}}>
@@ -1786,6 +1876,12 @@ function ModalConfig({fechar}){
               <div style={{fontSize:12,color:'#475569',lineHeight:1.7,marginBottom:12}}>Salva todos seus dados locais em JSON. Faça sempre antes de uma atualização.</div>
               <button onClick={exportar} style={{width:'100%',padding:'13px',borderRadius:10,border:'none',background:'linear-gradient(135deg,#34d399,#34d399)',color:'#050a14',fontSize:13,fontWeight:800,cursor:'pointer'}}>⬇️ Baixar backup</button>
             </div>
+            {/* Reset ciclo */}
+            <div style={{padding:'14px',borderRadius:12,background:'rgba(251,191,36,.05)',border:'1px solid rgba(251,191,36,.2)',marginBottom:12}}>
+              <div style={{fontSize:9,letterSpacing:'2px',color:'#fbbf24',fontFamily:"'DM Mono',monospace",marginBottom:6}}>🔄 RESETAR CICLO</div>
+              <div style={{fontSize:12,color:'#475569',marginBottom:10}}>Zera apenas os blocos feitos e reinicia o contador do ciclo. Não apaga horas, Anki, erros ou plano semanal.</div>
+              <button onClick={()=>{localStorage.removeItem('feitos');localStorage.removeItem('cicloNum');setMsg('✅ Ciclo resetado! Recarregando...');setTimeout(()=>window.location.reload(),1200);}} style={{width:'100%',padding:'11px',borderRadius:9,border:'2px solid rgba(251,191,36,.4)',background:'rgba(251,191,36,.08)',color:'#fbbf24',fontSize:12,fontWeight:800,cursor:'pointer'}}>🔄 Resetar para bloco 1</button>
+            </div>
             <div style={{padding:'14px',borderRadius:12,background:'rgba(248,113,113,.04)',border:'1px solid rgba(248,113,113,.15)'}}>
               <div style={{fontSize:9,letterSpacing:'2px',color:'#f87171',fontFamily:"'DM Mono',monospace",marginBottom:6}}>🗑️ APAGAR TUDO</div>
               <div style={{fontSize:12,color:'#475569',marginBottom:10}}>Remove todos os dados locais. Somente para recomeçar do zero.</div>
@@ -1846,6 +1942,12 @@ function App(){
   useEffect(()=>{
     Sync.onStatus(s=>setSyncSt(s));
     if(Sync.isConfigured()){Sync.init().then(ok=>{if(ok){setFeitos(lsGet('feitos',[]));setCicloNum(lsGet('cicloNum',1));setHoras(lsGet('horas',[]));setMit(lsGet('mit',[]));}});}
+    // Auto-reset: se tiver dados do ciclo antigo (≤23 blocos), zera para começar do 1
+    const _f=lsGet('feitos',[]);
+    if(lsGet('ciclo_versao','')!=='v25'){
+      if(_f.length>0)lsSet('feitos',[]);
+      lsSet('cicloNum',1);lsSet('ciclo_versao','v25');
+    }
     setFeitos(lsGet('feitos',[]));setCicloNum(lsGet('cicloNum',1));setHoras(lsGet('horas',[]));setMit(lsGet('mit',[]));
     const tick=setInterval(()=>setClock(new Date()),1000);
     return()=>clearInterval(tick);
