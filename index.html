@@ -2262,8 +2262,8 @@ function App(){
   const metaHoras=lsGet('meta_horas_sem',35);
   const appCtx={cicloNum,feitosN:feitos.length,N,pendentes,minHoje,minSemana};
 
-  const concluir=id=>{const n=[...feitos,id];if(n.length>=N){lsSet('feitos',[]);lsSet('cicloNum',cicloNum+1);setFeitos([]);setCicloNum(c=>c+1);setTrofeu(true);setTimeout(()=>setTrofeu(false),4000);}else{lsSet('feitos',n);setFeitos(n);}};
-  const irPara=idx=>{const ids=CICLO.slice(0,idx).map(s=>s.id);lsSet('feitos',ids);setFeitos(ids);};
+  const concluir=id=>{if(feitos.includes(id))return;const n=[...feitos,id];if(n.length>=N){lsSet('feitos',[]);lsSet('cicloNum',cicloNum+1);setFeitos([]);setCicloNum(c=>c+1);setTrofeu(true);setTimeout(()=>setTrofeu(false),4000);}else{lsSet('feitos',n);setFeitos(n);}};
+  const irPara=id=>{const targetIdx=CICLO.findIndex(s=>s.id===id);const ids=CICLO.slice(0,targetIdx).map(s=>s.id);lsSet('feitos',ids);setFeitos(ids);};
   const addHoras=e=>{const n=[...horas,e];lsSet('horas',n);setHoras(n);};
   const saveMIT=itens=>{lsSet('mit',itens);setMit(itens);};
   const savePlano=p=>{setPlanoSemana(p);lsSet('plano_semanal',p);};
