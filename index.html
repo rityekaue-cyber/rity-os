@@ -504,7 +504,7 @@ Se mencionar MITs, inclua: MIT:["t1","t2","t3"]`;
 }
 
 // ─── TAB: ESTUDO (fusão Ciclo + Hoje + Revisão + Stats) ───────
-function TabEstudo({feitos,cicloNum,horas,onConcluir,onIrPara,onAddHoras,mit,planoSemana,onSavePlano}){
+function TabEstudo({feitos,cicloNum,horas,onConcluir,onIrPara,onDesmarcar,onAddHoras,mit,planoSemana,onSavePlano}){
   const[aba,setAba]=useState('foco');
   const feitosSet=useMemo(()=>new Set(feitos),[feitos]);
   const pendentes=useMemo(()=>CICLO.filter(s=>!feitosSet.has(s.id)),[feitosSet]);
@@ -876,16 +876,22 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
                         <div key={j} style={{fontSize:11,color:'#94a3b8',lineHeight:1.8,marginBottom:j<s.dica.split('\n').length-1?0:0}}>{l}</div>
                       ))}
                       {/* Botões de ação */}
-                      {!done&&<div style={{display:'flex',gap:7,marginTop:10}}>
-                        {isAtivo?(
-                          <button onClick={e=>{e.stopPropagation();setConfJaFiz(s.id);}} style={{flex:1,padding:'9px',borderRadius:9,border:'none',background:`linear-gradient(135deg,${c},${c})`,color:'#050a14',fontSize:11,fontWeight:800,cursor:'pointer',fontFamily:"'DM Mono',monospace"}}>✓ JÁ FIZ</button>
-                        ):(
-                          <>
-                            <button onClick={e=>{e.stopPropagation();setConfIr(s.id);}} style={{flex:1,padding:'9px',borderRadius:9,border:`1px solid ${c}44`,background:`${c}12`,color:c,fontSize:11,fontWeight:700,cursor:'pointer'}}>→ Ir para este</button>
-                            <button onClick={e=>{e.stopPropagation();setConfJaFiz(s.id);}} style={{flex:1,padding:'9px',borderRadius:9,border:'1px solid rgba(52,211,153,.3)',background:'rgba(52,211,153,.08)',color:'#34d399',fontSize:11,fontWeight:700,cursor:'pointer'}}>✓ Já fiz</button>
-                          </>
-                        )}
-                      </div>}
+                      {done?(
+                        <div style={{marginTop:10}}>
+                          <button onClick={e=>{e.stopPropagation();const n=feitos.filter(fid=>fid!==s.id);onDesmarcar(n);setCicloAbertos(prev=>{const nx=new Set(prev);nx.add(s.id);return nx;});}} style={{width:'100%',padding:'8px',borderRadius:8,border:'1px solid rgba(248,113,113,.3)',background:'rgba(248,113,113,.06)',color:'#f87171',fontSize:10,fontWeight:700,cursor:'pointer'}}>↩ Desmarcar — não fiz este</button>
+                        </div>
+                      ):(
+                        <div style={{display:'flex',gap:7,marginTop:10}}>
+                          {isAtivo?(
+                            <button onClick={e=>{e.stopPropagation();setConfJaFiz(s.id);}} style={{flex:1,padding:'9px',borderRadius:9,border:'none',background:`linear-gradient(135deg,${c},${c})`,color:'#050a14',fontSize:11,fontWeight:800,cursor:'pointer',fontFamily:"'DM Mono',monospace"}}>✓ JÁ FIZ</button>
+                          ):(
+                            <>
+                              <button onClick={e=>{e.stopPropagation();setConfIr(s.id);}} style={{flex:1,padding:'9px',borderRadius:9,border:`1px solid ${c}44`,background:`${c}12`,color:c,fontSize:11,fontWeight:700,cursor:'pointer'}}>→ Ir para este</button>
+                              <button onClick={e=>{e.stopPropagation();setConfJaFiz(s.id);}} style={{flex:1,padding:'9px',borderRadius:9,border:'1px solid rgba(52,211,153,.3)',background:'rgba(52,211,153,.08)',color:'#34d399',fontSize:11,fontWeight:700,cursor:'pointer'}}>✓ Já fiz</button>
+                            </>
+                          )}
+                        </div>
+                      )}
                     </div>}
                   </div>
                 );
@@ -2263,6 +2269,7 @@ function App(){
   const appCtx={cicloNum,feitosN:feitos.length,N,pendentes,minHoje,minSemana};
 
   const concluir=id=>{if(feitos.includes(id))return;const n=[...feitos,id];if(n.length>=N){lsSet('feitos',[]);lsSet('cicloNum',cicloNum+1);setFeitos([]);setCicloNum(c=>c+1);setTrofeu(true);setTimeout(()=>setTrofeu(false),4000);}else{lsSet('feitos',n);setFeitos(n);}};
+  const desmarcar=n=>{lsSet('feitos',n);setFeitos(n);};
   const irPara=id=>{
     const targetIdx=CICLO.findIndex(s=>s.id===id);
     // IDs de todos os blocos ANTES do destino
@@ -2327,7 +2334,7 @@ function App(){
 
       <div style={{flex:1,overflowY:'auto',padding:'14px 14px 0'}}>
         {tab==='ia'     &&<TabIA     appCtx={appCtx} onMIT={saveMIT}/>}
-        {tab==='estudo' &&<TabEstudo feitos={feitos} cicloNum={cicloNum} horas={horas} onConcluir={concluir} onIrPara={irPara} onAddHoras={addHoras} mit={mit} planoSemana={planoSemana} onSavePlano={savePlano}/>}
+        {tab==='estudo' &&<TabEstudo feitos={feitos} cicloNum={cicloNum} horas={horas} onConcluir={concluir} onIrPara={irPara} onDesmarcar={desmarcar} onAddHoras={addHoras} mit={mit} planoSemana={planoSemana} onSavePlano={savePlano}/>}
         {tab==='revisao'&&<TabRevisao totalBlocos={feitos.length}/>}
         {tab==='erros'  &&<TabErros/>}
         {tab==='agenda' &&<TabAgenda planoSemana={planoSemana} onSetTab={setTab}/>}
