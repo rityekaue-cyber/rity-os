@@ -331,7 +331,8 @@ DADOS DO APP AGORA:
 - Próx. bloco: ${appCtx.pendentes[0]?.mat||'Ciclo completo!'} (${appCtx.pendentes[0]?.tag||''})
 - Treino hoje: ${treinos[dw]}
 - Trabalho hoje: ${trabalha?'SIM 13h-18h':'NÃO'}
-- Último registro: ${ultReg?`${ultReg.materia}, dif ${ultReg.dificuldade}★, ${ultReg.ankiProfundo} cards`:'nenhum ainda'}
+- Último registro: ${ultReg?`${ultReg.materia}, dif ${ultReg.dificuldade}★, ${ultReg.questoes||0}Q, travou: ${ultReg.travou||'nada'}`:' nenhum ainda'}
+- Tendência 7 dias: ${(()=>{const h=historico.slice(-7);if(!h.length)return 'sem dados';const por={};h.forEach(r=>{if(r.materia&&r.dificuldade){por[r.materia]=(por[r.materia]||[]);por[r.materia].push(r.dificuldade);}});return Object.entries(por).map(([m,ds])=>`${m}:${(ds.reduce((s,d)=>s+d,0)/ds.length).toFixed(1)}★`).join(', ')||'sem dados';})()}
 - Urgentes de revisão: ${urgentes.length}
 - MATÉRIAS URGENTES (registradas por você): ${lsGet('urgentes_ia',[]).map(u=>u.mat+(u.contexto?' ('+u.contexto+')':'')).join(', ')||'nenhuma'}
 - Fila urgente hoje: ${fila.length}
@@ -520,7 +521,7 @@ function TabEstudo({feitos,cicloNum,horas,onConcluir,onIrPara,onDesmarcar,onAddH
   const hoje=getDK();
   const[historico,setHistorico]=useState(()=>lsGet('historico_diario',[]));
   const regHoje=historico.find(r=>r.id===hoje)||null;
-  const[rForm,setRForm]=useState({materia:regHoje?.materia||ativo?.mat||'',tempo:regHoje?.tempo||'',ankiProfundo:regHoje?.ankiProfundo||'',ankiRapido:regHoje?.ankiRapido||'',dificuldade:regHoje?.dificuldade||0,audioFeito:regHoje?.audioFeito||false,tipoAudio:regHoje?.tipoAudio||'',erros:regHoje?.erros||'',obs:regHoje?.obs||''});
+  const[rForm,setRForm]=useState({materia:regHoje?.materia||ativo?.mat||'',tempo:regHoje?.tempo||'',questoes:regHoje?.questoes||'',questoesAnki:regHoje?.questoesAnki||'',questoesNlm:regHoje?.questoesNlm||'',dificuldade:regHoje?.dificuldade||0,travou:regHoje?.travou||'',obs:regHoje?.obs||''});
   const[rSalvo,setRSalvo]=useState(false);
 
   // Revisão
@@ -604,6 +605,7 @@ APENAS JSON sem markdown: {"diagnostico":"2 frases","plano":[{"mat":"nome","hora
     const n=[...historico.filter(r=>r.id!==hoje),novo].sort((a,b)=>a.id.localeCompare(b.id));
     setHistorico(n);lsSet('historico_diario',n);
     if(rForm.tempo){onAddHoras({mat:rForm.materia,min:parseInt(rForm.tempo)||0,dt:Date.now()});}
+    if(rForm.questoesAnki){const h=lsGet('horas',[]);lsSet('horas',[...h,{mat:`Anki — ${rForm.materia}`,min:Math.round((parseInt(rForm.questoesAnki)||0)*0.4),dt:Date.now()}]);}
     setRSalvo(true);setTimeout(()=>setRSalvo(false),2500);
   };
 
@@ -738,20 +740,26 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
             </div>
             <input value={MATS.includes(rForm.materia)?'':rForm.materia} onChange={e=>setRForm(f=>({...f,materia:e.target.value}))} placeholder="Ou digitar outra matéria..." style={{width:'100%',padding:'8px 10px',borderRadius:8,border:'1px solid rgba(96,165,250,.15)',background:'rgba(96,165,250,.03)',color:'#f1f5f9',fontSize:12,outline:'none',boxSizing:'border-box'}}/>
           </div>
-          {/* Tempo + Anki — campos totalmente livres */}
-          <div style={{display:'flex',gap:8,marginBottom:10}}>
-            <div style={{flex:1}}>
-              <div style={{fontSize:9,color:'#64748b',marginBottom:4}}>⏱ TEMPO REAL (min)</div>
-              <input type="number" value={rForm.tempo} onChange={e=>setRForm(f=>({...f,tempo:e.target.value}))} placeholder="ex: 47" style={{width:'100%',padding:'10px',borderRadius:8,border:'1px solid rgba(96,165,250,.2)',background:'rgba(96,165,250,.05)',color:'#60a5fa',fontSize:16,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
-            </div>
-            <div style={{flex:1}}>
-              <div style={{fontSize:9,color:'#64748b',marginBottom:4}}>🃏 ANKI PROFUNDO (cards)</div>
-              <input type="number" value={rForm.ankiProfundo} onChange={e=>setRForm(f=>({...f,ankiProfundo:e.target.value}))} placeholder="ex: 83" style={{width:'100%',padding:'10px',borderRadius:8,border:'1px solid rgba(167,139,250,.2)',background:'rgba(167,139,250,.05)',color:'#a78bfa',fontSize:16,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
-            </div>
-            <div style={{flex:1}}>
-              <div style={{fontSize:9,color:'#64748b',marginBottom:4}}>⚡ ANKI RÁPIDO (cards)</div>
-              <input type="number" value={rForm.ankiRapido} onChange={e=>setRForm(f=>({...f,ankiRapido:e.target.value}))} placeholder="ex: 34" style={{width:'100%',padding:'10px',borderRadius:8,border:'1px solid rgba(56,189,248,.2)',background:'rgba(56,189,248,.05)',color:'#38bdf8',fontSize:16,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
-            </div>
+          {/* Tempo + Questões */}
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:7,marginBottom:8}}>
+            {[['⏱ TEMPO (min)','tempo','#60a5fa','ex: 90'],['📝 QUESTÕES FEITAS','questoes','#fbbf24','ex: 30']].map(([l,k,col,ph])=>(
+              <div key={k}>
+                <div style={{fontSize:9,color:'#64748b',marginBottom:4}}>{l}</div>
+                <input type="number" value={rForm[k]||''} onChange={e=>setRForm(f=>({...f,[k]:e.target.value}))} placeholder={ph} style={{width:'100%',padding:'10px',borderRadius:8,border:`1px solid ${col}30`,background:`${col}06`,color:col,fontSize:16,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
+              </div>
+            ))}
+          </div>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:7,marginBottom:8}}>
+            {[['🃏 FORAM PRO ANKI','questoesAnki','#a78bfa','ex: 8'],['🎧 FORAM PRO NLM','questoesNlm','#34d399','ex: 3']].map(([l,k,col,ph])=>(
+              <div key={k}>
+                <div style={{fontSize:9,color:'#64748b',marginBottom:4}}>{l}</div>
+                <input type="number" value={rForm[k]||''} onChange={e=>setRForm(f=>({...f,[k]:e.target.value}))} placeholder={ph} style={{width:'100%',padding:'10px',borderRadius:8,border:`1px solid ${col}25`,background:`${col}06`,color:col,fontSize:16,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
+              </div>
+            ))}
+          </div>
+          <div style={{marginBottom:8}}>
+            <div style={{fontSize:9,color:'#64748b',marginBottom:4}}>🔴 O QUE TRAVOU? (campo livre — alimenta o Tempo Morto)</div>
+            <input value={rForm.travou||''} onChange={e=>setRForm(f=>({...f,travou:e.target.value}))} placeholder="ex: NBC TA 700, confundi com art. 37, tempo curto..." style={{width:'100%',padding:'8px 10px',borderRadius:8,border:'1px solid rgba(248,113,113,.25)',background:'rgba(248,113,113,.04)',color:'#f1f5f9',fontSize:12,outline:'none',boxSizing:'border-box'}}/>
           </div>
           {/* Dificuldade */}
           <div style={{marginBottom:10}}>
@@ -763,22 +771,7 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
             </div>
             {rForm.dificuldade>0&&<div style={{textAlign:'center',fontSize:10,color:['#34d399','#a3e635','#fbbf24','#fb923c','#f87171'][rForm.dificuldade-1],marginTop:4,fontFamily:"'DM Mono',monospace",fontWeight:700}}>{['FÁCIL','TRANQUILO','MÉDIO','DIFÍCIL','MUITO DIFÍCIL'][rForm.dificuldade-1]}</div>}
           </div>
-          {/* Áudio NLM */}
-          <div style={{marginBottom:10}}>
-            <div style={{fontSize:9,color:'#64748b',marginBottom:6}}>🎧 FEZ ÁUDIO NOTEBOOKLM?</div>
-            <div style={{display:'flex',gap:8,marginBottom:rForm.audioFeito?8:0}}>
-              <button onClick={()=>setRForm(f=>({...f,audioFeito:true}))} style={{flex:1,padding:'9px',borderRadius:8,border:`2px solid ${rForm.audioFeito?'#34d399':'rgba(148,163,184,.28)'}`,background:rForm.audioFeito?'rgba(52,211,153,.15)':'rgba(255,255,255,.02)',color:rForm.audioFeito?'#34d399':'#475569',fontSize:11,fontWeight:700,cursor:'pointer'}}>✅ Sim!</button>
-              <button onClick={()=>setRForm(f=>({...f,audioFeito:false,tipoAudio:''}))} style={{flex:1,padding:'9px',borderRadius:8,border:`2px solid ${rForm.audioFeito===false?'#475569':'rgba(148,163,184,.28)'}`,background:'rgba(148,163,184,.22)',color:'#94a3b8',fontSize:11,fontWeight:700,cursor:'pointer'}}>❌ Não</button>
-            </div>
-            {rForm.audioFeito&&<div style={{display:'flex',gap:5,flexWrap:'wrap'}}>
-              {TIPOS_AUDIO.map(t=><button key={t} onClick={()=>setRForm(f=>({...f,tipoAudio:t}))} style={{padding:'5px 9px',borderRadius:7,border:`1px solid ${rForm.tipoAudio===t?'#34d399':'rgba(148,163,184,.28)'}`,background:rForm.tipoAudio===t?'rgba(52,211,153,.15)':'rgba(255,255,255,.02)',color:rForm.tipoAudio===t?'#34d399':'#475569',fontSize:10,cursor:'pointer'}}>{t}</button>)}
-            </div>}
-          </div>
-          {/* Erros */}
-          <div style={{marginBottom:10}}>
-            <div style={{fontSize:9,color:'#64748b',marginBottom:4}}>❌ ERREI QUESTÕES DE (tópico específico)</div>
-            <input value={rForm.erros} onChange={e=>setRForm(f=>({...f,erros:e.target.value}))} placeholder="ex: Estágios da receita, NBC TA 700..." style={{width:'100%',padding:'9px 11px',borderRadius:8,border:'1px solid rgba(248,113,113,.2)',background:'rgba(248,113,113,.04)',color:'#f1f5f9',fontSize:12,outline:'none',boxSizing:'border-box'}}/>
-          </div>
+
           <input value={rForm.obs} onChange={e=>setRForm(f=>({...f,obs:e.target.value}))} placeholder="Observação livre..." style={{width:'100%',padding:'9px 11px',borderRadius:8,border:'1px solid rgba(255,255,255,.08)',background:'rgba(148,163,184,.25)',color:'#f1f5f9',fontSize:12,outline:'none',boxSizing:'border-box',marginBottom:12}}/>
           <button onClick={salvarRegistro} disabled={!rForm.materia||!rForm.dificuldade} style={{width:'100%',padding:'14px',borderRadius:11,border:'none',background:rForm.materia&&rForm.dificuldade?'linear-gradient(135deg,#60a5fa,#60a5fa)':'rgba(148,163,184,.22)',color:rForm.materia&&rForm.dificuldade?'#050a14':'#1e293b',fontSize:14,fontWeight:900,letterSpacing:'2px',cursor:'pointer',fontFamily:"'DM Mono',monospace"}}>
             {rSalvo?'✅ DIA REGISTRADO!':'💾 SALVAR DIA'}
@@ -794,7 +787,7 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
                 <div>
                   <div style={{fontSize:12,color:'#f1f5f9',fontWeight:700}}>{r.materia}</div>
-                  <div style={{fontSize:9,color:'#64748b'}}>{r.tempo?`${r.tempo}min · `:''}Anki: {r.ankiProfundo||0} prof · {r.ankiRapido||0} rápido{r.audioFeito?` · 🎧`:''}{r.erros?` · ❌ ${r.erros}`:''}</div>
+                  <div style={{fontSize:9,color:'#64748b'}}>{r.tempo?`${r.tempo}min · `:''}Q:{r.questoes||0}{r.questoesAnki?` · 🃏${r.questoesAnki}`:''}{r.questoesNlm?` · 🎧${r.questoesNlm}`:''}{r.travou?` · 🔴 ${r.travou.slice(0,22)}`:''}</div>
                 </div>
                 <div style={{textAlign:'right'}}>
                   <div style={{fontSize:10,color:c,fontFamily:"'DM Mono',monospace",fontWeight:700}}>{'⭐'.repeat(r.dificuldade||0)}</div>
@@ -922,7 +915,22 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
           <div style={{fontSize:9,color:'#fbbf24',fontFamily:"'DM Mono',monospace",marginBottom:8}}>➕ ADICIONAR TEMPO MANUAL</div>
           <AddTempoManual onAdd={onAddHoras}/>
         </div>
-        <div style={{fontSize:9,letterSpacing:'2px',color:'#475569',fontFamily:"'DM Mono',monospace",marginBottom:8}}>ÚLTIMAS SESSÕES</div>
+        {/* Breakdown por matéria */}
+        <div style={{fontSize:9,letterSpacing:'2px',color:'#475569',fontFamily:"'DM Mono',monospace",marginBottom:8,marginTop:8}}>📊 POR MATÉRIA (semana)</div>
+        {(()=>{
+          const porMat={};
+          horas.filter(e=>e.dt>=semStart).forEach(e=>{
+            const m=e.mat||'Geral';porMat[m]=(porMat[m]||0)+e.min;
+          });
+          return Object.entries(porMat).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([mat,min])=>(
+            <div key={mat} style={{display:'flex',alignItems:'center',gap:8,padding:'6px 10px',borderRadius:8,background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.08)',marginBottom:4}}>
+              <span style={{flex:1,fontSize:11,color:'#f1f5f9'}}>{mat}</span>
+              <BarProg done={min} total={Math.max(...Object.values(porMat))} cor='#60a5fa' h={4}/>
+              <span style={{fontSize:10,color:'#60a5fa',fontFamily:"'DM Mono',monospace",flexShrink:0,width:40,textAlign:'right'}}>{fmtMin(min)}</span>
+            </div>
+          ));
+        })()}
+        <div style={{fontSize:9,letterSpacing:'2px',color:'#475569',fontFamily:"'DM Mono',monospace",marginBottom:8,marginTop:12}}>ÚLTIMAS SESSÕES</div>
         {horas.slice().reverse().slice(0,12).map((e,i)=>(
           <div key={i} style={{display:'flex',justifyContent:'space-between',padding:'8px 12px',borderRadius:9,background:'rgba(148,163,184,.22)',border:'1px solid rgba(255,255,255,.05)',marginBottom:4}}>
             <span style={{fontSize:12,color:'#94a3b8'}}>{e.mat||'Estudo'}</span>
@@ -990,8 +998,8 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
             );
           })}
           <div style={{padding:'10px 12px',borderRadius:10,background:'rgba(148,163,184,.25)',border:'1px solid rgba(255,255,255,.07)',marginBottom:12,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-            <span style={{fontSize:11,color:'#94a3b8'}}>Total do plano</span>
-            <span style={{fontSize:14,fontWeight:900,color:'#fbbf24',fontFamily:"'DM Mono',monospace"}}>{planEdit.filter(p=>p.ativa).reduce((s,p)=>s+(p.horasEditadas||0),0).toFixed(1)}h / {metaHoras}h</span>
+            <span style={{fontSize:11,color:'#94a3b8'}}>Total</span>
+            {(()=>{const tot=planEdit.filter(p=>p.ativa).reduce((s,p)=>s+(p.horasEditadas||0),0);const over=tot>metaHoras;return(<span style={{textAlign:'right'}}><span style={{fontSize:14,fontWeight:900,color:over?'#f87171':'#fbbf24',fontFamily:"'DM Mono',monospace"}}>{tot.toFixed(1)}h / {metaHoras}h</span>{over&&<div style={{fontSize:9,color:'#f87171',marginTop:2}}>⚠️ excede meta em {(tot-metaHoras).toFixed(1)}h</div>}</span>);})()}
           </div>
           <button onClick={salvarPlano} style={{width:'100%',padding:'14px',borderRadius:11,border:'none',background:'linear-gradient(135deg,#60a5fa,#60a5fa)',color:'#050a14',fontSize:14,fontWeight:900,cursor:'pointer',fontFamily:"'DM Mono',monospace"}}>
             {planSalvo?'✅ PLANO APROVADO!':'✓ APROVAR E SALVAR PLANO'}
@@ -1043,33 +1051,28 @@ function Estrelas({val,onChange}){
   );
 }
 
-// ─── TAB: REVISÃO ────────────────────────────────────────────
+// ─── TAB: REVISÃO (reformulada) ──────────────────────────────
 function TabRevisao({totalBlocos}){
   const hoje=getDK();
-  const dw=new Date().getDay();
+  const[aba,setAba]=useState('morto');
 
-  // ── TODOS os useState no topo ──
+  // Estados
   const[ankiRegs,setAnkiRegs]=useState(()=>lsGet('rev_anki',[]));
   const[nlmRegs,setNlmRegs]=useState(()=>lsGet('rev_nlm',[]));
   const[rev1h30Regs,setRev1h30Regs]=useState(()=>lsGet('rev_1h30',[]));
+  const[cadRegs,setCadRegs]=useState(()=>lsGet('rev_caderno',[]));
+  const[topicos,setTopicos]=useState(()=>lsGet('rev_topicos',[]));
+  const[topicoForm,setTopicoForm]=useState('');
 
-  // Formulário Anki — lista dinâmica de matérias
-  const[ankiItens,setAnkiItens]=useState([{mat:'',profundo:'',leve:'',dif:0}]);
+  // Formulários
+  const[ankiForm,setAnkiForm]=useState({mat:'',cards:'',questoes:'',dif:0});
   const[ankiSalvo,setAnkiSalvo]=useState(false);
-
-  // Formulário NLM
-  const[nlmForm,setNlmForm]=useState({mat:'',oque:'',tempo:'',qtd:'',dif:0});
+  const[nlmForm,setNlmForm]=useState({mat:'',oque:'',tempo:'',questoes:'',dif:0});
   const[nlmSalvo,setNlmSalvo]=useState(false);
-
-  // Formulário 1h30 — 3 slots
-  const[slots,setSlots]=useState([
-    {mat:'',oque:'',qtd:'',dif:0},
-    {mat:'',oque:'',qtd:'',dif:0},
-    {mat:'',oque:'',qtd:'',dif:0},
-  ]);
+  const[cadForm,setCadForm]=useState({mat:'',questoes:'',anki:'',nlm:'',obs:''});
+  const[cadSalvo,setCadSalvo]=useState(false);
+  const[slots,setSlots]=useState([{mat:'',questoes:'',dif:0},{mat:'',questoes:'',dif:0},{mat:'',questoes:'',dif:0}]);
   const[slotSalvo,setSlotSalvo]=useState(false);
-
-  // Tempo morto feito
   const[tmFeitoAnki,setTmFeitoAnki]=useState(()=>lsGet(`tm_anki_${hoje}`,false));
   const[tmFeitoNlm,setTmFeitoNlm]=useState(()=>lsGet(`tm_nlm_${hoje}`,false));
 
@@ -1077,481 +1080,366 @@ function TabRevisao({totalBlocos}){
   const CORS_DIF=['#34d399','#a3e635','#fbbf24','#fb923c','#f87171'];
   const LABELS_DIF=['FÁCIL','TRANQUILO','MÉDIO','DIFÍCIL','MUITO DIFÍCIL'];
 
-  // ── Motor Tempo Morto ──────────────────────────────────────
+  // ── MOTOR TEMPO MORTO — lê TUDO: registro diário + anki + nlm + travou ──
   const tempoMorto=useMemo(()=>{
     const todayMs=new Date().setHours(0,0,0,0);
-    // Anki: matéria com maior dificuldade + mais dias sem fazer
-    const porMatAnki={};
-    ankiRegs.forEach(r=>{
-      r.itens?.forEach(it=>{
-        if(!it.mat)return;
-        porMatAnki[it.mat]||(porMatAnki[it.mat]={difs:[],ultimoDt:0});
-        porMatAnki[it.mat].difs.push(it.dif||0);
-        if(r.dt>porMatAnki[it.mat].ultimoDt)porMatAnki[it.mat].ultimoDt=r.dt;
-      });
-    });
-    const rankAnki=Object.entries(porMatAnki).map(([mat,v])=>{
-      const difMedia=v.difs.reduce((s,d)=>s+d,0)/v.difs.length;
-      const diasSem=Math.floor((todayMs-v.ultimoDt)/86400000);
-      return{mat,difMedia,diasSem,score:difMedia*(diasSem+1)};
-    }).sort((a,b)=>b.score-a.score);
-
-    // NLM: matéria com maior dificuldade + mais dias sem áudio
-    const porMatNlm={};
-    nlmRegs.forEach(r=>{
-      if(!r.mat)return;
-      porMatNlm[r.mat]||(porMatNlm[r.mat]={difs:[],ultimoDt:0});
-      porMatNlm[r.mat].difs.push(r.dif||0);
-      if(r.dt>porMatNlm[r.mat].ultimoDt)porMatNlm[r.mat].ultimoDt=r.dt;
-    });
-    // Adicionar score Guruja se tiver
+    const historico=lsGet('historico_diario',[]);
     const gurujaData=lsGet('guruja_data',null);
-    const rankNlm=Object.entries(porMatNlm).map(([mat,v])=>{
-      const difMedia=v.difs.reduce((s,d)=>s+d,0)/v.difs.length;
-      const diasSem=Math.floor((todayMs-v.ultimoDt)/86400000);
-      const gurujaBonus=gurujaData?.prioridades?.find(p=>p.mat?.includes(mat.split(' ')[0]))?.status==='critica'?2:0;
-      return{mat,difMedia,diasSem,score:difMedia*(diasSem+1)+gurujaBonus};
+
+    // Agrega dificuldade por matéria de TODAS as fontes
+    const score={};
+    const addScore=(mat,dif,dt,peso=1)=>{
+      if(!mat)return;
+      score[mat]|={totalDif:0,count:0,ultimoDt:0,travouCount:0};
+      score[mat].totalDif+=dif*peso;
+      score[mat].count+=peso;
+      if(dt>score[mat].ultimoDt)score[mat].ultimoDt=dt;
+    };
+
+    // 1. Registro diário — dificuldade + campo travou
+    historico.slice(-14).forEach(r=>{
+      if(r.materia&&r.dificuldade)addScore(r.materia,r.dificuldade,r.dt||0,1.5);
+      if(r.travou&&r.materia){score[r.materia]|={totalDif:0,count:0,ultimoDt:0,travouCount:0};score[r.materia].travouCount=(score[r.materia].travouCount||0)+1;}
+    });
+
+    // 2. Anki — dificuldade por matéria
+    ankiRegs.forEach(r=>{
+      if(r.mat&&r.dif)addScore(r.mat,r.dif,r.dt||0,1);
+    });
+
+    // 3. NLM
+    nlmRegs.forEach(r=>{
+      if(r.mat&&r.dif)addScore(r.mat,r.dif,r.dt||0,1);
+    });
+
+    // Calcula score final: difMedia * (dias sem revisar + 1) + travouBonus + gurujaBonus
+    const ranking=Object.entries(score).map(([mat,v])=>{
+      const difMedia=v.totalDif/v.count;
+      const diasSem=Math.floor((todayMs-(v.ultimoDt||0))/86400000);
+      const gurujaBonus=gurujaData?.prioridades?.find(p=>p.mat?.includes(mat.split(' ')[0]))?.status==='critica'?3:0;
+      const travouBonus=(v.travouCount||0)*1.5;
+      return{mat,difMedia,diasSem,score:difMedia*(diasSem+1)+gurujaBonus+travouBonus};
     }).sort((a,b)=>b.score-a.score);
 
-    // Se não tem histórico, sugere matérias do ciclo com maior peso
-    const sugestaoAnki=rankAnki[0]||{mat:CICLO.find(c=>c.tag?.includes('⭐⭐⭐⭐⭐'))?.mat||'AFO',difMedia:0,diasSem:0};
-    const sugestaoNlm=rankNlm[0]||{mat:CICLO.find(c=>c.tag?.includes('⭐⭐⭐⭐⭐'))?.mat||'Auditoria Governamental',difMedia:0,diasSem:0};
+    // Matéria mais urgente para Anki e para NLM (podem ser iguais se só há 1)
+    const top=ranking[0]||{mat:CICLO.find(s=>s.tag?.includes('⭐⭐⭐⭐⭐'))?.mat||'AFO',difMedia:0,diasSem:0};
+    const top2=ranking[1]||ranking[0]||top;
 
-    return{anki:sugestaoAnki,nlm:sugestaoNlm};
+    // Informação de contexto
+    const travouHoje=historico.slice(-3).filter(r=>r.travou).map(r=>`${r.materia}: ${r.travou}`);
+
+    return{anki:top,nlm:top2,travouRecente:travouHoje,ranking:ranking.slice(0,5)};
   },[ankiRegs,nlmRegs]);
 
-  // Alerta 1h30
-  const deve1h30=totalBlocos>0&&totalBlocos%5===0;
-  const faltam1h30=5-(totalBlocos%5)||5;
+  // ── FIX 1h30: usa último blocoRef registrado ──────────────
+  const ultimaRev1h30=rev1h30Regs.length>0?rev1h30Regs[rev1h30Regs.length-1]:null;
+  const ultimoBlocoRev=ultimaRev1h30?.blocoRef||0;
+  const blocosDesdeUltimaRev=totalBlocos-ultimoBlocoRev;
+  const deve1h30=blocosDesdeUltimaRev>=5&&totalBlocos>0;
+  const faltam1h30=Math.max(0,5-blocosDesdeUltimaRev);
 
-  // ── Ações ──────────────────────────────────────────────────
+  // Ações
   const salvarAnki=()=>{
-    const validos=ankiItens.filter(it=>it.mat&&it.dif>0);
-    if(!validos.length)return;
-    const novo={id:Date.now(),dt:Date.now(),dia:hoje,itens:validos};
-    const n=[...ankiRegs,novo];
-    setAnkiRegs(n);lsSet('rev_anki',n);
-    // Soma horas: profundo + leve em minutos estimados
-    validos.forEach(it=>{
-      const mins=(parseInt(it.profundo)||0)*0.5+(parseInt(it.leve)||0)*0.25;
-      if(mins>0){const h=lsGet('horas',[]);lsSet('horas',[...h,{mat:`Anki — ${it.mat}`,min:Math.round(mins),dt:Date.now()}]);}
-    });
-    setAnkiItens([{mat:'',profundo:'',leve:'',dif:0}]);
-    setAnkiSalvo(true);setTimeout(()=>setAnkiSalvo(false),2500);
+    if(!ankiForm.mat||!ankiForm.dif)return;
+    const novo={...ankiForm,id:Date.now(),dt:Date.now(),dia:hoje};
+    const n=[...ankiRegs,novo];setAnkiRegs(n);lsSet('rev_anki',n);
+    const mins=Math.round((parseInt(ankiForm.cards)||0)*0.4+(parseInt(ankiForm.questoes)||0)*0.5);
+    if(mins>0){const h=lsGet('horas',[]);lsSet('horas',[...h,{mat:`Anki — ${ankiForm.mat}`,min:mins,dt:Date.now()}]);}
+    setAnkiForm({mat:'',cards:'',questoes:'',dif:0});
+    setAnkiSalvo(true);setTimeout(()=>setAnkiSalvo(false),2000);
   };
-  const addAnkiItem=()=>setAnkiItens(a=>[...a,{mat:'',profundo:'',leve:'',dif:0}]);
-  const updAnki=(i,k,v)=>setAnkiItens(a=>a.map((it,j)=>j===i?{...it,[k]:v}:it));
-  const remAnki=i=>setAnkiItens(a=>a.filter((_,j)=>j!==i));
 
   const salvarNlm=()=>{
     if(!nlmForm.mat||!nlmForm.dif)return;
     const novo={...nlmForm,id:Date.now(),dt:Date.now(),dia:hoje};
-    const n=[...nlmRegs,novo];
-    setNlmRegs(n);lsSet('rev_nlm',n);
-    // Soma horas do NLM ao contador geral
+    const n=[...nlmRegs,novo];setNlmRegs(n);lsSet('rev_nlm',n);
     const mins=parseInt(nlmForm.tempo)||0;
     if(mins>0){const h=lsGet('horas',[]);lsSet('horas',[...h,{mat:`NLM — ${nlmForm.mat}`,min:mins,dt:Date.now()}]);}
-    setNlmForm({mat:'',oque:'',tempo:'',qtd:'',dif:0});
-    setNlmSalvo(true);setTimeout(()=>setNlmSalvo(false),2500);
+    setNlmForm({mat:'',oque:'',tempo:'',questoes:'',dif:0});
+    setNlmSalvo(true);setTimeout(()=>setNlmSalvo(false),2000);
+  };
+
+  const salvarCaderno=()=>{
+    if(!cadForm.mat)return;
+    const novo={...cadForm,id:Date.now(),dt:Date.now(),dia:hoje};
+    const n=[...cadRegs,novo];setCadRegs(n);lsSet('rev_caderno',n);
+    setCadForm({mat:'',questoes:'',anki:'',nlm:'',obs:''});
+    setCadSalvo(true);setTimeout(()=>setCadSalvo(false),2000);
   };
 
   const salvar1h30=()=>{
     const validos=slots.filter(s=>s.mat&&s.dif>0);
     if(!validos.length)return;
     const novo={id:Date.now(),dt:Date.now(),dia:hoje,blocoRef:totalBlocos,slots:validos};
-    const n=[...rev1h30Regs,novo];
-    setRev1h30Regs(n);lsSet('rev_1h30',n);
-    setSlots([{mat:'',oque:'',qtd:'',dif:0},{mat:'',oque:'',qtd:'',dif:0},{mat:'',oque:'',qtd:'',dif:0}]);
-    setSlotSalvo(true);setTimeout(()=>setSlotSalvo(false),2500);
+    const n=[...rev1h30Regs,novo];setRev1h30Regs(n);lsSet('rev_1h30',n);
+    setSlots([{mat:'',questoes:'',dif:0},{mat:'',questoes:'',dif:0},{mat:'',questoes:'',dif:0}]);
+    setSlotSalvo(true);setTimeout(()=>setSlotSalvo(false),2000);
   };
-  const updSlot=(i,k,v)=>setSlots(a=>a.map((s,j)=>j===i?{...s,[k]:v}:s));
 
-  const marcarTmAnki=()=>{setTmFeitoAnki(true);lsSet(`tm_anki_${hoje}`,true);};
-  const marcarTmNlm=()=>{setTmFeitoNlm(true);lsSet(`tm_nlm_${hoje}`,true);};
+  const addTopico=()=>{
+    if(!topicoForm.trim())return;
+    const n=[...topicos,{id:Date.now(),txt:topicoForm.trim(),feito:false,dt:Date.now()}];
+    setTopicos(n);lsSet('rev_topicos',n);setTopicoForm('');
+  };
+  const togTopico=id=>{const n=topicos.map(t=>t.id===id?{...t,feito:!t.feito}:t);setTopicos(n);lsSet('rev_topicos',n);};
+  const delTopico=id=>{const n=topicos.filter(t=>t.id!==id);setTopicos(n);lsSet('rev_topicos',n);};
 
-  // ── Renderização auxiliar ──────────────────────────────────
-
-  const HistoricoCompacto=({regs,tipo})=>{
-    const ults=regs.slice(-3).reverse();
-    if(!ults.length)return null;
-    return(
-      <div style={{marginTop:8}}>
-        <div style={{fontSize:8,color:'#475569',letterSpacing:'2px',fontFamily:"'DM Mono',monospace",marginBottom:4}}>ÚLTIMOS REGISTROS</div>
-        {ults.map((r,i)=>(
-          <div key={i} style={{padding:'6px 9px',borderRadius:8,background:'rgba(148,163,184,.22)',border:'1px solid rgba(255,255,255,.05)',marginBottom:3,fontSize:10,color:'#94a3b8'}}>
-            {tipo==='anki'&&r.itens?.map((it,j)=><span key={j} style={{marginRight:8}}>{it.mat} {it.profundo?`${it.profundo}P`:''}{it.leve?`/${it.leve}L`:''} {it.dif?`${'⭐'.repeat(it.dif)}`:''}</span>)}
-            {tipo==='nlm'&&<span>{r.mat} · {r.oque||'—'} · {r.tempo?`${r.tempo}min`:''} {r.dif?`${'⭐'.repeat(r.dif)}`:''}</span>}
-            {tipo==='1h30'&&r.slots?.map((s,j)=><span key={j} style={{marginRight:8}}>{s.mat} {s.dif?`${'⭐'.repeat(s.dif)}`:''}</span>)}
-            <span style={{color:'#475569',marginLeft:4}}>{r.dia}</span>
-          </div>
-        ))}
+  const MatBtn=({value,onChange,mats})=>(
+    <div>
+      <div style={{display:'flex',flexWrap:'wrap',gap:4,marginBottom:5}}>
+        {mats.slice(0,7).map(m=><button key={m} onClick={()=>onChange(m)} style={{padding:'4px 8px',borderRadius:6,border:`1px solid ${value===m?'#60a5fa':'rgba(148,163,184,.2)'}`,background:value===m?'rgba(96,165,250,.18)':'transparent',color:value===m?'#60a5fa':'#64748b',fontSize:9,cursor:'pointer'}}>{m}</button>)}
       </div>
-    );
-  };
+      <input value={mats.includes(value)?'':value} onChange={e=>onChange(e.target.value)} placeholder="Ou digitar..." style={{width:'100%',padding:'7px 10px',borderRadius:7,border:'1px solid rgba(96,165,250,.15)',background:'rgba(96,165,250,.03)',color:'#f1f5f9',fontSize:11,outline:'none',boxSizing:'border-box'}}/>
+    </div>
+  );
+
+  const ABAS=[
+    {id:'morto',l:'⏳ Tempo Morto'},
+    {id:'anki',l:'🃏 Anki'},
+    {id:'nlm',l:'🎧 NLM'},
+    {id:'rev1h30',l:`🔄 1h30${deve1h30?' 🚨':''}`},
+    {id:'caderno',l:'📕 Cad. Erros'},
+    {id:'topicos',l:'📌 Revisitar'},
+  ];
 
   return(
     <div>
-      {/* ── TEMPO MORTO ─────────────────────────────────────── */}
-      <div style={{background:'linear-gradient(135deg,rgba(96,165,250,.08),rgba(5,10,20,.98))',border:'1px solid rgba(96,165,250,.25)',borderRadius:14,padding:'14px',marginBottom:16}}>
-        <div style={{fontSize:9,letterSpacing:'3px',color:'#60a5fa',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:10}}>⏳ TEMPO MORTO — O QUE FAZER AGORA</div>
-        <div style={{fontSize:9,color:'#64748b',lineHeight:1.7,marginBottom:10}}>Calculado automaticamente pelo app todo dia com base no seu histórico de Anki, NLM e Guruja.</div>
+      {/* Sub-tabs */}
+      <div style={{display:'flex',gap:3,marginBottom:14,overflowX:'auto',scrollbarWidth:'none',paddingBottom:2}}>
+        {ABAS.map(a=>{const at=aba===a.id;return(
+          <button key={a.id} onClick={()=>setAba(a.id)} style={{flexShrink:0,padding:'8px 10px',borderRadius:9,border:`1px solid ${at?'#60a5fa':'rgba(255,255,255,.12)'}`,background:at?'rgba(96,165,250,.12)':'transparent',color:at?'#60a5fa':'#475569',fontSize:9,fontWeight:700,fontFamily:"'DM Mono',monospace",cursor:'pointer'}}>{a.l}</button>
+        );})}
+      </div>
+
+      {/* ── TEMPO MORTO ─────────────────────────────────── */}
+      {aba==='morto'&&<div>
+        <div style={{padding:'10px 12px',borderRadius:10,background:'rgba(96,165,250,.06)',border:'1px solid rgba(96,165,250,.2)',marginBottom:12}}>
+          <div style={{fontSize:9,color:'#60a5fa',fontFamily:"'DM Mono',monospace",marginBottom:4}}>⏳ CALCULADO AGORA — baseado nos últimos 14 dias</div>
+          <div style={{fontSize:10,color:'#475569',lineHeight:1.7}}>Lê seu histórico de registros, Anki, NLM e campo "o que travou" para sugerir o que fazer no tempo morto hoje.</div>
+        </div>
 
         {/* Card Anki */}
-        <div style={{padding:'11px 13px',borderRadius:11,background:tmFeitoAnki?'rgba(52,211,153,.08)':'rgba(167,139,250,.08)',border:`1px solid ${tmFeitoAnki?'rgba(52,211,153,.3)':'rgba(167,139,250,.3)'}`,marginBottom:8}}>
-          <div style={{fontSize:8,color:tmFeitoAnki?'#34d399':'#a78bfa',fontFamily:"'DM Mono',monospace",letterSpacing:'2px',marginBottom:4}}>🃏 ANKI AGORA</div>
-          <div style={{fontSize:15,fontWeight:900,color:tmFeitoAnki?'#34d399':'#e8edf5',fontFamily:"'DM Serif Display',serif",marginBottom:2}}>{tempoMorto.anki.mat}</div>
-          {tempoMorto.anki.difMedia>0&&<div style={{fontSize:10,color:'#94a3b8',marginBottom:8}}>Dif média {tempoMorto.anki.difMedia.toFixed(1)}★ · {tempoMorto.anki.diasSem}d sem revisar</div>}
-          {!tempoMorto.anki.difMedia&&<div style={{fontSize:10,color:'#64748b',marginBottom:8}}>Matéria mais pesada do ciclo — comece por ela</div>}
+        <div style={{padding:'13px',borderRadius:12,background:tmFeitoAnki?'rgba(52,211,153,.08)':'rgba(167,139,250,.08)',border:`2px solid ${tmFeitoAnki?'rgba(52,211,153,.4)':'rgba(167,139,250,.4)'}`,marginBottom:10}}>
+          <div style={{fontSize:8,color:tmFeitoAnki?'#34d399':'#a78bfa',fontFamily:"'DM Mono',monospace",letterSpacing:'2px',marginBottom:6}}>🃏 ANKI AGORA</div>
+          <div style={{fontSize:18,fontWeight:900,color:tmFeitoAnki?'#34d399':'#f1f5f9',fontFamily:"'DM Serif Display',serif",marginBottom:4}}>{tempoMorto.anki.mat}</div>
+          <div style={{fontSize:10,color:'#64748b',marginBottom:10}}>
+            {tempoMorto.anki.difMedia>0?`Dif média ${tempoMorto.anki.difMedia.toFixed(1)}★ · ${tempoMorto.anki.diasSem}d sem revisar`:'Matéria mais pesada do ciclo'}
+          </div>
           {tmFeitoAnki
             ?<div style={{fontSize:11,color:'#34d399',fontWeight:700}}>✅ Feito hoje!</div>
-            :<button onClick={marcarTmAnki} style={{padding:'7px 16px',borderRadius:8,border:'none',background:'#a78bfa',color:'#050a14',fontSize:11,fontWeight:800,cursor:'pointer'}}>✓ Fiz!</button>
+            :<button onClick={()=>{setTmFeitoAnki(true);lsSet(`tm_anki_${hoje}`,true);}} style={{padding:'8px 18px',borderRadius:8,border:'none',background:'#a78bfa',color:'#0f172a',fontSize:11,fontWeight:800,cursor:'pointer'}}>✓ Fiz!</button>
           }
         </div>
 
         {/* Card NLM */}
-        <div style={{padding:'11px 13px',borderRadius:11,background:tmFeitoNlm?'rgba(52,211,153,.08)':'rgba(52,211,153,.06)',border:`1px solid ${tmFeitoNlm?'rgba(52,211,153,.4)':'rgba(52,211,153,.25)'}`,}}>
-          <div style={{fontSize:8,color:tmFeitoNlm?'#34d399':'#34d399',fontFamily:"'DM Mono',monospace",letterSpacing:'2px',marginBottom:4}}>🎧 ÁUDIO NLM AGORA</div>
-          <div style={{fontSize:15,fontWeight:900,color:tmFeitoNlm?'#34d399':'#e8edf5',fontFamily:"'DM Serif Display',serif",marginBottom:2}}>{tempoMorto.nlm.mat}</div>
-          {tempoMorto.nlm.difMedia>0&&<div style={{fontSize:10,color:'#94a3b8',marginBottom:8}}>Dif média {tempoMorto.nlm.difMedia.toFixed(1)}★ · {tempoMorto.nlm.diasSem}d sem áudio</div>}
-          {!tempoMorto.nlm.difMedia&&<div style={{fontSize:10,color:'#64748b',marginBottom:8}}>Matéria crítica no edital — priorize o áudio</div>}
+        <div style={{padding:'13px',borderRadius:12,background:tmFeitoNlm?'rgba(52,211,153,.08)':'rgba(52,211,153,.06)',border:`2px solid ${tmFeitoNlm?'rgba(52,211,153,.5)':'rgba(52,211,153,.3)'}`,marginBottom:12}}>
+          <div style={{fontSize:8,color:'#34d399',fontFamily:"'DM Mono',monospace",letterSpacing:'2px',marginBottom:6}}>🎧 ÁUDIO NLM AGORA</div>
+          <div style={{fontSize:18,fontWeight:900,color:tmFeitoNlm?'#34d399':'#f1f5f9',fontFamily:"'DM Serif Display',serif",marginBottom:4}}>{tempoMorto.nlm.mat}</div>
+          <div style={{fontSize:10,color:'#64748b',marginBottom:10}}>
+            {tempoMorto.nlm.difMedia>0?`Dif média ${tempoMorto.nlm.difMedia.toFixed(1)}★ · ${tempoMorto.nlm.diasSem}d sem áudio`:'Matéria crítica — priorize o áudio'}
+          </div>
           {tmFeitoNlm
             ?<div style={{fontSize:11,color:'#34d399',fontWeight:700}}>✅ Feito hoje!</div>
-            :<button onClick={marcarTmNlm} style={{padding:'7px 16px',borderRadius:8,border:'none',background:'#34d399',color:'#050a14',fontSize:11,fontWeight:800,cursor:'pointer'}}>✓ Ouvi!</button>
+            :<button onClick={()=>{setTmFeitoNlm(true);lsSet(`tm_nlm_${hoje}`,true);}} style={{padding:'8px 18px',borderRadius:8,border:'none',background:'#34d399',color:'#0f172a',fontSize:11,fontWeight:800,cursor:'pointer'}}>✓ Ouvi!</button>
           }
         </div>
-      </div>
 
-      {/* ── ANKI DO DIA ─────────────────────────────────────── */}
-      <div style={{background:'rgba(167,139,250,.05)',border:'1px solid rgba(167,139,250,.2)',borderRadius:13,padding:'14px',marginBottom:14}}>
-        <div style={{fontSize:9,letterSpacing:'3px',color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:12}}>🃏 ANKI DO DIA</div>
-        {ankiItens.map((it,i)=>(
-          <div key={i} style={{padding:'11px',borderRadius:11,background:'rgba(167,139,250,.05)',border:'1px solid rgba(167,139,250,.15)',marginBottom:10}}>
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
-              <div style={{fontSize:9,color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:700}}>MATÉRIA {i+1}</div>
-              {ankiItens.length>1&&<button onClick={()=>remAnki(i)} style={{padding:'2px 7px',borderRadius:5,border:'1px solid rgba(248,113,113,.25)',background:'transparent',color:'#f87171',fontSize:10,cursor:'pointer'}}>×</button>}
-            </div>
-            {/* Matéria */}
-            <div style={{marginBottom:8}}>
-              <div style={{display:'flex',flexWrap:'wrap',gap:4,marginBottom:5}}>
-                {MATS.slice(0,6).map(m=><button key={m} onClick={()=>updAnki(i,'mat',m)} style={{padding:'4px 8px',borderRadius:6,border:`1px solid ${it.mat===m?'#a78bfa':'rgba(148,163,184,.25)'}`,background:it.mat===m?'rgba(167,139,250,.2)':'transparent',color:it.mat===m?'#a78bfa':'#475569',fontSize:9,cursor:'pointer'}}>{m}</button>)}
+        {/* Ranking top 5 */}
+        {tempoMorto.ranking.length>0&&<div>
+          <div style={{fontSize:9,color:'#475569',fontFamily:"'DM Mono',monospace",letterSpacing:'2px',marginBottom:8}}>📊 RANKING DE ATENÇÃO</div>
+          {tempoMorto.ranking.map((item,i)=>{
+            const cor=i===0?'#f87171':i===1?'#fb923c':i===2?'#fbbf24':'#64748b';
+            return(
+              <div key={i} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 11px',borderRadius:9,background:`${cor}08`,border:`1px solid ${cor}20`,marginBottom:5}}>
+                <span style={{fontSize:10,fontWeight:900,color:cor,width:16,flexShrink:0}}>{i+1}</span>
+                <div style={{flex:1}}><div style={{fontSize:11,color:'#f1f5f9',fontWeight:700}}>{item.mat}</div></div>
+                <div style={{fontSize:9,color:'#64748b',fontFamily:"'DM Mono',monospace"}}>{item.difMedia.toFixed(1)}★ · {item.diasSem}d</div>
               </div>
-              <input value={MATS.includes(it.mat)?'':it.mat} onChange={e=>updAnki(i,'mat',e.target.value)} placeholder="Ou digitar matéria..." style={{width:'100%',padding:'7px 10px',borderRadius:7,border:'1px solid rgba(167,139,250,.15)',background:'rgba(167,139,250,.04)',color:'#f1f5f9',fontSize:12,outline:'none',boxSizing:'border-box'}}/>
-            </div>
-            {/* Quantidade */}
-            <div style={{display:'flex',gap:8,marginBottom:8}}>
-              <div style={{flex:1}}>
-                <div style={{fontSize:8,color:'#64748b',marginBottom:3}}>ESTUDO PROFUNDO (cards)</div>
-                <input type="number" value={it.profundo} onChange={e=>updAnki(i,'profundo',e.target.value)} placeholder="ex: 83" style={{width:'100%',padding:'9px',borderRadius:7,border:'1px solid rgba(167,139,250,.2)',background:'rgba(167,139,250,.05)',color:'#a78bfa',fontSize:15,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
+            );
+          })}
+        </div>}
+
+        {/* O que travou recentemente */}
+        {tempoMorto.travouRecente.length>0&&<div style={{marginTop:12,padding:'10px 12px',borderRadius:10,background:'rgba(248,113,113,.06)',border:'1px solid rgba(248,113,113,.2)'}}>
+          <div style={{fontSize:9,color:'#f87171',fontFamily:"'DM Mono',monospace",marginBottom:6}}>🔴 TRAVOU RECENTEMENTE</div>
+          {tempoMorto.travouRecente.map((t,i)=><div key={i} style={{fontSize:11,color:'#94a3b8',marginBottom:2}}>{t}</div>)}
+        </div>}
+      </div>}
+
+      {/* ── ANKI ────────────────────────────────────────── */}
+      {aba==='anki'&&<div>
+        <div style={{background:'rgba(167,139,250,.05)',border:'1px solid rgba(167,139,250,.2)',borderRadius:13,padding:'14px',marginBottom:12}}>
+          <div style={{fontSize:9,letterSpacing:'3px',color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:12}}>🃏 ANKI DO DIA</div>
+          <div style={{marginBottom:10}}>
+            <div style={{fontSize:9,color:'#64748b',marginBottom:5}}>MATÉRIA</div>
+            <MatBtn value={ankiForm.mat} onChange={v=>setAnkiForm(f=>({...f,mat:v}))} mats={MATS}/>
+          </div>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:7,marginBottom:10}}>
+            {[['🃏 CARDS REVISADOS','cards','#a78bfa'],['📝 QUESTÕES FEITAS','questoes','#fbbf24']].map(([l,k,col])=>(
+              <div key={k}>
+                <div style={{fontSize:8,color:'#64748b',marginBottom:3}}>{l}</div>
+                <input type="number" value={ankiForm[k]||''} onChange={e=>setAnkiForm(f=>({...f,[k]:e.target.value}))} placeholder="0" style={{width:'100%',padding:'10px',borderRadius:8,border:`1px solid ${col}25`,background:`${col}06`,color:col,fontSize:16,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
               </div>
-              <div style={{flex:1}}>
-                <div style={{fontSize:8,color:'#64748b',marginBottom:3}}>ESTUDO LEVE (cards)</div>
-                <input type="number" value={it.leve} onChange={e=>updAnki(i,'leve',e.target.value)} placeholder="ex: 34" style={{width:'100%',padding:'9px',borderRadius:7,border:'1px solid rgba(56,189,248,.2)',background:'rgba(56,189,248,.05)',color:'#38bdf8',fontSize:15,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
-              </div>
-            </div>
-            {/* Dificuldade */}
-            <div style={{fontSize:8,color:'#64748b',marginBottom:5}}>DIFICULDADE</div>
-            <Estrelas val={it.dif} onChange={v=>updAnki(i,'dif',v)}/>
-            {it.dif>0&&<div style={{textAlign:'center',fontSize:9,color:CORS_DIF[it.dif-1],marginTop:3,fontFamily:"'DM Mono',monospace",fontWeight:700}}>{LABELS_DIF[it.dif-1]}</div>}
+            ))}
+          </div>
+          <div style={{fontSize:9,color:'#64748b',marginBottom:5}}>DIFICULDADE</div>
+          <Estrelas val={ankiForm.dif} onChange={v=>setAnkiForm(f=>({...f,dif:v}))}/>
+          {ankiForm.dif>0&&<div style={{textAlign:'center',fontSize:9,color:CORS_DIF[ankiForm.dif-1],marginTop:3,marginBottom:10,fontFamily:"'DM Mono',monospace",fontWeight:700}}>{LABELS_DIF[ankiForm.dif-1]}</div>}
+          <button onClick={salvarAnki} disabled={!ankiForm.mat||!ankiForm.dif} style={{width:'100%',padding:'12px',borderRadius:10,border:'none',background:ankiForm.mat&&ankiForm.dif?'#a78bfa':'rgba(148,163,184,.2)',color:ankiForm.mat&&ankiForm.dif?'#0f172a':'#334155',fontSize:13,fontWeight:900,cursor:'pointer',marginTop:8}}>{ankiSalvo?'✅ SALVO!':'💾 SALVAR ANKI'}</button>
+        </div>
+        <div style={{fontSize:9,color:'#475569',fontFamily:"'DM Mono',monospace",marginBottom:8}}>ÚLTIMOS REGISTROS</div>
+        {[...ankiRegs].reverse().slice(0,5).map((r,i)=>(
+          <div key={i} style={{padding:'8px 11px',borderRadius:9,background:'rgba(167,139,250,.06)',border:'1px solid rgba(167,139,250,.15)',marginBottom:4,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+            <div><div style={{fontSize:11,color:'#f1f5f9',fontWeight:700}}>{r.mat}</div><div style={{fontSize:9,color:'#64748b'}}>{r.cards?`${r.cards} cards · `:''}Q:{r.questoes||0}{r.dif?` · ${'⭐'.repeat(r.dif)}`:''}</div></div>
+            <span style={{fontSize:9,color:'#334155',fontFamily:"'DM Mono',monospace"}}>{r.dia}</span>
           </div>
         ))}
-        <button onClick={addAnkiItem} style={{width:'100%',padding:'9px',borderRadius:9,border:'1px dashed rgba(167,139,250,.3)',background:'transparent',color:'#a78bfa',fontSize:11,cursor:'pointer',marginBottom:10}}>+ Adicionar outra matéria</button>
-        <button onClick={salvarAnki} disabled={!ankiItens.some(it=>it.mat&&it.dif>0)} style={{width:'100%',padding:'13px',borderRadius:10,border:'none',background:ankiItens.some(it=>it.mat&&it.dif>0)?'linear-gradient(135deg,#a78bfa,#a78bfa)':'rgba(148,163,184,.22)',color:ankiItens.some(it=>it.mat&&it.dif>0)?'#050a14':'#1e293b',fontSize:13,fontWeight:900,cursor:'pointer',fontFamily:"'DM Mono',monospace"}}>
-          {ankiSalvo?'✅ SALVO!':'💾 SALVAR ANKI'}
-        </button>
-        <HistoricoCompacto regs={ankiRegs} tipo="anki"/>
-      </div>
+        {ankiRegs.length===0&&<div style={{textAlign:'center',padding:'20px',color:'#334155',fontSize:11}}>Nenhum registro ainda.</div>}
+      </div>}
 
-      {/* ── NOTEBOOKLM ──────────────────────────────────────── */}
-      <div style={{background:'rgba(52,211,153,.05)',border:'1px solid rgba(52,211,153,.2)',borderRadius:13,padding:'14px',marginBottom:14}}>
-        <div style={{fontSize:9,letterSpacing:'3px',color:'#34d399',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:12}}>🎧 NOTEBOOKLM</div>
-        {/* Matéria */}
-        <div style={{marginBottom:8}}>
-          <div style={{fontSize:8,color:'#64748b',marginBottom:5}}>MATÉRIA</div>
-          <div style={{display:'flex',flexWrap:'wrap',gap:4,marginBottom:5}}>
-            {MATS.slice(0,6).map(m=><button key={m} onClick={()=>setNlmForm(f=>({...f,mat:m}))} style={{padding:'4px 8px',borderRadius:6,border:`1px solid ${nlmForm.mat===m?'#34d399':'rgba(148,163,184,.25)'}`,background:nlmForm.mat===m?'rgba(52,211,153,.2)':'transparent',color:nlmForm.mat===m?'#34d399':'#475569',fontSize:9,cursor:'pointer'}}>{m}</button>)}
+      {/* ── NLM ─────────────────────────────────────────── */}
+      {aba==='nlm'&&<div>
+        <div style={{background:'rgba(52,211,153,.05)',border:'1px solid rgba(52,211,153,.2)',borderRadius:13,padding:'14px',marginBottom:12}}>
+          <div style={{fontSize:9,letterSpacing:'3px',color:'#34d399',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:12}}>🎧 NOTEBOOKLM</div>
+          <div style={{marginBottom:10}}>
+            <div style={{fontSize:9,color:'#64748b',marginBottom:5}}>MATÉRIA</div>
+            <MatBtn value={nlmForm.mat} onChange={v=>setNlmForm(f=>({...f,mat:v}))} mats={MATS}/>
           </div>
-          <input value={MATS.includes(nlmForm.mat)?'':nlmForm.mat} onChange={e=>setNlmForm(f=>({...f,mat:e.target.value}))} placeholder="Ou digitar matéria..." style={{width:'100%',padding:'7px 10px',borderRadius:7,border:'1px solid rgba(52,211,153,.15)',background:'rgba(52,211,153,.04)',color:'#f1f5f9',fontSize:12,outline:'none',boxSizing:'border-box'}}/>
-        </div>
-        {/* O que fez */}
-        <div style={{marginBottom:8}}>
-          <div style={{fontSize:8,color:'#64748b',marginBottom:4}}>O QUE FEZ (campo livre)</div>
-          <textarea value={nlmForm.oque} onChange={e=>setNlmForm(f=>({...f,oque:e.target.value}))} rows={2} placeholder="ex: Ouvi podcast de pegadinhas, fiz flashcards de NBC TA 700..." style={{width:'100%',padding:'8px 10px',borderRadius:8,border:'1px solid rgba(52,211,153,.18)',background:'rgba(52,211,153,.04)',color:'#f1f5f9',fontSize:12,outline:'none',resize:'vertical',boxSizing:'border-box'}}/>
-        </div>
-        {/* Tempo + Qtd */}
-        <div style={{display:'flex',gap:8,marginBottom:8}}>
-          <div style={{flex:1}}>
-            <div style={{fontSize:8,color:'#64748b',marginBottom:3}}>TEMPO (min)</div>
-            <input type="number" value={nlmForm.tempo} onChange={e=>setNlmForm(f=>({...f,tempo:e.target.value}))} placeholder="ex: 35" style={{width:'100%',padding:'9px',borderRadius:7,border:'1px solid rgba(52,211,153,.2)',background:'rgba(52,211,153,.05)',color:'#34d399',fontSize:15,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
+          <div style={{marginBottom:8}}>
+            <div style={{fontSize:9,color:'#64748b',marginBottom:4}}>O QUE FEZ</div>
+            <textarea value={nlmForm.oque} onChange={e=>setNlmForm(f=>({...f,oque:e.target.value}))} rows={2} placeholder="ex: Ouvi podcast de pegadinhas, fiz flashcards de NBC TA 700..." style={{width:'100%',padding:'8px 10px',borderRadius:8,border:'1px solid rgba(52,211,153,.18)',background:'rgba(52,211,153,.04)',color:'#f1f5f9',fontSize:12,outline:'none',resize:'vertical',boxSizing:'border-box'}}/>
           </div>
-          <div style={{flex:1}}>
-            <div style={{fontSize:8,color:'#64748b',marginBottom:3}}>QUESTÕES / FLASHCARDS (qtd)</div>
-            <input type="number" value={nlmForm.qtd} onChange={e=>setNlmForm(f=>({...f,qtd:e.target.value}))} placeholder="se fizer" style={{width:'100%',padding:'9px',borderRadius:7,border:'1px solid rgba(52,211,153,.15)',background:'rgba(52,211,153,.04)',color:'#34d399',fontSize:15,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:7,marginBottom:10}}>
+            {[['⏱ TEMPO (min)','tempo','#34d399'],['📝 QUESTÕES / FLASHCARDS','questoes','#fbbf24']].map(([l,k,col])=>(
+              <div key={k}>
+                <div style={{fontSize:8,color:'#64748b',marginBottom:3}}>{l}</div>
+                <input type="number" value={nlmForm[k]||''} onChange={e=>setNlmForm(f=>({...f,[k]:e.target.value}))} placeholder="0" style={{width:'100%',padding:'10px',borderRadius:8,border:`1px solid ${col}25`,background:`${col}06`,color:col,fontSize:16,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
+              </div>
+            ))}
           </div>
+          <div style={{fontSize:9,color:'#64748b',marginBottom:5}}>DIFICULDADE</div>
+          <Estrelas val={nlmForm.dif} onChange={v=>setNlmForm(f=>({...f,dif:v}))}/>
+          {nlmForm.dif>0&&<div style={{textAlign:'center',fontSize:9,color:CORS_DIF[nlmForm.dif-1],marginTop:3,marginBottom:10,fontFamily:"'DM Mono',monospace",fontWeight:700}}>{LABELS_DIF[nlmForm.dif-1]}</div>}
+          <button onClick={salvarNlm} disabled={!nlmForm.mat||!nlmForm.dif} style={{width:'100%',padding:'12px',borderRadius:10,border:'none',background:nlmForm.mat&&nlmForm.dif?'#34d399':'rgba(148,163,184,.2)',color:nlmForm.mat&&nlmForm.dif?'#0f172a':'#334155',fontSize:13,fontWeight:900,cursor:'pointer',marginTop:8}}>{nlmSalvo?'✅ SALVO!':'💾 SALVAR NLM'}</button>
         </div>
-        {/* Dificuldade */}
-        <div style={{fontSize:8,color:'#64748b',marginBottom:5}}>DIFICULDADE</div>
-        <Estrelas val={nlmForm.dif} onChange={v=>setNlmForm(f=>({...f,dif:v}))}/>
-        {nlmForm.dif>0&&<div style={{textAlign:'center',fontSize:9,color:CORS_DIF[nlmForm.dif-1],marginTop:3,marginBottom:10,fontFamily:"'DM Mono',monospace",fontWeight:700}}>{LABELS_DIF[nlmForm.dif-1]}</div>}
-        <button onClick={salvarNlm} disabled={!nlmForm.mat||!nlmForm.dif} style={{width:'100%',padding:'13px',borderRadius:10,border:'none',background:nlmForm.mat&&nlmForm.dif?'linear-gradient(135deg,#34d399,#34d399)':'rgba(148,163,184,.22)',color:nlmForm.mat&&nlmForm.dif?'#050a14':'#1e293b',fontSize:13,fontWeight:900,cursor:'pointer',fontFamily:"'DM Mono',monospace",marginTop:nlmForm.dif?0:10}}>
-          {nlmSalvo?'✅ SALVO!':'💾 SALVAR NLM'}
-        </button>
-        <HistoricoCompacto regs={nlmRegs} tipo="nlm"/>
-      </div>
+        <div style={{fontSize:9,color:'#475569',fontFamily:"'DM Mono',monospace",marginBottom:8}}>ÚLTIMOS REGISTROS</div>
+        {[...nlmRegs].reverse().slice(0,5).map((r,i)=>(
+          <div key={i} style={{padding:'8px 11px',borderRadius:9,background:'rgba(52,211,153,.05)',border:'1px solid rgba(52,211,153,.15)',marginBottom:4}}>
+            <div style={{fontSize:11,color:'#f1f5f9',fontWeight:700}}>{r.mat}</div>
+            <div style={{fontSize:9,color:'#64748b'}}>{r.tempo?`${r.tempo}min · `:''}Q:{r.questoes||0}{r.dif?` · ${'⭐'.repeat(r.dif)}`:''}{r.oque?` · ${r.oque.slice(0,30)}`:''}</div>
+          </div>
+        ))}
+        {nlmRegs.length===0&&<div style={{textAlign:'center',padding:'20px',color:'#334155',fontSize:11}}>Nenhum registro ainda.</div>}
+      </div>}
 
-      {/* ── REVISÃO 1H30 ────────────────────────────────────── */}
-      <div style={{background:deve1h30?'linear-gradient(135deg,rgba(251,191,36,.1),rgba(5,10,20,.98))':'rgba(251,191,36,.03)',border:`${deve1h30?'2px':'1px'} solid ${deve1h30?'rgba(251,191,36,.5)':'rgba(251,191,36,.15)'}`,borderRadius:13,padding:'14px',marginBottom:14}}>
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:deve1h30?10:6}}>
-          <div style={{fontSize:9,letterSpacing:'3px',color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:800}}>🔄 REVISÃO 1H30</div>
-          <div style={{padding:'3px 8px',borderRadius:5,background:deve1h30?'rgba(251,191,36,.2)':'rgba(251,191,36,.08)',color:'#fbbf24',fontSize:9,fontFamily:"'DM Mono',monospace",fontWeight:700}}>{totalBlocos} blocos</div>
-        </div>
-        {deve1h30?(
-          <div>
-            <div style={{padding:'9px 11px',borderRadius:9,background:'rgba(251,191,36,.1)',border:'1px solid rgba(251,191,36,.3)',marginBottom:12}}>
-              <div style={{fontSize:12,fontWeight:800,color:'#fbbf24'}}>🚨 HORA DA REVISÃO GRANDE!</div>
-              <div style={{fontSize:10,color:'rgba(251,191,36,.7)',marginTop:2}}>Você completou {totalBlocos} blocos. Registre as 3 matérias revisadas.</div>
+      {/* ── REVISÃO 1h30 ────────────────────────────────── */}
+      {aba==='rev1h30'&&<div>
+        <div style={{background:deve1h30?'linear-gradient(135deg,rgba(251,191,36,.1),rgba(15,23,42,.98))':'rgba(251,191,36,.03)',border:`${deve1h30?'2px':'1px'} solid ${deve1h30?'rgba(251,191,36,.5)':'rgba(251,191,36,.18)'}`,borderRadius:13,padding:'14px',marginBottom:12}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
+            <div style={{fontSize:9,letterSpacing:'3px',color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:800}}>🔄 REVISÃO 1H30</div>
+            <span style={{padding:'3px 8px',borderRadius:5,background:'rgba(251,191,36,.15)',color:'#fbbf24',fontSize:9,fontFamily:"'DM Mono',monospace",fontWeight:700}}>{totalBlocos} blocos</span>
+          </div>
+          {!deve1h30&&<div>
+            <div style={{fontSize:11,color:'#94a3b8',marginBottom:8}}>A cada 5 blocos concluídos. Faltam <strong style={{color:'#fbbf24'}}>{faltam1h30}</strong> bloco{faltam1h30!==1?'s':''}.</div>
+            <BarProg done={5-faltam1h30} total={5} cor='#fbbf24' h={7}/>
+            {ultimaRev1h30&&<div style={{fontSize:9,color:'#334155',marginTop:6,fontFamily:"'DM Mono',monospace"}}>Última: bloco {ultimoBlocoRev} · {ultimaRev1h30.dia}</div>}
+          </div>}
+          {deve1h30&&<div>
+            <div style={{padding:'9px 11px',borderRadius:9,background:'rgba(251,191,36,.12)',border:'1px solid rgba(251,191,36,.3)',marginBottom:12}}>
+              <div style={{fontSize:13,fontWeight:800,color:'#fbbf24'}}>🚨 HORA DA REVISÃO GRANDE!</div>
+              <div style={{fontSize:10,color:'rgba(251,191,36,.7)',marginTop:2}}>{blocosDesdeUltimaRev} blocos desde a última revisão. Registre as matérias.</div>
             </div>
             {slots.map((s,i)=>(
               <div key={i} style={{padding:'11px',borderRadius:11,background:'rgba(251,191,36,.04)',border:'1px solid rgba(251,191,36,.15)',marginBottom:10}}>
                 <div style={{fontSize:9,color:'#fbbf24',fontFamily:"'DM Mono',monospace",marginBottom:8}}>MATÉRIA {i+1}{i===0?' — MAIS DIFÍCIL':''}</div>
-                <input value={s.mat} onChange={e=>updSlot(i,'mat',e.target.value)} placeholder="Nome da matéria..." style={{width:'100%',padding:'8px 10px',borderRadius:7,border:'1px solid rgba(251,191,36,.2)',background:'rgba(251,191,36,.04)',color:'#f1f5f9',fontSize:12,outline:'none',boxSizing:'border-box',marginBottom:8}}/>
-                <textarea value={s.oque} onChange={e=>updSlot(i,'oque',e.target.value)} rows={1} placeholder="O que fez? (Anki, NLM, questões, leitura...)" style={{width:'100%',padding:'7px 10px',borderRadius:7,border:'1px solid rgba(251,191,36,.15)',background:'rgba(251,191,36,.03)',color:'#f1f5f9',fontSize:11,outline:'none',resize:'vertical',boxSizing:'border-box',marginBottom:8}}/>
-                <div style={{display:'flex',gap:8,marginBottom:8}}>
-                  <div style={{flex:1}}>
-                    <div style={{fontSize:8,color:'#64748b',marginBottom:3}}>QUESTÕES / FLASHCARDS</div>
-                    <input type="number" value={s.qtd} onChange={e=>updSlot(i,'qtd',e.target.value)} placeholder="qtd" style={{width:'100%',padding:'8px',borderRadius:7,border:'1px solid rgba(251,191,36,.15)',background:'rgba(251,191,36,.03)',color:'#fbbf24',fontSize:14,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
+                <MatBtn value={s.mat} onChange={v=>setSlots(a=>a.map((x,j)=>j===i?{...x,mat:v}:x))} mats={MATS}/>
+                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:6,margin:'8px 0'}}>
+                  <div><div style={{fontSize:8,color:'#64748b',marginBottom:3}}>QUESTÕES</div>
+                    <input type="number" value={s.questoes||''} onChange={e=>setSlots(a=>a.map((x,j)=>j===i?{...x,questoes:e.target.value}:x))} placeholder="0" style={{width:'100%',padding:'8px',borderRadius:7,border:'1px solid rgba(251,191,36,.2)',background:'rgba(251,191,36,.04)',color:'#fbbf24',fontSize:14,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
                   </div>
-                  <div style={{flex:2}}>
-                    <div style={{fontSize:8,color:'#64748b',marginBottom:3}}>DIFICULDADE</div>
-                    <Estrelas val={s.dif} onChange={v=>updSlot(i,'dif',v)}/>
+                  <div><div style={{fontSize:8,color:'#64748b',marginBottom:3}}>DIFICULDADE</div>
+                    <Estrelas val={s.dif} onChange={v=>setSlots(a=>a.map((x,j)=>j===i?{...x,dif:v}:x))}/>
                   </div>
                 </div>
               </div>
             ))}
-            <button onClick={salvar1h30} disabled={!slots.some(s=>s.mat&&s.dif>0)} style={{width:'100%',padding:'13px',borderRadius:10,border:'none',background:slots.some(s=>s.mat&&s.dif>0)?'linear-gradient(135deg,#fbbf24,#fbbf24)':'rgba(148,163,184,.22)',color:slots.some(s=>s.mat&&s.dif>0)?'#050a14':'#1e293b',fontSize:13,fontWeight:900,cursor:'pointer',fontFamily:"'DM Mono',monospace"}}>
-              {slotSalvo?'✅ SALVO!':'💾 SALVAR REVISÃO 1H30'}
-            </button>
-          </div>
-        ):(
-          <div>
-            <div style={{fontSize:11,color:'#94a3b8',marginBottom:8}}>Aparece automaticamente a cada 5 blocos concluídos.</div>
-            <div style={{display:'flex',alignItems:'center',gap:10}}>
-              <BarProg done={5-faltam1h30} total={5} cor='#fbbf24' h={6}/>
-              <span style={{fontSize:11,color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:700,flexShrink:0}}>{faltam1h30} restam</span>
+            <button onClick={salvar1h30} disabled={!slots.some(s=>s.mat&&s.dif>0)} style={{width:'100%',padding:'13px',borderRadius:10,border:'none',background:slots.some(s=>s.mat&&s.dif>0)?'#fbbf24':'rgba(148,163,184,.2)',color:slots.some(s=>s.mat&&s.dif>0)?'#0f172a':'#334155',fontSize:13,fontWeight:900,cursor:'pointer'}}>{slotSalvo?'✅ SALVO!':'💾 SALVAR REVISÃO 1H30'}</button>
+          </div>}
+        </div>
+        {rev1h30Regs.length>0&&<div>
+          <div style={{fontSize:9,color:'#475569',fontFamily:"'DM Mono',monospace",marginBottom:8}}>HISTÓRICO</div>
+          {[...rev1h30Regs].reverse().slice(0,3).map((r,i)=>(
+            <div key={i} style={{padding:'8px 11px',borderRadius:9,background:'rgba(251,191,36,.05)',border:'1px solid rgba(251,191,36,.15)',marginBottom:4}}>
+              <div style={{fontSize:9,color:'#fbbf24',fontFamily:"'DM Mono',monospace"}}>Bloco {r.blocoRef} · {r.dia}</div>
+              <div style={{fontSize:10,color:'#94a3b8',marginTop:2}}>{r.slots?.filter(s=>s.mat).map(s=>s.mat).join(', ')}</div>
             </div>
-          </div>
-        )}
-        <HistoricoCompacto regs={rev1h30Regs} tipo="1h30"/>
-      </div>
-    </div>
-  );
-}
-
-
-// ─── TAB: CADERNO DE ERROS ───────────────────────────────────
-function TabErros(){
-  const hoje=getDK();
-  const[aba,setAba]=useState('lista');
-  const[erros,setErros]=useState(()=>lsGet('caderno_erros',[]));
-  const[form,setForm]=useState({mat:'',topico:'',motivo:'',correto:'',banca:'',dif:0});
-  const[salvo,setSalvo]=useState(false);
-
-  const MATS=CICLO.map(c=>c.mat).filter((v,i,a)=>a.indexOf(v)===i);
-  const MOTIVOS=[
-    {v:'nao_sabia',l:'Não sabia o conteúdo',c:'#f87171'},
-    {v:'distracao',l:'Sabia mas me distraí',c:'#fbbf24'},
-    {v:'confundi',l:'Confundi com outro tópico',c:'#fb923c'},
-    {v:'pegadinha',l:'Pegadinha da banca',c:'#a78bfa'}
-  ];
-  const BANCAS=['CEBRASPE','FGV','FCC','Outra'];
-  const CORS_DIF=['#34d399','#a3e635','#fbbf24','#fb923c','#f87171'];
-
-  const calcProx=(dt,revs)=>{const iv=[1,3,7,15,30];return dt+iv[Math.min(revs||0,iv.length-1)]*86400000;};
-
-  const mapaCalor=useMemo(()=>{
-    const mapa={};
-    erros.filter(e=>!e.dominado).forEach(e=>{
-      const k=`${e.mat}||${e.topico||'geral'}`;
-      mapa[k]=(mapa[k]||0)+1;
-    });
-    return Object.entries(mapa).map(([k,n])=>{const[mat,top]=k.split('||');return{mat,topico:top,n};}).sort((a,b)=>b.n-a.n);
-  },[erros]);
-
-  const pendentesHoje=useMemo(()=>erros.filter(e=>!e.dominado&&calcProx(e.dt,e.revisoes||0)<=Date.now()),[erros]);
-  const ativos=erros.filter(e=>!e.dominado);
-
-  const salvarErro=()=>{
-    if(!form.mat||!form.topico||!form.motivo)return;
-    const n=[...erros,{...form,id:Date.now(),dt:Date.now(),dia:hoje,revisoes:0,dominado:false}];
-    setErros(n);lsSet('caderno_erros',n);
-    setForm({mat:'',topico:'',motivo:'',correto:'',banca:'',dif:0});
-    setSalvo(true);setTimeout(()=>setSalvo(false),2500);
-  };
-  const marcarRevisao=(id,lembrou)=>{
-    const n=erros.map(e=>e.id!==id?e:{...e,revisoes:(e.revisoes||0)+1,ultimaRevisao:Date.now(),lembrou});
-    setErros(n);lsSet('caderno_erros',n);
-  };
-  const marcarDominado=id=>{
-    const n=erros.map(e=>e.id===id?{...e,dominado:true,dominadoEm:Date.now()}:e);
-    setErros(n);lsSet('caderno_erros',n);
-  };
-  const delErro=id=>{const n=erros.filter(e=>e.id!==id);setErros(n);lsSet('caderno_erros',n);};
-
-  const SUB=[
-    {id:'lista',l:'📋 Erros'},
-    {id:'mapa',l:'🌡️ Mapa'},
-    {id:'revisao',l:`🔔 Revisar${pendentesHoje.length>0?` (${pendentesHoje.length})`:''}`},
-    {id:'bizu',l:'⚡ Bizu'}
-  ];
-
-  return(
-    <div>
-      {pendentesHoje.length>0&&<div style={{marginBottom:10,padding:'10px 13px',borderRadius:10,background:'rgba(248,113,113,.1)',border:'2px solid rgba(248,113,113,.4)',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-        <div><div style={{fontSize:11,fontWeight:800,color:'#f87171',fontFamily:"'DM Mono',monospace"}}>🔔 {pendentesHoje.length} erro{pendentesHoje.length>1?'s':''} para revisar hoje</div><div style={{fontSize:9,color:'rgba(248,113,113,.7)',marginTop:2}}>Revisão espaçada pendente</div></div>
-        <button onClick={()=>setAba('revisao')} style={{padding:'6px 12px',borderRadius:7,border:'none',background:'#f87171',color:'#050a14',fontSize:10,fontWeight:800,cursor:'pointer'}}>Revisar →</button>
+          ))}
+        </div>}
       </div>}
 
-      <div style={{display:'flex',gap:3,marginBottom:14,overflowX:'auto',scrollbarWidth:'none'}}>
-        {SUB.map(s=>{const a=aba===s.id;return(
-          <button key={s.id} onClick={()=>setAba(s.id)} style={{flexShrink:0,padding:'8px 10px',borderRadius:9,border:`1px solid ${a?'#f87171':'rgba(148,163,184,.25)'}`,background:a?'rgba(248,113,113,.12)':'transparent',color:a?'#f87171':'#334155',fontSize:9,fontWeight:700,fontFamily:"'DM Mono',monospace",cursor:'pointer',whiteSpace:'nowrap'}}>{s.l}</button>
-        );})}
-      </div>
-
-      {aba==='lista'&&<div>
-        <div style={{background:'rgba(248,113,113,.05)',border:'1px solid rgba(248,113,113,.22)',borderRadius:13,padding:'14px',marginBottom:14}}>
-          <div style={{fontSize:9,letterSpacing:'3px',color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:12}}>📕 REGISTRAR ERRO</div>
-          <div style={{marginBottom:8}}>
-            <div style={{fontSize:9,color:'#64748b',marginBottom:4}}>MATÉRIA</div>
-            <div style={{display:'flex',flexWrap:'wrap',gap:4,marginBottom:5}}>
-              {MATS.slice(0,7).map(m=><button key={m} onClick={()=>setForm(f=>({...f,mat:m}))} style={{padding:'4px 7px',borderRadius:6,border:`1px solid ${form.mat===m?'#f87171':'rgba(148,163,184,.25)'}`,background:form.mat===m?'rgba(248,113,113,.18)':'transparent',color:form.mat===m?'#f87171':'#475569',fontSize:9,cursor:'pointer'}}>{m}</button>)}
-            </div>
-            <input value={MATS.includes(form.mat)?'':form.mat} onChange={e=>setForm(f=>({...f,mat:e.target.value}))} placeholder="Ou digitar..." style={{width:'100%',padding:'7px 10px',borderRadius:7,border:'1px solid rgba(248,113,113,.18)',background:'rgba(248,113,113,.04)',color:'#f1f5f9',fontSize:12,outline:'none',boxSizing:'border-box'}}/>
-          </div>
-          <div style={{marginBottom:8}}>
-            <div style={{fontSize:9,color:'#64748b',marginBottom:4}}>TÓPICO ESPECÍFICO</div>
-            <input value={form.topico} onChange={e=>setForm(f=>({...f,topico:e.target.value}))} placeholder="ex: Estágios da Receita, NBC TA 700..." style={{width:'100%',padding:'8px 10px',borderRadius:8,border:'1px solid rgba(248,113,113,.2)',background:'rgba(248,113,113,.04)',color:'#f1f5f9',fontSize:12,outline:'none',boxSizing:'border-box'}}/>
-          </div>
-          <div style={{marginBottom:8}}>
-            <div style={{fontSize:9,color:'#64748b',marginBottom:5}}>MOTIVO DO ERRO</div>
-            {MOTIVOS.map(m=><button key={m.v} onClick={()=>setForm(f=>({...f,motivo:m.v}))} style={{display:'block',width:'100%',padding:'8px 10px',borderRadius:8,border:`1px solid ${form.motivo===m.v?m.c:'rgba(148,163,184,.25)'}`,background:form.motivo===m.v?`${m.c}15`:'rgba(255,255,255,.02)',color:form.motivo===m.v?m.c:'#475569',fontSize:11,cursor:'pointer',textAlign:'left',marginBottom:4}}>{m.l}</button>)}
-          </div>
-          <div style={{marginBottom:8}}>
-            <div style={{fontSize:9,color:'#64748b',marginBottom:4}}>O QUE DEVERIA SABER (seu bizu)</div>
-            <textarea value={form.correto} onChange={e=>setForm(f=>({...f,correto:e.target.value}))} rows={2} placeholder="Escreva com suas palavras o que deveria ter lembrado..." style={{width:'100%',padding:'8px 10px',borderRadius:8,border:'1px solid rgba(248,113,113,.15)',background:'rgba(248,113,113,.03)',color:'#f1f5f9',fontSize:12,outline:'none',resize:'vertical',boxSizing:'border-box'}}/>
-          </div>
-          <div style={{display:'flex',gap:8,marginBottom:12}}>
-            <div style={{flex:1}}>
-              <div style={{fontSize:9,color:'#64748b',marginBottom:4}}>BANCA</div>
-              <div style={{display:'flex',flexWrap:'wrap',gap:4}}>
-                {BANCAS.map(b=><button key={b} onClick={()=>setForm(f=>({...f,banca:b}))} style={{padding:'4px 8px',borderRadius:6,border:`1px solid ${form.banca===b?'#f87171':'rgba(148,163,184,.25)'}`,background:form.banca===b?'rgba(248,113,113,.15)':'transparent',color:form.banca===b?'#f87171':'#475569',fontSize:9,cursor:'pointer'}}>{b}</button>)}
-              </div>
-            </div>
-            <div style={{flex:1}}>
-              <div style={{fontSize:9,color:'#64748b',marginBottom:4}}>DIFICULDADE</div>
-              <div style={{display:'flex',gap:3}}>
-                {[1,2,3,4,5].map(s=><button key={s} onClick={()=>setForm(f=>({...f,dif:s}))} style={{flex:1,padding:'6px',borderRadius:6,border:`1px solid ${form.dif>=s?CORS_DIF[s-1]:'rgba(148,163,184,.25)'}`,background:form.dif>=s?`${CORS_DIF[s-1]}20`:'transparent',fontSize:12,cursor:'pointer'}}>⭐</button>)}
-              </div>
-            </div>
-          </div>
-          <button onClick={salvarErro} disabled={!form.mat||!form.topico||!form.motivo} style={{width:'100%',padding:'13px',borderRadius:10,border:'none',background:form.mat&&form.topico&&form.motivo?'linear-gradient(135deg,#f87171,#f87171)':'rgba(148,163,184,.22)',color:form.mat&&form.topico&&form.motivo?'#050a14':'#1e293b',fontSize:13,fontWeight:900,cursor:'pointer',fontFamily:"'DM Mono',monospace"}}>
-            {salvo?'✅ ERRO REGISTRADO!':'📕 SALVAR NO CADERNO'}
-          </button>
+      {/* ── CADERNO DE ERROS (registro) ──────────────────── */}
+      {aba==='caderno'&&<div>
+        <div style={{padding:'10px 12px',borderRadius:10,background:'rgba(248,113,113,.06)',border:'1px solid rgba(248,113,113,.2)',marginBottom:12}}>
+          <div style={{fontSize:9,color:'#f87171',fontFamily:"'DM Mono',monospace",marginBottom:4}}>📕 CADERNO DE ERROS — REGISTRO DE SESSÃO</div>
+          <div style={{fontSize:11,color:'#64748b'}}>Registre aqui suas sessões no caderno externo: quantas questões viu, quantas foram pro Anki e pro NLM.</div>
         </div>
-        <div style={{display:'flex',justifyContent:'space-between',marginBottom:8}}>
-          <div style={{fontSize:9,letterSpacing:'2px',color:'#f87171',fontFamily:"'DM Mono',monospace"}}>{ativos.length} ERROS ATIVOS</div>
-          <span style={{fontSize:9,color:'#64748b',fontFamily:"'DM Mono',monospace"}}>{erros.filter(e=>e.dominado).length} dominados ✓</span>
+        <div style={{background:'rgba(248,113,113,.04)',border:'1px solid rgba(248,113,113,.18)',borderRadius:13,padding:'14px',marginBottom:12}}>
+          <div style={{marginBottom:10}}>
+            <div style={{fontSize:9,color:'#64748b',marginBottom:5}}>MATÉRIA / TÓPICO</div>
+            <MatBtn value={cadForm.mat} onChange={v=>setCadForm(f=>({...f,mat:v}))} mats={MATS}/>
+          </div>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:6,marginBottom:10}}>
+            {[['📝 QUESTÕES VISTAS','questoes','#f87171'],['🃏 FORAM PRO ANKI','anki','#a78bfa'],['🎧 FORAM PRO NLM','nlm','#34d399']].map(([l,k,col])=>(
+              <div key={k}>
+                <div style={{fontSize:7,color:'#64748b',marginBottom:3}}>{l}</div>
+                <input type="number" value={cadForm[k]||''} onChange={e=>setCadForm(f=>({...f,[k]:e.target.value}))} placeholder="0" style={{width:'100%',padding:'9px 4px',borderRadius:8,border:`1px solid ${col}25`,background:`${col}06`,color:col,fontSize:15,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
+              </div>
+            ))}
+          </div>
+          <input value={cadForm.obs||''} onChange={e=>setCadForm(f=>({...f,obs:e.target.value}))} placeholder="Observação livre..." style={{width:'100%',padding:'8px 10px',borderRadius:8,border:'1px solid rgba(248,113,113,.15)',background:'rgba(248,113,113,.03)',color:'#f1f5f9',fontSize:12,outline:'none',boxSizing:'border-box',marginBottom:12}}/>
+          <button onClick={salvarCaderno} disabled={!cadForm.mat} style={{width:'100%',padding:'12px',borderRadius:10,border:'none',background:cadForm.mat?'#f87171':'rgba(148,163,184,.2)',color:cadForm.mat?'#0f172a':'#334155',fontSize:13,fontWeight:900,cursor:'pointer'}}>{cadSalvo?'✅ SALVO!':'💾 SALVAR SESSÃO'}</button>
         </div>
-        {ativos.slice().reverse().map(e=>{
-          const mot=MOTIVOS.find(m=>m.v===e.motivo);
-          const proxRev=calcProx(e.dt,e.revisoes||0);
-          const pend=proxRev<=Date.now();
-          return(
-            <div key={e.id} style={{padding:'11px 13px',borderRadius:12,background:pend?'rgba(248,113,113,.07)':'rgba(255,255,255,.02)',border:`1px solid ${pend?'rgba(248,113,113,.3)':'rgba(148,163,184,.25)'}`,marginBottom:7}}>
-              <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:4}}>
-                <div><div style={{fontSize:12,fontWeight:800,color:'#e8edf5'}}>{e.mat}</div><div style={{fontSize:11,color:'#60a5fa'}}>{e.topico}</div></div>
-                <div style={{display:'flex',gap:4,flexShrink:0}}>
-                  {pend&&<span style={{fontSize:8,padding:'2px 6px',borderRadius:4,background:'rgba(248,113,113,.2)',color:'#f87171',fontFamily:"'DM Mono',monospace"}}>REVISAR</span>}
-                  {e.banca&&<span style={{fontSize:8,padding:'2px 6px',borderRadius:4,background:'rgba(148,163,184,.25)',color:'#94a3b8',fontFamily:"'DM Mono',monospace"}}>{e.banca}</span>}
-                </div>
-              </div>
-              {mot&&<div style={{fontSize:10,color:mot.c,marginBottom:4}}>↳ {mot.l}</div>}
-              {e.correto&&<div style={{fontSize:11,color:'#94a3b8',background:'rgba(148,163,184,.25)',borderRadius:7,padding:'6px 8px',marginBottom:8,lineHeight:1.6}}>{e.correto}</div>}
-              <div style={{display:'flex',gap:5,alignItems:'center'}}>
-                <span style={{fontSize:9,color:'#475569',fontFamily:"'DM Mono',monospace",flex:1}}>{e.revisoes||0}x rev · prox: {new Date(proxRev).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})}</span>
-                <button onClick={()=>marcarDominado(e.id)} style={{padding:'4px 9px',borderRadius:6,border:'1px solid rgba(52,211,153,.3)',background:'transparent',color:'#34d399',fontSize:9,cursor:'pointer'}}>✓ Dominei</button>
-                <button onClick={()=>delErro(e.id)} style={{padding:'4px 7px',borderRadius:6,border:'1px solid rgba(248,113,113,.2)',background:'transparent',color:'#f87171',fontSize:9,cursor:'pointer'}}>×</button>
-              </div>
-            </div>
-          );
-        })}
-        {ativos.length===0&&<div style={{textAlign:'center',padding:'30px',color:'#475569',fontSize:12}}>Nenhum erro ativo. ✅</div>}
+        <div style={{fontSize:9,color:'#475569',fontFamily:"'DM Mono',monospace",marginBottom:8}}>SESSÕES RECENTES</div>
+        {[...cadRegs].reverse().slice(0,8).map((r,i)=>(
+          <div key={i} style={{padding:'8px 11px',borderRadius:9,background:'rgba(248,113,113,.05)',border:'1px solid rgba(248,113,113,.15)',marginBottom:4,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+            <div><div style={{fontSize:11,color:'#f1f5f9',fontWeight:700}}>{r.mat}</div><div style={{fontSize:9,color:'#64748b'}}>Q:{r.questoes||0} · 🃏{r.anki||0} · 🎧{r.nlm||0}{r.obs?` · ${r.obs.slice(0,20)}`:''}</div></div>
+            <span style={{fontSize:9,color:'#334155',fontFamily:"'DM Mono',monospace"}}>{r.dia}</span>
+          </div>
+        ))}
+        {cadRegs.length===0&&<div style={{textAlign:'center',padding:'20px',color:'#334155',fontSize:11}}>Nenhuma sessão registrada ainda.</div>}
       </div>}
 
-      {aba==='mapa'&&<div>
-        <div style={{background:'rgba(248,113,113,.04)',border:'1px solid rgba(248,113,113,.18)',borderRadius:11,padding:'11px',marginBottom:12}}>
-          <div style={{fontSize:9,color:'#f87171',fontFamily:"'DM Mono',monospace",marginBottom:3}}>🌡️ MAPA DE CALOR — TÓPICOS MAIS ERRADOS</div>
-          <div style={{fontSize:11,color:'#94a3b8'}}>Foque nesses tópicos na próxima revisão.</div>
+      {/* ── TÓPICOS PARA REVISITAR ───────────────────────── */}
+      {aba==='topicos'&&<div>
+        <div style={{padding:'10px 12px',borderRadius:10,background:'rgba(251,191,36,.06)',border:'1px solid rgba(251,191,36,.2)',marginBottom:12}}>
+          <div style={{fontSize:9,color:'#fbbf24',fontFamily:"'DM Mono',monospace",marginBottom:4}}>📌 TÓPICOS PARA REVISITAR</div>
+          <div style={{fontSize:11,color:'#64748b'}}>Anote tópicos específicos que precisa revisitar. Sem data — só uma lista pessoal de pendências.</div>
         </div>
-        {mapaCalor.length===0&&<div style={{textAlign:'center',padding:'30px',color:'#475569',fontSize:12}}>Nenhum erro registrado ainda.</div>}
-        {mapaCalor.slice(0,15).map((item,i)=>{
-          const maxN=mapaCalor[0]?.n||1;const pct=Math.round(item.n/maxN*100);
-          const cor=pct>=80?'#f87171':pct>=50?'#fb923c':pct>=30?'#fbbf24':'#34d399';
-          return(
-            <div key={i} style={{padding:'10px 12px',borderRadius:10,background:`${cor}06`,border:`1px solid ${cor}20`,marginBottom:6}}>
-              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:5}}>
-                <div><div style={{fontSize:12,fontWeight:800,color:cor}}>{item.topico==='geral'?item.mat:item.topico}</div>{item.topico!=='geral'&&<div style={{fontSize:9,color:'#94a3b8'}}>{item.mat}</div>}</div>
-                <div style={{padding:'3px 8px',borderRadius:5,background:`${cor}20`,color:cor,fontSize:11,fontWeight:900,fontFamily:"'DM Mono',monospace"}}>{item.n}x</div>
-              </div>
-              <BarProg done={item.n} total={maxN} cor={cor} h={4}/>
-            </div>
-          );
-        })}
-      </div>}
-
-      {aba==='revisao'&&<div>
-        <div style={{background:'rgba(96,165,250,.04)',border:'1px solid rgba(96,165,250,.18)',borderRadius:11,padding:'11px',marginBottom:12}}>
-          <div style={{fontSize:9,color:'#60a5fa',fontFamily:"'DM Mono',monospace",marginBottom:3}}>🔔 REVISÃO ESPAÇADA</div>
-          <div style={{fontSize:11,color:'#94a3b8'}}>Sistema: 1d → 3d → 7d → 15d → 30d</div>
+        <div style={{display:'flex',gap:7,marginBottom:14}}>
+          <input value={topicoForm} onChange={e=>setTopicoForm(e.target.value)} onKeyDown={e=>e.key==='Enter'&&addTopico()} placeholder="ex: NBC TA 700, art. 37 caput, Estágios da Receita..." style={{flex:1,padding:'9px 11px',borderRadius:9,border:'1px solid rgba(251,191,36,.25)',background:'rgba(251,191,36,.05)',color:'#f1f5f9',fontSize:12,outline:'none'}}/>
+          <button onClick={addTopico} style={{padding:'9px 14px',borderRadius:9,border:'none',background:topicoForm.trim()?'#fbbf24':'rgba(148,163,184,.2)',color:topicoForm.trim()?'#0f172a':'#334155',fontSize:14,fontWeight:900,cursor:'pointer'}}>+</button>
         </div>
-        {pendentesHoje.length===0&&<div style={{textAlign:'center',padding:'30px',color:'#475569',fontSize:12}}>Nenhum erro para revisar hoje. ✅</div>}
-        {pendentesHoje.map(e=>{
-          const mot=MOTIVOS.find(m=>m.v===e.motivo);
-          return(
-            <div key={e.id} style={{padding:'12px 13px',borderRadius:12,background:'rgba(96,165,250,.05)',border:'1px solid rgba(96,165,250,.2)',marginBottom:8}}>
-              <div style={{fontSize:13,fontWeight:800,color:'#e8edf5',marginBottom:2}}>{e.mat}</div>
-              <div style={{fontSize:11,color:'#60a5fa',marginBottom:4}}>{e.topico}</div>
-              {mot&&<div style={{fontSize:10,color:mot.c,marginBottom:6}}>↳ {mot.l}</div>}
-              {e.correto&&<div style={{fontSize:12,color:'#f1f5f9',background:'rgba(148,163,184,.28)',borderRadius:8,padding:'8px 10px',marginBottom:10,lineHeight:1.7,fontStyle:'italic'}}>"{e.correto}"</div>}
-              <div style={{fontSize:9,color:'#64748b',marginBottom:8,fontFamily:"'DM Mono',monospace"}}>{e.revisoes||0}x revisado</div>
-              <div style={{display:'flex',gap:8}}>
-                <button onClick={()=>marcarRevisao(e.id,true)} style={{flex:1,padding:'9px',borderRadius:8,border:'none',background:'#34d399',color:'#050a14',fontSize:11,fontWeight:800,cursor:'pointer'}}>✓ Lembrei!</button>
-                <button onClick={()=>marcarRevisao(e.id,false)} style={{flex:1,padding:'9px',borderRadius:8,border:'2px solid rgba(248,113,113,.4)',background:'transparent',color:'#f87171',fontSize:11,fontWeight:700,cursor:'pointer'}}>⚠️ Ainda confundo</button>
-              </div>
+        {topicos.filter(t=>!t.feito).length>0&&<div style={{marginBottom:14}}>
+          <div style={{fontSize:9,color:'#fbbf24',fontFamily:"'DM Mono',monospace",marginBottom:6}}>PENDENTES ({topicos.filter(t=>!t.feito).length})</div>
+          {topicos.filter(t=>!t.feito).map(t=>(
+            <div key={t.id} style={{display:'flex',alignItems:'center',gap:8,padding:'9px 11px',borderRadius:9,background:'rgba(251,191,36,.06)',border:'1px solid rgba(251,191,36,.2)',marginBottom:5}}>
+              <div onClick={()=>togTopico(t.id)} style={{width:16,height:16,borderRadius:'50%',flexShrink:0,border:'2px solid #fbbf24',background:'transparent',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:7,fontWeight:900}}/>
+              <span style={{flex:1,fontSize:12,color:'#f1f5f9'}}>{t.txt}</span>
+              <button onClick={()=>delTopico(t.id)} style={{padding:'1px 6px',borderRadius:4,border:'none',background:'transparent',color:'#334155',fontSize:10,cursor:'pointer'}}>×</button>
             </div>
-          );
-        })}
-      </div>}
-
-      {aba==='bizu'&&<div>
-        <div style={{background:'rgba(167,139,250,.04)',border:'1px solid rgba(167,139,250,.18)',borderRadius:11,padding:'11px',marginBottom:12}}>
-          <div style={{fontSize:9,color:'#a78bfa',fontFamily:"'DM Mono',monospace",marginBottom:3}}>⚡ BIZU PRÉ-PROVA</div>
-          <div style={{fontSize:11,color:'#94a3b8'}}>Todos os erros ativos — leia antes de uma prova ou simulado.</div>
-        </div>
-        {ativos.length===0&&<div style={{textAlign:'center',padding:'30px',color:'#475569',fontSize:12}}>Caderno limpo! ✅</div>}
-        {MATS.map(mat=>{
-          const em=ativos.filter(e=>e.mat===mat);
-          if(!em.length)return null;
-          return(
-            <div key={mat} style={{marginBottom:12}}>
-              <div style={{fontSize:10,fontWeight:800,color:'#a78bfa',fontFamily:"'DM Mono',monospace",marginBottom:6}}>{mat.toUpperCase()} — {em.length} erro{em.length>1?'s':''}</div>
-              {em.map(e=>(
-                <div key={e.id} style={{padding:'8px 11px',borderRadius:9,background:'rgba(167,139,250,.05)',border:'1px solid rgba(167,139,250,.15)',marginBottom:4}}>
-                  <div style={{fontSize:11,fontWeight:700,color:'#f1f5f9',marginBottom:e.correto?3:0}}>{e.topico}</div>
-                  {e.correto&&<div style={{fontSize:11,color:'#94a3b8',lineHeight:1.6}}>{e.correto}</div>}
-                </div>
-              ))}
+          ))}
+        </div>}
+        {topicos.filter(t=>t.feito).length>0&&<div>
+          <div style={{fontSize:9,color:'#334155',fontFamily:"'DM Mono',monospace",marginBottom:6}}>REVISADOS ✓</div>
+          {topicos.filter(t=>t.feito).slice(0,5).map(t=>(
+            <div key={t.id} style={{display:'flex',alignItems:'center',gap:8,padding:'7px 11px',borderRadius:9,background:'rgba(52,211,153,.04)',border:'1px solid rgba(52,211,153,.15)',marginBottom:4,opacity:.7}}>
+              <div onClick={()=>togTopico(t.id)} style={{width:16,height:16,borderRadius:'50%',flexShrink:0,border:'2px solid #34d399',background:'#34d399',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:7,color:'#0f172a',fontWeight:900}}>✓</div>
+              <span style={{flex:1,fontSize:11,color:'#475569',textDecoration:'line-through'}}>{t.txt}</span>
+              <button onClick={()=>delTopico(t.id)} style={{padding:'1px 6px',borderRadius:4,border:'none',background:'transparent',color:'#334155',fontSize:10,cursor:'pointer'}}>×</button>
             </div>
-          );
-        })}
+          ))}
+        </div>}
+        {topicos.length===0&&<div style={{textAlign:'center',padding:'30px',color:'#334155',fontSize:12}}>Nenhum tópico ainda.</div>}
       </div>}
     </div>
   );
@@ -1701,6 +1589,21 @@ function TabAgenda({planoSemana,onSetTab}){
           </div>
         ))}
         <div style={{fontSize:9,color:'#475569',marginTop:4,fontStyle:'italic'}}>💡 Preenche automaticamente com os MITs da IA</div>
+        {(()=>{
+          const feitos2=lsGet('feitos',[]);
+          const prox=CICLO.filter(s=>!feitos2.includes(s.id)).slice(0,3);
+          if(!prox.length)return null;
+          return(
+            <div style={{marginTop:8}}>
+              <div style={{fontSize:8,color:'#475569',fontFamily:"'DM Mono',monospace",marginBottom:4}}>SUGESTÕES DO CICLO</div>
+              <div style={{display:'flex',gap:5,flexWrap:'wrap'}}>
+                {prox.map((s,i)=>(
+                  <button key={s.id} onClick={()=>{const n=[...foco];const idx=n.findIndex(f=>!f);if(idx>=0){const nn=[...n];nn[idx]=s.mat;savFoco(nn);}}} style={{padding:'4px 9px',borderRadius:7,border:`1px solid ${s.cor}35`,background:`${s.cor}10`,color:s.cor,fontSize:9,cursor:'pointer'}}>{s.ic} B{s.id} {s.mat}</button>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
       {/* ── TOGGLE VISÃO ── */}
@@ -2298,7 +2201,6 @@ function App(){
     {id:'ia',e:'🤖',l:'IA'},
     {id:'estudo',e:'📚',l:'Estudo'},
     {id:'revisao',e:'🧠',l:'Revisão'},
-    {id:'erros',e:'📕',l:'Erros',badge:errosPend},
     {id:'agenda',e:'🗓️',l:'Agenda'},
   ];
 
@@ -2336,7 +2238,7 @@ function App(){
         {tab==='ia'     &&<TabIA     appCtx={appCtx} onMIT={saveMIT}/>}
         {tab==='estudo' &&<TabEstudo feitos={feitos} cicloNum={cicloNum} horas={horas} onConcluir={concluir} onIrPara={irPara} onDesmarcar={desmarcar} onAddHoras={addHoras} mit={mit} planoSemana={planoSemana} onSavePlano={savePlano}/>}
         {tab==='revisao'&&<TabRevisao totalBlocos={feitos.length}/>}
-        {tab==='erros'  &&<TabErros/>}
+        
         {tab==='agenda' &&<TabAgenda planoSemana={planoSemana} onSetTab={setTab}/>}
         <div style={{height:80}}/>
       </div>
