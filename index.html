@@ -2263,7 +2263,16 @@ function App(){
   const appCtx={cicloNum,feitosN:feitos.length,N,pendentes,minHoje,minSemana};
 
   const concluir=id=>{if(feitos.includes(id))return;const n=[...feitos,id];if(n.length>=N){lsSet('feitos',[]);lsSet('cicloNum',cicloNum+1);setFeitos([]);setCicloNum(c=>c+1);setTrofeu(true);setTimeout(()=>setTrofeu(false),4000);}else{lsSet('feitos',n);setFeitos(n);}};
-  const irPara=id=>{const targetIdx=CICLO.findIndex(s=>s.id===id);const ids=CICLO.slice(0,targetIdx).map(s=>s.id);lsSet('feitos',ids);setFeitos(ids);};
+  const irPara=id=>{
+    const targetIdx=CICLO.findIndex(s=>s.id===id);
+    // IDs de todos os blocos ANTES do destino
+    const anteriores=CICLO.slice(0,targetIdx).map(s=>s.id);
+    // Une os já feitos com os anteriores — sem apagar o que foi feito fora de ordem
+    const merged=[...new Set([...feitos,...anteriores])];
+    // Remove o bloco destino da lista (para ele ficar como próximo)
+    const final=merged.filter(fid=>fid!==id);
+    lsSet('feitos',final);setFeitos(final);
+  };
   const addHoras=e=>{const n=[...horas,e];lsSet('horas',n);setHoras(n);};
   const saveMIT=itens=>{lsSet('mit',itens);setMit(itens);};
   const savePlano=p=>{setPlanoSemana(p);lsSet('plano_semanal',p);};
