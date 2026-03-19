@@ -319,7 +319,6 @@ function TabIA({appCtx,onMIT}){
     const urgentes=lsGet('rev_urgentes',[]);
     const fila=lsGet('fila',[]).filter(f=>!f.feito&&f.quando==='Hoje');
     const planoSem=lsGet('plano_semanal',null);
-    const errosPend=lsGet('caderno_erros',[]).filter(e=>!e.dominado).length;
     return `Você é a Assessora IA pessoal da Ritchely — mentora de alto desempenho para o concurso TCE-RJ (Auditora de Controle Externo).
 
 PERFIL: Ritchely, 38 anos, mãe solteira do Kauê (13a, Colégio Naval). Ciclo Meirelles Opção 3 (23 blocos). Meta: 35h+/semana. Acorda 04:30h. Cetogênica/low carb, meta -15kg.
@@ -331,8 +330,8 @@ DADOS DO APP AGORA:
 - Próx. bloco: ${appCtx.pendentes[0]?.mat||'Ciclo completo!'} (${appCtx.pendentes[0]?.tag||''})
 - Treino hoje: ${treinos[dw]}
 - Trabalho hoje: ${trabalha?'SIM 13h-18h':'NÃO'}
-- Último registro: ${ultReg?`${ultReg.materia}, dif ${ultReg.dificuldade}★, ${ultReg.questoes||0}Q, travou: ${ultReg.travou||'nada'}`:' nenhum ainda'}
-- Tendência 7 dias: ${(()=>{const h=historico.slice(-7);if(!h.length)return 'sem dados';const por={};h.forEach(r=>{if(r.materia&&r.dificuldade){por[r.materia]=(por[r.materia]||[]);por[r.materia].push(r.dificuldade);}});return Object.entries(por).map(([m,ds])=>`${m}:${(ds.reduce((s,d)=>s+d,0)/ds.length).toFixed(1)}★`).join(', ')||'sem dados';})()}
+- Último registro: ${ultReg?`${ultReg.materia}, dif ${ultReg.dificuldade}★, ${ultReg.questoes||0}Q, travou: ${ultReg.travou||'nada'}`:'nenhum ainda'}
+- Tendência 7 dias: ${(()=>{const h=historico.slice(-7);const por={};h.forEach(r=>{if(r.materia&&r.dificuldade){por[r.materia]=por[r.materia]||[];por[r.materia].push(r.dificuldade);}});return Object.entries(por).map(([m,ds])=>`${m}:${(ds.reduce((s,d)=>s+d,0)/ds.length).toFixed(1)}★`).join(', ')||'sem dados';})()} 
 - Urgentes de revisão: ${urgentes.length}
 - MATÉRIAS URGENTES (registradas por você): ${lsGet('urgentes_ia',[]).map(u=>u.mat+(u.contexto?' ('+u.contexto+')':'')).join(', ')||'nenhuma'}
 - Fila urgente hoje: ${fila.length}
@@ -740,7 +739,7 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
             </div>
             <input value={MATS.includes(rForm.materia)?'':rForm.materia} onChange={e=>setRForm(f=>({...f,materia:e.target.value}))} placeholder="Ou digitar outra matéria..." style={{width:'100%',padding:'8px 10px',borderRadius:8,border:'1px solid rgba(96,165,250,.15)',background:'rgba(96,165,250,.03)',color:'#f1f5f9',fontSize:12,outline:'none',boxSizing:'border-box'}}/>
           </div>
-          {/* Tempo + Questões */}
+          {/* Questões + Tempo */}
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:7,marginBottom:8}}>
             {[['⏱ TEMPO (min)','tempo','#60a5fa','ex: 90'],['📝 QUESTÕES FEITAS','questoes','#fbbf24','ex: 30']].map(([l,k,col,ph])=>(
               <div key={k}>
@@ -758,8 +757,8 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
             ))}
           </div>
           <div style={{marginBottom:8}}>
-            <div style={{fontSize:9,color:'#64748b',marginBottom:4}}>🔴 O QUE TRAVOU? (campo livre — alimenta o Tempo Morto)</div>
-            <input value={rForm.travou||''} onChange={e=>setRForm(f=>({...f,travou:e.target.value}))} placeholder="ex: NBC TA 700, confundi com art. 37, tempo curto..." style={{width:'100%',padding:'8px 10px',borderRadius:8,border:'1px solid rgba(248,113,113,.25)',background:'rgba(248,113,113,.04)',color:'#f1f5f9',fontSize:12,outline:'none',boxSizing:'border-box'}}/>
+            <div style={{fontSize:9,color:'#64748b',marginBottom:4}}>🔴 O QUE TRAVOU? (alimenta o Tempo Morto)</div>
+            <input value={rForm.travou||''} onChange={e=>setRForm(f=>({...f,travou:e.target.value}))} placeholder="ex: NBC TA 700, confundi com art. 37..." style={{width:'100%',padding:'9px 11px',borderRadius:8,border:'1px solid rgba(248,113,113,.25)',background:'rgba(248,113,113,.04)',color:'#f1f5f9',fontSize:12,outline:'none',boxSizing:'border-box'}}/>
           </div>
           {/* Dificuldade */}
           <div style={{marginBottom:10}}>
@@ -771,7 +770,6 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
             </div>
             {rForm.dificuldade>0&&<div style={{textAlign:'center',fontSize:10,color:['#34d399','#a3e635','#fbbf24','#fb923c','#f87171'][rForm.dificuldade-1],marginTop:4,fontFamily:"'DM Mono',monospace",fontWeight:700}}>{['FÁCIL','TRANQUILO','MÉDIO','DIFÍCIL','MUITO DIFÍCIL'][rForm.dificuldade-1]}</div>}
           </div>
-
           <input value={rForm.obs} onChange={e=>setRForm(f=>({...f,obs:e.target.value}))} placeholder="Observação livre..." style={{width:'100%',padding:'9px 11px',borderRadius:8,border:'1px solid rgba(255,255,255,.08)',background:'rgba(148,163,184,.25)',color:'#f1f5f9',fontSize:12,outline:'none',boxSizing:'border-box',marginBottom:12}}/>
           <button onClick={salvarRegistro} disabled={!rForm.materia||!rForm.dificuldade} style={{width:'100%',padding:'14px',borderRadius:11,border:'none',background:rForm.materia&&rForm.dificuldade?'linear-gradient(135deg,#60a5fa,#60a5fa)':'rgba(148,163,184,.22)',color:rForm.materia&&rForm.dificuldade?'#050a14':'#1e293b',fontSize:14,fontWeight:900,letterSpacing:'2px',cursor:'pointer',fontFamily:"'DM Mono',monospace"}}>
             {rSalvo?'✅ DIA REGISTRADO!':'💾 SALVAR DIA'}
@@ -787,7 +785,7 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
                 <div>
                   <div style={{fontSize:12,color:'#f1f5f9',fontWeight:700}}>{r.materia}</div>
-                  <div style={{fontSize:9,color:'#64748b'}}>{r.tempo?`${r.tempo}min · `:''}Q:{r.questoes||0}{r.questoesAnki?` · 🃏${r.questoesAnki}`:''}{r.questoesNlm?` · 🎧${r.questoesNlm}`:''}{r.travou?` · 🔴 ${r.travou.slice(0,22)}`:''}</div>
+                  <div style={{fontSize:9,color:'#64748b'}}>{r.tempo?`${r.tempo}min · `:''}Q:{r.questoes||0}{r.questoesAnki?` · 🃏${r.questoesAnki}`:''}{r.questoesNlm?` · 🎧${r.questoesNlm}`:''}{r.travou?` · 🔴${r.travou.slice(0,20)}`:''}</div>
                 </div>
                 <div style={{textAlign:'right'}}>
                   <div style={{fontSize:10,color:c,fontFamily:"'DM Mono',monospace",fontWeight:700}}>{'⭐'.repeat(r.dificuldade||0)}</div>
@@ -916,21 +914,20 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
           <AddTempoManual onAdd={onAddHoras}/>
         </div>
         {/* Breakdown por matéria */}
-        <div style={{fontSize:9,letterSpacing:'2px',color:'#475569',fontFamily:"'DM Mono',monospace",marginBottom:8,marginTop:8}}>📊 POR MATÉRIA (semana)</div>
+        <div style={{fontSize:9,letterSpacing:'2px',color:'#475569',fontFamily:"'DM Mono',monospace",marginBottom:8,marginTop:6}}>📊 POR MATÉRIA — SEMANA</div>
         {(()=>{
-          const porMat={};
-          horas.filter(e=>e.dt>=semStart).forEach(e=>{
-            const m=e.mat||'Geral';porMat[m]=(porMat[m]||0)+e.min;
-          });
-          return Object.entries(porMat).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([mat,min])=>(
+          const por={};
+          horas.filter(e=>e.dt>=semStart).forEach(e=>{const m=e.mat||'Geral';por[m]=(por[m]||0)+e.min;});
+          const maxMin=Math.max(...Object.values(por),1);
+          return Object.entries(por).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([mat,min])=>(
             <div key={mat} style={{display:'flex',alignItems:'center',gap:8,padding:'6px 10px',borderRadius:8,background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.08)',marginBottom:4}}>
               <span style={{flex:1,fontSize:11,color:'#f1f5f9'}}>{mat}</span>
-              <BarProg done={min} total={Math.max(...Object.values(porMat))} cor='#60a5fa' h={4}/>
-              <span style={{fontSize:10,color:'#60a5fa',fontFamily:"'DM Mono',monospace",flexShrink:0,width:40,textAlign:'right'}}>{fmtMin(min)}</span>
+              <BarProg done={min} total={maxMin} cor='#60a5fa' h={4}/>
+              <span style={{fontSize:10,color:'#60a5fa',fontFamily:"'DM Mono',monospace",flexShrink:0,width:42,textAlign:'right'}}>{fmtMin(min)}</span>
             </div>
           ));
         })()}
-        <div style={{fontSize:9,letterSpacing:'2px',color:'#475569',fontFamily:"'DM Mono',monospace",marginBottom:8,marginTop:12}}>ÚLTIMAS SESSÕES</div>
+        <div style={{fontSize:9,letterSpacing:'2px',color:'#475569',fontFamily:"'DM Mono',monospace",marginBottom:8,marginTop:10}}>ÚLTIMAS SESSÕES</div>
         {horas.slice().reverse().slice(0,12).map((e,i)=>(
           <div key={i} style={{display:'flex',justifyContent:'space-between',padding:'8px 12px',borderRadius:9,background:'rgba(148,163,184,.22)',border:'1px solid rgba(255,255,255,.05)',marginBottom:4}}>
             <span style={{fontSize:12,color:'#94a3b8'}}>{e.mat||'Estudo'}</span>
@@ -1055,16 +1052,12 @@ function Estrelas({val,onChange}){
 function TabRevisao({totalBlocos}){
   const hoje=getDK();
   const[aba,setAba]=useState('morto');
-
-  // Estados
   const[ankiRegs,setAnkiRegs]=useState(()=>lsGet('rev_anki',[]));
   const[nlmRegs,setNlmRegs]=useState(()=>lsGet('rev_nlm',[]));
   const[rev1h30Regs,setRev1h30Regs]=useState(()=>lsGet('rev_1h30',[]));
   const[cadRegs,setCadRegs]=useState(()=>lsGet('rev_caderno',[]));
   const[topicos,setTopicos]=useState(()=>lsGet('rev_topicos',[]));
   const[topicoForm,setTopicoForm]=useState('');
-
-  // Formulários
   const[ankiForm,setAnkiForm]=useState({mat:'',cards:'',questoes:'',dif:0});
   const[ankiSalvo,setAnkiSalvo]=useState(false);
   const[nlmForm,setNlmForm]=useState({mat:'',oque:'',tempo:'',questoes:'',dif:0});
@@ -1080,65 +1073,42 @@ function TabRevisao({totalBlocos}){
   const CORS_DIF=['#34d399','#a3e635','#fbbf24','#fb923c','#f87171'];
   const LABELS_DIF=['FÁCIL','TRANQUILO','MÉDIO','DIFÍCIL','MUITO DIFÍCIL'];
 
-  // ── MOTOR TEMPO MORTO — lê TUDO: registro diário + anki + nlm + travou ──
+  // ── Motor Tempo Morto — lê TUDO: registro + anki + nlm + travou ──
   const tempoMorto=useMemo(()=>{
     const todayMs=new Date().setHours(0,0,0,0);
     const historico=lsGet('historico_diario',[]);
     const gurujaData=lsGet('guruja_data',null);
-
-    // Agrega dificuldade por matéria de TODAS as fontes
     const score={};
-    const addScore=(mat,dif,dt,peso=1)=>{
+    const add=(mat,dif,dt,w=1)=>{
       if(!mat)return;
-      score[mat]|={totalDif:0,count:0,ultimoDt:0,travouCount:0};
-      score[mat].totalDif+=dif*peso;
-      score[mat].count+=peso;
-      if(dt>score[mat].ultimoDt)score[mat].ultimoDt=dt;
+      if(!score[mat])score[mat]={total:0,count:0,lastDt:0,travou:0};
+      score[mat].total+=dif*w;score[mat].count+=w;
+      if(dt>score[mat].lastDt)score[mat].lastDt=dt;
     };
-
-    // 1. Registro diário — dificuldade + campo travou
     historico.slice(-14).forEach(r=>{
-      if(r.materia&&r.dificuldade)addScore(r.materia,r.dificuldade,r.dt||0,1.5);
-      if(r.travou&&r.materia){score[r.materia]|={totalDif:0,count:0,ultimoDt:0,travouCount:0};score[r.materia].travouCount=(score[r.materia].travouCount||0)+1;}
+      if(r.materia&&r.dificuldade)add(r.materia,r.dificuldade,r.dt||0,1.5);
+      if(r.travou&&r.materia){if(!score[r.materia])score[r.materia]={total:0,count:0,lastDt:0,travou:0};score[r.materia].travou++;}
     });
-
-    // 2. Anki — dificuldade por matéria
-    ankiRegs.forEach(r=>{
-      if(r.mat&&r.dif)addScore(r.mat,r.dif,r.dt||0,1);
-    });
-
-    // 3. NLM
-    nlmRegs.forEach(r=>{
-      if(r.mat&&r.dif)addScore(r.mat,r.dif,r.dt||0,1);
-    });
-
-    // Calcula score final: difMedia * (dias sem revisar + 1) + travouBonus + gurujaBonus
+    ankiRegs.forEach(r=>{if(r.mat&&r.dif)add(r.mat,r.dif,r.dt||0,1);});
+    nlmRegs.forEach(r=>{if(r.mat&&r.dif)add(r.mat,r.dif,r.dt||0,1);});
     const ranking=Object.entries(score).map(([mat,v])=>{
-      const difMedia=v.totalDif/v.count;
-      const diasSem=Math.floor((todayMs-(v.ultimoDt||0))/86400000);
-      const gurujaBonus=gurujaData?.prioridades?.find(p=>p.mat?.includes(mat.split(' ')[0]))?.status==='critica'?3:0;
-      const travouBonus=(v.travouCount||0)*1.5;
-      return{mat,difMedia,diasSem,score:difMedia*(diasSem+1)+gurujaBonus+travouBonus};
+      const difMedia=v.count>0?v.total/v.count:0;
+      const dias=Math.floor((todayMs-(v.lastDt||0))/86400000);
+      const g=gurujaData?.prioridades?.find(p=>p.mat?.includes(mat.split(' ')[0]))?.status==='critica'?3:0;
+      return{mat,difMedia,diasSem:dias,score:difMedia*(dias+1)+g+v.travou*1.5};
     }).sort((a,b)=>b.score-a.score);
-
-    // Matéria mais urgente para Anki e para NLM (podem ser iguais se só há 1)
-    const top=ranking[0]||{mat:CICLO.find(s=>s.tag?.includes('⭐⭐⭐⭐⭐'))?.mat||'AFO',difMedia:0,diasSem:0};
-    const top2=ranking[1]||ranking[0]||top;
-
-    // Informação de contexto
-    const travouHoje=historico.slice(-3).filter(r=>r.travou).map(r=>`${r.materia}: ${r.travou}`);
-
-    return{anki:top,nlm:top2,travouRecente:travouHoje,ranking:ranking.slice(0,5)};
+    const fallback={mat:CICLO.find(s=>s.tag?.includes('⭐⭐⭐⭐⭐'))?.mat||'AFO',difMedia:0,diasSem:0};
+    const travouRecente=historico.slice(-3).filter(r=>r.travou).map(r=>`${r.materia}: ${r.travou}`);
+    return{anki:ranking[0]||fallback,nlm:ranking[1]||ranking[0]||fallback,ranking:ranking.slice(0,5),travouRecente};
   },[ankiRegs,nlmRegs]);
 
-  // ── FIX 1h30: usa último blocoRef registrado ──────────────
-  const ultimaRev1h30=rev1h30Regs.length>0?rev1h30Regs[rev1h30Regs.length-1]:null;
-  const ultimoBlocoRev=ultimaRev1h30?.blocoRef||0;
-  const blocosDesdeUltimaRev=totalBlocos-ultimoBlocoRev;
-  const deve1h30=blocosDesdeUltimaRev>=5&&totalBlocos>0;
-  const faltam1h30=Math.max(0,5-blocosDesdeUltimaRev);
+  // Fix 1h30 — conta blocos desde última revisão
+  const ultimaRev=rev1h30Regs.length>0?rev1h30Regs[rev1h30Regs.length-1]:null;
+  const ultimoBlocoRev=ultimaRev?.blocoRef||0;
+  const blocosDesde=totalBlocos-ultimoBlocoRev;
+  const deve1h30=blocosDesde>=5&&totalBlocos>0;
+  const faltam1h30=Math.max(0,5-blocosDesde);
 
-  // Ações
   const salvarAnki=()=>{
     if(!ankiForm.mat||!ankiForm.dif)return;
     const novo={...ankiForm,id:Date.now(),dt:Date.now(),dia:hoje};
@@ -1148,7 +1118,6 @@ function TabRevisao({totalBlocos}){
     setAnkiForm({mat:'',cards:'',questoes:'',dif:0});
     setAnkiSalvo(true);setTimeout(()=>setAnkiSalvo(false),2000);
   };
-
   const salvarNlm=()=>{
     if(!nlmForm.mat||!nlmForm.dif)return;
     const novo={...nlmForm,id:Date.now(),dt:Date.now(),dia:hoje};
@@ -1158,7 +1127,6 @@ function TabRevisao({totalBlocos}){
     setNlmForm({mat:'',oque:'',tempo:'',questoes:'',dif:0});
     setNlmSalvo(true);setTimeout(()=>setNlmSalvo(false),2000);
   };
-
   const salvarCaderno=()=>{
     if(!cadForm.mat)return;
     const novo={...cadForm,id:Date.now(),dt:Date.now(),dia:hoje};
@@ -1166,7 +1134,6 @@ function TabRevisao({totalBlocos}){
     setCadForm({mat:'',questoes:'',anki:'',nlm:'',obs:''});
     setCadSalvo(true);setTimeout(()=>setCadSalvo(false),2000);
   };
-
   const salvar1h30=()=>{
     const validos=slots.filter(s=>s.mat&&s.dif>0);
     if(!validos.length)return;
@@ -1175,25 +1142,24 @@ function TabRevisao({totalBlocos}){
     setSlots([{mat:'',questoes:'',dif:0},{mat:'',questoes:'',dif:0},{mat:'',questoes:'',dif:0}]);
     setSlotSalvo(true);setTimeout(()=>setSlotSalvo(false),2000);
   };
-
   const addTopico=()=>{
     if(!topicoForm.trim())return;
-    const n=[...topicos,{id:Date.now(),txt:topicoForm.trim(),feito:false,dt:Date.now()}];
+    const n=[...topicos,{id:Date.now(),txt:topicoForm.trim(),feito:false}];
     setTopicos(n);lsSet('rev_topicos',n);setTopicoForm('');
   };
   const togTopico=id=>{const n=topicos.map(t=>t.id===id?{...t,feito:!t.feito}:t);setTopicos(n);lsSet('rev_topicos',n);};
   const delTopico=id=>{const n=topicos.filter(t=>t.id!==id);setTopicos(n);lsSet('rev_topicos',n);};
 
-  const MatBtn=({value,onChange,mats})=>(
+  const MatBtn=({value,onChange})=>(
     <div>
       <div style={{display:'flex',flexWrap:'wrap',gap:4,marginBottom:5}}>
-        {mats.slice(0,7).map(m=><button key={m} onClick={()=>onChange(m)} style={{padding:'4px 8px',borderRadius:6,border:`1px solid ${value===m?'#60a5fa':'rgba(148,163,184,.2)'}`,background:value===m?'rgba(96,165,250,.18)':'transparent',color:value===m?'#60a5fa':'#64748b',fontSize:9,cursor:'pointer'}}>{m}</button>)}
+        {MATS.slice(0,7).map(m=><button key={m} onClick={()=>onChange(m)} style={{padding:'4px 8px',borderRadius:6,border:`1px solid ${value===m?'#60a5fa':'rgba(148,163,184,.2)'}`,background:value===m?'rgba(96,165,250,.18)':'transparent',color:value===m?'#60a5fa':'#64748b',fontSize:9,cursor:'pointer'}}>{m}</button>)}
       </div>
-      <input value={mats.includes(value)?'':value} onChange={e=>onChange(e.target.value)} placeholder="Ou digitar..." style={{width:'100%',padding:'7px 10px',borderRadius:7,border:'1px solid rgba(96,165,250,.15)',background:'rgba(96,165,250,.03)',color:'#f1f5f9',fontSize:11,outline:'none',boxSizing:'border-box'}}/>
+      <input value={MATS.includes(value)?'':value} onChange={e=>onChange(e.target.value)} placeholder="Ou digitar..." style={{width:'100%',padding:'7px 10px',borderRadius:7,border:'1px solid rgba(96,165,250,.15)',background:'rgba(96,165,250,.03)',color:'#f1f5f9',fontSize:11,outline:'none',boxSizing:'border-box'}}/>
     </div>
   );
 
-  const ABAS=[
+  const ABAS_REV=[
     {id:'morto',l:'⏳ Tempo Morto'},
     {id:'anki',l:'🃏 Anki'},
     {id:'nlm',l:'🎧 NLM'},
@@ -1204,82 +1170,56 @@ function TabRevisao({totalBlocos}){
 
   return(
     <div>
-      {/* Sub-tabs */}
       <div style={{display:'flex',gap:3,marginBottom:14,overflowX:'auto',scrollbarWidth:'none',paddingBottom:2}}>
-        {ABAS.map(a=>{const at=aba===a.id;return(
+        {ABAS_REV.map(a=>{const at=aba===a.id;return(
           <button key={a.id} onClick={()=>setAba(a.id)} style={{flexShrink:0,padding:'8px 10px',borderRadius:9,border:`1px solid ${at?'#60a5fa':'rgba(255,255,255,.12)'}`,background:at?'rgba(96,165,250,.12)':'transparent',color:at?'#60a5fa':'#475569',fontSize:9,fontWeight:700,fontFamily:"'DM Mono',monospace",cursor:'pointer'}}>{a.l}</button>
         );})}
       </div>
 
-      {/* ── TEMPO MORTO ─────────────────────────────────── */}
+      {/* TEMPO MORTO */}
       {aba==='morto'&&<div>
         <div style={{padding:'10px 12px',borderRadius:10,background:'rgba(96,165,250,.06)',border:'1px solid rgba(96,165,250,.2)',marginBottom:12}}>
-          <div style={{fontSize:9,color:'#60a5fa',fontFamily:"'DM Mono',monospace",marginBottom:4}}>⏳ CALCULADO AGORA — baseado nos últimos 14 dias</div>
-          <div style={{fontSize:10,color:'#475569',lineHeight:1.7}}>Lê seu histórico de registros, Anki, NLM e campo "o que travou" para sugerir o que fazer no tempo morto hoje.</div>
+          <div style={{fontSize:9,color:'#60a5fa',fontFamily:"'DM Mono',monospace",marginBottom:4}}>⏳ CALCULADO AGORA — últimos 14 dias</div>
+          <div style={{fontSize:10,color:'#475569'}}>Lê seu histórico de registros, Anki, NLM e campo "travou" para sugerir o foco do tempo morto hoje.</div>
         </div>
-
-        {/* Card Anki */}
         <div style={{padding:'13px',borderRadius:12,background:tmFeitoAnki?'rgba(52,211,153,.08)':'rgba(167,139,250,.08)',border:`2px solid ${tmFeitoAnki?'rgba(52,211,153,.4)':'rgba(167,139,250,.4)'}`,marginBottom:10}}>
           <div style={{fontSize:8,color:tmFeitoAnki?'#34d399':'#a78bfa',fontFamily:"'DM Mono',monospace",letterSpacing:'2px',marginBottom:6}}>🃏 ANKI AGORA</div>
           <div style={{fontSize:18,fontWeight:900,color:tmFeitoAnki?'#34d399':'#f1f5f9',fontFamily:"'DM Serif Display',serif",marginBottom:4}}>{tempoMorto.anki.mat}</div>
-          <div style={{fontSize:10,color:'#64748b',marginBottom:10}}>
-            {tempoMorto.anki.difMedia>0?`Dif média ${tempoMorto.anki.difMedia.toFixed(1)}★ · ${tempoMorto.anki.diasSem}d sem revisar`:'Matéria mais pesada do ciclo'}
-          </div>
-          {tmFeitoAnki
-            ?<div style={{fontSize:11,color:'#34d399',fontWeight:700}}>✅ Feito hoje!</div>
-            :<button onClick={()=>{setTmFeitoAnki(true);lsSet(`tm_anki_${hoje}`,true);}} style={{padding:'8px 18px',borderRadius:8,border:'none',background:'#a78bfa',color:'#0f172a',fontSize:11,fontWeight:800,cursor:'pointer'}}>✓ Fiz!</button>
-          }
+          <div style={{fontSize:10,color:'#64748b',marginBottom:10}}>{tempoMorto.anki.difMedia>0?`Dif ${tempoMorto.anki.difMedia.toFixed(1)}★ · ${tempoMorto.anki.diasSem}d sem revisar`:'Matéria mais pesada do ciclo'}</div>
+          {tmFeitoAnki?<div style={{fontSize:11,color:'#34d399',fontWeight:700}}>✅ Feito hoje!</div>:<button onClick={()=>{setTmFeitoAnki(true);lsSet(`tm_anki_${hoje}`,true);}} style={{padding:'8px 18px',borderRadius:8,border:'none',background:'#a78bfa',color:'#0f172a',fontSize:11,fontWeight:800,cursor:'pointer'}}>✓ Fiz!</button>}
         </div>
-
-        {/* Card NLM */}
         <div style={{padding:'13px',borderRadius:12,background:tmFeitoNlm?'rgba(52,211,153,.08)':'rgba(52,211,153,.06)',border:`2px solid ${tmFeitoNlm?'rgba(52,211,153,.5)':'rgba(52,211,153,.3)'}`,marginBottom:12}}>
           <div style={{fontSize:8,color:'#34d399',fontFamily:"'DM Mono',monospace",letterSpacing:'2px',marginBottom:6}}>🎧 ÁUDIO NLM AGORA</div>
           <div style={{fontSize:18,fontWeight:900,color:tmFeitoNlm?'#34d399':'#f1f5f9',fontFamily:"'DM Serif Display',serif",marginBottom:4}}>{tempoMorto.nlm.mat}</div>
-          <div style={{fontSize:10,color:'#64748b',marginBottom:10}}>
-            {tempoMorto.nlm.difMedia>0?`Dif média ${tempoMorto.nlm.difMedia.toFixed(1)}★ · ${tempoMorto.nlm.diasSem}d sem áudio`:'Matéria crítica — priorize o áudio'}
-          </div>
-          {tmFeitoNlm
-            ?<div style={{fontSize:11,color:'#34d399',fontWeight:700}}>✅ Feito hoje!</div>
-            :<button onClick={()=>{setTmFeitoNlm(true);lsSet(`tm_nlm_${hoje}`,true);}} style={{padding:'8px 18px',borderRadius:8,border:'none',background:'#34d399',color:'#0f172a',fontSize:11,fontWeight:800,cursor:'pointer'}}>✓ Ouvi!</button>
-          }
+          <div style={{fontSize:10,color:'#64748b',marginBottom:10}}>{tempoMorto.nlm.difMedia>0?`Dif ${tempoMorto.nlm.difMedia.toFixed(1)}★ · ${tempoMorto.nlm.diasSem}d sem áudio`:'Matéria crítica — priorize o áudio'}</div>
+          {tmFeitoNlm?<div style={{fontSize:11,color:'#34d399',fontWeight:700}}>✅ Feito hoje!</div>:<button onClick={()=>{setTmFeitoNlm(true);lsSet(`tm_nlm_${hoje}`,true);}} style={{padding:'8px 18px',borderRadius:8,border:'none',background:'#34d399',color:'#0f172a',fontSize:11,fontWeight:800,cursor:'pointer'}}>✓ Ouvi!</button>}
         </div>
-
-        {/* Ranking top 5 */}
         {tempoMorto.ranking.length>0&&<div>
           <div style={{fontSize:9,color:'#475569',fontFamily:"'DM Mono',monospace",letterSpacing:'2px',marginBottom:8}}>📊 RANKING DE ATENÇÃO</div>
           {tempoMorto.ranking.map((item,i)=>{
             const cor=i===0?'#f87171':i===1?'#fb923c':i===2?'#fbbf24':'#64748b';
-            return(
-              <div key={i} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 11px',borderRadius:9,background:`${cor}08`,border:`1px solid ${cor}20`,marginBottom:5}}>
-                <span style={{fontSize:10,fontWeight:900,color:cor,width:16,flexShrink:0}}>{i+1}</span>
-                <div style={{flex:1}}><div style={{fontSize:11,color:'#f1f5f9',fontWeight:700}}>{item.mat}</div></div>
-                <div style={{fontSize:9,color:'#64748b',fontFamily:"'DM Mono',monospace"}}>{item.difMedia.toFixed(1)}★ · {item.diasSem}d</div>
-              </div>
-            );
+            return(<div key={i} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 11px',borderRadius:9,background:`${cor}08`,border:`1px solid ${cor}20`,marginBottom:5}}>
+              <span style={{fontSize:10,fontWeight:900,color:cor,width:16,flexShrink:0}}>{i+1}</span>
+              <span style={{flex:1,fontSize:11,color:'#f1f5f9',fontWeight:700}}>{item.mat}</span>
+              <span style={{fontSize:9,color:'#64748b',fontFamily:"'DM Mono',monospace"}}>{item.difMedia.toFixed(1)}★ · {item.diasSem}d</span>
+            </div>);
           })}
         </div>}
-
-        {/* O que travou recentemente */}
         {tempoMorto.travouRecente.length>0&&<div style={{marginTop:12,padding:'10px 12px',borderRadius:10,background:'rgba(248,113,113,.06)',border:'1px solid rgba(248,113,113,.2)'}}>
           <div style={{fontSize:9,color:'#f87171',fontFamily:"'DM Mono',monospace",marginBottom:6}}>🔴 TRAVOU RECENTEMENTE</div>
           {tempoMorto.travouRecente.map((t,i)=><div key={i} style={{fontSize:11,color:'#94a3b8',marginBottom:2}}>{t}</div>)}
         </div>}
       </div>}
 
-      {/* ── ANKI ────────────────────────────────────────── */}
+      {/* ANKI */}
       {aba==='anki'&&<div>
         <div style={{background:'rgba(167,139,250,.05)',border:'1px solid rgba(167,139,250,.2)',borderRadius:13,padding:'14px',marginBottom:12}}>
           <div style={{fontSize:9,letterSpacing:'3px',color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:12}}>🃏 ANKI DO DIA</div>
-          <div style={{marginBottom:10}}>
-            <div style={{fontSize:9,color:'#64748b',marginBottom:5}}>MATÉRIA</div>
-            <MatBtn value={ankiForm.mat} onChange={v=>setAnkiForm(f=>({...f,mat:v}))} mats={MATS}/>
-          </div>
+          <div style={{marginBottom:10}}><div style={{fontSize:9,color:'#64748b',marginBottom:5}}>MATÉRIA</div><MatBtn value={ankiForm.mat} onChange={v=>setAnkiForm(f=>({...f,mat:v}))}/></div>
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:7,marginBottom:10}}>
             {[['🃏 CARDS REVISADOS','cards','#a78bfa'],['📝 QUESTÕES FEITAS','questoes','#fbbf24']].map(([l,k,col])=>(
-              <div key={k}>
-                <div style={{fontSize:8,color:'#64748b',marginBottom:3}}>{l}</div>
-                <input type="number" value={ankiForm[k]||''} onChange={e=>setAnkiForm(f=>({...f,[k]:e.target.value}))} placeholder="0" style={{width:'100%',padding:'10px',borderRadius:8,border:`1px solid ${col}25`,background:`${col}06`,color:col,fontSize:16,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
-              </div>
+              <div key={k}><div style={{fontSize:8,color:'#64748b',marginBottom:3}}>{l}</div>
+              <input type="number" value={ankiForm[k]||''} onChange={e=>setAnkiForm(f=>({...f,[k]:e.target.value}))} placeholder="0" style={{width:'100%',padding:'10px',borderRadius:8,border:`1px solid ${col}25`,background:`${col}06`,color:col,fontSize:16,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/></div>
             ))}
           </div>
           <div style={{fontSize:9,color:'#64748b',marginBottom:5}}>DIFICULDADE</div>
@@ -1297,24 +1237,19 @@ function TabRevisao({totalBlocos}){
         {ankiRegs.length===0&&<div style={{textAlign:'center',padding:'20px',color:'#334155',fontSize:11}}>Nenhum registro ainda.</div>}
       </div>}
 
-      {/* ── NLM ─────────────────────────────────────────── */}
+      {/* NLM */}
       {aba==='nlm'&&<div>
         <div style={{background:'rgba(52,211,153,.05)',border:'1px solid rgba(52,211,153,.2)',borderRadius:13,padding:'14px',marginBottom:12}}>
           <div style={{fontSize:9,letterSpacing:'3px',color:'#34d399',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:12}}>🎧 NOTEBOOKLM</div>
-          <div style={{marginBottom:10}}>
-            <div style={{fontSize:9,color:'#64748b',marginBottom:5}}>MATÉRIA</div>
-            <MatBtn value={nlmForm.mat} onChange={v=>setNlmForm(f=>({...f,mat:v}))} mats={MATS}/>
-          </div>
+          <div style={{marginBottom:10}}><div style={{fontSize:9,color:'#64748b',marginBottom:5}}>MATÉRIA</div><MatBtn value={nlmForm.mat} onChange={v=>setNlmForm(f=>({...f,mat:v}))}/></div>
           <div style={{marginBottom:8}}>
             <div style={{fontSize:9,color:'#64748b',marginBottom:4}}>O QUE FEZ</div>
-            <textarea value={nlmForm.oque} onChange={e=>setNlmForm(f=>({...f,oque:e.target.value}))} rows={2} placeholder="ex: Ouvi podcast de pegadinhas, fiz flashcards de NBC TA 700..." style={{width:'100%',padding:'8px 10px',borderRadius:8,border:'1px solid rgba(52,211,153,.18)',background:'rgba(52,211,153,.04)',color:'#f1f5f9',fontSize:12,outline:'none',resize:'vertical',boxSizing:'border-box'}}/>
+            <textarea value={nlmForm.oque} onChange={e=>setNlmForm(f=>({...f,oque:e.target.value}))} rows={2} placeholder="ex: Ouvi podcast de pegadinhas, flashcards NBC TA 700..." style={{width:'100%',padding:'8px 10px',borderRadius:8,border:'1px solid rgba(52,211,153,.18)',background:'rgba(52,211,153,.04)',color:'#f1f5f9',fontSize:12,outline:'none',resize:'vertical',boxSizing:'border-box'}}/>
           </div>
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:7,marginBottom:10}}>
             {[['⏱ TEMPO (min)','tempo','#34d399'],['📝 QUESTÕES / FLASHCARDS','questoes','#fbbf24']].map(([l,k,col])=>(
-              <div key={k}>
-                <div style={{fontSize:8,color:'#64748b',marginBottom:3}}>{l}</div>
-                <input type="number" value={nlmForm[k]||''} onChange={e=>setNlmForm(f=>({...f,[k]:e.target.value}))} placeholder="0" style={{width:'100%',padding:'10px',borderRadius:8,border:`1px solid ${col}25`,background:`${col}06`,color:col,fontSize:16,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
-              </div>
+              <div key={k}><div style={{fontSize:8,color:'#64748b',marginBottom:3}}>{l}</div>
+              <input type="number" value={nlmForm[k]||''} onChange={e=>setNlmForm(f=>({...f,[k]:e.target.value}))} placeholder="0" style={{width:'100%',padding:'10px',borderRadius:8,border:`1px solid ${col}25`,background:`${col}06`,color:col,fontSize:16,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/></div>
             ))}
           </div>
           <div style={{fontSize:9,color:'#64748b',marginBottom:5}}>DIFICULDADE</div>
@@ -1322,17 +1257,16 @@ function TabRevisao({totalBlocos}){
           {nlmForm.dif>0&&<div style={{textAlign:'center',fontSize:9,color:CORS_DIF[nlmForm.dif-1],marginTop:3,marginBottom:10,fontFamily:"'DM Mono',monospace",fontWeight:700}}>{LABELS_DIF[nlmForm.dif-1]}</div>}
           <button onClick={salvarNlm} disabled={!nlmForm.mat||!nlmForm.dif} style={{width:'100%',padding:'12px',borderRadius:10,border:'none',background:nlmForm.mat&&nlmForm.dif?'#34d399':'rgba(148,163,184,.2)',color:nlmForm.mat&&nlmForm.dif?'#0f172a':'#334155',fontSize:13,fontWeight:900,cursor:'pointer',marginTop:8}}>{nlmSalvo?'✅ SALVO!':'💾 SALVAR NLM'}</button>
         </div>
-        <div style={{fontSize:9,color:'#475569',fontFamily:"'DM Mono',monospace",marginBottom:8}}>ÚLTIMOS REGISTROS</div>
         {[...nlmRegs].reverse().slice(0,5).map((r,i)=>(
           <div key={i} style={{padding:'8px 11px',borderRadius:9,background:'rgba(52,211,153,.05)',border:'1px solid rgba(52,211,153,.15)',marginBottom:4}}>
             <div style={{fontSize:11,color:'#f1f5f9',fontWeight:700}}>{r.mat}</div>
-            <div style={{fontSize:9,color:'#64748b'}}>{r.tempo?`${r.tempo}min · `:''}Q:{r.questoes||0}{r.dif?` · ${'⭐'.repeat(r.dif)}`:''}{r.oque?` · ${r.oque.slice(0,30)}`:''}</div>
+            <div style={{fontSize:9,color:'#64748b'}}>{r.tempo?`${r.tempo}min · `:''}Q:{r.questoes||0}{r.dif?` · ${'⭐'.repeat(r.dif)}`:''}</div>
           </div>
         ))}
         {nlmRegs.length===0&&<div style={{textAlign:'center',padding:'20px',color:'#334155',fontSize:11}}>Nenhum registro ainda.</div>}
       </div>}
 
-      {/* ── REVISÃO 1h30 ────────────────────────────────── */}
+      {/* REVISÃO 1H30 */}
       {aba==='rev1h30'&&<div>
         <div style={{background:deve1h30?'linear-gradient(135deg,rgba(251,191,36,.1),rgba(15,23,42,.98))':'rgba(251,191,36,.03)',border:`${deve1h30?'2px':'1px'} solid ${deve1h30?'rgba(251,191,36,.5)':'rgba(251,191,36,.18)'}`,borderRadius:13,padding:'14px',marginBottom:12}}>
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
@@ -1342,17 +1276,17 @@ function TabRevisao({totalBlocos}){
           {!deve1h30&&<div>
             <div style={{fontSize:11,color:'#94a3b8',marginBottom:8}}>A cada 5 blocos concluídos. Faltam <strong style={{color:'#fbbf24'}}>{faltam1h30}</strong> bloco{faltam1h30!==1?'s':''}.</div>
             <BarProg done={5-faltam1h30} total={5} cor='#fbbf24' h={7}/>
-            {ultimaRev1h30&&<div style={{fontSize:9,color:'#334155',marginTop:6,fontFamily:"'DM Mono',monospace"}}>Última: bloco {ultimoBlocoRev} · {ultimaRev1h30.dia}</div>}
+            {ultimaRev&&<div style={{fontSize:9,color:'#334155',marginTop:6,fontFamily:"'DM Mono',monospace"}}>Última: bloco {ultimoBlocoRev} · {ultimaRev.dia}</div>}
           </div>}
           {deve1h30&&<div>
             <div style={{padding:'9px 11px',borderRadius:9,background:'rgba(251,191,36,.12)',border:'1px solid rgba(251,191,36,.3)',marginBottom:12}}>
               <div style={{fontSize:13,fontWeight:800,color:'#fbbf24'}}>🚨 HORA DA REVISÃO GRANDE!</div>
-              <div style={{fontSize:10,color:'rgba(251,191,36,.7)',marginTop:2}}>{blocosDesdeUltimaRev} blocos desde a última revisão. Registre as matérias.</div>
+              <div style={{fontSize:10,color:'rgba(251,191,36,.7)',marginTop:2}}>{blocosDesde} blocos desde a última. Registre as matérias.</div>
             </div>
             {slots.map((s,i)=>(
               <div key={i} style={{padding:'11px',borderRadius:11,background:'rgba(251,191,36,.04)',border:'1px solid rgba(251,191,36,.15)',marginBottom:10}}>
                 <div style={{fontSize:9,color:'#fbbf24',fontFamily:"'DM Mono',monospace",marginBottom:8}}>MATÉRIA {i+1}{i===0?' — MAIS DIFÍCIL':''}</div>
-                <MatBtn value={s.mat} onChange={v=>setSlots(a=>a.map((x,j)=>j===i?{...x,mat:v}:x))} mats={MATS}/>
+                <MatBtn value={s.mat} onChange={v=>setSlots(a=>a.map((x,j)=>j===i?{...x,mat:v}:x))}/>
                 <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:6,margin:'8px 0'}}>
                   <div><div style={{fontSize:8,color:'#64748b',marginBottom:3}}>QUESTÕES</div>
                     <input type="number" value={s.questoes||''} onChange={e=>setSlots(a=>a.map((x,j)=>j===i?{...x,questoes:e.target.value}:x))} placeholder="0" style={{width:'100%',padding:'8px',borderRadius:7,border:'1px solid rgba(251,191,36,.2)',background:'rgba(251,191,36,.04)',color:'#fbbf24',fontSize:14,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
@@ -1366,37 +1300,29 @@ function TabRevisao({totalBlocos}){
             <button onClick={salvar1h30} disabled={!slots.some(s=>s.mat&&s.dif>0)} style={{width:'100%',padding:'13px',borderRadius:10,border:'none',background:slots.some(s=>s.mat&&s.dif>0)?'#fbbf24':'rgba(148,163,184,.2)',color:slots.some(s=>s.mat&&s.dif>0)?'#0f172a':'#334155',fontSize:13,fontWeight:900,cursor:'pointer'}}>{slotSalvo?'✅ SALVO!':'💾 SALVAR REVISÃO 1H30'}</button>
           </div>}
         </div>
-        {rev1h30Regs.length>0&&<div>
-          <div style={{fontSize:9,color:'#475569',fontFamily:"'DM Mono',monospace",marginBottom:8}}>HISTÓRICO</div>
-          {[...rev1h30Regs].reverse().slice(0,3).map((r,i)=>(
-            <div key={i} style={{padding:'8px 11px',borderRadius:9,background:'rgba(251,191,36,.05)',border:'1px solid rgba(251,191,36,.15)',marginBottom:4}}>
-              <div style={{fontSize:9,color:'#fbbf24',fontFamily:"'DM Mono',monospace"}}>Bloco {r.blocoRef} · {r.dia}</div>
-              <div style={{fontSize:10,color:'#94a3b8',marginTop:2}}>{r.slots?.filter(s=>s.mat).map(s=>s.mat).join(', ')}</div>
-            </div>
-          ))}
-        </div>}
+        {[...rev1h30Regs].reverse().slice(0,3).map((r,i)=>(
+          <div key={i} style={{padding:'8px 11px',borderRadius:9,background:'rgba(251,191,36,.05)',border:'1px solid rgba(251,191,36,.15)',marginBottom:4}}>
+            <div style={{fontSize:9,color:'#fbbf24',fontFamily:"'DM Mono',monospace"}}>Bloco {r.blocoRef} · {r.dia}</div>
+            <div style={{fontSize:10,color:'#94a3b8',marginTop:2}}>{r.slots?.filter(s=>s.mat).map(s=>s.mat).join(', ')}</div>
+          </div>
+        ))}
       </div>}
 
-      {/* ── CADERNO DE ERROS (registro) ──────────────────── */}
+      {/* CADERNO DE ERROS — REGISTRO */}
       {aba==='caderno'&&<div>
         <div style={{padding:'10px 12px',borderRadius:10,background:'rgba(248,113,113,.06)',border:'1px solid rgba(248,113,113,.2)',marginBottom:12}}>
           <div style={{fontSize:9,color:'#f87171',fontFamily:"'DM Mono',monospace",marginBottom:4}}>📕 CADERNO DE ERROS — REGISTRO DE SESSÃO</div>
-          <div style={{fontSize:11,color:'#64748b'}}>Registre aqui suas sessões no caderno externo: quantas questões viu, quantas foram pro Anki e pro NLM.</div>
+          <div style={{fontSize:11,color:'#64748b'}}>Registre suas sessões no caderno externo: quantas questões, Anki e NLM.</div>
         </div>
         <div style={{background:'rgba(248,113,113,.04)',border:'1px solid rgba(248,113,113,.18)',borderRadius:13,padding:'14px',marginBottom:12}}>
-          <div style={{marginBottom:10}}>
-            <div style={{fontSize:9,color:'#64748b',marginBottom:5}}>MATÉRIA / TÓPICO</div>
-            <MatBtn value={cadForm.mat} onChange={v=>setCadForm(f=>({...f,mat:v}))} mats={MATS}/>
-          </div>
+          <div style={{marginBottom:10}}><div style={{fontSize:9,color:'#64748b',marginBottom:5}}>MATÉRIA / TÓPICO</div><MatBtn value={cadForm.mat} onChange={v=>setCadForm(f=>({...f,mat:v}))}/></div>
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:6,marginBottom:10}}>
-            {[['📝 QUESTÕES VISTAS','questoes','#f87171'],['🃏 FORAM PRO ANKI','anki','#a78bfa'],['🎧 FORAM PRO NLM','nlm','#34d399']].map(([l,k,col])=>(
-              <div key={k}>
-                <div style={{fontSize:7,color:'#64748b',marginBottom:3}}>{l}</div>
-                <input type="number" value={cadForm[k]||''} onChange={e=>setCadForm(f=>({...f,[k]:e.target.value}))} placeholder="0" style={{width:'100%',padding:'9px 4px',borderRadius:8,border:`1px solid ${col}25`,background:`${col}06`,color:col,fontSize:15,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
-              </div>
+            {[['📝 QUESTÕES VISTAS','questoes','#f87171'],['🃏 → ANKI','anki','#a78bfa'],['🎧 → NLM','nlm','#34d399']].map(([l,k,col])=>(
+              <div key={k}><div style={{fontSize:7,color:'#64748b',marginBottom:3}}>{l}</div>
+              <input type="number" value={cadForm[k]||''} onChange={e=>setCadForm(f=>({...f,[k]:e.target.value}))} placeholder="0" style={{width:'100%',padding:'9px 4px',borderRadius:8,border:`1px solid ${col}25`,background:`${col}06`,color:col,fontSize:15,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/></div>
             ))}
           </div>
-          <input value={cadForm.obs||''} onChange={e=>setCadForm(f=>({...f,obs:e.target.value}))} placeholder="Observação livre..." style={{width:'100%',padding:'8px 10px',borderRadius:8,border:'1px solid rgba(248,113,113,.15)',background:'rgba(248,113,113,.03)',color:'#f1f5f9',fontSize:12,outline:'none',boxSizing:'border-box',marginBottom:12}}/>
+          <input value={cadForm.obs||''} onChange={e=>setCadForm(f=>({...f,obs:e.target.value}))} placeholder="Observação..." style={{width:'100%',padding:'8px 10px',borderRadius:8,border:'1px solid rgba(248,113,113,.15)',background:'rgba(248,113,113,.03)',color:'#f1f5f9',fontSize:12,outline:'none',boxSizing:'border-box',marginBottom:12}}/>
           <button onClick={salvarCaderno} disabled={!cadForm.mat} style={{width:'100%',padding:'12px',borderRadius:10,border:'none',background:cadForm.mat?'#f87171':'rgba(148,163,184,.2)',color:cadForm.mat?'#0f172a':'#334155',fontSize:13,fontWeight:900,cursor:'pointer'}}>{cadSalvo?'✅ SALVO!':'💾 SALVAR SESSÃO'}</button>
         </div>
         <div style={{fontSize:9,color:'#475569',fontFamily:"'DM Mono',monospace",marginBottom:8}}>SESSÕES RECENTES</div>
@@ -1406,31 +1332,28 @@ function TabRevisao({totalBlocos}){
             <span style={{fontSize:9,color:'#334155',fontFamily:"'DM Mono',monospace"}}>{r.dia}</span>
           </div>
         ))}
-        {cadRegs.length===0&&<div style={{textAlign:'center',padding:'20px',color:'#334155',fontSize:11}}>Nenhuma sessão registrada ainda.</div>}
+        {cadRegs.length===0&&<div style={{textAlign:'center',padding:'20px',color:'#334155',fontSize:11}}>Nenhuma sessão ainda.</div>}
       </div>}
 
-      {/* ── TÓPICOS PARA REVISITAR ───────────────────────── */}
+      {/* TÓPICOS PARA REVISITAR */}
       {aba==='topicos'&&<div>
         <div style={{padding:'10px 12px',borderRadius:10,background:'rgba(251,191,36,.06)',border:'1px solid rgba(251,191,36,.2)',marginBottom:12}}>
           <div style={{fontSize:9,color:'#fbbf24',fontFamily:"'DM Mono',monospace",marginBottom:4}}>📌 TÓPICOS PARA REVISITAR</div>
-          <div style={{fontSize:11,color:'#64748b'}}>Anote tópicos específicos que precisa revisitar. Sem data — só uma lista pessoal de pendências.</div>
+          <div style={{fontSize:11,color:'#64748b'}}>Lista pessoal de tópicos que precisa voltar — sem data, sem pressão.</div>
         </div>
-        <div style={{display:'flex',gap:7,marginBottom:14}}>
-          <input value={topicoForm} onChange={e=>setTopicoForm(e.target.value)} onKeyDown={e=>e.key==='Enter'&&addTopico()} placeholder="ex: NBC TA 700, art. 37 caput, Estágios da Receita..." style={{flex:1,padding:'9px 11px',borderRadius:9,border:'1px solid rgba(251,191,36,.25)',background:'rgba(251,191,36,.05)',color:'#f1f5f9',fontSize:12,outline:'none'}}/>
+        <div style={{display:'flex',gap:7,marginBottom:12}}>
+          <input value={topicoForm} onChange={e=>setTopicoForm(e.target.value)} onKeyDown={e=>e.key==='Enter'&&addTopico()} placeholder="ex: NBC TA 700, art. 37 caput..." style={{flex:1,padding:'9px 11px',borderRadius:9,border:'1px solid rgba(251,191,36,.25)',background:'rgba(251,191,36,.05)',color:'#f1f5f9',fontSize:12,outline:'none'}}/>
           <button onClick={addTopico} style={{padding:'9px 14px',borderRadius:9,border:'none',background:topicoForm.trim()?'#fbbf24':'rgba(148,163,184,.2)',color:topicoForm.trim()?'#0f172a':'#334155',fontSize:14,fontWeight:900,cursor:'pointer'}}>+</button>
         </div>
-        {topicos.filter(t=>!t.feito).length>0&&<div style={{marginBottom:14}}>
-          <div style={{fontSize:9,color:'#fbbf24',fontFamily:"'DM Mono',monospace",marginBottom:6}}>PENDENTES ({topicos.filter(t=>!t.feito).length})</div>
-          {topicos.filter(t=>!t.feito).map(t=>(
-            <div key={t.id} style={{display:'flex',alignItems:'center',gap:8,padding:'9px 11px',borderRadius:9,background:'rgba(251,191,36,.06)',border:'1px solid rgba(251,191,36,.2)',marginBottom:5}}>
-              <div onClick={()=>togTopico(t.id)} style={{width:16,height:16,borderRadius:'50%',flexShrink:0,border:'2px solid #fbbf24',background:'transparent',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:7,fontWeight:900}}/>
-              <span style={{flex:1,fontSize:12,color:'#f1f5f9'}}>{t.txt}</span>
-              <button onClick={()=>delTopico(t.id)} style={{padding:'1px 6px',borderRadius:4,border:'none',background:'transparent',color:'#334155',fontSize:10,cursor:'pointer'}}>×</button>
-            </div>
-          ))}
-        </div>}
-        {topicos.filter(t=>t.feito).length>0&&<div>
-          <div style={{fontSize:9,color:'#334155',fontFamily:"'DM Mono',monospace",marginBottom:6}}>REVISADOS ✓</div>
+        {topicos.filter(t=>!t.feito).map(t=>(
+          <div key={t.id} style={{display:'flex',alignItems:'center',gap:8,padding:'9px 11px',borderRadius:9,background:'rgba(251,191,36,.06)',border:'1px solid rgba(251,191,36,.2)',marginBottom:5}}>
+            <div onClick={()=>togTopico(t.id)} style={{width:16,height:16,borderRadius:'50%',flexShrink:0,border:'2px solid #fbbf24',cursor:'pointer'}}/>
+            <span style={{flex:1,fontSize:12,color:'#f1f5f9'}}>{t.txt}</span>
+            <button onClick={()=>delTopico(t.id)} style={{padding:'1px 6px',borderRadius:4,border:'none',background:'transparent',color:'#475569',fontSize:10,cursor:'pointer'}}>×</button>
+          </div>
+        ))}
+        {topicos.filter(t=>t.feito).length>0&&<div style={{marginTop:8}}>
+          <div style={{fontSize:9,color:'#334155',fontFamily:"'DM Mono',monospace",marginBottom:5}}>REVISADOS ✓</div>
           {topicos.filter(t=>t.feito).slice(0,5).map(t=>(
             <div key={t.id} style={{display:'flex',alignItems:'center',gap:8,padding:'7px 11px',borderRadius:9,background:'rgba(52,211,153,.04)',border:'1px solid rgba(52,211,153,.15)',marginBottom:4,opacity:.7}}>
               <div onClick={()=>togTopico(t.id)} style={{width:16,height:16,borderRadius:'50%',flexShrink:0,border:'2px solid #34d399',background:'#34d399',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:7,color:'#0f172a',fontWeight:900}}>✓</div>
@@ -1589,21 +1512,7 @@ function TabAgenda({planoSemana,onSetTab}){
           </div>
         ))}
         <div style={{fontSize:9,color:'#475569',marginTop:4,fontStyle:'italic'}}>💡 Preenche automaticamente com os MITs da IA</div>
-        {(()=>{
-          const feitos2=lsGet('feitos',[]);
-          const prox=CICLO.filter(s=>!feitos2.includes(s.id)).slice(0,3);
-          if(!prox.length)return null;
-          return(
-            <div style={{marginTop:8}}>
-              <div style={{fontSize:8,color:'#475569',fontFamily:"'DM Mono',monospace",marginBottom:4}}>SUGESTÕES DO CICLO</div>
-              <div style={{display:'flex',gap:5,flexWrap:'wrap'}}>
-                {prox.map((s,i)=>(
-                  <button key={s.id} onClick={()=>{const n=[...foco];const idx=n.findIndex(f=>!f);if(idx>=0){const nn=[...n];nn[idx]=s.mat;savFoco(nn);}}} style={{padding:'4px 9px',borderRadius:7,border:`1px solid ${s.cor}35`,background:`${s.cor}10`,color:s.cor,fontSize:9,cursor:'pointer'}}>{s.ic} B{s.id} {s.mat}</button>
-                ))}
-              </div>
-            </div>
-          );
-        })()}
+        {(()=>{const f2=lsGet('feitos',[]);const prox=CICLO.filter(s=>!f2.includes(s.id)).slice(0,3);if(!prox.length)return null;return(<div style={{marginTop:8}}><div style={{fontSize:8,color:'#475569',fontFamily:"'DM Mono',monospace",marginBottom:4}}>PRÓXIMOS DO CICLO — toque para preencher</div><div style={{display:'flex',gap:5,flexWrap:'wrap'}}>{prox.map(s=>(<button key={s.id} onClick={()=>{const n=[...foco];const idx=n.findIndex(f=>!f);if(idx>=0){const nn=[...n];nn[idx]=s.mat;savFoco(nn);}}} style={{padding:'4px 9px',borderRadius:7,border:`1px solid ${s.cor}35`,background:`${s.cor}10`,color:s.cor,fontSize:9,cursor:'pointer'}}>{s.ic} B{s.id} {s.mat}</button>))}</div></div>);})()}
       </div>
 
       {/* ── TOGGLE VISÃO ── */}
