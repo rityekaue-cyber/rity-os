@@ -1246,14 +1246,22 @@ function TabRevisao({totalBlocos}){
   const togTopico=id=>{const n=topicos.map(t=>t.id===id?{...t,feito:!t.feito}:t);setTopicos(n);lsSet('rev_topicos',n);};
   const delTopico=id=>{const n=topicos.filter(t=>t.id!==id);setTopicos(n);lsSet('rev_topicos',n);};
 
-  const MatBtn=({value,onChange})=>(
-    <div>
-      <div style={{display:'flex',flexWrap:'wrap',gap:4,marginBottom:5}}>
-        {MATS.slice(0,7).map(m=><button key={m} onClick={()=>onChange(m)} style={{padding:'4px 8px',borderRadius:6,border:`1px solid ${value===m?'#60a5fa':'rgba(148,163,184,.2)'}`,background:value===m?'rgba(96,165,250,.18)':'transparent',color:value===m?'#60a5fa':'#64748b',fontSize:9,cursor:'pointer'}}>{m}</button>)}
+  const MatBtn=({value,onChange})=>{
+    const isPreset=MATS.includes(value);
+    return(
+      <div>
+        <div style={{display:'flex',flexWrap:'wrap',gap:4,marginBottom:5}}>
+          {MATS.slice(0,7).map(m=><button key={m} onClick={()=>onChange(m)} style={{padding:'4px 8px',borderRadius:6,border:`1px solid ${value===m?'#60a5fa':'rgba(148,163,184,.2)'}`,background:value===m?'rgba(96,165,250,.18)':'transparent',color:value===m?'#60a5fa':'#64748b',fontSize:9,cursor:'pointer'}}>{m}</button>)}
+        </div>
+        <input
+          value={isPreset?'':value}
+          onChange={e=>onChange(e.target.value)}
+          placeholder="Ou digitar matéria..."
+          style={{width:'100%',padding:'7px 10px',borderRadius:7,border:'1px solid rgba(96,165,250,.15)',background:'rgba(96,165,250,.03)',color:'#f1f5f9',fontSize:11,outline:'none',boxSizing:'border-box'}}
+        />
       </div>
-      <input value={MATS.includes(value)?'':value} onChange={e=>onChange(e.target.value)} placeholder="Ou digitar..." style={{width:'100%',padding:'7px 10px',borderRadius:7,border:'1px solid rgba(96,165,250,.15)',background:'rgba(96,165,250,.03)',color:'#f1f5f9',fontSize:11,outline:'none',boxSizing:'border-box'}}/>
-    </div>
-  );
+    );
+  };
 
   const ABAS_REV=[
     {id:'morto',l:'⏳ Tempo Morto'},
