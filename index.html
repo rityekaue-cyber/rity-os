@@ -331,7 +331,9 @@ DADOS DO APP AGORA:
 - Treino hoje: ${treinos[dw]}
 - Trabalho hoje: ${trabalha?'SIM 13h-18h':'NÃO'}
 - Último registro: ${ultReg?`${ultReg.materia}, dif ${ultReg.dificuldade}★, ${ultReg.questoes||0}Q, travou: ${ultReg.travou||'nada'}`:'nenhum ainda'}
-- Tendência 7 dias: ${(()=>{const h=historico.slice(-7);const por={};h.forEach(r=>{if(r.materia&&r.dificuldade){por[r.materia]=por[r.materia]||[];por[r.materia].push(r.dificuldade);}});return Object.entries(por).map(([m,ds])=>`${m}:${(ds.reduce((s,d)=>s+d,0)/ds.length).toFixed(1)}★`).join(', ')||'sem dados';})()} 
+- Tendência 7 dias: ${(()=>{const h=historico.slice(-7);const por={};h.forEach(r=>{if(r.materia&&r.dificuldade){por[r.materia]=por[r.materia]||[];por[r.materia].push(r.dificuldade);}});return Object.entries(por).map(([m,ds])=>`${m}:${(ds.reduce((s,d)=>s+d,0)/ds.length).toFixed(1)}★`).join(', ')||'sem dados';})()}
+- Ranking aproveitamento: ${(()=>{const h=historico;const por={};h.forEach(r=>{if(!r.materia)return;const q=parseInt(r.questoes)||0;const a=parseInt(r.acertei)||0;if(!q)return;if(!por[r.materia])por[r.materia]={q:0,a:0};por[r.materia].q+=q;por[r.materia].a+=a;});const r=Object.entries(por).map(([m,v])=>({m,pct:Math.round(v.a/v.q*100),q:v.q})).sort((a,b)=>a.pct-b.pct);if(!r.length)return 'sem dados de questões';return `pior: ${r[0].m} ${r[0].pct}%(${r[0].q}Q) · melhor: ${r[r.length-1].m} ${r[r.length-1].pct}%(${r[r.length-1].q}Q)`;})()}
+- Pior assunto: ${(()=>{const h=historico;const por={};h.forEach(r=>{if(!r.assunto||!r.materia)return;const q=parseInt(r.questoes)||0;const a=parseInt(r.acertei)||0;if(!q)return;const k=r.materia+' — '+r.assunto;if(!por[k])por[k]={q:0,a:0};por[k].q+=q;por[k].a+=a;});const r=Object.entries(por).map(([k,v])=>({k,pct:Math.round(v.a/v.q*100)})).sort((a,b)=>a.pct-b.pct);return r.length?`${r[0].k} (${r[0].pct}%)`:'sem dados de assunto';})()}
 - Urgentes de revisão: ${urgentes.length}
 - MATÉRIAS URGENTES (registradas por você): ${lsGet('urgentes_ia',[]).map(u=>u.mat+(u.contexto?' ('+u.contexto+')':'')).join(', ')||'nenhuma'}
 - Fila urgente hoje: ${fila.length}
@@ -520,7 +522,7 @@ function TabEstudo({feitos,cicloNum,horas,onConcluir,onIrPara,onDesmarcar,onAddH
   const hoje=getDK();
   const[historico,setHistorico]=useState(()=>lsGet('historico_diario',[]));
   const regHoje=historico.find(r=>r.id===hoje)||null;
-  const[rForm,setRForm]=useState({materia:regHoje?.materia||ativo?.mat||'',tempo:regHoje?.tempo||'',questoes:regHoje?.questoes||'',questoesAnki:regHoje?.questoesAnki||'',questoesNlm:regHoje?.questoesNlm||'',dificuldade:regHoje?.dificuldade||0,travou:regHoje?.travou||'',obs:regHoje?.obs||''});
+  const[rForm,setRForm]=useState({materia:regHoje?.materia||ativo?.mat||'',assunto:regHoje?.assunto||'',tempo:regHoje?.tempo||'',questoes:regHoje?.questoes||'',acertei:regHoje?.acertei||'',questoesAnki:regHoje?.questoesAnki||'',questoesNlm:regHoje?.questoesNlm||'',dificuldade:regHoje?.dificuldade||0,travou:regHoje?.travou||'',obs:regHoje?.obs||''});
   const[rSalvo,setRSalvo]=useState(false);
 
   // Revisão
@@ -739,14 +741,35 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
             </div>
             <input value={MATS.includes(rForm.materia)?'':rForm.materia} onChange={e=>setRForm(f=>({...f,materia:e.target.value}))} placeholder="Ou digitar outra matéria..." style={{width:'100%',padding:'8px 10px',borderRadius:8,border:'1px solid rgba(96,165,250,.15)',background:'rgba(96,165,250,.03)',color:'#f1f5f9',fontSize:12,outline:'none',boxSizing:'border-box'}}/>
           </div>
-          {/* Questões + Tempo */}
+          {/* Assunto */}
+          <div style={{marginBottom:8}}>
+            <div style={{fontSize:9,color:'#64748b',marginBottom:4}}>📖 ASSUNTO ESPECÍFICO</div>
+            <input value={rForm.assunto||''} onChange={e=>setRForm(f=>({...f,assunto:e.target.value}))} placeholder="ex: Serviços Públicos — Concessão, NBC TA 700, Estágios da Receita..." style={{width:'100%',padding:'8px 10px',borderRadius:8,border:'1px solid rgba(96,165,250,.2)',background:'rgba(96,165,250,.04)',color:'#f1f5f9',fontSize:12,outline:'none',boxSizing:'border-box'}}/>
+          </div>
+          {/* Questões + Tempo + Acertei + % */}
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:7,marginBottom:8}}>
-            {[['⏱ TEMPO (min)','tempo','#60a5fa','ex: 90'],['📝 QUESTÕES FEITAS','questoes','#fbbf24','ex: 30']].map(([l,k,col,ph])=>(
-              <div key={k}>
-                <div style={{fontSize:9,color:'#64748b',marginBottom:4}}>{l}</div>
-                <input type="number" value={rForm[k]||''} onChange={e=>setRForm(f=>({...f,[k]:e.target.value}))} placeholder={ph} style={{width:'100%',padding:'10px',borderRadius:8,border:`1px solid ${col}30`,background:`${col}06`,color:col,fontSize:16,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
-              </div>
-            ))}
+            <div>
+              <div style={{fontSize:9,color:'#64748b',marginBottom:4}}>⏱ TEMPO (min)</div>
+              <input type="number" value={rForm.tempo||''} onChange={e=>setRForm(f=>({...f,tempo:e.target.value}))} placeholder="ex: 90" style={{width:'100%',padding:'10px',borderRadius:8,border:'1px solid rgba(96,165,250,.3)',background:'rgba(96,165,250,.06)',color:'#60a5fa',fontSize:16,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
+            </div>
+            <div>
+              <div style={{fontSize:9,color:'#64748b',marginBottom:4}}>📝 QUESTÕES FEITAS</div>
+              <input type="number" value={rForm.questoes||''} onChange={e=>setRForm(f=>({...f,questoes:e.target.value}))} placeholder="ex: 30" style={{width:'100%',padding:'10px',borderRadius:8,border:'1px solid rgba(251,191,36,.3)',background:'rgba(251,191,36,.06)',color:'#fbbf24',fontSize:16,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
+            </div>
+            <div>
+              <div style={{fontSize:9,color:'#64748b',marginBottom:4}}>✅ ACERTEI</div>
+              <input type="number" value={rForm.acertei||''} onChange={e=>setRForm(f=>({...f,acertei:e.target.value}))} placeholder="ex: 18" style={{width:'100%',padding:'10px',borderRadius:8,border:'1px solid rgba(52,211,153,.3)',background:'rgba(52,211,153,.06)',color:'#34d399',fontSize:16,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
+            </div>
+            <div>
+              <div style={{fontSize:9,color:'#64748b',marginBottom:4}}>📊 APROVEITAMENTO</div>
+              {(()=>{
+                const q=parseInt(rForm.questoes)||0;const a=parseInt(rForm.acertei)||0;
+                if(!q||!a)return(<div style={{width:'100%',padding:'10px',borderRadius:8,border:'1px solid rgba(148,163,184,.15)',background:'rgba(148,163,184,.04)',color:'#475569',fontSize:16,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center'}}>—%</div>);
+                const pct=Math.round(a/q*100);
+                const cor=pct>=80?'#34d399':pct>=60?'#fbbf24':'#f87171';
+                return(<div style={{width:'100%',padding:'10px',borderRadius:8,border:`2px solid ${cor}50`,background:`${cor}12`,color:cor,fontSize:16,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',transition:'all .2s'}}>{pct}%</div>);
+              })()}
+            </div>
           </div>
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:7,marginBottom:8}}>
             {[['🃏 FORAM PRO ANKI','questoesAnki','#a78bfa','ex: 8'],['🎧 FORAM PRO NLM','questoesNlm','#34d399','ex: 3']].map(([l,k,col,ph])=>(
@@ -785,7 +808,7 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
                 <div>
                   <div style={{fontSize:12,color:'#f1f5f9',fontWeight:700}}>{r.materia}</div>
-                  <div style={{fontSize:9,color:'#64748b'}}>{r.tempo?`${r.tempo}min · `:''}Q:{r.questoes||0}{r.questoesAnki?` · 🃏${r.questoesAnki}`:''}{r.questoesNlm?` · 🎧${r.questoesNlm}`:''}{r.travou?` · 🔴${r.travou.slice(0,20)}`:''}</div>
+                  <div style={{fontSize:9,color:'#64748b'}}>{r.tempo?`${r.tempo}min · `:''}{r.assunto&&<span style={{color:'#60a5fa',marginRight:4}}>{r.assunto.slice(0,25)}</span>}Q:{r.questoes||0}{r.acertei?` ✅${r.acertei}(${Math.round(parseInt(r.acertei)/parseInt(r.questoes)*100)}%)`:''}{r.questoesAnki?` · 🃏${r.questoesAnki}`:''}{r.travou?` · 🔴${r.travou.slice(0,18)}`:''}</div>
                 </div>
                 <div style={{textAlign:'right'}}>
                   <div style={{fontSize:10,color:c,fontFamily:"'DM Mono',monospace",fontWeight:700}}>{'⭐'.repeat(r.dificuldade||0)}</div>
@@ -926,6 +949,69 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
               <span style={{fontSize:10,color:'#60a5fa',fontFamily:"'DM Mono',monospace",flexShrink:0,width:42,textAlign:'right'}}>{fmtMin(min)}</span>
             </div>
           ));
+        })()}
+        {/* RANKING POR MATÉRIA */}
+        <div style={{fontSize:9,letterSpacing:'2px',color:'#475569',fontFamily:"'DM Mono',monospace",marginBottom:8,marginTop:12}}>🏆 RANKING — APROVEITAMENTO POR MATÉRIA (ciclo)</div>
+        {(()=>{
+          const hist=lsGet('historico_diario',[]);
+          const porMat={};
+          hist.forEach(r=>{
+            if(!r.materia)return;
+            const q=parseInt(r.questoes)||0;const a=parseInt(r.acertei)||0;
+            if(!q)return;
+            if(!porMat[r.materia])porMat[r.materia]={q:0,a:0};
+            porMat[r.materia].q+=q;porMat[r.materia].a+=a;
+          });
+          const ranking=Object.entries(porMat).map(([mat,v])=>({mat,pct:Math.round(v.a/v.q*100),q:v.q,a:v.a})).sort((a,b)=>b.pct-a.pct);
+          if(!ranking.length)return <div style={{textAlign:'center',padding:'12px',color:'#334155',fontSize:11}}>Registre questões para ver o ranking.</div>;
+          return ranking.map((item,i)=>{
+            const cor=item.pct>=80?'#34d399':item.pct>=60?'#fbbf24':'#f87171';
+            return(
+              <div key={item.mat} style={{display:'flex',alignItems:'center',gap:8,padding:'9px 11px',borderRadius:10,background:`${cor}07`,border:`1px solid ${cor}25`,marginBottom:5}}>
+                <span style={{fontSize:10,fontWeight:900,color:cor,width:18,flexShrink:0}}>{i+1}</span>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:11,color:'#f1f5f9',fontWeight:700,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{item.mat}</div>
+                  <BarProg done={item.a} total={item.q} cor={cor} h={4}/>
+                </div>
+                <div style={{textAlign:'right',flexShrink:0}}>
+                  <div style={{fontSize:13,fontWeight:900,color:cor,fontFamily:"'DM Mono',monospace"}}>{item.pct}%</div>
+                  <div style={{fontSize:8,color:'#475569',fontFamily:"'DM Mono',monospace"}}>{item.a}/{item.q}Q</div>
+                </div>
+              </div>
+            );
+          });
+        })()}
+        {/* RANKING POR ASSUNTO */}
+        <div style={{fontSize:9,letterSpacing:'2px',color:'#475569',fontFamily:"'DM Mono',monospace",marginBottom:8,marginTop:12}}>🔍 RANKING — APROVEITAMENTO POR ASSUNTO</div>
+        {(()=>{
+          const hist=lsGet('historico_diario',[]);
+          const porAss={};
+          hist.forEach(r=>{
+            if(!r.assunto||!r.materia)return;
+            const q=parseInt(r.questoes)||0;const a=parseInt(r.acertei)||0;
+            if(!q)return;
+            const key=`${r.materia} — ${r.assunto}`;
+            if(!porAss[key])porAss[key]={q:0,a:0,mat:r.materia};
+            porAss[key].q+=q;porAss[key].a+=a;
+          });
+          const ranking=Object.entries(porAss).map(([ass,v])=>({ass,pct:Math.round(v.a/v.q*100),q:v.q,a:v.a,mat:v.mat})).sort((a,b)=>b.pct-a.pct);
+          if(!ranking.length)return <div style={{textAlign:'center',padding:'12px',color:'#334155',fontSize:11}}>Registre assunto + questões para ver o ranking.</div>;
+          return ranking.map((item,i)=>{
+            const cor=item.pct>=80?'#34d399':item.pct>=60?'#fbbf24':'#f87171';
+            return(
+              <div key={item.ass} style={{display:'flex',alignItems:'center',gap:8,padding:'9px 11px',borderRadius:10,background:`${cor}07`,border:`1px solid ${cor}25`,marginBottom:5}}>
+                <span style={{fontSize:10,fontWeight:900,color:cor,width:18,flexShrink:0}}>{i+1}</span>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:10,color:'#f1f5f9',fontWeight:700,lineHeight:1.3}}>{item.ass}</div>
+                  <BarProg done={item.a} total={item.q} cor={cor} h={3}/>
+                </div>
+                <div style={{textAlign:'right',flexShrink:0}}>
+                  <div style={{fontSize:13,fontWeight:900,color:cor,fontFamily:"'DM Mono',monospace"}}>{item.pct}%</div>
+                  <div style={{fontSize:8,color:'#475569',fontFamily:"'DM Mono',monospace"}}>{item.a}/{item.q}Q</div>
+                </div>
+              </div>
+            );
+          });
         })()}
         <div style={{fontSize:9,letterSpacing:'2px',color:'#475569',fontFamily:"'DM Mono',monospace",marginBottom:8,marginTop:10}}>ÚLTIMAS SESSÕES</div>
         {horas.slice().reverse().slice(0,12).map((e,i)=>(
@@ -1095,7 +1181,17 @@ function TabRevisao({totalBlocos}){
       const difMedia=v.count>0?v.total/v.count:0;
       const dias=Math.floor((todayMs-(v.lastDt||0))/86400000);
       const g=gurujaData?.prioridades?.find(p=>p.mat?.includes(mat.split(' ')[0]))?.status==='critica'?3:0;
-      return{mat,difMedia,diasSem:dias,score:difMedia*(dias+1)+g+v.travou*1.5};
+      // Adiciona peso do baixo % de acerto
+      const hist2=lsGet('historico_diario',[]);
+      const regsMateria=hist2.filter(r=>r.materia===mat&&parseInt(r.questoes)>0);
+      let acertoBonus=0;
+      if(regsMateria.length>0){
+        const totalQ=regsMateria.reduce((s,r)=>s+(parseInt(r.questoes)||0),0);
+        const totalA=regsMateria.reduce((s,r)=>s+(parseInt(r.acertei)||0),0);
+        const taxa=totalQ>0?totalA/totalQ:0.5;
+        acertoBonus=(1-taxa)*3; // 0% acerto = +3, 100% = 0
+      }
+      return{mat,difMedia,diasSem:dias,score:difMedia*(dias+1)+g+v.travou*1.5+acertoBonus};
     }).sort((a,b)=>b.score-a.score);
     const fallback={mat:CICLO.find(s=>s.tag?.includes('⭐⭐⭐⭐⭐'))?.mat||'AFO',difMedia:0,diasSem:0};
     const travouRecente=historico.slice(-3).filter(r=>r.travou).map(r=>`${r.materia}: ${r.travou}`);
@@ -1161,6 +1257,7 @@ function TabRevisao({totalBlocos}){
 
   const ABAS_REV=[
     {id:'morto',l:'⏳ Tempo Morto'},
+    {id:'criticos',l:'🎯 Pontos Críticos'},
     {id:'anki',l:'🃏 Anki'},
     {id:'nlm',l:'🎧 NLM'},
     {id:'rev1h30',l:`🔄 1h30${deve1h30?' 🚨':''}`},
@@ -1209,6 +1306,64 @@ function TabRevisao({totalBlocos}){
           <div style={{fontSize:9,color:'#f87171',fontFamily:"'DM Mono',monospace",marginBottom:6}}>🔴 TRAVOU RECENTEMENTE</div>
           {tempoMorto.travouRecente.map((t,i)=><div key={i} style={{fontSize:11,color:'#94a3b8',marginBottom:2}}>{t}</div>)}
         </div>}
+      </div>}
+
+      {/* PONTOS CRÍTICOS */}
+      {aba==='criticos'&&<div>
+        <div style={{padding:'10px 12px',borderRadius:10,background:'rgba(248,113,113,.06)',border:'1px solid rgba(248,113,113,.2)',marginBottom:12}}>
+          <div style={{fontSize:9,color:'#f87171',fontFamily:"'DM Mono',monospace",marginBottom:4}}>🎯 PONTOS CRÍTICOS — O que mais precisa revisar</div>
+          <div style={{fontSize:10,color:'#64748b'}}>Calculado a partir do aproveitamento real nas questões. Cruza matéria, assunto, dificuldade e dias sem revisar.</div>
+        </div>
+        {(()=>{
+          const hist=lsGet('historico_diario',[]);
+          const gurujaData=lsGet('guruja_data',null);
+          const porItem={};
+          hist.forEach(r=>{
+            if(!r.materia)return;
+            const q=parseInt(r.questoes)||0;const a=parseInt(r.acertei)||0;
+            const key=r.assunto?`${r.materia} — ${r.assunto}`:r.materia;
+            if(!porItem[key])porItem[key]={mat:r.materia,assunto:r.assunto||'',q:0,a:0,difs:[],lastDt:0,travouCount:0};
+            if(q>0){porItem[key].q+=q;porItem[key].a+=a;}
+            if(r.dificuldade)porItem[key].difs.push(r.dificuldade);
+            if(r.dt>porItem[key].lastDt)porItem[key].lastDt=r.dt||0;
+            if(r.travou)porItem[key].travouCount++;
+          });
+          const todayMs=new Date().setHours(0,0,0,0);
+          const criticos=Object.entries(porItem).map(([key,v])=>{
+            const pct=v.q>0?Math.round(v.a/v.q*100):null;
+            const difMedia=v.difs.length?v.difs.reduce((s,d)=>s+d,0)/v.difs.length:0;
+            const dias=Math.floor((todayMs-(v.lastDt||0))/86400000);
+            const g=gurujaData?.prioridades?.find(p=>p.mat?.includes(v.mat.split(' ')[0]))?.status==='critica'?2:0;
+            const acScore=pct!==null?(1-pct/100)*3:0;
+            const score=acScore+difMedia*(dias+1)*0.5+g+v.travouCount*1.2;
+            return{key,mat:v.mat,assunto:v.assunto,pct,q:v.q,a:v.a,difMedia,dias,score};
+          }).sort((a,b)=>b.score-a.score).slice(0,10);
+          if(!criticos.length)return <div style={{textAlign:'center',padding:'30px',color:'#334155',fontSize:12}}>Registre questões para ver os pontos críticos.</div>;
+          return criticos.map((item,i)=>{
+            const cor=item.pct!==null?(item.pct>=80?'#34d399':item.pct>=60?'#fbbf24':'#f87171'):'#60a5fa';
+            const label=item.pct!==null?`${item.pct}%`:'sem %';
+            return(
+              <div key={item.key} style={{padding:'11px 13px',borderRadius:12,background:`${cor}07`,border:`1px solid ${cor}28`,marginBottom:8}}>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:6}}>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontSize:12,fontWeight:800,color:'#f1f5f9',lineHeight:1.3}}>{item.mat}</div>
+                    {item.assunto&&<div style={{fontSize:10,color:cor,marginTop:1}}>{item.assunto}</div>}
+                  </div>
+                  <div style={{textAlign:'right',flexShrink:0,marginLeft:8}}>
+                    <div style={{fontSize:16,fontWeight:900,color:cor,fontFamily:"'DM Mono',monospace"}}>{label}</div>
+                    {item.q>0&&<div style={{fontSize:8,color:'#475569',fontFamily:"'DM Mono',monospace"}}>{item.a}/{item.q}Q</div>}
+                  </div>
+                </div>
+                {item.q>0&&<BarProg done={item.a} total={item.q} cor={cor} h={4}/>}
+                <div style={{display:'flex',gap:6,alignItems:'center',marginTop:6,flexWrap:'wrap'}}>
+                  {item.difMedia>0&&<span style={{fontSize:9,padding:'2px 6px',borderRadius:4,background:`${cor}15`,color:cor}}>dif {item.difMedia.toFixed(1)}★</span>}
+                  {item.dias>0&&<span style={{fontSize:9,padding:'2px 6px',borderRadius:4,background:'rgba(148,163,184,.12)',color:'#64748b'}}>{item.dias}d atrás</span>}
+                  {item.travouCount>0&&<span style={{fontSize:9,padding:'2px 6px',borderRadius:4,background:'rgba(248,113,113,.12)',color:'#f87171'}}>travou {item.travouCount}x</span>}
+                </div>
+              </div>
+            );
+          });
+        })()}
       </div>}
 
       {/* ANKI */}
