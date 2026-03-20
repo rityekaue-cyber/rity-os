@@ -289,6 +289,65 @@ function Pomodoro({cor,onFase}){
   );
 }
 
+// ── Helpers de aproveitamento ──────────────────────────────────
+function calcRankingAproveitamento(){
+  const historico=lsGet('historico_diario',[]);
+  const difBase=lsGet('dif_base_materias',{});
+  const porMat={};
+
+  // Grupo 1: matérias com questões reais
+  historico.forEach(r=>{
+    if(!r.materia)return;
+    const q=parseInt(r.questoes)||0;
+    const a=parseInt(r.acertei)||0;
+    if(!q)return;
+    if(!porMat[r.materia])porMat[r.materia]={q:0,a:0,temDado:true};
+    porMat[r.materia].q+=q;
+    porMat[r.materia].a+=a;
+  });
+
+  // Grupo 2: matérias sem questões mas com dificuldade base definida
+  Object.entries(difBase).forEach(([mat,dif])=>{
+    if(porMat[mat])return; // já tem dado real, ignora
+    if(!dif)return;
+    // Converte dif 1-5 em % equivalente: 5⭐=0%, 4⭐=30%, 3⭐=55%, 2⭐=75%, 1⭐=90%
+    const pctEquiv=[90,75,55,30,0][dif-1];
+    porMat[mat]={q:null,a:null,pct:pctEquiv,temDado:false,difBase:dif};
+  });
+
+  // Monta ranking
+  const comDado=Object.entries(porMat)
+    .filter(([,v])=>v.temDado)
+    .map(([mat,v])=>{
+      const pct=Math.round(v.a/v.q*100);
+      const label=pct>=85?'🟢 SÓLIDO':pct>=70?'🟡 ATENÇÃO':'🔴 CRÍTICO';
+      return{mat,pct,q:v.q,label,temDado:true};
+    })
+    .sort((a,b)=>a.pct-b.pct);
+
+  const semDado=Object.entries(porMat)
+    .filter(([,v])=>!v.temDado)
+    .map(([mat,v])=>{
+      const label=v.pct<=30?'🔴 CRÍTICO (base)':v.pct<=55?'🟡 ATENÇÃO (base)':'🟢 OK (base)';
+      return{mat,pct:v.pct,difBase:v.difBase,label,temDado:false};
+    })
+    .sort((a,b)=>a.pct-b.pct);
+
+  return{comDado,semDado};
+}
+
+function fmtRanking(){
+  const{comDado,semDado}=calcRankingAproveitamento();
+  const escala='ESCALA: ≥85%=SÓLIDO · 70-84%=ATENÇÃO · <70%=CRÍTICO';
+  const parteComDado=comDado.length
+    ? 'COM QUESTÕES (pior→melhor): '+comDado.map(r=>`${r.label} ${r.mat} ${r.pct}%(${r.q}Q)`).join(' | ')
+    : 'Sem questões registradas ainda';
+  const parteSemDado=semDado.length
+    ? 'SEM QUESTÕES (dif base): '+semDado.map(r=>`${r.label} ${r.mat} dif${r.difBase}⭐`).join(' | ')
+    : '';
+  return [escala,parteComDado,parteSemDado].filter(Boolean).join(' || ');
+}
+
 // ─── TAB: IA ASSESSORA (reformulada) ─────────────────────────
 function TabIA({appCtx,onMIT}){
   const[hist,setHist]=useState([]);
@@ -331,15 +390,22 @@ DADOS DO APP AGORA:
 - Treino hoje: ${treinos[dw]}
 - Trabalho hoje: ${trabalha?'SIM 13h-18h':'NÃO'}
 - Último registro: ${ultReg?`${ultReg.materia}, dif ${ultReg.dificuldade}★, ${ultReg.questoes||0}Q, travou: ${ultReg.travou||'nada'}`:'nenhum ainda'}
-- Tendência 7 dias: ${(()=>{const h=historico.slice(-7);const por={};h.forEach(r=>{if(r.materia&&r.dificuldade){por[r.materia]=por[r.materia]||[];por[r.materia].push(r.dificuldade);}});return Object.entries(por).map(([m,ds])=>`${m}:${(ds.reduce((s,d)=>s+d,0)/ds.length).toFixed(1)}★`).join(', ')||'sem dados';})()}
-- Ranking aproveitamento: ${(()=>{const h=historico;const por={};h.forEach(r=>{if(!r.materia)return;const q=parseInt(r.questoes)||0;const a=parseInt(r.acertei)||0;if(!q)return;if(!por[r.materia])por[r.materia]={q:0,a:0};por[r.materia].q+=q;por[r.materia].a+=a;});const r=Object.entries(por).map(([m,v])=>({m,pct:Math.round(v.a/v.q*100),q:v.q})).sort((a,b)=>a.pct-b.pct);if(!r.length)return 'sem dados de questões';return `pior: ${r[0].m} ${r[0].pct}%(${r[0].q}Q) · melhor: ${r[r.length-1].m} ${r[r.length-1].pct}%(${r[r.length-1].q}Q)`;})()}
-- Pior assunto: ${(()=>{const h=historico;const por={};h.forEach(r=>{if(!r.assunto||!r.materia)return;const q=parseInt(r.questoes)||0;const a=parseInt(r.acertei)||0;if(!q)return;const k=r.materia+' — '+r.assunto;if(!por[k])por[k]={q:0,a:0};por[k].q+=q;por[k].a+=a;});const r=Object.entries(por).map(([k,v])=>({k,pct:Math.round(v.a/v.q*100)})).sort((a,b)=>a.pct-b.pct);return r.length?`${r[0].k} (${r[0].pct}%)`:'sem dados de assunto';})()}
+- Aproveitamento (B+C): ${fmtRanking()}
+- Pior assunto: ${(()=>{const h=lsGet('historico_diario',[]);const por={};h.forEach(r=>{if(!r.assunto||!r.materia)return;const q=parseInt(r.questoes)||0;const a=parseInt(r.acertei)||0;if(!q)return;const k=r.materia+' — '+r.assunto;if(!por[k])por[k]={q:0,a:0};por[k].q+=q;por[k].a+=a;});const r=Object.entries(por).map(([k,v])=>({k,pct:Math.round(v.a/v.q*100)})).sort((a,b)=>a.pct-b.pct);return r.length?`${r[0].k} (${r[0].pct}%)`:'sem dados de assunto';})()}
 - Urgentes de revisão: ${urgentes.length}
 - MATÉRIAS URGENTES (registradas por você): ${lsGet('urgentes_ia',[]).map(u=>u.mat+(u.contexto?' ('+u.contexto+')':'')).join(', ')||'nenhuma'}
 - Fila urgente hoje: ${fila.length}
 - Score Guruja: ${gurujaData?.alerta||'não analisado ainda'}
 - Erros no caderno: ${errosPend} ativos
 - Plano semanal: ${planoSem?`aprovado — top matéria: ${planoSem.plano?.[0]?.mat||'?'} (${planoSem.plano?.[0]?.horasEditadas||planoSem.plano?.[0]?.horasSugeridas||'?'}h)`:'não definido ainda'}
+
+ESCALA DE APROVEITAMENTO (use SEMPRE para interpretar dados):
+≥85% = SÓLIDO — não precisa foco urgente
+70-84% = ATENÇÃO — revisar na próxima semana
+<70% = CRÍTICO — foco imediato
+dif base 4-5⭐ sem questões = CRÍTICO por dificuldade
+dif base 1-2⭐ sem questões = monitorar
+NUNCA chame de ruim algo ≥85%. NUNCA chame de bom algo <70%.
 
 ESTILO: Direta, calorosa, sem frases vazias. Máx 120 palavras. Uma ação concreta sempre.
 Se mencionar MITs, inclua: MIT:["t1","t2","t3"]`;
@@ -377,7 +443,13 @@ Se mencionar MITs, inclua: MIT:["t1","t2","t3"]`;
     diag.push(`\n📅 **PLANO DA SEMANA**\n${planoSem2?`Aprovado: ${planoSem2.plano?.slice(0,3).map((p,i)=>`${i+1}. ${p.mat} — ${p.horasEditadas||p.horasSugeridas}h`).join(', ')||'sem detalhes'}\nDiagnóstico: ${planoSem2.diagnostico||''}`:' Sem plano aprovado — use Estudo → Planejamento no domingo.'}${errosCad>0?`\nCaderno de erros: ${errosCad} erros ativos para revisar.`:''}`);
     if(!fimSem) diag.push(`\n🏁 **FECHAMENTO DA SEMANA** (${appCtx.minSemana<35*60?`faltam ${fmtMin(35*60-appCtx.minSemana)} para a meta`:'meta batida! ✅'})\n• O que ficou pendente essa semana?\n• Tem algo arrastando há mais de 3 dias?\n• O que não vou deixar entrar no fim de semana:`);
 
-    diag.push(`\n🚨 **MATÉRIAS URGENTES**\n${urgIA2.length>0?urgIA2.map((u,i)=>`${i+1}. ${u.mat}${u.contexto?' — '+u.contexto:''}`).join('\n'):'Nenhuma matéria marcada como urgente.'}`);
+    const ranking2=calcRankingAproveitamento();
+    const criticos=[
+      ...ranking2.comDado.filter(r=>r.pct<70).map(r=>`${r.mat} ${r.pct}% (${r.q}Q) — CRÍTICO por aproveitamento`),
+      ...ranking2.semDado.filter(r=>r.pct<=30).map(r=>`${r.mat} dif${r.difBase}⭐ — CRÍTICO por dificuldade base`),
+      ...urgIA2.map(u=>`${u.mat}${u.contexto?' — '+u.contexto:''}`)
+    ];
+    diag.push(`\n🚨 **MATÉRIAS CRÍTICAS**\n${criticos.length>0?criticos.map((c2,i)=>`${i+1}. ${c2}`).join('\n'):'Nenhuma matéria crítica detectada.'}\n\n📊 **APROVEITAMENTO COMPLETO**\n${fmtRanking()}`);
     diag.push(`\n🏆 **REFLEXÃO**\n• Maior vitória de ontem:\n• O que eu evitaria fazer hoje se pudesse:\n• Minha meta mínima de hoje (se tudo der errado, isso não pode ficar sem fazer):`);
 
     return`✦ BOM DIA, RITCHELY!\n\n${NOMES_DIA[d.getDay()]} · ${fH(d)} · Ciclo ${appCtx.cicloNum} · ${fmtMin(appCtx.minSemana)} essa semana\n\n${'─'.repeat(40)}\n🎯 PERGUNTAS DE IGNIÇÃO\n${'─'.repeat(40)}\n\n${perguntas5.join('\n\n')}\n\n${'─'.repeat(40)}\n📋 DIAGNÓSTICO DO DIA\n${'─'.repeat(40)}\n${diag.join('\n')}\n\n${'─'.repeat(40)}\n\n📝 *Responda no campo abaixo o que quiser, como quiser. Pode responder tudo, só parte, ou falar outra coisa que surgiu. A IA cruza com seus dados e monta o plano.*`;
@@ -1016,31 +1088,26 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
           ));
         })()}
         {/* RANKING POR MATÉRIA */}
-        <div style={{fontSize:9,letterSpacing:'2px',color:'#475569',fontFamily:"'DM Mono',monospace",marginBottom:8,marginTop:12}}>🏆 RANKING — APROVEITAMENTO POR MATÉRIA (ciclo)</div>
+        <div style={{fontSize:9,letterSpacing:'2px',color:'#475569',fontFamily:"'DM Mono',monospace",marginBottom:8,marginTop:12}}>🏆 RANKING — APROVEITAMENTO (com dados + dif base)</div>
         {(()=>{
-          const hist=lsGet('historico_diario',[]);
-          const porMat={};
-          hist.forEach(r=>{
-            if(!r.materia)return;
-            const q=parseInt(r.questoes)||0;const a=parseInt(r.acertei)||0;
-            if(!q)return;
-            if(!porMat[r.materia])porMat[r.materia]={q:0,a:0};
-            porMat[r.materia].q+=q;porMat[r.materia].a+=a;
-          });
-          const ranking=Object.entries(porMat).map(([mat,v])=>({mat,pct:Math.round(v.a/v.q*100),q:v.q,a:v.a})).sort((a,b)=>b.pct-a.pct);
-          if(!ranking.length)return <div style={{textAlign:'center',padding:'12px',color:'#334155',fontSize:11}}>Registre questões para ver o ranking.</div>;
-          return ranking.map((item,i)=>{
-            const cor=item.pct>=80?'#34d399':item.pct>=60?'#fbbf24':'#f87171';
+          const{comDado,semDado}=calcRankingAproveitamento();
+          const todos=[
+            ...comDado.map(r=>({...r,tipo:'real'})),
+            ...semDado.map(r=>({...r,tipo:'base'}))
+          ].sort((a,b)=>a.pct-b.pct);
+          if(!todos.length)return <div style={{textAlign:'center',padding:'12px',color:'#334155',fontSize:11}}>Registre questões ou defina dif base para ver o ranking.</div>;
+          return todos.map((item,i)=>{
+            const cor=item.pct>=85?'#34d399':item.pct>=70?'#fbbf24':'#f87171';
             return(
               <div key={item.mat} style={{display:'flex',alignItems:'center',gap:8,padding:'9px 11px',borderRadius:10,background:`${cor}07`,border:`1px solid ${cor}25`,marginBottom:5}}>
                 <span style={{fontSize:10,fontWeight:900,color:cor,width:18,flexShrink:0}}>{i+1}</span>
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{fontSize:11,color:'#f1f5f9',fontWeight:700,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{item.mat}</div>
-                  <BarProg done={item.a} total={item.q} cor={cor} h={4}/>
+                  {item.tipo==='real'?<BarProg done={item.a} total={item.q} cor={cor} h={4}/>:<div style={{fontSize:9,color:'#64748b',marginTop:2}}>base: dif{item.difBase}⭐ — sem questões ainda</div>}
                 </div>
                 <div style={{textAlign:'right',flexShrink:0}}>
-                  <div style={{fontSize:13,fontWeight:900,color:cor,fontFamily:"'DM Mono',monospace"}}>{item.pct}%</div>
-                  <div style={{fontSize:8,color:'#475569',fontFamily:"'DM Mono',monospace"}}>{item.a}/{item.q}Q</div>
+                  <div style={{fontSize:13,fontWeight:900,color:cor,fontFamily:"'DM Mono',monospace"}}>{item.tipo==='real'?`${item.pct}%`:`≈${item.pct}%`}</div>
+                  <div style={{fontSize:8,color:'#475569',fontFamily:"'DM Mono',monospace"}}>{item.tipo==='real'?`${item.a}/${item.q}Q`:'dif base'}</div>
                 </div>
               </div>
             );
@@ -1248,7 +1315,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras}){
     try{
       const historico2=lsGet('historico_diario',[]);
       const ranking=Object.entries(historico2.reduce((acc,r)=>{if(r.materia&&r.questoes){acc[r.materia]=acc[r.materia]||{q:0,a:0};acc[r.materia].q+=parseInt(r.questoes)||0;acc[r.materia].a+=parseInt(r.acertei)||0;}return acc;},{})).map(([m,v])=>({m,pct:v.q>0?Math.round(v.a/v.q*100):null})).sort((a,b)=>(a.pct||100)-(b.pct||100));
-      const ctx=`Ciclo atual: bloco ${totalBlocos}/${N}. Motor local sugere Anki: ${tempoMorto.anki.mat} e NLM: ${tempoMorto.nlm.mat}. Ranking aproveitamento (pior→melhor): ${ranking.slice(0,5).map(r=>`${r.m}:${r.pct!==null?r.pct+'%':'sem dado'}`).join(', ')}. Travou recentemente: ${tempoMorto.travouRecente.join('; ')||'nada'}. Guruja: ${lsGet('guruja_data',null)?.alerta||'sem dado'}.`;
+      const ctx=`Ciclo atual: bloco ${totalBlocos}/${N}. Motor local sugere Anki: ${tempoMorto.anki.mat} e NLM: ${tempoMorto.nlm.mat}. ${fmtRanking()}. Travou recentemente: ${tempoMorto.travouRecente.join('; ')||'nada'}. Guruja: ${lsGet('guruja_data',null)?.alerta||'sem dado'}.`;
       const res=await chamarClaude('Você é assistente de estudos para concurso TCE-RJ. Responda APENAS JSON sem markdown: {"anki":"nome_materia","nlm":"nome_materia","motivo":"1 frase explicando por que essas matérias agora"}',
         [{role:'user',content:ctx}],200);
       const parsed=JSON.parse(res.replace(/```json|```/g,'').trim());
@@ -1410,6 +1477,40 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras}){
 
       {/* PONTOS CRÍTICOS */}
       {aba==='criticos'&&<div>
+        {/* Dificuldade Base — matérias sem questões */}
+        <div style={{background:'rgba(96,165,250,.05)',border:'1px solid rgba(96,165,250,.2)',borderRadius:13,padding:'13px',marginBottom:12}}>
+          <div style={{fontSize:9,letterSpacing:'2px',color:'#60a5fa',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:8}}>⭐ DIFICULDADE BASE — matérias sem questões ainda</div>
+          <div style={{fontSize:10,color:'#64748b',marginBottom:10}}>Para matérias que só fez teoria, defina sua dificuldade percebida. O motor usa isso como dado equivalente.</div>
+          {(()=>{
+            const mats=CICLO.map(s=>s.mat).filter((v,i,a)=>a.indexOf(v)===i);
+            const hist=lsGet('historico_diario',[]);
+            const comQuestoes=new Set(hist.filter(r=>parseInt(r.questoes)>0).map(r=>r.materia));
+            const difBase=lsGet('dif_base_materias',{});
+            const semQuestoes=mats.filter(m=>!comQuestoes.has(m));
+            if(!semQuestoes.length)return <div style={{fontSize:10,color:'#34d399'}}>✅ Todas as matérias já têm questões registradas!</div>;
+            return(
+              <div>
+                {semQuestoes.map(mat=>{
+                  const dif=difBase[mat]||0;
+                  const cor=dif>=4?'#f87171':dif>=3?'#fbbf24':dif>=1?'#34d399':'#334155';
+                  return(
+                    <div key={mat} style={{display:'flex',alignItems:'center',gap:8,padding:'7px 10px',borderRadius:9,background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.08)',marginBottom:5}}>
+                      <span style={{flex:1,fontSize:11,color:'#f1f5f9',fontWeight:600}}>{mat}</span>
+                      <div style={{display:'flex',gap:3}}>
+                        {[1,2,3,4,5].map(n=>(
+                          <button key={n} onClick={()=>{const nd={...lsGet('dif_base_materias',{}),[mat]:n};lsSet('dif_base_materias',nd);}} style={{width:22,height:22,borderRadius:'50%',border:`1px solid ${dif>=n?cor:'rgba(255,255,255,.1)'}`,background:dif>=n?`${cor}30`:'transparent',fontSize:9,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',color:dif>=n?cor:'#475569'}}>★</button>
+                        ))}
+                      </div>
+                      {dif>0&&<span style={{fontSize:8,padding:'1px 5px',borderRadius:3,background:`${cor}20`,color:cor,fontFamily:"'DM Mono',monospace",flexShrink:0}}>{dif>=4?'CRÍTICO':dif>=3?'ATENÇÃO':'OK'}</span>}
+                      {dif>0&&<button onClick={()=>{const nd={...lsGet('dif_base_materias',{})};delete nd[mat];lsSet('dif_base_materias',nd);}} style={{padding:'1px 5px',borderRadius:3,border:'none',background:'transparent',color:'#334155',fontSize:9,cursor:'pointer'}}>×</button>}
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
+        </div>
+
         {/* Manual input */}
         <div style={{background:'rgba(248,113,113,.05)',border:'1px solid rgba(248,113,113,.2)',borderRadius:13,padding:'13px',marginBottom:12}}>
           <div style={{fontSize:9,letterSpacing:'2px',color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:10}}>✍️ ADICIONAR PONTO CRÍTICO MANUAL</div>
