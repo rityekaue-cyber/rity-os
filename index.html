@@ -289,6 +289,136 @@ function Pomodoro({cor,onFase}){
   );
 }
 
+// ── Dados do Edital Área Fiscal (tópicos mais cobrados) ────────
+const EDITAL={
+  'Português':{
+    top:[
+      {t:'Interpretação de Textos',p:32.07},
+      {t:'Reescrita de Frases / Substituição de palavras',p:14.48},
+      {t:'Clareza e Correção',p:9.31},
+      {t:'Pontuação',p:8.62},
+      {t:'Coerência e Coesão',p:6.90},
+    ]
+  },
+  'Dir. Constitucional':{
+    top:[
+      {t:'Direitos e Deveres Individuais e Coletivos (art. 5º)',p:11.31},
+      {t:'União: bens e competências (arts. 20 a 24)',p:7.74},
+      {t:'Disposições Gerais — Adm. Pública (arts. 37/38)',p:5.95},
+      {t:'Eficácia das Normas Constitucionais',p:4.17},
+      {t:'Mandado de Segurança',p:3.57},
+    ]
+  },
+  'Dir. Administrativo':{
+    top:[
+      {t:'Atos de Improbidade — arts. 9º a 11 da Lei 8.429/1992',p:7.65},
+      {t:'Responsabilidade Civil do Estado',p:4.92},
+      {t:'Poder de Polícia',p:3.83},
+      {t:'Origem, Conceito e Fontes do Dir. Administrativo',p:3.28},
+      {t:'Administração Indireta',p:3.28},
+    ]
+  },
+  'Dir. Tributário':{
+    top:[
+      {t:'Princípios Tributários',p:10.79},
+      {t:'ICMS (CF/1988 e CTN)',p:6.64},
+      {t:'Responsabilidade Tributária (arts. 128 a 138 CTN)',p:5.39},
+      {t:'Repartição da Competência Tributária',p:5.39},
+      {t:'Imunidades Tributárias',p:4.98},
+    ]
+  },
+  'AFO':{
+    top:[
+      {t:'Classificação da Despesa Orçamentária',p:7.06},
+      {t:'Classificação por Natureza da Receita',p:4.71},
+      {t:'Regimes Orçamentário e Patrimonial',p:4.71},
+      {t:'Da Receita Pública na LRF (arts. 11 a 14)',p:4.71},
+      {t:'Créditos Adicionais',p:4.71},
+    ]
+  },
+  'Auditoria Governamental':{
+    top:[
+      {t:'Testes em Áreas Específicas das Demonstrações Contábeis',p:21.88},
+      {t:'Testes e Procedimentos em Auditoria',p:13.28},
+      {t:'Opinião do auditor / Relatórios e Pareceres',p:7.81},
+      {t:'Amostragem em Auditoria',p:6.25},
+      {t:'Materialidade, Relevância e Risco em Auditoria',p:5.47},
+    ]
+  },
+  'Contabilidade Pública':{
+    top:[
+      {t:'Princípios Contábeis',p:5.81},
+      {t:'Demonstração do Resultado do Exercício (DRE)',p:5.39},
+      {t:'Demonstração de Fluxo de Caixa (DFC – CPC 03)',p:4.98},
+      {t:'Balanço Patrimonial',p:4.98},
+      {t:'Operações com mercadorias (ICMS, IPI, PIS/Confins)',p:4.98},
+    ]
+  },
+  'Dir. Civil':{
+    top:[
+      {t:'Personalidade e capacidade (arts. 1º a 10 CC)',p:13.95},
+      {t:'Bens públicos (arts. 98 a 103 CC)',p:9.30},
+      {t:'Aquisição da Propriedade Imóvel — Usucapião',p:9.30},
+      {t:'Prescrição e Decadência (arts. 189 a 211 CC)',p:6.98},
+      {t:'Do Usufruto (arts. 1.390 a 1.411 CC)',p:6.98},
+    ]
+  },
+  'Dir. Penal':{
+    top:[
+      {t:'Dolo, Culpa e Preterdolo',p:11.27},
+      {t:'Peculato',p:9.86},
+      {t:'Concussão e Excesso de Exação',p:8.45},
+      {t:'Crimes Praticados por Particular Contra a Adm.',p:5.63},
+      {t:'Crimes contra as finanças públicas',p:4.23},
+    ]
+  },
+  'Raciocínio Lógico':{
+    top:[
+      {t:'Associação de informações',p:19.61},
+      {t:'Equivalências lógicas (negação de proposições)',p:15.69},
+      {t:'Tabela verdade das proposições compostas',p:15.69},
+      {t:'Argumentos — métodos da tabela verdade',p:11.76},
+      {t:'Operadores lógicos (representação simbólica)',p:7.84},
+    ]
+  },
+  'TI / Análise de Dados':{
+    top:[
+      {t:'ITIL',p:6.15},
+      {t:'Auditoria de Sistemas de Informação',p:4.62},
+      {t:'COBIT 5',p:3.85},
+      {t:'Análise e Projeto Orientado a Objetos',p:3.85},
+      {t:'Conceitos e Propriedades das Linguagens de Programação',p:3.85},
+    ]
+  },
+  'Controle Externo':{
+    top:[
+      {t:'Fiscalização Contábil, Financeira e Orçamentária',p:15.00},
+      {t:'Controle Interno e Externo',p:12.00},
+      {t:'TCU — Competências e Funcionamento',p:10.00},
+      {t:'Responsabilidade dos Gestores Públicos',p:8.00},
+      {t:'Tomada e Prestação de Contas',p:7.00},
+    ]
+  },
+  'Adm. Pública':{
+    top:[
+      {t:'Princípios da Adm. Pública (LIMPE e outros)',p:14.00},
+      {t:'Organização da Adm. Pública Federal',p:11.00},
+      {t:'Agentes Públicos — Conceito e Classificação',p:9.00},
+      {t:'Licitações e Contratos Administrativos',p:8.00},
+      {t:'Processo Administrativo — Lei 9.784/1999',p:7.00},
+    ]
+  },
+  'Dir. Processual Civil':{
+    top:[
+      {t:'Tutela Provisória (arts. 294 a 311 CPC)',p:12.00},
+      {t:'Recursos — Parte Geral (arts. 994 a 1.008 CPC)',p:11.00},
+      {t:'Petição Inicial e Resposta do Réu',p:9.00},
+      {t:'Liquidação e Cumprimento de Sentença',p:8.00},
+      {t:'Competência (arts. 42 a 66 CPC)',p:7.00},
+    ]
+  },
+};
+
 // ── Helpers de aproveitamento ──────────────────────────────────
 function calcRankingAproveitamento(){
   const historico=lsGet('historico_diario',[]);
@@ -406,6 +536,22 @@ ESCALA DE APROVEITAMENTO (use SEMPRE para interpretar dados):
 dif base 4-5⭐ sem questões = CRÍTICO por dificuldade
 dif base 1-2⭐ sem questões = monitorar
 NUNCA chame de ruim algo ≥85%. NUNCA chame de bom algo <70%.
+
+TÓPICOS MAIS COBRADOS TCE-RJ (cruze com aproveitamento para sugerir o que estudar):
+Português: Interpretação de Textos 32%, Reescrita 14%, Clareza 9%
+Dir.Constitucional: Art.5º 11%, Competências União 8%, Arts.37/38 6%
+Dir.Administrativo: Improbidade Lei 8.429 8%, Resp.Civil Estado 5%, Poder de Polícia 4%
+Dir.Tributário: Princípios 11%, ICMS 7%, Responsabilidade Tributária 5%
+AFO: Classificação Despesa 7%, Natureza Receita 5%, Créditos Adicionais 5%
+Auditoria: Testes Específicos 22%, Procedimentos 13%, Relatórios Auditor 8%
+Contabilidade: Princípios Contábeis 6%, DRE 5%, DFC 5%, Balanço 5%
+Dir.Civil: Personalidade/Capacidade 14%, Bens Públicos 9%, Usucapião 9%
+Dir.Penal: Dolo/Culpa 11%, Peculato 10%, Concussão 8%
+Raciocínio Lógico: Associação 20%, Equivalências 16%, Tabela Verdade 16%
+TI: ITIL 6%, Auditoria Sistemas 5%, COBIT 5 4%
+Quando aproveitamento <70% em uma matéria, citar o tópico mais pesado que ela deve atacar.
+
+- Status edital: ${(()=>{const st=lsGet('edital_status',{});const mats=Object.keys(EDITAL);const res=mats.map(m=>{const tops=EDITAL[m].top;const dom=tops.filter(t=>st[m+':'+t.t]==='domino').length;const est=tops.filter(t=>st[m+':'+t.t]==='estudei').length;if(dom===0&&est===0)return null;return `${m}:${dom}✅${est}🟡/${tops.length}`;}).filter(Boolean);return res.length?res.join(' | '):'nenhum tópico marcado ainda';})()}
 
 ESTILO: Direta, calorosa, sem frases vazias. Máx 120 palavras. Uma ação concreta sempre.
 Se mencionar MITs, inclua: MIT:["t1","t2","t3"]`;
@@ -878,10 +1024,20 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
             </div>
             <input value={MATS.includes(rForm.materia)?'':rForm.materia} onChange={e=>setRForm(f=>({...f,materia:e.target.value}))} placeholder="Ou digitar outra matéria..." style={{width:'100%',padding:'8px 10px',borderRadius:8,border:'1px solid rgba(96,165,250,.15)',background:'rgba(96,165,250,.03)',color:'#f1f5f9',fontSize:12,outline:'none',boxSizing:'border-box'}}/>
           </div>
-          {/* Assunto */}
+          {/* Assunto + atalhos do edital */}
           <div style={{marginBottom:8}}>
             <div style={{fontSize:9,color:'#64748b',marginBottom:4}}>📖 ASSUNTO ESPECÍFICO</div>
-            <input value={rForm.assunto||''} onChange={e=>setRForm(f=>({...f,assunto:e.target.value}))} placeholder="ex: Serviços Públicos — Concessão, NBC TA 700, Estágios da Receita..." style={{width:'100%',padding:'8px 10px',borderRadius:8,border:'1px solid rgba(96,165,250,.2)',background:'rgba(96,165,250,.04)',color:'#f1f5f9',fontSize:12,outline:'none',boxSizing:'border-box'}}/>
+            {EDITAL[rForm.materia]&&(
+              <div style={{display:'flex',flexWrap:'wrap',gap:4,marginBottom:6}}>
+                {EDITAL[rForm.materia].top.slice(0,5).map((item,i)=>(
+                  <button key={i} onClick={()=>setRForm(f=>({...f,assunto:item.t}))}
+                    style={{padding:'3px 8px',borderRadius:6,border:`1px solid ${rForm.assunto===item.t?'#60a5fa':'rgba(96,165,250,.2)'}`,background:rForm.assunto===item.t?'rgba(96,165,250,.18)':'transparent',color:rForm.assunto===item.t?'#60a5fa':'#64748b',fontSize:9,cursor:'pointer',textAlign:'left'}}>
+                    {item.t.length>30?item.t.slice(0,28)+'…':item.t} <span style={{color:'#fbbf24',fontFamily:"'DM Mono',monospace"}}>{item.p}%</span>
+                  </button>
+                ))}
+              </div>
+            )}
+            <input value={rForm.assunto||''} onChange={e=>setRForm(f=>({...f,assunto:e.target.value}))} placeholder="Toque em um tópico acima ou digite livremente..." style={{width:'100%',padding:'8px 10px',borderRadius:8,border:'1px solid rgba(96,165,250,.2)',background:'rgba(96,165,250,.04)',color:'#f1f5f9',fontSize:12,outline:'none',boxSizing:'border-box'}}/>
           </div>
           {/* Questões + Tempo + Acertei + % */}
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:7,marginBottom:8}}>
@@ -1104,6 +1260,11 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{fontSize:11,color:'#f1f5f9',fontWeight:700,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{item.mat}</div>
                   {item.tipo==='real'?<BarProg done={item.a} total={item.q} cor={cor} h={4}/>:<div style={{fontSize:9,color:'#64748b',marginTop:2}}>base: dif{item.difBase}⭐ — sem questões ainda</div>}
+                  {item.pct<70&&EDITAL[item.mat]&&(
+                    <div style={{fontSize:8,color:'#f87171',marginTop:3,padding:'2px 6px',borderRadius:4,background:'rgba(248,113,113,.12)',border:'1px solid rgba(248,113,113,.25)',display:'inline-block'}}>
+                      ⚠️ {EDITAL[item.mat].top[0].t.slice(0,35)} vale {EDITAL[item.mat].top[0].p}% das questões
+                    </div>
+                  )}
                 </div>
                 <div style={{textAlign:'right',flexShrink:0}}>
                   <div style={{fontSize:13,fontWeight:900,color:cor,fontFamily:"'DM Mono',monospace"}}>{item.tipo==='real'?`${item.pct}%`:`≈${item.pct}%`}</div>
@@ -1276,6 +1437,8 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras}){
   const[rev1h30Regs,setRev1h30Regs]=useState(()=>lsGet('rev_1h30',[]));
   const[cadRegs,setCadRegs]=useState(()=>lsGet('rev_caderno',[]));
   const[topicos,setTopicos]=useState(()=>lsGet('rev_topicos',[]));
+  const[editalStatus,setEditalStatus]=useState(()=>lsGet('edital_status',{}));
+  const[editalMatSel,setEditalMatSel]=useState(Object.keys(EDITAL)[0]||'Português');
   const[topicoForm,setTopicoForm]=useState('');
   const[criticosManuais,setCriticosManuais]=useState(()=>lsGet('criticos_manuais',[]));
   const[critForm,setCritForm]=useState({mat:'',motivo:'',prioridade:'alta'});
@@ -1322,6 +1485,16 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras}){
       const cache={...parsed,dia:dk};
       lsSet('tm_ia_cache',cache);
     }catch(e){console.log('TM IA error:',e.message);}
+  };
+
+  const toggleEditalStatus=(mat,topico,status)=>{
+    // Cicla: '' → 'estudei' → 'domino' → ''
+    const ciclo=['','estudei','domino'];
+    const atual=editalStatus[mat+':'+topico]||'';
+    const proximo=ciclo[(ciclo.indexOf(atual)+1)%ciclo.length];
+    const nd={...editalStatus,[mat+':'+topico]:proximo||undefined};
+    if(!proximo)delete nd[mat+':'+topico];
+    setEditalStatus(nd);lsSet('edital_status',nd);
   };
 
   const salvarCritico=()=>{
@@ -1422,6 +1595,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras}){
   const ABAS_REV=[
     {id:'morto',l:'⏳ Tempo Morto'},
     {id:'criticos',l:'🎯 Pontos Críticos'},
+    {id:'edital',l:'📋 Edital'},
     {id:'anki',l:'🃏 Anki'},
     {id:'nlm',l:'🎧 NLM'},
     {id:'rev1h30',l:`🔄 1h30${deve1h30?' 🚨':''}`},
@@ -1582,6 +1756,11 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras}){
                   <div style={{flex:1}}>
                     <div style={{fontSize:11,fontWeight:800,color:'#f1f5f9'}}>{item.mat}{item.assunto&&<span style={{color:cor,fontWeight:400}}> — {item.assunto}</span>}</div>
                     {item.q>0&&<BarProg done={item.a} total={item.q} cor={cor} h={3}/>}
+                    {item.pct!==null&&item.pct<70&&!item.assunto&&EDITAL[item.mat]&&(
+                      <div style={{fontSize:8,color:'#f87171',marginTop:3,padding:'2px 6px',borderRadius:4,background:'rgba(248,113,113,.1)',border:'1px solid rgba(248,113,113,.2)',display:'inline-block'}}>
+                        ⚠️ Priorize: {EDITAL[item.mat].top[0].t.slice(0,40)} ({EDITAL[item.mat].top[0].p}% da prova)
+                      </div>
+                    )}
                     <div style={{display:'flex',gap:5,marginTop:4,flexWrap:'wrap'}}>
                       {item.difMedia>0&&<span style={{fontSize:8,padding:'1px 5px',borderRadius:3,background:`${cor}15`,color:cor}}>dif {item.difMedia.toFixed(1)}★</span>}
                       {item.dias>0&&<span style={{fontSize:8,padding:'1px 5px',borderRadius:3,background:'rgba(148,163,184,.1)',color:'#64748b'}}>{item.dias}d atrás</span>}
@@ -1594,6 +1773,72 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras}){
             );
           });
         })()}
+      </div>}
+
+      {/* EDITAL */}
+      {aba==='edital'&&<div>
+        <div style={{padding:'10px 12px',borderRadius:10,background:'rgba(251,191,36,.06)',border:'1px solid rgba(251,191,36,.2)',marginBottom:12}}>
+          <div style={{fontSize:9,color:'#fbbf24',fontFamily:"'DM Mono',monospace",marginBottom:2}}>📋 TÓPICOS MAIS COBRADOS — Área Fiscal</div>
+          <div style={{fontSize:10,color:'#64748b'}}>Toque no tópico para marcar: ⬜ Não estudei → 🟡 Estudei/travei → ✅ Domino</div>
+        </div>
+        {/* Seletor de matéria */}
+        <div style={{display:'flex',flexWrap:'wrap',gap:4,marginBottom:12}}>
+          {Object.keys(EDITAL).map(mat=>{
+            const tops=EDITAL[mat].top;
+            const domino=tops.filter(t=>editalStatus[mat+':'+t.t]==='domino').length;
+            const estudei=tops.filter(t=>editalStatus[mat+':'+t.t]==='estudei').length;
+            const pctDom=Math.round(domino/tops.length*100);
+            const cor=pctDom>=80?'#34d399':pctDom>=40?'#fbbf24':'#60a5fa';
+            return(
+              <button key={mat} onClick={()=>setEditalMatSel(mat)}
+                style={{padding:'5px 9px',borderRadius:8,border:`1px solid ${editalMatSel===mat?cor:'rgba(255,255,255,.1)'}`,background:editalMatSel===mat?`${cor}15`:'transparent',color:editalMatSel===mat?cor:'#475569',fontSize:9,cursor:'pointer',position:'relative'}}>
+                {mat.length>12?mat.slice(0,11)+'…':mat}
+                {(domino>0||estudei>0)&&<span style={{marginLeft:4,fontSize:8,color:cor}}>{domino}/{tops.length}</span>}
+              </button>
+            );
+          })}
+        </div>
+        {/* Tópicos da matéria selecionada */}
+        {EDITAL[editalMatSel]&&<div>
+          <div style={{fontSize:10,fontWeight:700,color:'#f1f5f9',marginBottom:8}}>{editalMatSel}</div>
+          {EDITAL[editalMatSel].top.map((item,i)=>{
+            const key=editalMatSel+':'+item.t;
+            const st=editalStatus[key]||'';
+            const corPeso=item.p>=15?'#f87171':item.p>=8?'#fbbf24':'#60a5fa';
+            const icone=st==='domino'?'✅':st==='estudei'?'🟡':'⬜';
+            const bgSt=st==='domino'?'rgba(52,211,153,.08)':st==='estudei'?'rgba(251,191,36,.08)':'rgba(255,255,255,.02)';
+            const borderSt=st==='domino'?'rgba(52,211,153,.3)':st==='estudei'?'rgba(251,191,36,.3)':'rgba(255,255,255,.08)';
+            return(
+              <div key={i} onClick={()=>toggleEditalStatus(editalMatSel,item.t)}
+                style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:10,background:bgSt,border:`1px solid ${borderSt}`,marginBottom:6,cursor:'pointer'}}>
+                <span style={{fontSize:14,flexShrink:0}}>{icone}</span>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:11,color:'#f1f5f9',fontWeight:600,lineHeight:1.4}}>{item.t}</div>
+                  {item.p>=8&&(
+                    <div style={{fontSize:8,color:corPeso,marginTop:2,padding:'1px 5px',borderRadius:3,background:`${corPeso}15`,display:'inline-block',fontFamily:"'DM Mono',monospace"}}>
+                      {item.p>=15?'🔴 MUITO PESADO':item.p>=8?'🟡 PESADO':''} {item.p}% das questões
+                    </div>
+                  )}
+                </div>
+                <span style={{fontSize:9,color:'#475569',fontFamily:"'DM Mono',monospace",flexShrink:0}}>{item.p}%</span>
+              </div>
+            );
+          })}
+          {/* Resumo da matéria */}
+          {(()=>{
+            const tops=EDITAL[editalMatSel].top;
+            const domino=tops.filter(t=>editalStatus[editalMatSel+':'+t.t]==='domino').length;
+            const estudei=tops.filter(t=>editalStatus[editalMatSel+':'+t.t]==='estudei').length;
+            const nenhum=tops.length-domino-estudei;
+            return(
+              <div style={{display:'flex',gap:8,marginTop:10,padding:'8px 12px',borderRadius:9,background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.08)'}}>
+                <div style={{flex:1,textAlign:'center'}}><div style={{fontSize:14,fontWeight:900,color:'#34d399'}}>{domino}</div><div style={{fontSize:8,color:'#64748b'}}>Domino ✅</div></div>
+                <div style={{flex:1,textAlign:'center'}}><div style={{fontSize:14,fontWeight:900,color:'#fbbf24'}}>{estudei}</div><div style={{fontSize:8,color:'#64748b'}}>Estudei 🟡</div></div>
+                <div style={{flex:1,textAlign:'center'}}><div style={{fontSize:14,fontWeight:900,color:'#475569'}}>{nenhum}</div><div style={{fontSize:8,color:'#64748b'}}>Pendente ⬜</div></div>
+              </div>
+            );
+          })()}
+        </div>}
       </div>}
 
       {/* ANKI */}
