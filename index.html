@@ -579,7 +579,6 @@ function TabEstudo({feitos,cicloNum,horas,onConcluir,onIrPara,onDesmarcar,onAddH
   const cor=ativo?.tag?.includes('TRIÂNGULO')?'#fbbf24':ativo?.cor||'#fbbf24';
   const todayStart=useMemo(()=>{const d=new Date();d.setHours(0,0,0,0);return d.getTime();},[]);
   const semStart=todayStart-6*86400000;
-  const tmSugestao=useMemo(()=>calcTempoMorto(feitos,horas,historico),[feitos,horas,historico,clock.toDateString()]);
   const minHoje=horas.filter(e=>e.dt>=todayStart).reduce((s,e)=>s+e.min,0);
   const minSem=horas.filter(e=>e.dt>=semStart).reduce((s,e)=>s+e.min,0);
   const META=35*60;
@@ -2362,6 +2361,7 @@ function App(){
   const[horas,setHoras]=useState([]);
   const[mit,setMit]=useState([]);
   const[historico,setHistorico]=useState(()=>lsGet('historico_diario',[]));
+  const tmSugestao=useMemo(()=>calcTempoMorto(feitos,horas,historico),[feitos,horas,historico,clock.toDateString()]);
   const[tmIA,setTmIA]=useState(()=>lsGet('tm_ia_cache',null));
   const[planoSemana,setPlanoSemana]=useState(()=>lsGet('plano_semanal',null));
   const[tab,setTab]=useState('ia');
