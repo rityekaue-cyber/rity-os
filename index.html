@@ -630,6 +630,283 @@ Se mencionar MITs, inclua: MIT:["t1","t2","t3"]`;
     setTimeout(()=>inputRef.current?.focus(),300);
   }
 
+  const[exportModal,setExportModal]=useState(false);
+  const[exportTxt,setExportTxt]=useState('');
+  const[exportCopiado,setExportCopiado]=useState(false);
+
+  const gerarExporte=()=>{
+    const hist=lsGet('historico_diario',[]);
+    const horas=lsGet('horas',[]);
+    const anki=lsGet('rev_anki',[]);
+    const nlm=lsGet('rev_nlm',[]);
+    const difBase=lsGet('dif_base_materias',{});
+    const editalSt=lsGet('edital_status',{});
+    const gurujaData=lsGet('guruja_data',null);
+    const criticos=lsGet('criticos_manuais',[]);
+    const d=new Date();
+
+    // Aproveitamento por matéria
+    const porMat={};
+    hist.forEach(r=>{
+      if(!r.materia)return;
+      const q=parseInt(r.questoes)||0;const a=parseInt(r.acertei)||0;
+      if(!porMat[r.materia])porMat[r.materia]={q:0,a:0,travou:[],assuntos:{}};
+      if(q){porMat[r.materia].q+=q;porMat[r.materia].a+=a;}
+      if(r.travou)porMat[r.materia].travou.push(r.travou);
+      if(r.assunto&&q){
+        const k=r.assunto;
+        if(!porMat[r.materia].assuntos[k])porMat[r.materia].assuntos[k]={q:0,a:0};
+        porMat[r.materia].assuntos[k].q+=q;
+        porMat[r.materia].assuntos[k].a+=a;
+      }
+    });
+
+    // Horas por matéria
+    const porHoras={};
+    horas.forEach(e=>{
+      const m=e.mat||'Geral';
+      porHoras[m]=(porHoras[m]||0)+e.min;
+    });
+
+    // Monta texto
+    let txt=`═══════════════════════════════════════
+RITY OS — EXPORTAÇÃO PARA IA
+${d.toLocaleDateString('pt-BR')} · Ciclo ${appCtx.cicloNum} · Blocos ${appCtx.feitosN}/${N}
+═══════════════════════════════════════
+
+📊 APROVEITAMENTO POR MATÉRIA
+Escala: ≥85% SÓLIDO · 70-84% ATENÇÃO · <70% CRÍTICO
+───────────────────────────────────────
+`;
+
+    const ranking=Object.entries(porMat)
+      .filter(([,v])=>v.q>0)
+      .map(([mat,v])=>({mat,pct:Math.round(v.a/v.q*100),q:v.q,a:v.a,travou:v.travou,assuntos:v.assuntos}))
+      .sort((a,b)=>a.pct-b.pct);
+
+    ranking.forEach(r=>{
+      const label=r.pct>=85?'🟢 SÓLIDO':r.pct>=70?'🟡 ATENÇÃO':'🔴 CRÍTICO';
+      txt+=`${label} ${r.mat}: ${r.pct}% (${r.a}/${r.q}Q)
+`;
+      // Assuntos
+      const assRank=Object.entries(r.assuntos)
+        .map(([ass,v])=>({ass,pct:Math.round(v.a/v.q*100),q:v.q}))
+        .sort((a,b)=>a.pct-b.pct);
+      assRank.forEach(a=>{
+        const al=a.pct>=85?'✅':a.pct>=70?'⚠️':'❌';
+        txt+=`   ${al} ${a.ass}: ${a.pct}% (${a.q}Q)
+`;
+      });
+      // O que travou
+      if(r.travou.length>0){
+        const uniq=[...new Set(r.travou)];
+        txt+=`   🔴 Travou: ${uniq.slice(0,3).join('; ')}
+`;
+      }
+    });
+
+    // Matérias sem questões com dif base
+    const semQuestoes=Object.entries(difBase).filter(([mat])=>!porMat[mat]||!porMat[mat].q);
+    if(semQuestoes.length>0){
+      txt+=`
+📌 SEM QUESTÕES — DIFICULDADE BASE
+───────────────────────────────────────
+`;
+      semQuestoes.forEach(([mat,dif])=>{
+        const label=dif>=4?'🔴 CRÍTICO':dif>=3?'🟡 ATENÇÃO':'🟢 OK';
+        txt+=`${label} ${mat}: dif base ${dif}⭐
+`;
+      });
+    }
+
+    // Horas por matéria
+    txt+=`
+⏱ HORAS POR MATÉRIA (total)
+───────────────────────────────────────
+`;
+    Object.entries(porHoras)
+      .sort((a,b)=>b[1]-a[1])
+      .slice(0,12)
+      .forEach(([mat,min])=>{
+        const h=Math.floor(min/60);const m2=min%60;
+        txt+=`${mat}: ${h>0?h+'h':''}${m2>0?m2+'min':''}
+`;
+      });
+
+    // Status do edital
+    const matsEdital=Object.keys(EDITAL);
+    txt+=`
+📋 STATUS DO EDITAL
+───────────────────────────────────────
+`;
+    matsEdital.forEach(mat=>{
+      const tops=EDITAL[mat].top;
+      const dom=tops.filter(t=>editalSt[mat+':'+t.t]==='domino').length;
+      const est=tops.filter(t=>editalSt[mat+':'+t.t]==='estudei').length;
+      if(dom>0||est>0){
+        txt+=`${mat}: ✅${dom} domino · 🟡${est} estudei · ⬜${tops.length-dom-est} pendente
+`;
+        tops.filter(t=>editalSt[mat+':'+t.t]==='estudei').forEach(t=>{
+          txt+=`   🟡 ${t.t} (${t.p}%)
+`;
+        });
+      }
+    });
+
+    // Pontos críticos manuais
+    if(criticos.length>0){
+      txt+=`
+🎯 PONTOS CRÍTICOS MANUAIS
+───────────────────────────────────────
+`;
+      criticos.forEach(c2=>{
+        txt+=`${c2.prioridade==='alta'?'🔴':c2.prioridade==='media'?'🟡':'🟢'} ${c2.mat}`;
+        if(c2.motivo)txt+=`: ${c2.motivo}`;
+        txt+='\n';
+      });
+    }
+
+    // Ciclo atual
+    txt+=`
+🔄 CICLO ATUAL — BLOCOS PENDENTES
+───────────────────────────────────────
+`;
+    const feitos=lsGet('feitos',[]);
+    const feitosSet=new Set(feitos);
+    CICLO.filter(s=>!feitosSet.has(s.id)).forEach(s=>{
+      txt+=`B${s.id} ${s.mat} — ${s.conteudo||s.tag||''}
+`;
+    });
+
+    // Guruja
+    if(gurujaData?.alerta){
+      txt+=`
+📊 GURUJA
+───────────────────────────────────────
+`;
+      txt+=`Alerta: ${gurujaData.alerta}
+`;
+    }
+
+    // Anki
+    const ankiRegs=lsGet('rev_anki',[]);
+    if(ankiRegs.length>0){
+      txt+=`
+🃏 ANKI — ${ankiRegs.length} sessões
+───────────────────────────────────────
+`;
+      const porAnki={};
+      ankiRegs.forEach(r=>{
+        if(!r.mat)return;
+        if(!porAnki[r.mat])porAnki[r.mat]={s:0,cards:0,q:0,difs:[],last:''};
+        porAnki[r.mat].s++;porAnki[r.mat].cards+=parseInt(r.cards)||0;
+        porAnki[r.mat].q+=parseInt(r.questoes)||0;
+        if(r.dif)porAnki[r.mat].difs.push(r.dif);
+        if(r.dia>porAnki[r.mat].last)porAnki[r.mat].last=r.dia;
+      });
+      Object.entries(porAnki).sort((a,b)=>(b[1].difs.reduce((s,d)=>s+d,0)/(b[1].difs.length||1))-(a[1].difs.reduce((s,d)=>s+d,0)/(a[1].difs.length||1)))
+        .forEach(([mat,v])=>{
+          const dm=v.difs.length?(v.difs.reduce((s,d)=>s+d,0)/v.difs.length).toFixed(1):'-';
+          const lbl=parseFloat(dm)>=4?'🔴':parseFloat(dm)>=3?'🟡':'🟢';
+          txt+=`${lbl} ${mat}: ${v.s} sessões · ${v.cards} cards · ${v.q}Q · dif ${dm}★ · último: ${v.last}
+`;
+        });
+    }
+
+    // NLM
+    const nlmRegs=lsGet('rev_nlm',[]);
+    if(nlmRegs.length>0){
+      txt+=`
+🎧 NOTEBOOKLM — ${nlmRegs.length} sessões
+───────────────────────────────────────
+`;
+      const porNlm={};
+      nlmRegs.forEach(r=>{
+        if(!r.mat)return;
+        if(!porNlm[r.mat])porNlm[r.mat]={s:0,min:0,difs:[],oque:[],last:''};
+        porNlm[r.mat].s++;porNlm[r.mat].min+=parseInt(r.tempo)||0;
+        if(r.dif)porNlm[r.mat].difs.push(r.dif);
+        if(r.oque&&!porNlm[r.mat].oque.includes(r.oque))porNlm[r.mat].oque.push(r.oque);
+        if(r.dia>porNlm[r.mat].last)porNlm[r.mat].last=r.dia;
+      });
+      Object.entries(porNlm).sort((a,b)=>(b[1].difs.reduce((s,d)=>s+d,0)/(b[1].difs.length||1))-(a[1].difs.reduce((s,d)=>s+d,0)/(a[1].difs.length||1)))
+        .forEach(([mat,v])=>{
+          const dm=v.difs.length?(v.difs.reduce((s,d)=>s+d,0)/v.difs.length).toFixed(1):'-';
+          const lbl=parseFloat(dm)>=4?'🔴':parseFloat(dm)>=3?'🟡':'🟢';
+          const h=Math.floor(v.min/60);const m2=v.min%60;
+          txt+=`${lbl} ${mat}: ${v.s} sessões · ${h>0?h+'h':''}${m2>0?m2+'min':''} · dif ${dm}★ · último: ${v.last}
+`;
+          if(v.oque.length)txt+=`   Conteúdo: ${v.oque.slice(0,2).join('; ')}
+`;
+        });
+    }
+
+    // Caderno de Erros
+    const cadRegs=lsGet('rev_caderno',[]);
+    if(cadRegs.length>0){
+      txt+=`
+📕 CADERNO DE ERROS — ${cadRegs.length} sessões
+───────────────────────────────────────
+`;
+      const porCad={};
+      cadRegs.forEach(r=>{
+        if(!r.mat)return;
+        if(!porCad[r.mat])porCad[r.mat]={q:0,anki:0,nlm:0,s:0};
+        porCad[r.mat].s++;porCad[r.mat].q+=parseInt(r.questoes)||0;
+        porCad[r.mat].anki+=parseInt(r.anki)||0;porCad[r.mat].nlm+=parseInt(r.nlm)||0;
+      });
+      Object.entries(porCad).sort((a,b)=>b[1].q-a[1].q).forEach(([mat,v])=>{
+        txt+=`${mat}: ${v.q}Q vistas · ${v.anki} pro Anki · ${v.nlm} pro NLM (${v.s} sessões)
+`;
+      });
+    }
+
+    // Revisão 1h30
+    const rev1h30=lsGet('rev_1h30',[]);
+    if(rev1h30.length>0){
+      txt+=`
+🔄 REVISÃO 1H30 — ${rev1h30.length} revisões
+───────────────────────────────────────
+`;
+      rev1h30.slice(-4).reverse().forEach(r=>{
+        txt+=`${r.dia} (bloco ${r.blocoRef}):
+`;
+        (r.slots||[]).filter(s=>s.mat).forEach(s=>{
+          const oq=(s.oque||[]).join(', ')||'-';
+          txt+=`  • ${s.mat}: ${oq}${s.questoes?' · '+s.questoes+'Q':''}${s.dif?' · dif '+s.dif+'★':''}
+`;
+        });
+      });
+    }
+
+    // Tópicos para revisitar
+    const topicos=lsGet('rev_topicos',[]);
+    const topPend=topicos.filter(t=>!t.feito);
+    if(topPend.length>0){
+      txt+=`
+📌 TÓPICOS PARA REVISITAR — ${topPend.length} pendentes
+───────────────────────────────────────
+`;
+      topPend.forEach(t=>{txt+=`• ${t.txt}
+`;});
+    }
+
+    txt+=`
+═══════════════════════════════════════
+Cole este texto no Claude.ai para análise completa.
+═══════════════════════════════════════`;
+
+    setExportTxt(txt);
+    setExportModal(true);
+  };
+
+  const copiarExporte=()=>{
+    navigator.clipboard.writeText(exportTxt).then(()=>{
+      setExportCopiado(true);
+      setTimeout(()=>setExportCopiado(false),2500);
+    });
+  };
+
   const ATALHOS=[
     ['⚡ Tempo morto','O que devo ouvir no tempo morto agora? Cruzamento com Guruja e histórico.'],
     ['🎯 Próx. bloco','Qual bloco devo estudar agora e por quê?'],
@@ -646,9 +923,14 @@ Se mencionar MITs, inclua: MIT:["t1","t2","t3"]`;
           <div style={{fontSize:8,color:'rgba(251,191,36,.5)',letterSpacing:'3px',fontFamily:"'DM Mono',monospace",fontWeight:700}}>ASSESSORA IA · TCE-RJ</div>
           <div style={{fontFamily:"'DM Serif Display',serif",color:'#f0e6d0',fontSize:15,marginTop:2}}>Perguntas · Plano · Suporte</div>
         </div>
-        <button onClick={iniciarDia} style={{background:'linear-gradient(135deg,#c8850a,#fbbf24)',border:'none',borderRadius:9,padding:'8px 13px',fontFamily:"'DM Mono',monospace",fontSize:11,fontWeight:800,color:'#050a14',cursor:'pointer'}}>
-          {hist.length>0?'🔄 Novo dia':'☀️ Começar dia'}
-        </button>
+        <div style={{display:'flex',gap:6}}>
+          <button onClick={gerarExporte} style={{background:'rgba(96,165,250,.15)',border:'1px solid rgba(96,165,250,.35)',borderRadius:9,padding:'8px 11px',fontFamily:"'DM Mono',monospace",fontSize:10,fontWeight:800,color:'#60a5fa',cursor:'pointer'}}>
+            📤 Exportar
+          </button>
+          <button onClick={iniciarDia} style={{background:'linear-gradient(135deg,#c8850a,#fbbf24)',border:'none',borderRadius:9,padding:'8px 13px',fontFamily:"'DM Mono',monospace",fontSize:11,fontWeight:800,color:'#050a14',cursor:'pointer'}}>
+            {hist.length>0?'🔄 Novo dia':'☀️ Começar dia'}
+          </button>
+        </div>
       </div>
       <div style={{overflowX:'auto',scrollbarWidth:'none',marginBottom:8,flexShrink:0}}>
         <div style={{display:'flex',gap:5,width:'max-content',padding:'1px 0'}}>
@@ -708,6 +990,29 @@ Se mencionar MITs, inclua: MIT:["t1","t2","t3"]`;
         )}
         <div ref={finalRef}/>
       </div>
+
+      {/* Modal de exportação */}
+      {exportModal&&(
+        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.88)',zIndex:200,display:'flex',alignItems:'flex-end'}}>
+          <div style={{width:'100%',background:'#0f172a',border:'1px solid rgba(96,165,250,.3)',borderRadius:'18px 18px 0 0',padding:'20px 16px',maxHeight:'85dvh',display:'flex',flexDirection:'column'}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12,flexShrink:0}}>
+              <div>
+                <div style={{fontSize:9,color:'#60a5fa',fontFamily:"'DM Mono',monospace",letterSpacing:'2px',marginBottom:2}}>📤 EXPORTAR PARA IA</div>
+                <div style={{fontSize:11,color:'#94a3b8'}}>Copie e cole no Claude.ai para análise completa</div>
+              </div>
+              <button onClick={()=>setExportModal(false)} style={{padding:'6px 12px',borderRadius:8,border:'1px solid rgba(255,255,255,.1)',background:'transparent',color:'#64748b',fontSize:12,cursor:'pointer'}}>✕</button>
+            </div>
+            <textarea readOnly value={exportTxt} style={{flex:1,width:'100%',padding:'12px',borderRadius:10,border:'1px solid rgba(96,165,250,.2)',background:'rgba(96,165,250,.04)',color:'#94a3b8',fontSize:10,fontFamily:"'DM Mono',monospace",lineHeight:1.6,resize:'none',outline:'none',boxSizing:'border-box',overflowY:'auto',marginBottom:12,minHeight:200}}/>
+            <div style={{display:'flex',gap:8,flexShrink:0}}>
+              <button onClick={copiarExporte} style={{flex:1,padding:'13px',borderRadius:10,border:'none',background:exportCopiado?'#34d399':'#60a5fa',color:'#0f172a',fontSize:13,fontWeight:900,cursor:'pointer',fontFamily:"'DM Mono',monospace"}}>
+                {exportCopiado?'✅ COPIADO!':'📋 COPIAR TUDO'}
+              </button>
+              <button onClick={()=>setExportModal(false)} style={{padding:'13px 18px',borderRadius:10,border:'1px solid rgba(255,255,255,.1)',background:'transparent',color:'#475569',fontSize:12,cursor:'pointer'}}>Fechar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div style={{display:'flex',gap:8,paddingTop:8,borderTop:'1px solid rgba(255,255,255,.06)',flexShrink:0}}>
         <textarea ref={inputRef}
           value={inputVal}
