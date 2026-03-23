@@ -70,6 +70,7 @@ const CICLO=[
 ];
 const N=CICLO.length;
 const DIAS_KEY=['Dom','Seg','Ter','Qua','Qui','Sex','Sab'];
+const NOMES_DIA=['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
 const KCOR={r:'#64748b',a:'#fbbf24',s:'#60a5fa',b:'#1e2d40',e:'#34d399',m:'#fb923c',w:'#a78bfa',f:'#f87171',d:'#34d399',z:'#0f172a'};
 const AGENDA={
   1:[{t:"04:30",l:"⏰ Acordar · MIT do dia",k:"r"},{t:"05:00",l:"🃏 Anki profundo",k:"a"},{t:"05:30",l:"📚 Bloco 1",k:"s"},{t:"07:00",l:"☕ Descanso 30min",k:"b"},{t:"07:30",l:"📚 Bloco 2",k:"s"},{t:"09:00",l:"🏃 Corrida leve 35min",k:"e"},{t:"09:35",l:"🚿 Banho",k:"r"},{t:"09:55",l:"📚 Bloco 3",k:"s"},{t:"11:25",l:"🍽️ Almoço com Kauê",k:"m"},{t:"13:00",l:"💼 Trabalho",k:"w"},{t:"18:00",l:"⚓ Kauê chega",k:"f"},{t:"20:00",l:"📚 Bloco 4 NOTURNO",k:"s"},{t:"21:30",l:"😴 Dormir",k:"z"}],
@@ -963,7 +964,7 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
             </div>
             <div style={{padding:'12px 14px'}}>
               <div style={{marginBottom:10,padding:'9px 11px',borderRadius:9,background:`${cor}05`,border:`1px solid ${cor}15`}}>
-                {ativo.dica.split('\n').map((l,i)=><div key={i} style={{fontSize:11,color:'#94a3b8',lineHeight:1.7}}>{l}</div>)}
+                {(ativo.dica||'').split('\n').map((l,i)=><div key={i} style={{fontSize:11,color:'#94a3b8',lineHeight:1.7}}>{l}</div>)}
               </div>
               <Pomodoro cor={cor} onFase={min=>onAddHoras({mat:ativo.mat,min,dt:Date.now()})}/>
               <button onClick={()=>setConfJaFiz(ativo.id)} style={{width:'100%',padding:'13px',borderRadius:11,border:'none',cursor:'pointer',background:`linear-gradient(135deg,${cor}cc,${cor})`,color:'#050a14',fontSize:14,fontWeight:900,letterSpacing:'3px',fontFamily:"'DM Mono',monospace"}}>✓ CONCLUÍDO</button>
@@ -1179,8 +1180,8 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
                     </div>
                     {/* Expandido */}
                     {aberto&&<div style={{padding:'10px 12px 12px 43px',background:'rgba(0,0,0,.15)',borderTop:'1px solid rgba(255,255,255,.04)'}}>
-                      {s.dica.split('\n').map((l,j)=>(
-                        <div key={j} style={{fontSize:11,color:'#94a3b8',lineHeight:1.8,marginBottom:j<s.dica.split('\n').length-1?0:0}}>{l}</div>
+                      {(s.dica||'').split('\n').map((l,j)=>(
+                        <div key={j} style={{fontSize:11,color:'#94a3b8',lineHeight:1.8,marginBottom:j<(s.dica||'').split('\n').length-1?0:0}}>{l}</div>
                       ))}
                       {/* Botões de ação */}
                       {done?(
@@ -2760,10 +2761,7 @@ function App(){
   const prox=pendentes[0];
   const corPrx=prox?.tag?.includes('TRIÂNGULO')?'#fbbf24':prox?.cor||'#fbbf24';
   const urgentes=lsGet('rev_urgentes',[]);
-  const errosPend=useMemo(()=>{
-    const erros=lsGet('caderno_erros',[]);const agora=Date.now();const iv=[1,3,7,15,30];
-    return erros.filter(e=>!e.dominado&&e.dt+iv[Math.min(e.revisoes||0,iv.length-1)]*86400000<=agora).length;
-  },[tab]);
+
   const chaveOK=getAK().startsWith('sk-ant');
 
   const TABS=[
