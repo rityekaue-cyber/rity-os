@@ -41,34 +41,33 @@ const{useState,useEffect,useRef,useMemo,useCallback}=React;
 
 // ─── CONSTANTES ───────────────────────────────────────────────
 const CICLO=[
-  {id:1,dia:1,mat:"TI / Análise de Dados",h:"1h30",cor:"#67e8f9",ic:"💻",tag:"URGENTE ATRASADA ⭐⭐",acao:"45min teoria · pausa · 45min questões CRONOMETRADAS",dica:"🚨 3x atrasada no Guruja — abre o ciclo.\nCérebro fresco para medir desempenho real.\n2ª metade obrigatoriamente questões: 2min cada."},
-  {id:2,dia:1,mat:"Dir. Civil",h:"1h30",cor:"#fcd34d",ic:"📙",tag:"ATRASADA ⭐⭐",acao:"45min teoria · pausa · 45min questões",dica:"T→J ✅ Atrasada no Guruja.\nGuruja: 89% mas atrasada — manutenção urgente.\nFoco: Prescrição pós-STJ 2019."},
-  {id:3,dia:1,mat:"Controle Externo",h:"1h30",cor:"#86efac",ic:"📋",tag:"URGENTE ATRASADA ⭐⭐⭐⭐⭐",acao:"45min teoria (legislação) · pausa · 45min questões",dica:"J→T ✅ Core do cargo. Atrasada no Guruja.\nFoco: Lei Orgânica TCE-RJ, competências, fiscalização.\nAnote erros para o bloco 🔺."},
-  {id:4,dia:2,mat:"Dir. Penal",h:"1h30",cor:"#fca5a5",ic:"⚖️",tag:"ATRASADA ⭐⭐",acao:"45min teoria · pausa · 45min questões",dica:"T→J ✅ Atrasada no Guruja.\nManutenção. Não é prioritário para TCE-RJ.\nFoco: Ilicitude e Culpabilidade."},
-  {id:5,dia:2,mat:"Adm. Pública",h:"1h30",cor:"#fde68a",ic:"📙",tag:"ATRASADA ⭐⭐⭐",acao:"45min teoria · pausa · 45min questões",dica:"J→A ✅ 2x atrasada no Guruja.\nGuruja: 74% — atenção.\nFoco: Governabilidade, Governança, Qualidade, Transparência."},
-  {id:6,dia:2,mat:"Dir. Processual Civil",h:"1h30",cor:"#6ee7b7",ic:"📘",tag:"ATRASADA ⭐⭐",acao:"45min teoria · pausa · 45min questões",dica:"A→J ✅ Atrasada no Guruja.\nGuruja: 96,4% mas atrasada — revisão rápida.\nFoco: Competência, Recursos."},
-  {id:7,dia:3,mat:"Raciocínio Lógico",h:"1h30",cor:"#38bdf8",ic:"🧩",tag:"ATRASADA ⭐⭐⭐",acao:"45min teoria · pausa · 45min questões",dica:"J→E ✅ Atrasada no Guruja. ⭐⭐⭐⭐⭐ Relevância.\nCérebro muda de modo cognitivo.\nNunca junto com TI ou Mat.Financeira."},
-  {id:8,dia:3,mat:"Português",h:"1h30",cor:"#fbbf24",ic:"📙",tag:"ATRASADA ⭐⭐⭐",acao:"45min teoria · pausa · 45min questões",dica:"E→V ✅ Atrasada no Guruja.\nGuruja: 76% e 79% — oscilando.\nClassifica erro: interpretação / gramática / coesão."},
-  {id:9,dia:3,mat:"Discursivas",h:"1h30",cor:"#fb923c",ic:"✏️",tag:"ATRASADA TRANSVERSAL",acao:"45min estrutura · pausa · 45min redação completa",dica:"V→W ✅ Atrasada no Guruja. ⭐⭐⭐⭐⭐ Relevância.\nTema: Licitações Públicas (está no Guruja).\nGuarda o texto — compara com bloco 22."},
-  {id:10,dia:4,mat:"AFO",h:"1h30",cor:"#f87171",ic:"📘",tag:"PESADO ⭐⭐⭐⭐⭐",acao:"45min teoria · pausa · 45min questões",dica:"W→T ✅ Técnica pesada volta aqui.\nFoco: Receita, Despesa, Estágios.\nPara nos 45min. Levanta, anda."},
-  {id:11,dia:4,mat:"Dir. Constitucional",h:"1h30",cor:"#60a5fa",ic:"📘",tag:"PESADO ⭐⭐⭐⭐",acao:"45min teoria · pausa · 45min questões",dica:"T→J ✅\nGuruja: 79% e 86% — irregular.\nFoco: Direitos Sociais, Políticos, Princípios."},
-  {id:12,dia:4,mat:"Contabilidade Pública",h:"1h30",cor:"#a78bfa",ic:"📒",tag:"PESADO ⭐⭐⭐⭐⭐",acao:"45min teoria · pausa · 45min questões",dica:"J→T ✅ Matéria mais pesada do TCE-RJ.\nMáx 1h30. Sem estender.\nNunca junto com AFO sem jurídica no meio."},
-  {id:13,dia:5,mat:"Dir. Administrativo",h:"1h30",cor:"#c084fc",ic:"📘",tag:"PESADO ⭐⭐⭐⭐",acao:"45min teoria · pausa · 45min questões",dica:"T→J ✅\nGuruja: 81% — manter pressão.\nFoco: Terceiro Setor, Responsabilidade Civil, Serviços Públicos."},
-  {id:14,dia:5,mat:"Auditoria Governamental",h:"1h30",cor:"#fb923c",ic:"📗",tag:"PESADO ⭐⭐⭐⭐⭐",acao:"45min videoaula · pausa · 45min NotebookLM",dica:"J→T ✅ Core do cargo.\nGuruja: 72% no Planejamento — ponto crítico.\nNotebookLM 2ª metade. Anote erros para o bloco 🔺."},
-  {id:15,dia:5,mat:"Dir. Tributário",h:"1h30",cor:"#f87171",ic:"📘",tag:"MANUTENÇÃO ⭐⭐⭐",acao:"45min teoria · pausa · 45min questões",dica:"T→J ✅\nGuruja: 92,8% — solidíssimo. 1 bloco só.\nFoco: Obrigação Tributária pt II."},
-  {id:16,dia:6,mat:"Raciocínio Lógico 🔺",h:"1h30",cor:"#38bdf8",ic:"🧩",tag:"TRIÂNGULO ⭐⭐⭐",acao:"45min teoria · pausa · 10 questões cronometradas",dica:"J→E ✅ Triângulo. Base: bloco 7.\n10 questões, 12min cada — treina velocidade.\nNunca no mesmo dia que Mat. Financeira."},
-  {id:17,dia:6,mat:"AFO 🔺",h:"1h30",cor:"#f87171",ic:"📘",tag:"TRIÂNGULO ⭐⭐⭐⭐⭐",acao:"45min questões · pausa · 45min revisão erros",dica:"E→T ✅ Triângulo Meirelles. Base: bloco 10.\nAbra o Caderno de Erros antes.\nSó questões. Foco nos tópicos errados."},
-  {id:18,dia:6,mat:"Português 🔺",h:"1h30",cor:"#fbbf24",ic:"📙",tag:"TRIÂNGULO ⭐⭐⭐",acao:"45min questões · pausa · 45min revisão erros",dica:"T→V ✅ Triângulo. Base: bloco 8.\nSó questões CEBRASPE/FGV.\nClassifica erros. Anki: 1 card por erro."},
-  {id:19,dia:7,mat:"Contabilidade 🔺",h:"1h30",cor:"#a78bfa",ic:"📒",tag:"TRIÂNGULO ⭐⭐⭐⭐⭐",acao:"45min questões · pausa · 45min revisão erros",dica:"V→T ✅ Triângulo Meirelles. Base: bloco 12.\nSó questões. Sem teoria nova.\nAbra o Caderno de Erros antes."},
-  {id:20,dia:7,mat:"Mat. Financeira 🆕",h:"1h30",cor:"#34d399",ic:"💰",tag:"NOVO ⭐⭐⭐⭐",acao:"45min aula base · pausa · 45min NotebookLM",dica:"T→E ✅ Entrada suave para matéria nova.\nNunca estudou — sem pressão.\n1ª metade: juros simples/compostos, VP, VF, taxa nominal vs efetiva.\n2ª metade: NotebookLM — cria áudio. Ouça no tempo morto."},
-  {id:21,dia:7,mat:"TI 🔺",h:"1h30",cor:"#67e8f9",ic:"💻",tag:"TRIÂNGULO ⭐⭐",acao:"45min questões · pausa · 45min revisão erros",dica:"E→T ✅ Triângulo. Base: bloco 1.\nVerifica se desempenho melhorou vs bloco 1.\nRegistra % para acompanhar evolução."},
-  {id:22,dia:8,mat:"Discursivas 🔺",h:"1h30",cor:"#fb923c",ic:"✏️",tag:"TRIÂNGULO TRANSVERSAL",acao:"45min estrutura · pausa · 45min redação completa",dica:"T→W ✅ Triângulo. Base: bloco 9.\nRelê a redação do bloco 9.\nEscolhe tema diferente — Controle Externo ou AFO.\nCompara as duas redações."},
-  {id:23,dia:8,mat:"Controle Externo 🔺🔺",h:"1h30",cor:"#86efac",ic:"📋",tag:"URGENTE TRIÂNGULO ⭐⭐⭐⭐⭐",acao:"45min questões TCE · pausa · 45min revisão erros",dica:"W→T ✅ 2º bloco de Controle Externo. Base: bloco 3.\nSó questões TCE-RJ.\nAbra o Caderno de Erros do bloco 3.\nEste bloco define se vai subir de 74%."},
-  {id:24,dia:9,mat:"Mat. Financeira 🔺 🆕",h:"1h30",cor:"#34d399",ic:"💰",tag:"NOVO TRIÂNGULO ⭐⭐⭐⭐",acao:"8-10 questões básicas · pausa · revisão erros + Anki",dica:"T→E ✅ PROTOCOLO ESPECIAL. Base: bloco 20.\nSem pressão — objetivo é mapear.\n8-10 questões nível fácil/médio. Sem cronômetro.\nCada erro: por que errou + 1 card Anki."},
-  {id:25,dia:9,mat:"Auditoria 🔺",h:"1h30",cor:"#fb923c",ic:"📗",tag:"TRIÂNGULO ⭐⭐⭐⭐⭐",acao:"45min questões específicas · pausa · 45min revisão erros",dica:"E→T ✅ Fecha o ciclo. Base: bloco 14.\nFOCO CRÍTICO: Planejamento de Auditoria (72%).\nAbra o Caderno de Erros — só questões dos tópicos errados.\n♻️ Volta pro bloco 1 imediatamente."},
+  // ── ATRASADAS ─────────────────────────────────────────────
+  {id:1,  dia:1, mat:'TI / Análise de Dados',    ic:'💻', cor:'#38bdf8', tag:'🔴 ATRASADA',       h:2,   tipo:'Teoria',    conteudo:'Bancos de Dados — Conceitos básicos e Características'},
+  {id:2,  dia:1, mat:'Dir. Civil',               ic:'⚖️',  cor:'#a78bfa', tag:'🔴 ATRASADA',       h:1,   tipo:'Questões',  conteudo:'Obrigações — Parte 1'},
+  {id:3,  dia:1, mat:'Dir. Processual Civil',    ic:'📋', cor:'#a78bfa', tag:'🔴 ATRASADA',       h:1,   tipo:'Questões',  conteudo:'Sujeitos do Processo — Parte I'},
+  {id:4,  dia:1, mat:'Discursivas',              ic:'✍️',  cor:'#fb923c', tag:'🔴 ATRASADA',       h:2,   tipo:'Teoria',    conteudo:'Materialidade, Risco e Relevância de Auditoria'},
+  {id:5,  dia:2, mat:'TI / Análise de Dados',    ic:'💻', cor:'#38bdf8', tag:'🔴 ATRASADA ⚡',    h:2,   tipo:'Teoria',    conteudo:'Bancos de Dados — Transações, Papéis, Ansi/Sparc e Projeto'},
+  {id:6,  dia:2, mat:'Português',                ic:'📝', cor:'#f472b6', tag:'🔴 ATRASADA',       h:2,   tipo:'Questões',  conteudo:'Sintaxe Parte II — orações coordenadas e subordinadas'},
+  {id:7,  dia:3, mat:'Raciocínio Lógico',        ic:'🔢', cor:'#34d399', tag:'🔴 ATRASADA',       h:1,   tipo:'Questões',  conteudo:'Associações Lógicas, Verdades, Mentiras e Sequências'},
+  {id:8,  dia:3, mat:'Auditoria Governamental',  ic:'🔍', cor:'#f87171', tag:'🔴 CRÍTICO 64%',    h:2,   tipo:'Questões',  conteudo:'Documentação de Auditoria'},
+  {id:9,  dia:3, mat:'Contabilidade Pública',    ic:'📊', cor:'#34d399', tag:'🟢 MANUTENÇÃO',     h:1,   tipo:'Teoria',    conteudo:'Noções de Débito e Crédito — Atos e Fatos Contábeis'},
+  {id:10, dia:3, mat:'Dir. Tributário',          ic:'💰', cor:'#fbbf24', tag:'🟡 ATENÇÃO',        h:2,   tipo:'Questões',  conteudo:'Crédito Tributário pt II'},
+  {id:11, dia:4, mat:'Adm. Pública',             ic:'🏛️',  cor:'#fb923c', tag:'⚡ PRIORIDADE',    h:2,   tipo:'Questões',  conteudo:'Gestão da Qualidade — Excelência no Serviço Público'},
+  {id:12, dia:4, mat:'Dir. Administrativo',      ic:'📜', cor:'#34d399', tag:'🟢 SÓLIDO',         h:2,   tipo:'Simulado',  conteudo:'Simulado I'},
+  {id:13, dia:5, mat:'TI / Análise de Dados',    ic:'💻', cor:'#38bdf8', tag:'🔴 ATRASADA ⚡',    h:1,   tipo:'Mapeamento',conteudo:'Mapeamento Aula 02'},
+  {id:14, dia:5, mat:'AFO',                      ic:'📈', cor:'#34d399', tag:'🟢 MANUTENÇÃO',     h:2,   tipo:'Questões',  conteudo:'LRF — Arts. 15 a 24'},
+  {id:15, dia:5, mat:'Dir. Tributário',          ic:'💰', cor:'#fbbf24', tag:'🟡 ATENÇÃO',        h:1,   tipo:'Questões',  conteudo:'Impostos Federais, Impostos Municipais'},
+  {id:16, dia:6, mat:'Mat. Financeira',          ic:'🧮', cor:'#a78bfa', tag:'🔴 ATRASADA',       h:1,   tipo:'Teoria',    conteudo:'(Re)aprendendo a fazer contas'},
+  {id:17, dia:6, mat:'Contabilidade Pública',    ic:'📊', cor:'#34d399', tag:'🟢 MANUTENÇÃO',     h:1,   tipo:'Teoria',    conteudo:'Contas'},
+  {id:18, dia:6, mat:'Mat. Financeira',          ic:'🧮', cor:'#a78bfa', tag:'🟡 ATENÇÃO',        h:1,   tipo:'Teoria',    conteudo:'Porcentagem — Variação percentual e acumulada'},
+  {id:19, dia:6, mat:'Dir. Penal',               ic:'⚠️',  cor:'#34d399', tag:'🟢 MANUTENÇÃO',     h:1,   tipo:'Questões',  conteudo:'Concurso de pessoas'},
+  {id:20, dia:6, mat:'Discursivas',              ic:'✍️',  cor:'#fb923c', tag:'🔴 ATRASADA',       h:2,   tipo:'Teoria',    conteudo:'Questão — Tema: Improbidade Administrativa'},
+  {id:21, dia:7, mat:'TI / Análise de Dados',    ic:'💻', cor:'#38bdf8', tag:'⚡ PRIORIDADE',     h:2,   tipo:'Questões',  conteudo:'Bancos de Dados — Questões'},
+  {id:22, dia:7, mat:'Contabilidade Pública',    ic:'📊', cor:'#34d399', tag:'🟢 MANUTENÇÃO',     h:1,   tipo:'Questões',  conteudo:'Questões Aula 4 — Classificação das Contas'},
+  {id:23, dia:7, mat:'Dir. Processual Civil',    ic:'📋', cor:'#a78bfa', tag:'🟢 MANUTENÇÃO',     h:1,   tipo:'Questões',  conteudo:'Sujeitos do Processo — Parte II'},
+  {id:24, dia:7, mat:'Dir. Civil',               ic:'⚖️',  cor:'#a78bfa', tag:'🟢 MANUTENÇÃO',     h:1,   tipo:'Questões',  conteudo:'Obrigações — Parte 2'},
+  {id:25, dia:7, mat:'Controle Externo',         ic:'🏛️',  cor:'#60a5fa', tag:'🟢 MANUTENÇÃO',     h:1,   tipo:'Questões',  conteudo:'Revisão — Princípios de Transparência e Accountability'},
 ];
-const N=CICLO.length;
-const NOMES_DIA=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
 const DIAS_KEY=['Dom','Seg','Ter','Qua','Qui','Sex','Sab'];
 const KCOR={r:'#64748b',a:'#fbbf24',s:'#60a5fa',b:'#1e2d40',e:'#34d399',m:'#fb923c',w:'#a78bfa',f:'#f87171',d:'#34d399',z:'#0f172a'};
 const AGENDA={
@@ -526,7 +525,7 @@ DADOS DO APP AGORA:
 - MATÉRIAS URGENTES (registradas por você): ${lsGet('urgentes_ia',[]).map(u=>u.mat+(u.contexto?' ('+u.contexto+')':'')).join(', ')||'nenhuma'}
 - Fila urgente hoje: ${fila.length}
 - Score Guruja: ${gurujaData?.alerta||'não analisado ainda'}
-- Erros no caderno: ${errosPend} ativos
+- Erros no caderno: ${(()=>{const erros=lsGet('caderno_erros',[]);const agora=Date.now();const iv=[1,3,7,15,30];return erros.filter(e=>!e.dominado&&e.dt+iv[Math.min(e.revisoes||0,iv.length-1)]*86400000<=agora).length;})()} ativos
 - Plano semanal: ${planoSem?`aprovado — top matéria: ${planoSem.plano?.[0]?.mat||'?'} (${planoSem.plano?.[0]?.horasEditadas||planoSem.plano?.[0]?.horasSugeridas||'?'}h)`:'não definido ainda'}
 
 ESCALA DE APROVEITAMENTO (use SEMPRE para interpretar dados):
@@ -2720,9 +2719,9 @@ function App(){
     if(Sync.isConfigured()){Sync.init().then(ok=>{if(ok){setFeitos(lsGet('feitos',[]));setCicloNum(lsGet('cicloNum',1));setHoras(lsGet('horas',[]));setMit(lsGet('mit',[]));}});}
     // Auto-reset: se tiver dados do ciclo antigo (≤23 blocos), zera para começar do 1
     const _f=lsGet('feitos',[]);
-    if(lsGet('ciclo_versao','')!=='v25'){
+    if(lsGet('ciclo_versao','')!=='v26'){
       if(_f.length>0)lsSet('feitos',[]);
-      lsSet('cicloNum',1);lsSet('ciclo_versao','v25');
+      lsSet('cicloNum',1);lsSet('ciclo_versao','v26');
     }
     setFeitos(lsGet('feitos',[]));setCicloNum(lsGet('cicloNum',1));setHoras(lsGet('horas',[]));setMit(lsGet('mit',[]));
     const tick=setInterval(()=>setClock(new Date()),1000);
