@@ -552,6 +552,16 @@ Raciocínio Lógico: Associação 20%, Equivalências 16%, Tabela Verdade 16%
 TI: ITIL 6%, Auditoria Sistemas 5%, COBIT 5 4%
 Quando aproveitamento <70% em uma matéria, citar o tópico mais pesado que ela deve atacar.
 
+SISTEMA DE REVISÃO (3 MÉTODOS — use SEMPRE para orientar):
+TEC = caderno de erros, questões erradas, revisão rápida 30min/dia, todo dia
+ANKI = conceitos para solidificar, meta 75 cards/dia, 30min/dia, todo dia
+NLM = teoria profunda 1h30, SÓ em janela de ciclo (bloco 12-13 ou 20-21) OU padrão crônico detectado
+REGRA: mesma matéria no TEC 3+ dias = lacuna teórica = sugerir NLM, não mais TEC
+NUNCA sugira NLM para matéria que só precisa de questão
+NUNCA sugira TEC para matéria que precisa reconstruir teoria
+
+- TEC pendente hoje: ${(()=>{const hoje=getDK();const fila=lsGet('tec_fila',[]);const todayMs=new Date().setHours(0,0,0,0);const pend=fila.filter(t=>!t.feito&&new Date(t.prazo).setHours(0,0,0,0)<=todayMs);return pend.length>0?pend.map(t=>`${t.mat}(${t.pct!==null?t.pct+'%':'sem%'})`).join(', '):'nenhum D+1 vencendo';})()} 
+- Anki hoje: ${(()=>{const hoje=getDK();const f=lsGet('anki_feito_'+hoje,null);const meta=(lsGet('anki_meta',{meta:75})).meta||75;return f?`✅ feito (${f.cards} cards)`:`pendente — meta ${meta}`;})()}
 - Status edital: ${(()=>{const st=lsGet('edital_status',{});const mats=Object.keys(EDITAL);const res=mats.map(m=>{const tops=EDITAL[m].top;const dom=tops.filter(t=>st[m+':'+t.t]==='domino').length;const est=tops.filter(t=>st[m+':'+t.t]==='estudei').length;if(dom===0&&est===0)return null;return `${m}:${dom}✅${est}🟡/${tops.length}`;}).filter(Boolean);return res.length?res.join(' | '):'nenhum tópico marcado ainda';})()}
 
 ESTILO: Direta, calorosa, sem frases vazias. Máx 120 palavras. Uma ação concreta sempre.
@@ -1051,6 +1061,100 @@ function MatBtn({value,onChange,placeholder}){
   );
 }
 
+// ── Motor Revisão de Hoje (Modo 2 — esqueleto) ─────────────────
+function calcRevisaoHoje(feitos){
+  const hoje=getDK();
+  const dw=new Date().getDay();
+  const trabalha=[2,4,5].includes(dw); // ter=2, qui=4, sex=5
+  const historico=lsGet('historico_diario',[]);
+  const anki=lsGet('rev_anki',[]);
+  const nlm=lsGet('rev_nlm',[]);
+  const tecFila=lsGet('tec_fila',[]);
+  const gurujaData=lsGet('guruja_data',null);
+  const todayMs=new Date().setHours(0,0,0,0);
+
+  // ── ANKI ─────────────────────────────────────────────────────
+  const ankiMeta=lsGet('anki_meta',{meta:75,backlog:0});
+  const metaHoje=trabalha?(ankiMeta.metaTrabalho||75):ankiMeta.meta||75;
+  const ankiHoje=lsGet(`anki_feito_${hoje}`,null);
+  // Matéria foco: mais dias sem Anki + dif alta
+  const porAnkiMat={};
+  anki.forEach(r=>{if(r.mat){if(!porAnkiMat[r.mat])porAnkiMat[r.mat]={difs:[],lastDt:0};if(r.dif)porAnkiMat[r.mat].difs.push(r.dif);if(r.dt>porAnkiMat[r.mat].lastDt)porAnkiMat[r.mat].lastDt=r.dt;}});
+  const focoAnki=Object.entries(porAnkiMat).map(([mat,v])=>{
+    const dias=Math.floor((todayMs-v.lastDt)/86400000);
+    const dif=v.difs.length?v.difs.reduce((s,d)=>s+d,0)/v.difs.length:0;
+    return{mat,score:dias*1.5+dif*2,dias,dif};
+  }).sort((a,b)=>b.score-a.score)[0];
+
+  // ── TEC ──────────────────────────────────────────────────────
+  const tecHoje=tecFila.filter(t=>{
+    if(t.feito)return false;
+    const prazoMs=new Date(t.prazo).setHours(0,0,0,0);
+    return prazoMs<=todayMs;
+  });
+  // Matérias críticas do histórico (travou + baixo %)
+  const porMatCrit={};
+  historico.slice(-14).forEach(r=>{
+    if(!r.materia)return;
+    if(!porMatCrit[r.materia])porMatCrit[r.materia]={travou:0,q:0,a:0,lastDt:0};
+    if(r.travou)porMatCrit[r.materia].travou++;
+    if(parseInt(r.questoes)>0){porMatCrit[r.materia].q+=parseInt(r.questoes)||0;porMatCrit[r.materia].a+=parseInt(r.acertei)||0;}
+    if(r.dt>porMatCrit[r.materia].lastDt)porMatCrit[r.materia].lastDt=r.dt||0;
+  });
+  const tecSugerido=Object.entries(porMatCrit)
+    .map(([mat,v])=>{
+      const pct=v.q>0?Math.round(v.a/v.q*100):null;
+      const dias=Math.floor((todayMs-v.lastDt)/86400000);
+      const score=(v.travou*2)+(pct!==null?(1-pct/100)*3:0)+(dias*0.5);
+      return{mat,pct,travou:v.travou,score,dias};
+    })
+    .filter(v=>v.score>0)
+    .sort((a,b)=>b.score-a.score)
+    .slice(0,3);
+
+  // ── NLM ──────────────────────────────────────────────────────
+  const blocoAtual=feitos?feitos.length:0;
+  const janelaMeio=blocoAtual>=12&&blocoAtual<=14;
+  const janelaFinal=blocoAtual>=20&&blocoAtual<=22;
+  const nlmFeitoMeio=lsGet('nlm_bloco_meio',false);
+  const nlmFeitoFinal=lsGet('nlm_bloco_final',false);
+  const nlmAtivo=(janelaMeio&&!nlmFeitoMeio)||(janelaFinal&&!nlmFeitoFinal);
+  // Detecta padrão crônico: TEC D+1 mesma matéria 3+ dias seguidos
+  const cronico=Object.entries(porMatCrit)
+    .filter(([,v])=>v.travou>=3)
+    .map(([mat])=>mat);
+  const nlmCronico=cronico.length>0&&!nlmAtivo;
+  // Candidato NLM
+  const nlmCandiato=nlmAtivo||nlmCronico?(
+    Object.entries(porMatCrit)
+      .map(([mat,v])=>{
+        const pct=v.q>0?Math.round(v.a/v.q*100):null;
+        const nlmRegs2=nlm.filter(r=>r.mat===mat);
+        const ultimoNlm=nlmRegs2.length?Math.max(...nlmRegs2.map(r=>r.dt||0)):0;
+        const diasNlm=Math.floor((todayMs-ultimoNlm)/86400000);
+        const score=(v.travou*2)+(pct!==null?(1-pct/100)*3:0)+diasNlm*0.5;
+        return{mat,score,pct,travou:v.travou,diasNlm};
+      })
+      .sort((a,b)=>b.score-a.score)[0]
+  ):null;
+
+  // ── ALERTAS ──────────────────────────────────────────────────
+  const alertas=[];
+  if(cronico.length>0)alertas.push({tipo:'cronico',mat:cronico[0],msg:`${cronico[0]} travando há ${porMatCrit[cronico[0]]?.travou}x — considere NLM antes de continuar no TEC`});
+  if((ankiMeta.backlog||0)>150)alertas.push({tipo:'backlog',msg:`Backlog Anki: ${ankiMeta.backlog} cards — não adicionar novos por 2 dias`});
+  if(nlmAtivo&&janelaMeio)alertas.push({tipo:'nlm_janela',msg:`Você está no bloco ${blocoAtual}/25 — janela NLM do meio do ciclo ativa`});
+  if(nlmAtivo&&janelaFinal)alertas.push({tipo:'nlm_janela',msg:`Você está no bloco ${blocoAtual}/25 — janela NLM do final do ciclo ativa`});
+
+  return{
+    anki:{meta:metaHoje,foco:focoAnki,feito:ankiHoje,backlog:ankiMeta.backlog||0},
+    tec:{fila:tecHoje,sugerido:tecSugerido,cronico},
+    nlm:{ativo:nlmAtivo||nlmCronico,candidato:nlmCandiato,janela:janelaMeio?'meio':janelaFinal?'final':null,cronico:nlmCronico,feitoMeio:nlmFeitoMeio,feitoFinal:nlmFeitoFinal,blocoAtual},
+    alertas,
+    trabalha,
+    hojeKey:hoje,
+  };
+}
+
 // ── Motor Tempo Morto Global (B+C) ────────────────────────────
 function calcTempoMorto(feitos,horas,historico){
   const todayMs=new Date().setHours(0,0,0,0);
@@ -1092,6 +1196,247 @@ function calcTempoMorto(feitos,horas,historico){
   const fallback={mat:CICLO.find(s=>s.tag?.includes('⭐⭐⭐⭐⭐'))?.mat||'AFO',difMedia:0,diasSem:0};
   const travouRecente=historico.slice(-3).filter(r=>r.travou).map(r=>`${r.materia}: ${r.travou}`);
   return{anki:ranking[0]||fallback,nlm:ranking[1]||ranking[0]||fallback,ranking:ranking.slice(0,5),travouRecente,ts:Date.now()};
+}
+
+// ─── ABA: HOJE ────────────────────────────────────────────────
+function TabHoje({feitos,onAddHoras}){
+  const hoje=getDK();
+  const rev=calcRevisaoHoje(feitos);
+  const[dados,setDados]=useState(rev);
+  const[ankiCards,setAnkiCards]=useState('');
+  const[ankiFeito,setAnkiFeito]=useState(()=>lsGet(`anki_feito_${hoje}`,null));
+  const[tecModal,setTecModal]=useState(false);
+  const[tecForm,setTecForm]=useState({mat:'',assunto:'',feitas:'',acertei:'',prazo:'D+1',obs:''});
+  const[tecSalvo,setTecSalvo]=useState(false);
+  const[nlmFeito,setNlmFeito]=useState(()=>{
+    const j=dados.nlm.janela;
+    return j==='meio'?lsGet('nlm_bloco_meio',false):j==='final'?lsGet('nlm_bloco_final',false):false;
+  });
+  const[despacho,setDespacho]=useState(()=>lsGet(`despacho_ia_${hoje}`,null));
+  const[despachoLoad,setDespachoLoad]=useState(false);
+  const[metaEdit,setMetaEdit]=useState(false);
+  const[metaVal,setMetaVal]=useState(()=>(lsGet('anki_meta',{meta:75})).meta||75);
+  const[backlogVal,setBacklogVal]=useState(()=>(lsGet('anki_meta',{backlog:0})).backlog||0);
+
+  const refresh=()=>setDados(calcRevisaoHoje(feitos));
+
+  const marcarAnki=(cards)=>{
+    const n={feito:true,cards:parseInt(cards)||dados.anki.meta,dt:Date.now()};
+    lsSet(`anki_feito_${hoje}`,n);setAnkiFeito(n);
+    if(onAddHoras)onAddHoras({mat:'Anki',min:30,dt:Date.now()});
+    refresh();
+  };
+
+  const salvarTec=()=>{
+    if(!tecForm.mat)return;
+    const prazoDias={'D+1':1,'D+7':7,'D+30':30}[tecForm.prazo]||1;
+    const prazoDate=new Date();prazoDate.setDate(prazoDate.getDate()+prazoDias);
+    const prazoStr=prazoDate.toISOString().split('T')[0];
+    const novo={id:Date.now(),mat:tecForm.mat,assunto:tecForm.assunto,feitas:parseInt(tecForm.feitas)||0,acertei:parseInt(tecForm.acertei)||0,pct:tecForm.feitas&&tecForm.acertei?Math.round(parseInt(tecForm.acertei)/parseInt(tecForm.feitas)*100):null,prazo:prazoStr,prazoLabel:tecForm.prazo,tentativas:1,feito:false,dia:hoje,obs:tecForm.obs};
+    const fila=[...lsGet('tec_fila',[]),novo];
+    lsSet('tec_fila',fila);
+    setTecForm({mat:'',assunto:'',feitas:'',acertei:'',prazo:'D+1',obs:''});
+    setTecSalvo(true);setTimeout(()=>{setTecSalvo(false);setTecModal(false);},1500);
+    refresh();
+  };
+
+  const marcarTecFeito=(id,errouDeNovo)=>{
+    const fila=lsGet('tec_fila',[]).map(t=>{
+      if(t.id!==id)return t;
+      if(errouDeNovo){
+        // Cria novo D+1
+        const novo=new Date();novo.setDate(novo.getDate()+1);
+        const novoPrazo=novo.toISOString().split('T')[0];
+        return{...t,prazo:novoPrazo,prazoLabel:'D+1',tentativas:(t.tentativas||1)+1,feito:false};
+      }
+      return{...t,feito:true};
+    });
+    lsSet('tec_fila',fila);refresh();
+  };
+
+  const marcarNlm=()=>{
+    const j=dados.nlm.janela;
+    if(j==='meio'){lsSet('nlm_bloco_meio',true);setNlmFeito(true);}
+    if(j==='final'){lsSet('nlm_bloco_final',true);setNlmFeito(true);}
+    if(!j){lsSet(`nlm_cronico_${hoje}`,true);setNlmFeito(true);}
+    if(onAddHoras)onAddHoras({mat:`NLM — ${dados.nlm.candidato?.mat||'Revisão'}`,min:90,dt:Date.now()});
+    refresh();
+  };
+
+  const gerarDespacho=async()=>{
+    if(despachoLoad)return;
+    const k=getAK();if(!k||!k.startsWith('sk-ant'))return;
+    setDespachoLoad(true);
+    try{
+      const{anki,tec,nlm,alertas,trabalha}=dados;
+      const ctx=`Hoje é ${getDK()}. ${trabalha?'Dia de trabalho (13h-18h).':'Dia livre.'} Bloco ${feitos.length}/25.
+ANKI: meta ${anki.meta} cards. Foco: ${anki.foco?.mat||'qualquer'}(${anki.foco?.dias||0}d sem revisar, dif ${anki.foco?.dif?.toFixed(1)||0}★). Backlog: ${anki.backlog}.
+TEC hoje: ${tec.fila.length} itens D+1. Sugerido: ${tec.sugerido.slice(0,2).map(t=>`${t.mat}(${t.pct!==null?t.pct+'%':'sem%'},travou${t.travou}x)`).join(', ')||'nenhum'}.
+NLM: ${nlm.ativo?`ATIVO — candidato: ${nlm.candidato?.mat} (janela ${nlm.janela||'crônico'})`:'aguardando janela'}.
+Alertas: ${alertas.map(a=>a.msg).join('; ')||'nenhum'}.`;
+      const res=await chamarClaude(`Você é despachante de estudos da Ritchely (TCE-RJ). Regras: TEC=questões erradas revisão diária 30min. ANKI=conceitos solidificar 75cards/dia. NLM=teoria profunda 1h30 só em janela de ciclo ou padrão crônico. Responda em 3 linhas curtas: linha 1=Anki, linha 2=TEC, linha 3=NLM ou nada. Máx 80 palavras. Seja direta.`,[{role:'user',content:ctx}],150);
+      lsSet(`despacho_ia_${hoje}`,res);setDespacho(res);
+    }catch(e){console.log('despacho error',e);}
+    setDespachoLoad(false);
+  };
+
+  // Auto-gera despacho se não tem ainda hoje
+  useEffect(()=>{if(!despacho&&getAK()?.startsWith('sk-ant'))gerarDespacho();},[]);
+
+  const salvarMeta=()=>{
+    lsSet('anki_meta',{meta:parseInt(metaVal)||75,backlog:parseInt(backlogVal)||0,metaTrabalho:parseInt(metaVal)||75});
+    setMetaEdit(false);refresh();
+  };
+
+  const MATS=CICLO.map(s=>s.mat).filter((v,i,a)=>a.indexOf(v)===i);
+  const pctLive=tecForm.feitas&&tecForm.acertei?Math.round(parseInt(tecForm.acertei)/parseInt(tecForm.feitas)*100):null;
+  const pctCor=pctLive===null?'#475569':pctLive>=85?'#34d399':pctLive>=70?'#fbbf24':'#f87171';
+
+  return(
+    <div>
+      {/* DESPACHO IA */}
+      <div style={{background:'linear-gradient(135deg,rgba(30,20,10,.95),rgba(10,7,3,.98))',border:'1px solid rgba(251,191,36,.2)',borderRadius:13,padding:'12px 14px',marginBottom:12}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:despacho?8:0}}>
+          <div style={{fontSize:9,color:'rgba(251,191,36,.6)',fontFamily:"'DM Mono',monospace",letterSpacing:'2px'}}>🤖 DESPACHO — {hoje}</div>
+          <button onClick={gerarDespacho} disabled={despachoLoad} style={{padding:'4px 10px',borderRadius:7,border:'1px solid rgba(251,191,36,.25)',background:'transparent',color:'#fbbf24',fontSize:9,cursor:'pointer'}}>{despachoLoad?'⏳':'🔄 Gerar'}</button>
+        </div>
+        {despacho?<div style={{fontSize:12,color:'#f0e6d0',lineHeight:1.7,whiteSpace:'pre-line'}}>{despacho}</div>:<div style={{fontSize:11,color:'#475569'}}>{getAK()?.startsWith('sk-ant')?'Gerando despacho...':'Configure a chave IA em ⚙️ para ativar o despacho.'}</div>}
+      </div>
+
+      {/* ANKI */}
+      <div style={{background:ankiFeito?'rgba(52,211,153,.06)':'rgba(167,139,250,.06)',border:`2px solid ${ankiFeito?'rgba(52,211,153,.35)':'rgba(167,139,250,.35)'}`,borderRadius:13,padding:'13px',marginBottom:10}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+          <div><div style={{fontSize:9,color:'#a78bfa',fontFamily:"'DM Mono',monospace",letterSpacing:'2px'}}>🟣 ANKI</div>
+            <div style={{fontSize:16,fontWeight:900,color:ankiFeito?'#34d399':'#f1f5f9',fontFamily:"'DM Serif Display',serif",marginTop:2}}>Meta: {dados.anki.meta} cards · 30 min</div>
+          </div>
+          {ankiFeito?<div style={{textAlign:'right'}}><div style={{fontSize:11,color:'#34d399',fontWeight:700}}>✅ Feito!</div><div style={{fontSize:9,color:'#475569'}}>{ankiFeito.cards} cards</div></div>
+          :<button onClick={()=>setMetaEdit(v=>!v)} style={{padding:'4px 8px',borderRadius:6,border:'1px solid rgba(167,139,250,.3)',background:'transparent',color:'#a78bfa',fontSize:9,cursor:'pointer'}}>⚙️ Meta</button>}
+        </div>
+        {dados.anki.foco&&<div style={{fontSize:10,color:'#64748b',marginBottom:8}}>Foco: <span style={{color:'#a78bfa',fontWeight:700}}>{dados.anki.foco.mat}</span> · {dados.anki.foco.dias}d sem revisar · dif {dados.anki.foco.dif?.toFixed(1)}★</div>}
+        {dados.anki.backlog>0&&<div style={{fontSize:9,padding:'3px 8px',borderRadius:5,background:'rgba(248,113,113,.1)',color:'#f87171',display:'inline-block',marginBottom:8}}>⚠️ Backlog: {dados.anki.backlog} cards</div>}
+        {metaEdit&&<div style={{marginBottom:8}}>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:6,marginBottom:6}}>
+            <div><div style={{fontSize:8,color:'#64748b',marginBottom:3}}>META DIÁRIA</div>
+              <input type="number" value={metaVal} onChange={e=>setMetaVal(e.target.value)} style={{width:'100%',padding:'8px',borderRadius:7,border:'1px solid rgba(167,139,250,.3)',background:'rgba(167,139,250,.05)',color:'#a78bfa',fontSize:14,fontWeight:900,textAlign:'center',outline:'none',boxSizing:'border-box',fontFamily:"'DM Mono',monospace"}}/></div>
+            <div><div style={{fontSize:8,color:'#64748b',marginBottom:3}}>BACKLOG ATUAL</div>
+              <input type="number" value={backlogVal} onChange={e=>setBacklogVal(e.target.value)} style={{width:'100%',padding:'8px',borderRadius:7,border:'1px solid rgba(248,113,113,.3)',background:'rgba(248,113,113,.04)',color:'#f87171',fontSize:14,fontWeight:900,textAlign:'center',outline:'none',boxSizing:'border-box',fontFamily:"'DM Mono',monospace"}}/></div>
+          </div>
+          <button onClick={salvarMeta} style={{width:'100%',padding:'8px',borderRadius:8,border:'none',background:'#a78bfa',color:'#0f172a',fontSize:11,fontWeight:800,cursor:'pointer'}}>Salvar</button>
+        </div>}
+        {!ankiFeito&&<div>
+          <div style={{marginBottom:8}}>
+            <div style={{fontSize:9,color:'#64748b',marginBottom:5}}>QUANTOS CARDS FIZ HOJE</div>
+            <input type="number" value={ankiCards} onChange={e=>setAnkiCards(e.target.value)} placeholder={`Meta: ${dados.anki.meta}`} style={{width:'100%',padding:'12px',borderRadius:9,border:'1px solid rgba(167,139,250,.3)',background:'rgba(167,139,250,.05)',color:'#a78bfa',fontSize:20,fontWeight:900,textAlign:'center',outline:'none',boxSizing:'border-box',fontFamily:"'DM Mono',monospace"}}/>
+            {ankiCards&&parseInt(ankiCards)<dados.anki.meta&&<div style={{fontSize:9,color:'#fbbf24',marginTop:4,textAlign:'center'}}>⚠️ Abaixo da meta de {dados.anki.meta} — {dados.anki.meta-parseInt(ankiCards)} cards faltaram</div>}
+            {ankiCards&&parseInt(ankiCards)>=dados.anki.meta&&<div style={{fontSize:9,color:'#34d399',marginTop:4,textAlign:'center'}}>✅ Meta batida!</div>}
+          </div>
+          <button onClick={()=>marcarAnki(ankiCards||dados.anki.meta)} style={{width:'100%',padding:'12px',borderRadius:9,border:'none',background:'#a78bfa',color:'#0f172a',fontSize:13,fontWeight:900,cursor:'pointer',fontFamily:"'DM Mono',monospace"}}>
+            ✓ SALVAR — {ankiCards?`${ankiCards} cards`:` ${dados.anki.meta} cards (meta)`}
+          </button>
+        </div>}
+      </div>
+
+      {/* TEC */}
+      <div style={{background:'rgba(248,113,113,.05)',border:'2px solid rgba(248,113,113,.3)',borderRadius:13,padding:'13px',marginBottom:10}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+          <div><div style={{fontSize:9,color:'#f87171',fontFamily:"'DM Mono',monospace",letterSpacing:'2px'}}>🔴 TEC — CADERNO DE ERROS</div>
+            <div style={{fontSize:14,fontWeight:900,color:'#f1f5f9',marginTop:2}}>30 min · questões erradas</div>
+          </div>
+          <button onClick={()=>setTecModal(true)} style={{padding:'7px 12px',borderRadius:9,border:'none',background:'#f87171',color:'#0f172a',fontSize:10,fontWeight:800,cursor:'pointer'}}>+ Registrar</button>
+        </div>
+        {/* D+1 vencendo hoje */}
+        {dados.tec.fila.length>0&&<div style={{marginBottom:8}}>
+          <div style={{fontSize:8,color:'#f87171',fontFamily:"'DM Mono',monospace",marginBottom:5}}>📅 D+1 — REVISAR HOJE</div>
+          {dados.tec.fila.map(t=>(
+            <div key={t.id} style={{padding:'9px 11px',borderRadius:10,background:'rgba(248,113,113,.08)',border:'1px solid rgba(248,113,113,.25)',marginBottom:5}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:4}}>
+                <div><div style={{fontSize:11,fontWeight:700,color:'#f1f5f9'}}>{t.mat}{t.assunto&&<span style={{color:'#94a3b8',fontWeight:400}}> — {t.assunto}</span>}</div>
+                  {t.pct!==null&&<div style={{fontSize:9,color:t.pct>=70?'#fbbf24':'#f87171',fontFamily:"'DM Mono',monospace"}}>{t.feitas}Q · {t.acertei} certas · {t.pct}%{t.tentativas>1?` · tentativa ${t.tentativas}`:''}</div>}
+                </div>
+              </div>
+              <div style={{display:'flex',gap:6}}>
+                <button onClick={()=>marcarTecFeito(t.id,false)} style={{flex:1,padding:'7px',borderRadius:7,border:'none',background:'rgba(52,211,153,.2)',color:'#34d399',fontSize:10,fontWeight:700,cursor:'pointer'}}>✅ Acertei</button>
+                <button onClick={()=>marcarTecFeito(t.id,true)} style={{flex:1,padding:'7px',borderRadius:7,border:'none',background:'rgba(248,113,113,.2)',color:'#f87171',fontSize:10,fontWeight:700,cursor:'pointer'}}>❌ Errei de novo</button>
+              </div>
+            </div>
+          ))}
+        </div>}
+        {/* Sugerido pelo motor */}
+        {dados.tec.sugerido.length>0&&<div>
+          <div style={{fontSize:8,color:'#64748b',fontFamily:"'DM Mono',monospace",marginBottom:5}}>🎯 SUGERIDO PARA HOJE</div>
+          {dados.tec.sugerido.map((t,i)=>(
+            <div key={i} style={{display:'flex',alignItems:'center',gap:8,padding:'7px 10px',borderRadius:9,background:'rgba(248,113,113,.04)',border:'1px solid rgba(248,113,113,.15)',marginBottom:4}}>
+              <div style={{flex:1}}><span style={{fontSize:11,color:'#f1f5f9',fontWeight:600}}>{t.mat}</span>{t.pct!==null&&<span style={{fontSize:9,color:t.pct>=70?'#fbbf24':'#f87171',marginLeft:6}}>{t.pct}%</span>}</div>
+              <div style={{fontSize:8,color:'#64748b'}}>travou {t.travou}x · {t.dias}d atrás</div>
+            </div>
+          ))}
+        </div>}
+        {dados.tec.fila.length===0&&dados.tec.sugerido.length===0&&<div style={{fontSize:11,color:'#334155',textAlign:'center',padding:'10px'}}>Nenhum item pendente. Registre erros do TEC com o botão +.</div>}
+      </div>
+
+      {/* NLM */}
+      {(dados.nlm.ativo)&&<div style={{background:'rgba(52,211,153,.06)',border:`2px solid ${nlmFeito?'rgba(52,211,153,.5)':'rgba(52,211,153,.35)'}`,borderRadius:13,padding:'13px',marginBottom:10}}>
+        <div style={{fontSize:9,color:'#34d399',fontFamily:"'DM Mono',monospace",letterSpacing:'2px',marginBottom:6}}>🔵 NOTEBOOKLM — 1h30</div>
+        <div style={{fontSize:15,fontWeight:900,color:nlmFeito?'#34d399':'#f1f5f9',fontFamily:"'DM Serif Display',serif",marginBottom:4}}>{dados.nlm.candidato?.mat||'Revisar teoria'}</div>
+        <div style={{fontSize:10,color:'#64748b',marginBottom:10}}>
+          {dados.nlm.cronico?`Padrão crônico detectado — teoria antes de continuar questões`:dados.nlm.janela==='meio'?`Janela do meio do ciclo (bloco ${dados.nlm.blocoAtual}/25)`:`Janela do final do ciclo (bloco ${dados.nlm.blocoAtual}/25)`}
+        </div>
+        {nlmFeito?<div style={{fontSize:11,color:'#34d399',fontWeight:700}}>✅ Feito!</div>
+        :<div style={{display:'flex',gap:6}}>
+          <button onClick={marcarNlm} style={{flex:2,padding:'10px',borderRadius:9,border:'none',background:'#34d399',color:'#0f172a',fontSize:12,fontWeight:800,cursor:'pointer'}}>✓ Fiz o NLM hoje</button>
+          <button onClick={()=>{lsSet(`nlm_adiado_${hoje}`,true);}} style={{flex:1,padding:'10px',borderRadius:9,border:'1px solid rgba(52,211,153,.3)',background:'transparent',color:'#34d399',fontSize:10,cursor:'pointer'}}>Adiar</button>
+        </div>}
+      </div>}
+
+      {/* ALERTAS */}
+      {dados.alertas.length>0&&<div style={{background:'rgba(251,191,36,.05)',border:'1px solid rgba(251,191,36,.25)',borderRadius:11,padding:'11px 13px',marginBottom:10}}>
+        <div style={{fontSize:9,color:'#fbbf24',fontFamily:"'DM Mono',monospace",marginBottom:6}}>⚠️ ALERTAS DO MOTOR</div>
+        {dados.alertas.map((a,i)=>(
+          <div key={i} style={{fontSize:11,color:'#94a3b8',marginBottom:3,paddingLeft:8,borderLeft:`2px solid ${a.tipo==='cronico'?'#f87171':a.tipo==='backlog'?'#f87171':'#34d399'}`}}>{a.msg}</div>
+        ))}
+      </div>}
+
+      {/* MODAL REGISTRAR TEC */}
+      {tecModal&&<div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.85)',zIndex:200,display:'flex',alignItems:'flex-end'}}>
+        <div style={{width:'100%',background:'#0f172a',border:'1px solid rgba(248,113,113,.3)',borderRadius:'18px 18px 0 0',padding:'20px 16px',maxHeight:'90dvh',overflowY:'auto'}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
+            <div style={{fontSize:10,color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800}}>🔴 REGISTRAR ERRO TEC</div>
+            <button onClick={()=>setTecModal(false)} style={{padding:'4px 10px',borderRadius:6,border:'1px solid rgba(255,255,255,.1)',background:'transparent',color:'#64748b',fontSize:12,cursor:'pointer'}}>✕</button>
+          </div>
+          <div style={{marginBottom:10}}>
+            <div style={{fontSize:9,color:'#64748b',marginBottom:5}}>MATÉRIA</div>
+            <MatBtn value={tecForm.mat} onChange={v=>setTecForm(f=>({...f,mat:v}))}/>
+          </div>
+          <div style={{marginBottom:10}}>
+            <div style={{fontSize:9,color:'#64748b',marginBottom:4}}>ASSUNTO ESPECÍFICO</div>
+            <input value={tecForm.assunto} onChange={e=>setTecForm(f=>({...f,assunto:e.target.value}))} placeholder="ex: Princípios Tributários, Peculato..." style={{width:'100%',padding:'8px 10px',borderRadius:8,border:'1px solid rgba(248,113,113,.2)',background:'rgba(248,113,113,.04)',color:'#f1f5f9',fontSize:12,outline:'none',boxSizing:'border-box'}}/>
+          </div>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:6,marginBottom:10}}>
+            <div><div style={{fontSize:8,color:'#64748b',marginBottom:3}}>QUESTÕES FEITAS</div>
+              <input type="number" value={tecForm.feitas} onChange={e=>setTecForm(f=>({...f,feitas:e.target.value}))} placeholder="0" style={{width:'100%',padding:'9px',borderRadius:7,border:'1px solid rgba(248,113,113,.25)',background:'rgba(248,113,113,.05)',color:'#f87171',fontSize:15,fontWeight:900,textAlign:'center',outline:'none',boxSizing:'border-box',fontFamily:"'DM Mono',monospace"}}/></div>
+            <div><div style={{fontSize:8,color:'#64748b',marginBottom:3}}>ACERTEI</div>
+              <input type="number" value={tecForm.acertei} onChange={e=>setTecForm(f=>({...f,acertei:e.target.value}))} placeholder="0" style={{width:'100%',padding:'9px',borderRadius:7,border:'1px solid rgba(52,211,153,.25)',background:'rgba(52,211,153,.04)',color:'#34d399',fontSize:15,fontWeight:900,textAlign:'center',outline:'none',boxSizing:'border-box',fontFamily:"'DM Mono',monospace"}}/></div>
+            <div><div style={{fontSize:8,color:'#64748b',marginBottom:3}}>APROVEIT.</div>
+              <div style={{padding:'9px',borderRadius:7,border:`2px solid ${pctCor}50`,background:`${pctCor}12`,color:pctCor,fontSize:15,fontWeight:900,textAlign:'center',fontFamily:"'DM Mono',monospace"}}>{pctLive!==null?`${pctLive}%`:'—'}</div>
+            </div>
+          </div>
+          <div style={{marginBottom:10}}>
+            <div style={{fontSize:9,color:'#64748b',marginBottom:5}}>PRAZO DE REVISÃO</div>
+            <div style={{display:'flex',gap:6}}>
+              {['D+1','D+7','D+30'].map(p=>(
+                <button key={p} onClick={()=>setTecForm(f=>({...f,prazo:p}))} style={{flex:1,padding:'9px',borderRadius:8,border:`1px solid ${tecForm.prazo===p?'#f87171':'rgba(255,255,255,.1)'}`,background:tecForm.prazo===p?'rgba(248,113,113,.2)':'transparent',color:tecForm.prazo===p?'#f87171':'#475569',fontSize:11,fontWeight:700,cursor:'pointer'}}>{p}</button>
+              ))}
+            </div>
+          </div>
+          <div style={{marginBottom:12}}>
+            <div style={{fontSize:9,color:'#64748b',marginBottom:4}}>OBSERVAÇÃO (opcional)</div>
+            <input value={tecForm.obs} onChange={e=>setTecForm(f=>({...f,obs:e.target.value}))} placeholder="ex: confundi com art. 37, fórmula errada..." style={{width:'100%',padding:'8px 10px',borderRadius:8,border:'1px solid rgba(255,255,255,.08)',background:'rgba(148,163,184,.06)',color:'#f1f5f9',fontSize:12,outline:'none',boxSizing:'border-box'}}/>
+          </div>
+          <button onClick={salvarTec} disabled={!tecForm.mat} style={{width:'100%',padding:'13px',borderRadius:10,border:'none',background:tecForm.mat?'#f87171':'rgba(148,163,184,.2)',color:tecForm.mat?'#0f172a':'#334155',fontSize:13,fontWeight:900,cursor:'pointer'}}>{tecSalvo?'✅ SALVO!':'💾 SALVAR E AGENDAR REVISÃO'}</button>
+        </div>
+      </div>}
+    </div>
+  );
 }
 
 // ─── TAB: ESTUDO (fusão Ciclo + Hoje + Revisão + Stats) ───────
@@ -3072,6 +3417,7 @@ function App(){
   const TABS=[
     {id:'ia',e:'🤖',l:'IA'},
     {id:'estudo',e:'📚',l:'Estudo'},
+    {id:'hoje',e:'📅',l:'Hoje'},
     {id:'revisao',e:'🧠',l:'Revisão'},
     {id:'agenda',e:'🗓️',l:'Agenda'},
   ];
@@ -3109,6 +3455,7 @@ function App(){
       <div style={{flex:1,overflowY:'auto',padding:'14px 14px 0'}}>
         {tab==='ia'     &&<TabIA     appCtx={appCtx} onMIT={saveMIT}/>}
         {tab==='estudo' &&<TabEstudo feitos={feitos} cicloNum={cicloNum} horas={horas} onConcluir={concluir} onIrPara={irPara} onDesmarcar={desmarcar} onAddHoras={addHoras} onSyncHistorico={syncHistorico} mit={mit} planoSemana={planoSemana} onSavePlano={savePlano}/>}
+        {tab==='hoje'   &&<TabHoje feitos={feitos} onAddHoras={addHoras}/>}
         {tab==='revisao'&&<TabRevisao totalBlocos={feitos.length} tmSugestao={tmSugestao} tmIA={tmIA} onSyncHistorico={syncHistorico} onAddHoras={addHoras}/>}
         
         {tab==='agenda' &&<TabAgenda planoSemana={planoSemana} onSetTab={setTab}/>}
