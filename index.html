@@ -16,14 +16,172 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Mono:wght@400;500;700&family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{background:#0f172a;color:#f1f5f9;font-family:'DM Sans',sans-serif;overscroll-behavior:none}
-::-webkit-scrollbar{width:3px;background:#1e293b}
-::-webkit-scrollbar-thumb{background:#334155;border-radius:3px}
+
+/* ── TEMA ESCURO (padrão) ── */
+:root{
+  --bg:#0f172a;
+  --bg2:#1e293b;
+  --bg3:#0d1929;
+  --card:#1e293b;
+  --card2:#243044;
+  --border:rgba(255,255,255,.08);
+  --border2:rgba(255,255,255,.14);
+  --text:#f1f5f9;
+  --text2:#cbd5e1;
+  --text3:#94a3b8;
+  --text4:#64748b;
+  --text5:#475569;
+  --header-bg:#1e293b;
+  --header-border:rgba(255,255,255,.06);
+  --input-bg:rgba(148,163,184,.12);
+  --input-border:rgba(148,163,184,.25);
+  --tab-active-bg:rgba(96,165,250,.15);
+  --tab-active-border:#60a5fa;
+  --tab-active-color:#60a5fa;
+  --tab-inactive-color:#64748b;
+  --scrollbar-bg:#1e293b;
+  --scrollbar-thumb:#334155;
+}
+
+/* ── TEMA CLARO ── */
+body.light{
+  --bg:#f1f5f9;
+  --bg2:#ffffff;
+  --bg3:#e8eef5;
+  --card:#ffffff;
+  --card2:#f8fafc;
+  --border:#e2e8f0;
+  --border2:#cbd5e1;
+  --text:#0f172a;
+  --text2:#1e293b;
+  --text3:#334155;
+  --text4:#475569;
+  --text5:#64748b;
+  --header-bg:#ffffff;
+  --header-border:#e2e8f0;
+  --input-bg:#f8fafc;
+  --input-border:#cbd5e1;
+  --tab-active-bg:rgba(59,130,246,.1);
+  --tab-active-border:#3b82f6;
+  --tab-active-color:#2563eb;
+  --tab-inactive-color:#64748b;
+  --scrollbar-bg:#e2e8f0;
+  --scrollbar-thumb:#94a3b8;
+}
+
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'DM Sans',sans-serif;
+  overscroll-behavior:none;
+  font-size:15px;
+  line-height:1.5;
+  transition:background .2s, color .2s;
+}
+
+::-webkit-scrollbar{width:4px;background:var(--scrollbar-bg)}
+::-webkit-scrollbar-thumb{background:var(--scrollbar-thumb);border-radius:4px}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 button:active{transform:scale(.97)}
-textarea,input{-webkit-appearance:none}
+button{transition:background .15s,border-color .15s,color .15s;}
+textarea,input{-webkit-appearance:none;transition:border-color .15s;}
 input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+
+/* ── MODO CLARO: overrides globais ── */
+body.light{
+  color-scheme: light;
+}
+body.light input, body.light textarea{
+  background:var(--input-bg)!important;
+  border-color:var(--input-border)!important;
+  color:var(--text)!important;
+}
+body.light button{color:inherit;}
+
+/* Cards e containers no modo claro */
+body.light #root > div > div:nth-child(2){
+  background:var(--bg)!important;
+}
+/* Override específico para modo claro em cards genéricos */
+body.light [data-card]{
+  background:var(--card)!important;
+  border-color:var(--border)!important;
+  color:var(--text)!important;
+}
+/* Header text no modo claro */
+body.light [data-mono]{
+  color:var(--text3)!important;
+}
+</style>
+<style id="theme-overrides">
+/* ─── LIGHT MODE COMPREHENSIVE OVERRIDES ─── */
+body.light {
+  background: #f1f5f9 !important;
+}
+
+/* All white/dark card backgrounds */
+body.light div[style*="background:'#1e293b'"],
+body.light div[style*='background:"#1e293b"'],
+body.light div[style*="background: #1e293b"] {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+body.light div[style*="background:'#0f172a'"] {
+  background: #f1f5f9 !important;
+}
+body.light div[style*="background:'rgba(148,163,184,.22)'"],
+body.light div[style*="background:'rgba(148,163,184,.25)'"],
+body.light div[style*="background:'rgba(148,163,184,.28)'"] {
+  background: #e2e8f0 !important;
+}
+
+/* Text colors */
+body.light div[style*="color:'#f1f5f9'"],
+body.light span[style*="color:'#f1f5f9'"] {
+  color: #0f172a !important;
+}
+body.light div[style*="color:'#94a3b8'"],
+body.light span[style*="color:'#94a3b8'"] {
+  color: #334155 !important;
+}
+body.light div[style*="color:'#64748b'"],
+body.light span[style*="color:'#64748b'"] {
+  color: #475569 !important;
+}
+body.light div[style*="color:'#475569'"],
+body.light span[style*="color:'#475569'"] {
+  color: #64748b !important;
+}
+body.light div[style*="color:'#334155'"],
+body.light span[style*="color:'#334155'"] {
+  color: #64748b !important;
+}
+
+/* Borders */
+body.light div[style*="border:'1px solid rgba(255,255,255,.08)'"] {
+  border-color: #e2e8f0 !important;
+}
+body.light div[style*="border:'1px solid rgba(255,255,255,.1)'"] {
+  border-color: #cbd5e1 !important;
+}
+
+/* Inputs */
+body.light input, body.light textarea, body.light select {
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+body.light button[style*="background:'rgba(148,163,184,.22)'"] {
+  background: #e2e8f0 !important;
+  color: #334155 !important;
+}
+
+/* ─── FONT SIZE GLOBAL INCREASE ─── */
+/* Increase base readability */
+div, span, p, button, input, textarea, label {
+  letter-spacing: 0.01em;
+}
 </style>
 </head>
 <body>
@@ -70,6 +228,18 @@ const CICLO=[
 ];
 const N=CICLO.length;
 const DIAS_KEY=['Dom','Seg','Ter','Qua','Qui','Sex','Sab'];
+// Escala de fontes — aumenta todos os tamanhos pequenos
+const FS={
+  xs:  11, // era 8-9px
+  sm:  12, // era 9-10px  
+  md:  13, // era 10-11px
+  base:14, // era 11-12px
+  lg:  15, // era 12-13px
+  xl:  16, // era 13-14px
+  h2:  18, // era 14-16px
+  h1:  22, // era 16-20px
+};
+
 const NOMES_DIA=['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
 const KCOR={r:'#64748b',a:'#fbbf24',s:'#60a5fa',b:'#1e2d40',e:'#34d399',m:'#fb923c',w:'#a78bfa',f:'#f87171',d:'#34d399',z:'#0f172a'};
 const AGENDA={
@@ -560,7 +730,7 @@ REGRA: mesma matéria no TEC 3+ dias = lacuna teórica = sugerir NLM, não mais 
 NUNCA sugira NLM para matéria que só precisa de questão
 NUNCA sugira TEC para matéria que precisa reconstruir teoria
 
-- TEC pendente hoje: ${(()=>{const hoje=getDK();const fila=lsGet('tec_fila',[]);const todayMs=new Date().setHours(0,0,0,0);const pend=fila.filter(t=>!t.feito&&new Date(t.prazo).setHours(0,0,0,0)<=todayMs);return pend.length>0?pend.map(t=>`${t.mat}(${t.pct!==null?t.pct+'%':'sem%'})`).join(', '):'nenhum D+1 vencendo';})()} 
+- TEC pendente hoje: ${(()=>{const hoje=getDK();const fila=lsGet('tec_fila',[]);const todayMs=new Date().setHours(0,0,0,0);const pend=fila.filter(t=>!t.feito&&new Date(t.prazo).setHours(0,0,0,0)<=todayMs);return pend.length>0?pend.map(t=>`${t.mat}(${t.pct!==null?t.pct+'%':'sem%'})`).join(', '):'nenhum vencendo hoje';})()} 
 - Anki hoje: ${(()=>{const hoje=getDK();const f=lsGet('anki_feito_'+hoje,null);const meta=(lsGet('anki_meta',{meta:75})).meta||75;return f?`✅ feito (${f.cards} cards)`:`pendente — meta ${meta}`;})()}
 - Status edital: ${(()=>{const st=lsGet('edital_status',{});const mats=Object.keys(EDITAL);const res=mats.map(m=>{const tops=EDITAL[m].top;const dom=tops.filter(t=>st[m+':'+t.t]==='domino').length;const est=tops.filter(t=>st[m+':'+t.t]==='estudei').length;if(dom===0&&est===0)return null;return `${m}:${dom}✅${est}🟡/${tops.length}`;}).filter(Boolean);return res.length?res.join(' | '):'nenhum tópico marcado ainda';})()}
 
@@ -1206,7 +1376,7 @@ function TabHoje({feitos,onAddHoras}){
   const[ankiCards,setAnkiCards]=useState('');
   const[ankiFeito,setAnkiFeito]=useState(()=>lsGet(`anki_feito_${hoje}`,null));
   const[tecModal,setTecModal]=useState(false);
-  const[tecForm,setTecForm]=useState({mat:'',assunto:'',feitas:'',acertei:'',prazo:'D+1',obs:''});
+  const[tecForm,setTecForm]=useState({mat:'',assunto:'',feitas:'',acertei:'',prazo:'D+3',obs:''});
   const[tecSalvo,setTecSalvo]=useState(false);
   const[nlmFeito,setNlmFeito]=useState(()=>{
     const j=dados.nlm.janela;
@@ -1229,13 +1399,13 @@ function TabHoje({feitos,onAddHoras}){
 
   const salvarTec=()=>{
     if(!tecForm.mat)return;
-    const prazoDias={'D+1':1,'D+7':7,'D+30':30}[tecForm.prazo]||1;
+    const prazoDias={'D+3':3,'D+15':15,'D+30':30}[tecForm.prazo]||3;
     const prazoDate=new Date();prazoDate.setDate(prazoDate.getDate()+prazoDias);
     const prazoStr=prazoDate.toISOString().split('T')[0];
-    const novo={id:Date.now(),mat:tecForm.mat,assunto:tecForm.assunto,feitas:parseInt(tecForm.feitas)||0,acertei:parseInt(tecForm.acertei)||0,pct:tecForm.feitas&&tecForm.acertei?Math.round(parseInt(tecForm.acertei)/parseInt(tecForm.feitas)*100):null,prazo:prazoStr,prazoLabel:tecForm.prazo,tentativas:1,feito:false,dia:hoje,obs:tecForm.obs};
+    const novo={id:Date.now(),mat:tecForm.mat,assunto:tecForm.assunto,feitas:parseInt(tecForm.feitas)||0,acertei:parseInt(tecForm.acertei)||0,pct:tecForm.feitas&&tecForm.acertei?Math.round(parseInt(tecForm.acertei)/parseInt(tecForm.feitas)*100):null,prazo:prazoStr,prazoLabel:tecForm.prazo,fase:1,tentativas:1,feito:false,dia:hoje,obs:tecForm.obs};
     const fila=[...lsGet('tec_fila',[]),novo];
     lsSet('tec_fila',fila);
-    setTecForm({mat:'',assunto:'',feitas:'',acertei:'',prazo:'D+1',obs:''});
+    setTecForm({mat:'',assunto:'',feitas:'',acertei:'',prazo:'D+3',obs:''});
     setTecSalvo(true);setTimeout(()=>{setTecSalvo(false);setTecModal(false);},1500);
     refresh();
   };
@@ -1243,13 +1413,30 @@ function TabHoje({feitos,onAddHoras}){
   const marcarTecFeito=(id,errouDeNovo)=>{
     const fila=lsGet('tec_fila',[]).map(t=>{
       if(t.id!==id)return t;
-      if(errouDeNovo){
-        // Cria novo D+1
-        const novo=new Date();novo.setDate(novo.getDate()+1);
+      if(!errouDeNovo){
+        // Acertou — avança para próxima fase ou remove
+        const fase=t.fase||1;
+        if(fase>=3){
+          // Acertou D+30 — consolidado! Remove
+          return{...t,feito:true,dominado:true};
+        }
+        // Avança fase: 1→D+15, 2→D+30
+        const proxFase=fase+1;
+        const proxDias=proxFase===2?15:30;
+        const novo=new Date();novo.setDate(novo.getDate()+proxDias);
         const novoPrazo=novo.toISOString().split('T')[0];
-        return{...t,prazo:novoPrazo,prazoLabel:'D+1',tentativas:(t.tentativas||1)+1,feito:false};
+        const proxLabel=proxFase===2?'D+15':'D+30';
+        return{...t,prazo:novoPrazo,prazoLabel:proxLabel,fase:proxFase,tentativas:t.tentativas||1};
       }
-      return{...t,feito:true};
+      // Errou — regra de reinício adaptada
+      const fase=t.fase||1;
+      let voltaFase,voltaDias,voltaLabel;
+      if(fase===1){voltaFase=1;voltaDias=3;voltaLabel='D+3';} // Errou D+3 → reinicia D+3
+      else if(fase===2){voltaFase=1;voltaDias=3;voltaLabel='D+3';} // Errou D+15 → volta D+3 novo
+      else{voltaFase=2;voltaDias=15;voltaLabel='D+15';} // Errou D+30 → volta D+15 novo
+      const novo=new Date();novo.setDate(novo.getDate()+voltaDias);
+      const novoPrazo=novo.toISOString().split('T')[0];
+      return{...t,prazo:novoPrazo,prazoLabel:voltaLabel,fase:voltaFase,tentativas:(t.tentativas||1)+1};
     });
     lsSet('tec_fila',fila);refresh();
   };
@@ -1346,12 +1533,12 @@ Alertas: ${alertas.map(a=>a.msg).join('; ')||'nenhum'}.`;
         </div>
         {/* D+1 vencendo hoje */}
         {dados.tec.fila.length>0&&<div style={{marginBottom:8}}>
-          <div style={{fontSize:8,color:'#f87171',fontFamily:"'DM Mono',monospace",marginBottom:5}}>📅 D+1 — REVISAR HOJE</div>
+          <div style={{fontSize:8,color:'#f87171',fontFamily:"'DM Mono',monospace",marginBottom:5}}>📅 REVISAR HOJE</div>
           {dados.tec.fila.map(t=>(
             <div key={t.id} style={{padding:'9px 11px',borderRadius:10,background:'rgba(248,113,113,.08)',border:'1px solid rgba(248,113,113,.25)',marginBottom:5}}>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:4}}>
                 <div><div style={{fontSize:11,fontWeight:700,color:'#f1f5f9'}}>{t.mat}{t.assunto&&<span style={{color:'#94a3b8',fontWeight:400}}> — {t.assunto}</span>}</div>
-                  {t.pct!==null&&<div style={{fontSize:9,color:t.pct>=70?'#fbbf24':'#f87171',fontFamily:"'DM Mono',monospace"}}>{t.feitas}Q · {t.acertei} certas · {t.pct}%{t.tentativas>1?` · tentativa ${t.tentativas}`:''}</div>}
+                  {(()=>{const fase=t.fase||1;const faseLabel=fase===1?'D+3':fase===2?'D+15':'D+30';const faseCor=fase===1?'#60a5fa':fase===2?'#fbbf24':'#34d399';return(<div style={{display:'flex',alignItems:'center',gap:6,marginTop:2}}>{t.pct!==null&&<span style={{fontSize:9,color:t.pct>=70?'#fbbf24':'#f87171',fontFamily:"'DM Mono',monospace"}}>{t.feitas}Q · {t.pct}%</span>}<span style={{fontSize:8,padding:'1px 6px',borderRadius:4,background:`${faseCor}20`,color:faseCor,fontFamily:"'DM Mono',monospace",fontWeight:700}}>{faseLabel} — fase {fase}/3</span>{t.tentativas>1&&<span style={{fontSize:8,color:'#64748b'}}>tentativa {t.tentativas}</span>}</div>);})()}
                 </div>
               </div>
               <div style={{display:'flex',gap:6}}>
@@ -1423,7 +1610,7 @@ Alertas: ${alertas.map(a=>a.msg).join('; ')||'nenhum'}.`;
           <div style={{marginBottom:10}}>
             <div style={{fontSize:9,color:'#64748b',marginBottom:5}}>PRAZO DE REVISÃO</div>
             <div style={{display:'flex',gap:6}}>
-              {['D+1','D+7','D+30'].map(p=>(
+              {['D+3','D+15','D+30'].map(p=>(
                 <button key={p} onClick={()=>setTecForm(f=>({...f,prazo:p}))} style={{flex:1,padding:'9px',borderRadius:8,border:`1px solid ${tecForm.prazo===p?'#f87171':'rgba(255,255,255,.1)'}`,background:tecForm.prazo===p?'rgba(248,113,113,.2)':'transparent',color:tecForm.prazo===p?'#f87171':'#475569',fontSize:11,fontWeight:700,cursor:'pointer'}}>{p}</button>
               ))}
             </div>
@@ -1571,7 +1758,7 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
       {/* Sub-nav */}
       <div style={{display:'flex',gap:4,marginBottom:14}}>
         {SUB.map(s=>{const a=aba===s.id;return(
-          <button key={s.id} onClick={()=>setAba(s.id)} style={{flex:1,padding:'9px 3px',borderRadius:9,border:`1px solid ${a?'#fbbf24':'rgba(148,163,184,.25)'}`,background:a?'rgba(251,191,36,.12)':'transparent',color:a?'#fbbf24':'#334155',fontSize:10,fontWeight:700,fontFamily:"'DM Mono',monospace",cursor:'pointer'}}>{s.l}</button>
+          <button key={s.id} onClick={()=>setAba(s.id)} style={{flex:1,padding:'9px 3px',borderRadius:9,border:`1px solid ${a?'#fbbf24':'rgba(148,163,184,.25)'}`,background:a?'rgba(251,191,36,.12)':'transparent',color:a?'#fbbf24':'var(--text4)',fontSize:10,fontWeight:700,fontFamily:"'DM Mono',monospace",cursor:'pointer'}}>{s.l}</button>
         );})}
       </div>
 
@@ -1895,6 +2082,132 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
           ));
         })()}
         {/* RANKING POR MATÉRIA */}
+        {/* ── GRÁFICO DE EVOLUÇÃO TEMPORAL ─────────── */}
+        <div style={{marginBottom:16}}>
+          <div style={{fontSize:12,letterSpacing:'2px',color:'var(--text4)',fontFamily:"'DM Mono',monospace",marginBottom:10,marginTop:14}}>📈 EVOLUÇÃO POR MATÉRIA — semana a semana</div>
+          {(()=>{
+            const hist=lsGet('historico_diario',[]);
+            if(!hist.length)return <div style={{textAlign:'center',padding:'16px',color:'var(--text4)',fontSize:12}}>Registre questões para ver a evolução.</div>;
+
+            // Agrupa por semana ISO
+            const porSemMat={};
+            hist.forEach(r=>{
+              if(!r.materia||!parseInt(r.questoes)||!parseInt(r.acertei))return;
+              const dt=new Date(r.dt||Date.now());
+              const jan1=new Date(dt.getFullYear(),0,1);
+              const semNum=Math.ceil(((dt-jan1)/86400000+jan1.getDay()+1)/7);
+              const semKey=`S${String(semNum).padStart(2,'0')}`;
+              if(!porSemMat[semKey])porSemMat[semKey]={};
+              const mat=r.materia;
+              if(!porSemMat[semKey][mat])porSemMat[semKey][mat]={q:0,a:0};
+              porSemMat[semKey][mat].q+=parseInt(r.questoes)||0;
+              porSemMat[semKey][mat].a+=parseInt(r.acertei)||0;
+            });
+
+            const semanas=Object.keys(porSemMat).sort().slice(-6);
+            if(semanas.length<1)return <div style={{textAlign:'center',padding:'16px',color:'var(--text4)',fontSize:12}}>Ainda sem dados suficientes. Continue registrando!</div>;
+
+            // Pega matérias com mais dados
+            const matCount={};
+            hist.filter(r=>parseInt(r.questoes)>0&&parseInt(r.acertei)>0).forEach(r=>{if(r.materia)matCount[r.materia]=(matCount[r.materia]||0)+1;});
+            const mats=Object.entries(matCount).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([m])=>m);
+
+            if(!mats.length)return null;
+
+            const CORES=['#60a5fa','#f87171','#34d399','#fbbf24','#a78bfa','#fb923c'];
+            const CHART_H=120;
+            const CHART_W=280;
+            const padL=30,padB=20,padR=10,padT=10;
+            const innerW=CHART_W-padL-padR;
+            const innerH=CHART_H-padB-padT;
+
+            // Linhas de referência
+            const refLines=[70,85];
+
+            return(
+              <div style={{overflowX:'auto',paddingBottom:4}}>
+                {/* Legenda */}
+                <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:10}}>
+                  {mats.map((mat,i)=>(
+                    <div key={mat} style={{display:'flex',alignItems:'center',gap:4}}>
+                      <div style={{width:12,height:3,borderRadius:2,background:CORES[i],flexShrink:0}}/>
+                      <span style={{fontSize:10,color:'var(--text3)'}}>{mat.length>18?mat.slice(0,16)+'…':mat}</span>
+                    </div>
+                  ))}
+                </div>
+                {/* SVG Chart */}
+                <svg width={CHART_W} height={CHART_H} style={{overflow:'visible',display:'block',margin:'0 auto'}}>
+                  {/* Grid horizontal */}
+                  {[0,25,50,75,100].map(pct=>{
+                    const y=padT+innerH-(pct/100)*innerH;
+                    return(
+                      <g key={pct}>
+                        <line x1={padL} y1={y} x2={CHART_W-padR} y2={y} stroke="var(--border)" strokeWidth="1" strokeDasharray={pct===0?'none':'3,3'}/>
+                        <text x={padL-4} y={y+4} textAnchor="end" fontSize="8" fill="var(--text4)">{pct}%</text>
+                      </g>
+                    );
+                  })}
+                  {/* Linhas de referência coloridas */}
+                  {refLines.map(pct=>{
+                    const y=padT+innerH-(pct/100)*innerH;
+                    const cor=pct>=85?'#34d399':'#fbbf24';
+                    return <line key={pct} x1={padL} y1={y} x2={CHART_W-padR} y2={y} stroke={cor} strokeWidth="1" strokeDasharray="4,2" opacity="0.5"/>;
+                  })}
+                  {/* Eixo X — semanas */}
+                  {semanas.map((sem,i)=>{
+                    const x=padL+(i/(semanas.length-1||1))*innerW;
+                    return(
+                      <g key={sem}>
+                        <line x1={x} y1={padT} x2={x} y2={padT+innerH} stroke="var(--border)" strokeWidth="1" strokeDasharray="2,4"/>
+                        <text x={x} y={CHART_H-4} textAnchor="middle" fontSize="8" fill="var(--text4)">{sem}</text>
+                      </g>
+                    );
+                  })}
+                  {/* Linhas por matéria */}
+                  {mats.map((mat,mi)=>{
+                    const cor=CORES[mi];
+                    const pontos=semanas.map((sem,i)=>{
+                      const d=porSemMat[sem]?.[mat];
+                      if(!d||!d.q)return null;
+                      const pct=Math.round(d.a/d.q*100);
+                      const x=padL+(i/(semanas.length-1||1))*innerW;
+                      const y=padT+innerH-(pct/100)*innerH;
+                      return{x,y,pct};
+                    });
+                    // Draw line segments between non-null points
+                    const segments=[];
+                    let prev=null;
+                    pontos.forEach((p,i)=>{
+                      if(p&&prev){segments.push(<line key={`l${mi}-${i}`} x1={prev.x} y1={prev.y} x2={p.x} y2={p.y} stroke={cor} strokeWidth="2" opacity="0.8"/>);}
+                      if(p)prev=p;
+                    });
+                    const dots=pontos.map((p,i)=>{
+                      if(!p)return null;
+                      const isLast=pontos.slice(i+1).every(x=>!x);
+                      return(
+                        <g key={`d${mi}-${i}`}>
+                          <circle cx={p.x} cy={p.y} r={isLast?5:3.5} fill={cor} opacity="0.9"/>
+                          {isLast&&<text x={p.x} y={p.y-8} textAnchor="middle" fontSize="9" fill={cor} fontWeight="bold">{p.pct}%</text>}
+                        </g>
+                      );
+                    });
+                    return <g key={mat}>{segments}{dots}</g>;
+                  })}
+                </svg>
+                {/* Indicador semana atual */}
+                <div style={{display:'flex',gap:12,marginTop:8,justifyContent:'center'}}>
+                  <div style={{display:'flex',alignItems:'center',gap:4,fontSize:9,color:'var(--text4)'}}>
+                    <div style={{width:16,height:1,borderTop:'2px dashed #34d399'}}/> ≥85% sólido
+                  </div>
+                  <div style={{display:'flex',alignItems:'center',gap:4,fontSize:9,color:'var(--text4)'}}>
+                    <div style={{width:16,height:1,borderTop:'2px dashed #fbbf24'}}/> ≥70% atenção
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+
         <div style={{fontSize:9,letterSpacing:'2px',color:'#475569',fontFamily:"'DM Mono',monospace",marginBottom:8,marginTop:12}}>🏆 RANKING — APROVEITAMENTO (com dados + dif base)</div>
         {(()=>{
           const{comDado,semDado}=calcRankingAproveitamento();
@@ -2258,7 +2571,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras}){
     <div>
       <div style={{display:'flex',gap:3,marginBottom:14,overflowX:'auto',scrollbarWidth:'none',paddingBottom:2}}>
         {ABAS_REV.map(a=>{const at=aba===a.id;return(
-          <button key={a.id} onClick={()=>setAba(a.id)} style={{flexShrink:0,padding:'8px 10px',borderRadius:9,border:`1px solid ${at?'#60a5fa':'rgba(255,255,255,.12)'}`,background:at?'rgba(96,165,250,.12)':'transparent',color:at?'#60a5fa':'#475569',fontSize:9,fontWeight:700,fontFamily:"'DM Mono',monospace",cursor:'pointer'}}>{a.l}</button>
+          <button key={a.id} onClick={()=>setAba(a.id)} style={{flexShrink:0,padding:'9px 12px',borderRadius:9,border:`1px solid ${at?'var(--tab-active-border)':'var(--border)'}`,background:at?'var(--tab-active-bg)':'transparent',color:at?'var(--tab-active-color)':'var(--tab-inactive-color)',fontSize:11,fontWeight:700,fontFamily:"'DM Mono',monospace",cursor:'pointer'}}>{a.l}</button>
         );})}
       </div>
 
@@ -3359,6 +3672,16 @@ function App(){
   const[mit,setMit]=useState([]);
   const[historico,setHistorico]=useState(()=>lsGet('historico_diario',[]));
   const[tmIA,setTmIA]=useState(()=>lsGet('tm_ia_cache',null));
+  const[darkMode,setDarkMode]=useState(()=>{
+    const saved=localStorage.getItem('theme_mode');
+    return saved!=='light'; // padrão escuro
+  });
+
+  useEffect(()=>{
+    if(darkMode){document.body.classList.remove('light');document.body.classList.add('dark');}
+    else{document.body.classList.remove('dark');document.body.classList.add('light');}
+    lsSet('theme_mode',darkMode?'dark':'light');
+  },[darkMode]);
   const[planoSemana,setPlanoSemana]=useState(()=>lsGet('plano_semanal',null));
   const[tab,setTab]=useState('ia');
   const[clock,setClock]=useState(new Date());
@@ -3423,11 +3746,11 @@ function App(){
   ];
 
   return(
-    <div style={{minHeight:'100dvh',background:'#0f172a',display:'flex',flexDirection:'column'}}>
-      <div style={{padding:'10px 14px 8px',background:'#1e293b',borderBottom:'1px solid rgba(255,255,255,.06)',flexShrink:0}}>
+    <div style={{minHeight:'100dvh',background:'var(--bg)',display:'flex',flexDirection:'column'}}>
+      <div style={{padding:'10px 14px 8px',background:'var(--header-bg)',borderBottom:'1px solid var(--header-border)',flexShrink:0}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:6}}>
           <div style={{display:'flex',alignItems:'center',gap:7,flexWrap:'wrap'}}>
-            <div style={{fontFamily:"'DM Serif Display',serif",fontSize:17,color:'#fbbf24',letterSpacing:'1px'}}>RITY OS</div>
+            <div style={{fontFamily:"'DM Serif Display',serif",fontSize:17,color:'#fbbf24',letterSpacing:'1px',fontWeight:700}}>RITY OS</div>
             <span style={{fontSize:8,fontWeight:800,letterSpacing:'2px',padding:'2px 6px',borderRadius:3,background:'rgba(251,191,36,.1)',color:'rgba(251,191,36,.6)',border:'1px solid rgba(251,191,36,.2)',fontFamily:"'DM Mono',monospace"}}>TCE-RJ</span>
             <div style={{width:7,height:7,borderRadius:'50%',background:syncSt==='ok'?'#34d399':syncSt==='syncing'?'#fbbf24':syncSt==='error'?'#f87171':'#334155',transition:'background .4s'}}/>
             {!chaveOK&&<span onClick={()=>setShowCfg(true)} style={{fontSize:8,padding:'2px 6px',borderRadius:3,background:'rgba(248,113,113,.12)',color:'#f87171',border:'1px solid rgba(248,113,113,.3)',cursor:'pointer',fontFamily:"'DM Mono',monospace"}}>⚠️ SEM CHAVE IA</span>}
@@ -3435,10 +3758,11 @@ function App(){
           </div>
           <div style={{display:'flex',alignItems:'center',gap:10}}>
             <div style={{textAlign:'right'}}>
-              <div style={{fontSize:16,fontWeight:900,fontFamily:"'DM Mono',monospace",color:'#f1f5f9',lineHeight:1}}>{fH(clock)}</div>
-              <div style={{fontSize:8,color:'#64748b',lineHeight:1,marginTop:2}}>{fmtMin(minHoje)} hoje · {fmtMin(minSemana)}/{metaHoras}h</div>
+              <div style={{fontSize:16,fontWeight:900,fontFamily:"'DM Mono',monospace",color:'var(--text)',lineHeight:1}}>{fH(clock)}</div>
+              <div style={{fontSize:8,color:'var(--text4)',lineHeight:1,marginTop:2}}>{fmtMin(minHoje)} hoje · {fmtMin(minSemana)}/{metaHoras}h</div>
             </div>
-            <button onClick={()=>setShowCfg(true)} style={{width:30,height:30,borderRadius:'50%',border:'1px solid rgba(255,255,255,.1)',background:'rgba(148,163,184,.28)',color:'#94a3b8',fontSize:14,cursor:'pointer'}}>⚙️</button>
+            <button onClick={()=>setDarkMode(v=>!v)} title={darkMode?'Modo claro':'Modo escuro'} style={{width:32,height:32,borderRadius:'50%',border:'1px solid var(--border2)',background:'var(--card2)',color:'var(--text3)',fontSize:15,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>{darkMode?'☀️':'🌙'}</button>
+            <button onClick={()=>setShowCfg(true)} style={{width:32,height:32,borderRadius:'50%',border:'1px solid var(--border2)',background:'var(--card2)',color:'var(--text3)',fontSize:14,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>⚙️</button>
           </div>
         </div>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:4}}>
@@ -3452,7 +3776,7 @@ function App(){
         <BarProg done={feitos.length} total={N} cor={corPrx} h={3}/>
       </div>
 
-      <div style={{flex:1,overflowY:'auto',padding:'14px 14px 0'}}>
+      <div style={{flex:1,overflowY:'auto',padding:'16px 16px 0',background:'var(--bg)'}}>
         {tab==='ia'     &&<TabIA     appCtx={appCtx} onMIT={saveMIT}/>}
         {tab==='estudo' &&<TabEstudo feitos={feitos} cicloNum={cicloNum} horas={horas} onConcluir={concluir} onIrPara={irPara} onDesmarcar={desmarcar} onAddHoras={addHoras} onSyncHistorico={syncHistorico} mit={mit} planoSemana={planoSemana} onSavePlano={savePlano}/>}
         {tab==='hoje'   &&<TabHoje feitos={feitos} onAddHoras={addHoras}/>}
@@ -3462,7 +3786,7 @@ function App(){
         <div style={{height:80}}/>
       </div>
 
-      <div style={{position:'fixed',bottom:0,left:0,right:0,background:'#1e293b',borderTop:'1px solid rgba(255,255,255,.07)',display:'flex',zIndex:50}}>
+      <div style={{position:'fixed',bottom:0,left:0,right:0,background:'var(--header-bg)',borderTop:'1px solid var(--header-border)',display:'flex',zIndex:50}}>
         {TABS.map(t=>{const a=tab===t.id;return(
           <button key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,padding:'9px 2px 7px',border:'none',background:'transparent',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:2,position:'relative'}}>
             {t.badge>0&&<div style={{position:'absolute',top:4,right:'8%',width:14,height:14,borderRadius:'50%',background:'#f87171',display:'flex',alignItems:'center',justifyContent:'center',fontSize:7,color:'#050a14',fontWeight:900}}>{t.badge}</div>}
