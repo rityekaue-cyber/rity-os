@@ -1232,6 +1232,49 @@ function MatBtn({value,onChange,placeholder}){
   );
 }
 
+function calcTempoMorto(feitos,horas,historico){
+  const todayMs=new Date().setHours(0,0,0,0);
+  const gurujaData=lsGet('guruja_data',null);
+  const score={};
+  const add=(mat,dif,dt,w=1)=>{
+    if(!mat)return;
+    if(!score[mat])score[mat]={total:0,count:0,lastDt:0,travou:0};
+    score[mat].total+=dif*w;score[mat].count+=w;
+    if(dt>score[mat].lastDt)score[mat].lastDt=dt;
+  };
+  // 1. Histórico de registro (peso 1.5)
+  historico.slice(-14).forEach(r=>{
+    if(r.materia&&r.dificuldade)add(r.materia,r.dificuldade,r.dt||0,1.5);
+    if(r.travou&&r.materia){if(!score[r.materia])score[r.materia]={total:0,count:0,lastDt:0,travou:0};score[r.materia].travou++;}
+  });
+  // 2. Anki (peso 1)
+  const ankiRegs=lsGet('rev_anki',[]);
+  ankiRegs.forEach(r=>{if(r.mat&&r.dif)add(r.mat,r.dif,r.dt||0,1);});
+  // 3. NLM (peso 1)
+  const nlmRegs=lsGet('rev_nlm',[]);
+  nlmRegs.forEach(r=>{if(r.mat&&r.dif)add(r.mat,r.dif,r.dt||0,1);});
+  // 4. Ciclo — blocos pendentes ganham bônus
+  const feitosSet=new Set(feitos);
+  CICLO.filter(s=>!feitosSet.has(s.id)).slice(0,5).forEach((s,i)=>{
+    if(!score[s.mat])score[s.mat]={total:0,count:0,lastDt:0,travou:0};
+    score[s.mat].total+=(5-i)*0.3;score[s.mat].count+=0.3;
+  });
+  // 5. Score final com acerto %
+  const ranking=Object.entries(score).map(([mat,v])=>{
+    const difMedia=v.count>0?v.total/v.count:0;
+    const dias=Math.floor((todayMs-(v.lastDt||0))/86400000);
+    const g=gurujaData?.prioridades?.find(p=>p.mat?.includes(mat.split(' ')[0]))?.status==='critica'?3:0;
+    const regs=historico.filter(r=>r.materia===mat&&parseInt(r.questoes)>0);
+    let acertoBonus=0;
+    if(regs.length){const tq=regs.reduce((s,r)=>s+(parseInt(r.questoes)||0),0);const ta=regs.reduce((s,r)=>s+(parseInt(r.acertei)||0),0);acertoBonus=tq>0?(1-ta/tq)*3:0;}
+    return{mat,difMedia,diasSem:dias,score:difMedia*(dias+1)+g+v.travou*1.5+acertoBonus};
+  }).sort((a,b)=>b.score-a.score);
+  const fallback={mat:CICLO.find(s=>s.tag?.includes('⭐⭐⭐⭐⭐'))?.mat||'AFO',difMedia:0,diasSem:0};
+  const travouRecente=historico.slice(-3).filter(r=>r.travou).map(r=>`${r.materia}: ${r.travou}`);
+  return{anki:ranking[0]||fallback,nlm:ranking[1]||ranking[0]||fallback,ranking:ranking.slice(0,5),travouRecente,ts:Date.now()};
+}
+
+
 // ── Motor Revisão de Hoje (Modo 2 — esqueleto) ─────────────────
 function calcRevisaoHoje(feitos){
   const hoje=getDK();
