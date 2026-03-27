@@ -514,23 +514,55 @@ function Pomodoro({cor,onFase}){
 }
 
 // ── Dados do Edital Área Fiscal (tópicos mais cobrados) ────────
+// ── PESO DAS MATÉRIAS NO EDITAL (Área Fiscal — Faixa Preta) ──────
+// Fonte: análise histórica de provas fiscais (atualizar conforme edital específico)
+const PESO_MATERIA={
+  'Português':          {pesoEdital:100, fonte:'Faixa Preta Área Fiscal'},
+  'Dir. Constitucional':{pesoEdital:100, fonte:'Faixa Preta Área Fiscal'},
+  'Dir. Administrativo':{pesoEdital:100, fonte:'Faixa Preta Área Fiscal'},
+  'Dir. Tributário':    {pesoEdital:100, fonte:'Faixa Preta Área Fiscal'},
+  'AFO':                {pesoEdital:100, fonte:'Faixa Preta AFO/Dir.Fin/CASP'},
+  'Auditoria Governamental':{pesoEdital:100, fonte:'pendente'},
+  'Contabilidade Pública':  {pesoEdital:100, fonte:'Faixa Preta Cont.Geral'},
+  'Dir. Civil':         {pesoEdital:100, fonte:'Faixa Preta Área Fiscal'},
+  'Dir. Penal':         {pesoEdital:100, fonte:'Faixa Preta Área Fiscal'},
+  'Raciocínio Lógico':  {pesoEdital:100, fonte:'Faixa Preta Área Fiscal'},
+  'TI / Análise de Dados':{pesoEdital:100, fonte:'pendente'},
+  'Controle Externo':   {pesoEdital:100, fonte:'pendente'},
+  'Adm. Pública':       {pesoEdital:100, fonte:'Faixa Preta Adm.Geral/Pública'},
+  'Dir. Processual Civil':{pesoEdital:100, fonte:'pendente'},
+  'Mat. Financeira':    {pesoEdital:100, fonte:'Faixa Preta Área Fiscal'},
+};
+
 const EDITAL={
   'Português':{
     top:[
-      {t:'Interpretação de Textos',p:32.07},
-      {t:'Reescrita de Frases / Substituição de palavras',p:14.48},
-      {t:'Clareza e Correção',p:9.31},
-      {t:'Pontuação',p:8.62},
-      {t:'Coerência e Coesão',p:6.90},
+      {t:'Interpretação de Textos',p:28.0},
+      {t:'Morfologia',p:14.6},
+      {t:'Sintaxe',p:7.1},
+      {t:'Semântica',p:6.5},
+      {t:'Regência',p:5.6},
+      {t:'Ortografia',p:5.6},
+      {t:'Pontuação',p:5.4},
+      {t:'Reescrita de Frase / Substituição de Palavras',p:5.1},
+      {t:'Coerência / Coesão',p:4.9},
+      {t:'Concordância (Verbal e Nominal)',p:4.7},
+      {t:'Clareza e Correção',p:3.3},
+      {t:'Linguagem',p:2.8},
+      {t:'Tipologia e Gênero Textual',p:2.4},
     ]
   },
   'Dir. Constitucional':{
     top:[
-      {t:'Direitos e Deveres Individuais e Coletivos (art. 5º)',p:11.31},
-      {t:'União: bens e competências (arts. 20 a 24)',p:7.74},
-      {t:'Disposições Gerais — Adm. Pública (arts. 37/38)',p:5.95},
-      {t:'Eficácia das Normas Constitucionais',p:4.17},
-      {t:'Mandado de Segurança',p:3.57},
+      {t:'Da Organização do Estado (arts. 18 a 43 da CF/1988)',p:22.3},
+      {t:'Da Organização dos Poderes (arts. 44 a 135 da CF/1988)',p:20.9},
+      {t:'Tributação e Orçamento (arts. 145 a 169 da CF/1988)',p:14.7},
+      {t:'Dos Direitos e Garantias Fundamentais (arts. 5º a 17 da CF/1988)',p:14.2},
+      {t:'Jurisprudência dos Tribunais Superiores',p:6.2},
+      {t:'Teoria do Direito Constitucional',p:5.3},
+      {t:'Controle de Constitucionalidade',p:5.0},
+      {t:'Dos Princípios Fundamentais da Constituição (arts. 1º a 4º da CF)',p:4.3},
+      {t:'Da Ordem Econômica e Financeira (arts. 170 a 192 da CF/1988)',p:2.5},
     ]
   },
   'Dir. Administrativo':{
@@ -553,11 +585,15 @@ const EDITAL={
   },
   'AFO':{
     top:[
-      {t:'Classificação da Despesa Orçamentária',p:7.06},
-      {t:'Classificação por Natureza da Receita',p:4.71},
-      {t:'Regimes Orçamentário e Patrimonial',p:4.71},
-      {t:'Da Receita Pública na LRF (arts. 11 a 14)',p:4.71},
-      {t:'Créditos Adicionais',p:4.71},
+      {t:'Lei de Responsabilidade Fiscal — LRF',p:22.1},
+      {t:'Despesa Pública (AFO e CPU)',p:13.6},
+      {t:'Receita Pública (AFO e CPU)',p:12.4},
+      {t:'Orçamento Público',p:12.0},
+      {t:'Demonstrações Contábeis Aplicadas ao Setor Público',p:10.9},
+      {t:'Introdução à Contabilidade Aplicada ao Setor Público',p:6.0},
+      {t:'Aspectos Patrimoniais da Contabilidade Pública',p:5.5},
+      {t:'Créditos Adicionais',p:3.7},
+      {t:'Plano de Contas (PCASP)',p:2.4},
     ]
   },
   'Auditoria Governamental':{
@@ -571,38 +607,60 @@ const EDITAL={
   },
   'Contabilidade Pública':{
     top:[
-      {t:'Princípios Contábeis',p:5.81},
-      {t:'Demonstração do Resultado do Exercício (DRE)',p:5.39},
-      {t:'Demonstração de Fluxo de Caixa (DFC – CPC 03)',p:4.98},
-      {t:'Balanço Patrimonial',p:4.98},
-      {t:'Operações com mercadorias (ICMS, IPI, PIS/Confins)',p:4.98},
+      {t:'Contabilidade Básica',p:18.7},
+      {t:'Demonstrações Contábeis',p:18.0},
+      {t:'Ativo',p:17.9},
+      {t:'Introdução ao Balanço Patrimonial',p:8.3},
+      {t:'Estoques',p:7.6},
+      {t:'Outros CPCs',p:7.4},
+      {t:'Passivo Exigível',p:5.8},
+      {t:'Introdução à Demonstração do Resultado do Exercício',p:4.8},
+      {t:'Patrimônio Líquido',p:4.2},
     ]
   },
   'Dir. Civil':{
     top:[
-      {t:'Personalidade e capacidade (arts. 1º a 10 CC)',p:13.95},
-      {t:'Bens públicos (arts. 98 a 103 CC)',p:9.30},
-      {t:'Aquisição da Propriedade Imóvel — Usucapião',p:9.30},
-      {t:'Prescrição e Decadência (arts. 189 a 211 CC)',p:6.98},
-      {t:'Do Usufruto (arts. 1.390 a 1.411 CC)',p:6.98},
+      {t:'Das Pessoas (arts. 1º a 78)',p:19.5},
+      {t:'Dos Fatos Jurídicos (arts. 104 a 232)',p:18.8},
+      {t:'Do Direito das Coisas (arts. 1.196 a 1.510)',p:15.9},
+      {t:'Do Direito das Obrigações (arts. 233 a 420)',p:10.0},
+      {t:'Das Várias Espécies de Contrato (arts. 481 a 853)',p:8.1},
+      {t:'Dos Bens (arts. 79 a 103)',p:6.0},
+      {t:'Da Responsabilidade Civil (arts. 927 a 954)',p:5.7},
+      {t:'Do Direito das Sucessões (arts. 1.784 a 2.027)',p:4.8},
+      {t:'Dos Contratos em Geral (arts. 421 a 480)',p:4.6},
     ]
   },
   'Dir. Penal':{
     top:[
-      {t:'Dolo, Culpa e Preterdolo',p:11.27},
-      {t:'Peculato',p:9.86},
-      {t:'Concussão e Excesso de Exação',p:8.45},
-      {t:'Crimes Praticados por Particular Contra a Adm.',p:5.63},
-      {t:'Crimes contra as finanças públicas',p:4.23},
+      {t:'Dos Crimes contra a Administração Pública (arts. 312 a 359-H do CP)',p:51.6},
+      {t:'Teoria do Crime',p:15.1},
+      {t:'Dos Crimes contra a Fé Pública (arts. 289 a 311-A do CP)',p:7.0},
+      {t:'Jurisprudência dos Tribunais Superiores em Matéria Penal',p:6.7},
+      {t:'Das Penas (arts. 32 a 99 do CP)',p:3.3},
+      {t:'Da Extinção da Punibilidade (arts. 107 a 120 do CP)',p:3.1},
+      {t:'Dos Crimes contra o Patrimônio (arts. 155 a 183 do CP)',p:2.2},
     ]
   },
   'Raciocínio Lógico':{
     top:[
-      {t:'Associação de informações',p:19.61},
-      {t:'Equivalências lógicas (negação de proposições)',p:15.69},
-      {t:'Tabela verdade das proposições compostas',p:15.69},
-      {t:'Argumentos — métodos da tabela verdade',p:11.76},
-      {t:'Operadores lógicos (representação simbólica)',p:7.84},
+      {t:'Lógica de Proposições',p:70.7},
+      {t:'Sequências de Números, Figuras, Letras e Palavras',p:14.8},
+      {t:'Orientação no Plano, no Espaço e no Tempo',p:3.5},
+      {t:'Exercícios Envolvendo Datas e Calendários',p:2.9},
+      {t:'Princípio da Casa dos Pombos',p:2.7},
+      {t:'Lógica de Primeira Ordem',p:1.0},
+    ]
+  },
+  'Mat. Financeira':{
+    top:[
+      {t:'Regime de Juros e Descontos Simples',p:32.3},
+      {t:'Regime de Juros e Descontos Compostos',p:28.2},
+      {t:'Sistemas de Amortização',p:12.8},
+      {t:'Rendas (Séries de Pagamentos)',p:7.4},
+      {t:'Equivalência de Capitais',p:7.1},
+      {t:'Análise de Investimentos',p:6.5},
+      {t:'Inflação, Juros Reais e Juros Aparentes',p:5.1},
     ]
   },
   'TI / Análise de Dados':{
@@ -625,11 +683,18 @@ const EDITAL={
   },
   'Adm. Pública':{
     top:[
-      {t:'Princípios da Adm. Pública (LIMPE e outros)',p:14.00},
-      {t:'Organização da Adm. Pública Federal',p:11.00},
-      {t:'Agentes Públicos — Conceito e Classificação',p:9.00},
-      {t:'Licitações e Contratos Administrativos',p:8.00},
-      {t:'Processo Administrativo — Lei 9.784/1999',p:7.00},
+      {t:'Processo de Planejamento',p:13.8},
+      {t:'Gestão da Qualidade',p:12.1},
+      {t:'Modelos Teóricos de Gestão Pública',p:8.3},
+      {t:'Comportamento Organizacional',p:6.4},
+      {t:'Gestão de Pessoas',p:6.2},
+      {t:'Evolução da APU no Brasil',p:5.2},
+      {t:'Introdução à Administração',p:4.8},
+      {t:'Teorias Administrativas',p:4.4},
+      {t:'Processo de Direção',p:4.4},
+      {t:'Gestão por Processos',p:3.7},
+      {t:'Governabilidade, Governança e Interesses',p:3.6},
+      {t:'Accountability e Transparência',p:3.2},
     ]
   },
   'Dir. Processual Civil':{
@@ -642,6 +707,74 @@ const EDITAL={
     ]
   },
 };
+
+// ── HELPERS DOS 3 MODOS DE RADAR ──────────────────────────────
+
+// Retorna mapa { "Mat — Tópico": { q, a, pct } } do histórico real
+function calcAcertoPorAssunto(){
+  const hist=lsGet('historico_diario',[]);
+  const por={};
+  hist.forEach(r=>{
+    if(!r.materia||!r.assunto)return;
+    const q=parseInt(r.questoes)||0;
+    const a=parseInt(r.acertei)||0;
+    if(!q)return;
+    const k=r.materia+'|||'+r.assunto;
+    if(!por[k])por[k]={q:0,a:0,mat:r.materia,assunto:r.assunto,lastDt:0};
+    por[k].q+=q; por[k].a+=a;
+    if((r.dt||0)>por[k].lastDt)por[k].lastDt=r.dt||0;
+  });
+  return por;
+}
+
+// Calcula score de perigo: peso_topico × (1 - acerto) × fator_tempo
+// score alto = tópico que cai muito + você está indo mal + faz tempo que não toca
+function calcScorePerigo(pesoTopico, acertoPct, lastDtMs){
+  const deficit = 1 - (acertoPct !== null ? acertoPct/100 : 0.7); // sem dado = assume 30% acerto
+  const diasSem = Math.min(Math.floor((Date.now()-(lastDtMs||0))/86400000), 60);
+  const fatorTempo = 1 + diasSem*0.02; // cada dia parado aumenta 2% o perigo
+  return pesoTopico * deficit * fatorTempo;
+}
+
+// Retorna top N tópicos mais perigosos cruzando EDITAL × histórico real
+function calcTop5Perigos(n=5){
+  const porAssunto=calcAcertoPorAssunto();
+  const todayMs=new Date().setHours(0,0,0,0);
+  const perigos=[];
+  Object.entries(EDITAL).forEach(([mat,dados])=>{
+    dados.top.forEach(topico=>{
+      const k=mat+'|||'+topico.t;
+      const reg=porAssunto[k]||null;
+      const acerto=reg?Math.round(reg.a/reg.q*100):null;
+      const lastDt=reg?.lastDt||0;
+      const score=calcScorePerigo(topico.p, acerto, lastDt);
+      const diasSem=Math.floor((todayMs-(lastDt||0))/86400000);
+      perigos.push({mat,topico:topico.t,pesoEdital:topico.p,acerto,score,diasSem,temDado:!!reg});
+    });
+  });
+  return perigos.sort((a,b)=>b.score-a.score).slice(0,n);
+}
+
+// Retorna ranking de matérias com pontos em risco
+function calcPontosEmRisco(){
+  const hist=lsGet('historico_diario',[]);
+  const porMat={};
+  hist.forEach(r=>{
+    if(!r.materia||!parseInt(r.questoes))return;
+    if(!porMat[r.materia])porMat[r.materia]={q:0,a:0};
+    porMat[r.materia].q+=parseInt(r.questoes)||0;
+    porMat[r.materia].a+=parseInt(r.acertei)||0;
+  });
+  return Object.keys(EDITAL).map(mat=>{
+    const reg=porMat[mat]||null;
+    const acerto=reg&&reg.q>0?Math.round(reg.a/reg.q*100):null;
+    const topPeso=EDITAL[mat].top.reduce((s,t)=>s+t.p,0); // soma dos tops
+    const deficit=acerto!==null?(100-acerto)/100:0.5;
+    const pontosRisco=Math.round(topPeso*deficit*10)/10;
+    const pontosGarantidos=acerto!==null?Math.round(topPeso*(acerto/100)*10)/10:null;
+    return{mat,acerto,pontosRisco,pontosGarantidos,topPeso,temDado:!!reg};
+  }).sort((a,b)=>b.pontosRisco-a.pontosRisco);
+}
 
 // ── Helpers de aproveitamento ──────────────────────────────────
 function calcRankingAproveitamento(){
@@ -1690,6 +1823,54 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
         {!abertos.despacho&&despacho&&<div style={{padding:'0 14px 10px',fontSize:11,color:'var(--text4)',lineHeight:1.5}}>{despacho.split('\n')[0]}</div>}
       </div>
 
+      {/* MODO B — TOP 5 PERIGOS: peso edital × déficit de acerto */}
+      {(()=>{
+        const perigos=calcTop5Perigos(5);
+        if(!perigos.length)return null;
+        const label=p=>p>=70?'🔴 ATACAR AGORA':p>=40?'🟡 MANTER VIVO':'⬜ PODE ESPERAR';
+        const cor=p=>p>=70?'#f87171':p>=40?'#fbbf24':'#64748b';
+        return(
+          <div style={{border:'1px solid rgba(248,113,113,.3)',borderRadius:13,overflow:'hidden',marginBottom:10}}>
+            <div style={{padding:'10px 14px',background:'rgba(248,113,113,.07)',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+              <div>
+                <div style={{fontSize:9,color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px'}}>🎯 RADAR DO EDITAL — TOP 5 PERIGOS</div>
+                <div style={{fontSize:10,color:'var(--text4)',marginTop:1}}>peso da prova × seu déficit de acerto</div>
+              </div>
+            </div>
+            <div style={{padding:'10px 14px 12px'}}>
+              {perigos.map((p,i)=>{
+                const scoreNorm=Math.min(Math.round(p.score),100);
+                const c=p.acerto!==null?(p.acerto<50?'#f87171':p.acerto<70?'#fbbf24':'#34d399'):'#64748b';
+                const prioridade=scoreNorm>=60?'🔴 ATACAR AGORA':scoreNorm>=30?'🟡 MANTER VIVO':'⬜ PODE ESPERAR';
+                const corPri=scoreNorm>=60?'#f87171':scoreNorm>=30?'#fbbf24':'#64748b';
+                return(
+                  <div key={i} style={{padding:'9px 11px',borderRadius:10,background:`${corPri}08`,border:`1px solid ${corPri}25`,marginBottom:6}}>
+                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:4}}>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{fontSize:10,color:'var(--text4)',marginBottom:1}}>{p.mat}</div>
+                        <div style={{fontSize:12,fontWeight:700,color:'var(--text)',lineHeight:1.3,paddingRight:8}}>{p.topico}</div>
+                      </div>
+                      <div style={{textAlign:'right',flexShrink:0}}>
+                        <div style={{fontSize:9,padding:'2px 7px',borderRadius:5,background:`${corPri}18`,color:corPri,fontWeight:800,fontFamily:"'DM Mono',monospace",whiteSpace:'nowrap'}}>{prioridade}</div>
+                      </div>
+                    </div>
+                    <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+                      <span style={{fontSize:9,padding:'1px 6px',borderRadius:4,background:'rgba(96,165,250,.12)',color:'#60a5fa',fontFamily:"'DM Mono',monospace"}}>📊 {p.pesoEdital}% da prova</span>
+                      {p.acerto!==null
+                        ?<span style={{fontSize:9,padding:'1px 6px',borderRadius:4,background:`${c}12`,color:c,fontFamily:"'DM Mono',monospace"}}>🎯 você: {p.acerto}%</span>
+                        :<span style={{fontSize:9,padding:'1px 6px',borderRadius:4,background:'rgba(148,163,184,.12)',color:'#64748b',fontFamily:"'DM Mono',monospace"}}>🎯 sem dado ainda</span>
+                      }
+                      {p.diasSem>0&&<span style={{fontSize:9,color:'var(--text4)'}}>{p.diasSem}d sem revisar</span>}
+                    </div>
+                  </div>
+                );
+              })}
+              <div style={{fontSize:9,color:'var(--text4)',marginTop:4,fontStyle:'italic'}}>Score = peso do tópico na prova × déficit de acerto × tempo parado</div>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* ALERTA DE OXIDAÇÃO */}
       {alertaOxidacao.length>0&&(
         <div style={{padding:'10px 13px',borderRadius:11,background:'rgba(251,191,36,.08)',border:'1px solid rgba(251,191,36,.35)',marginBottom:10}}>
@@ -2453,7 +2634,51 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
           })()}
         </div>
 
-        <div style={{fontSize:9,letterSpacing:'2px',color:'#475569',fontFamily:"'DM Mono',monospace",marginBottom:8,marginTop:12}}>🏆 RANKING — APROVEITAMENTO (com dados + dif base)</div>
+        {/* MODO C — RANKING POR PONTOS EM RISCO */}
+        <div style={{fontSize:9,letterSpacing:'2px',color:'#f87171',fontFamily:"'DM Mono',monospace",marginBottom:8,marginTop:14}}>🎯 RADAR DO EDITAL — PONTOS EM RISCO (peso × déficit)</div>
+        <div style={{padding:'8px 12px',borderRadius:9,background:'rgba(248,113,113,.05)',border:'1px solid rgba(248,113,113,.18)',marginBottom:10}}>
+          <div style={{fontSize:9,color:'var(--text4)',lineHeight:1.6}}>Ordena por impacto real na nota: matéria que cai muito + você acerta pouco = mais pontos em risco. Foque nos vermelhos.</div>
+        </div>
+        {(()=>{
+          const ranking=calcPontosEmRisco();
+          if(!ranking.filter(r=>r.temDado).length)return(
+            <div style={{textAlign:'center',padding:'16px',color:'var(--text4)',fontSize:11}}>Registre questões com assunto para ver os pontos em risco.</div>
+          );
+          return ranking.map((item,i)=>{
+            const cor=item.pontosRisco>=30?'#f87171':item.pontosRisco>=15?'#fbbf24':'#34d399';
+            const acertoCor=item.acerto===null?'#64748b':item.acerto>=85?'#34d399':item.acerto>=70?'#fbbf24':'#f87171';
+            return(
+              <div key={item.mat} style={{padding:'10px 12px',borderRadius:10,background:`${cor}07`,border:`1px solid ${cor}22`,marginBottom:5}}>
+                <div style={{display:'flex',alignItems:'center',gap:8}}>
+                  <span style={{fontSize:11,fontWeight:900,color:cor,width:20,flexShrink:0}}>{i+1}</span>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontSize:12,color:'var(--text)',fontWeight:700,marginBottom:3}}>{item.mat}</div>
+                    <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+                      <span style={{fontSize:9,padding:'1px 6px',borderRadius:4,background:`${cor}15`,color:cor,fontFamily:"'DM Mono',monospace",fontWeight:800}}>
+                        ⚠️ {item.pontosRisco}pts em risco
+                      </span>
+                      {item.pontosGarantidos!==null&&(
+                        <span style={{fontSize:9,padding:'1px 6px',borderRadius:4,background:'rgba(52,211,153,.12)',color:'#34d399',fontFamily:"'DM Mono',monospace"}}>
+                          ✅ {item.pontosGarantidos}pts garantidos
+                        </span>
+                      )}
+                      {item.acerto!==null
+                        ?<span style={{fontSize:9,color:acertoCor,fontFamily:"'DM Mono',monospace"}}>🎯 {item.acerto}% acerto</span>
+                        :<span style={{fontSize:9,color:'var(--text4)'}}>sem questões</span>
+                      }
+                    </div>
+                  </div>
+                  <div style={{textAlign:'right',flexShrink:0}}>
+                    <div style={{fontSize:16,fontWeight:900,color:cor,fontFamily:"'DM Mono',monospace",lineHeight:1}}>{item.pontosRisco}</div>
+                    <div style={{fontSize:8,color:'var(--text4)'}}>pts risco</div>
+                  </div>
+                </div>
+              </div>
+            );
+          });
+        })()}
+
+        <div style={{fontSize:9,letterSpacing:'2px',color:'#475569',fontFamily:"'DM Mono',monospace",marginBottom:8,marginTop:14}}>🏆 RANKING — APROVEITAMENTO (com dados + dif base)</div>
         {(()=>{
           const{comDado,semDado}=calcRankingAproveitamento();
           const todos=[
@@ -2997,70 +3222,149 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras}){
       </div>}
 
       {/* EDITAL */}
-      {aba==='edital'&&<div>
-        <div style={{padding:'10px 12px',borderRadius:10,background:'rgba(251,191,36,.06)',border:'1px solid rgba(251,191,36,.2)',marginBottom:12}}>
-          <div style={{fontSize:9,color:'#fbbf24',fontFamily:"'DM Mono',monospace",marginBottom:2}}>📋 TÓPICOS MAIS COBRADOS — Área Fiscal</div>
-          <div style={{fontSize:10,color:'#64748b'}}>Toque no tópico para marcar: ⬜ Não estudei → 🟡 Estudei/travei → ✅ Domino</div>
-        </div>
-        {/* Seletor de matéria */}
-        <div style={{display:'flex',flexWrap:'wrap',gap:4,marginBottom:12}}>
-          {Object.keys(EDITAL).map(mat=>{
-            const tops=EDITAL[mat].top;
-            const domino=tops.filter(t=>editalStatus[mat+':'+t.t]==='domino').length;
-            const estudei=tops.filter(t=>editalStatus[mat+':'+t.t]==='estudei').length;
-            const pctDom=Math.round(domino/tops.length*100);
-            const cor=pctDom>=80?'#34d399':pctDom>=40?'#fbbf24':'#60a5fa';
-            return(
-              <button key={mat} onClick={()=>setEditalMatSel(mat)}
-                style={{padding:'5px 9px',borderRadius:8,border:`1px solid ${editalMatSel===mat?cor:'rgba(255,255,255,.1)'}`,background:editalMatSel===mat?`${cor}15`:'transparent',color:editalMatSel===mat?cor:'#475569',fontSize:9,cursor:'pointer',position:'relative'}}>
-                {mat.length>12?mat.slice(0,11)+'…':mat}
-                {(domino>0||estudei>0)&&<span style={{marginLeft:4,fontSize:8,color:cor}}>{domino}/{tops.length}</span>}
-              </button>
-            );
-          })}
-        </div>
-        {/* Tópicos da matéria selecionada */}
-        {EDITAL[editalMatSel]&&<div>
-          <div style={{fontSize:10,fontWeight:700,color:'#f1f5f9',marginBottom:8}}>{editalMatSel}</div>
-          {EDITAL[editalMatSel].top.map((item,i)=>{
-            const key=editalMatSel+':'+item.t;
-            const st=editalStatus[key]||'';
-            const corPeso=item.p>=15?'#f87171':item.p>=8?'#fbbf24':'#60a5fa';
-            const icone=st==='domino'?'✅':st==='estudei'?'🟡':'⬜';
-            const bgSt=st==='domino'?'rgba(52,211,153,.08)':st==='estudei'?'rgba(251,191,36,.08)':'rgba(255,255,255,.02)';
-            const borderSt=st==='domino'?'rgba(52,211,153,.3)':st==='estudei'?'rgba(251,191,36,.3)':'rgba(255,255,255,.08)';
-            return(
-              <div key={i} onClick={()=>toggleEditalStatus(editalMatSel,item.t)}
-                style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:10,background:bgSt,border:`1px solid ${borderSt}`,marginBottom:6,cursor:'pointer'}}>
-                <span style={{fontSize:14,flexShrink:0}}>{icone}</span>
-                <div style={{flex:1}}>
-                  <div style={{fontSize:11,color:'#f1f5f9',fontWeight:600,lineHeight:1.4}}>{item.t}</div>
-                  {item.p>=8&&(
-                    <div style={{fontSize:8,color:corPeso,marginTop:2,padding:'1px 5px',borderRadius:3,background:`${corPeso}15`,display:'inline-block',fontFamily:"'DM Mono',monospace"}}>
-                      {item.p>=15?'🔴 MUITO PESADO':item.p>=8?'🟡 PESADO':''} {item.p}% das questões
-                    </div>
-                  )}
+      {aba==='edital'&&(()=>{
+        const porAssunto=calcAcertoPorAssunto();
+        const tops=EDITAL[editalMatSel]?.top||[];
+        const domino=tops.filter(t=>editalStatus[editalMatSel+':'+t.t]==='domino').length;
+        const estudei=tops.filter(t=>editalStatus[editalMatSel+':'+t.t]==='estudei').length;
+
+        return(
+          <div>
+            <div style={{padding:'10px 12px',borderRadius:10,background:'rgba(251,191,36,.06)',border:'1px solid rgba(251,191,36,.2)',marginBottom:12}}>
+              <div style={{fontSize:9,color:'#fbbf24',fontFamily:"'DM Mono',monospace",marginBottom:2}}>📋 RADAR DO EDITAL — peso × seu desempenho real</div>
+              <div style={{fontSize:10,color:'var(--text4)'}}>Toque para marcar: ⬜ → 🟡 → ✅ · Acerto real calculado do histórico</div>
+            </div>
+
+            {/* Seletor de matéria */}
+            <div style={{display:'flex',flexWrap:'wrap',gap:4,marginBottom:12}}>
+              {Object.keys(EDITAL).map(mat=>{
+                const mtops=EDITAL[mat].top;
+                const dom=mtops.filter(t=>editalStatus[mat+':'+t.t]==='domino').length;
+                const pctDom=Math.round(dom/mtops.length*100);
+                const cor=pctDom>=80?'#34d399':pctDom>=40?'#fbbf24':'#60a5fa';
+                // conta perigos reais nessa matéria
+                const nPerigo=mtops.filter(t=>{
+                  const k=mat+'|||'+t.t;
+                  const reg=porAssunto[k];
+                  const acerto=reg?Math.round(reg.a/reg.q*100):null;
+                  return acerto!==null&&acerto<70&&t.p>=8;
+                }).length;
+                return(
+                  <button key={mat} onClick={()=>setEditalMatSel(mat)}
+                    style={{padding:'5px 9px',borderRadius:8,border:`1px solid ${editalMatSel===mat?cor:'rgba(255,255,255,.1)'}`,background:editalMatSel===mat?`${cor}15`:'transparent',color:editalMatSel===mat?cor:'#475569',fontSize:9,cursor:'pointer',position:'relative'}}>
+                    {mat.length>12?mat.slice(0,11)+'…':mat}
+                    {nPerigo>0&&<span style={{marginLeft:3,fontSize:7,color:'#f87171',fontWeight:900}}>⚠️{nPerigo}</span>}
+                    {dom>0&&<span style={{marginLeft:3,fontSize:8,color:cor}}>{dom}/{mtops.length}</span>}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Tópicos com cruzamento */}
+            {EDITAL[editalMatSel]&&<div>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+                <div style={{fontSize:11,fontWeight:700,color:'var(--text)'}}>{editalMatSel}</div>
+                <div style={{display:'flex',gap:5}}>
+                  <span style={{fontSize:8,padding:'2px 6px',borderRadius:4,background:'rgba(52,211,153,.15)',color:'#34d399'}}>{domino} ✅</span>
+                  <span style={{fontSize:8,padding:'2px 6px',borderRadius:4,background:'rgba(251,191,36,.15)',color:'#fbbf24'}}>{estudei} 🟡</span>
+                  <span style={{fontSize:8,padding:'2px 6px',borderRadius:4,background:'rgba(148,163,184,.1)',color:'var(--text4)'}}>{tops.length-domino-estudei} ⬜</span>
                 </div>
-                <span style={{fontSize:9,color:'#475569',fontFamily:"'DM Mono',monospace",flexShrink:0}}>{item.p}%</span>
               </div>
-            );
-          })}
-          {/* Resumo da matéria */}
-          {(()=>{
-            const tops=EDITAL[editalMatSel].top;
-            const domino=tops.filter(t=>editalStatus[editalMatSel+':'+t.t]==='domino').length;
-            const estudei=tops.filter(t=>editalStatus[editalMatSel+':'+t.t]==='estudei').length;
-            const nenhum=tops.length-domino-estudei;
-            return(
-              <div style={{display:'flex',gap:8,marginTop:10,padding:'8px 12px',borderRadius:9,background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.08)'}}>
-                <div style={{flex:1,textAlign:'center'}}><div style={{fontSize:14,fontWeight:900,color:'#34d399'}}>{domino}</div><div style={{fontSize:8,color:'#64748b'}}>Domino ✅</div></div>
-                <div style={{flex:1,textAlign:'center'}}><div style={{fontSize:14,fontWeight:900,color:'#fbbf24'}}>{estudei}</div><div style={{fontSize:8,color:'#64748b'}}>Estudei 🟡</div></div>
-                <div style={{flex:1,textAlign:'center'}}><div style={{fontSize:14,fontWeight:900,color:'#475569'}}>{nenhum}</div><div style={{fontSize:8,color:'#64748b'}}>Pendente ⬜</div></div>
-              </div>
-            );
-          })()}
-        </div>}
-      </div>}
+
+              {EDITAL[editalMatSel].top.map((item,i)=>{
+                const key=editalMatSel+':'+item.t;
+                const assKey=editalMatSel+'|||'+item.t;
+                const st=editalStatus[key]||'';
+                const reg=porAssunto[assKey]||null;
+                const acerto=reg?Math.round(reg.a/reg.q*100):null;
+                const score=calcScorePerigo(item.p, acerto, reg?.lastDt||0);
+                const scoreNorm=Math.min(Math.round(score),100);
+
+                // Cor baseada no cruzamento peso × acerto
+                let corItem,bgItem,borderItem,alertLabel;
+                if(acerto===null){
+                  // sem dado: cor pelo peso
+                  corItem=item.p>=15?'#f87171':item.p>=8?'#fbbf24':'#60a5fa';
+                  bgItem=`${corItem}06`; borderItem=`${corItem}20`;
+                  alertLabel=item.p>=15?'🔴 SEM DADO — ALTO PESO':item.p>=8?'🟡 SEM DADO':'';
+                } else if(acerto<60&&item.p>=10){
+                  corItem='#f87171'; bgItem='rgba(248,113,113,.08)'; borderItem='rgba(248,113,113,.35)';
+                  alertLabel='🔴 PERIGO REAL';
+                } else if(acerto<70&&item.p>=5){
+                  corItem='#fbbf24'; bgItem='rgba(251,191,36,.06)'; borderItem='rgba(251,191,36,.25)';
+                  alertLabel='🟡 ATENÇÃO';
+                } else if(acerto>=85){
+                  corItem='#34d399'; bgItem='rgba(52,211,153,.05)'; borderItem='rgba(52,211,153,.2)';
+                  alertLabel='';
+                } else {
+                  corItem='#64748b'; bgItem='rgba(255,255,255,.02)'; borderItem='rgba(255,255,255,.08)';
+                  alertLabel='';
+                }
+
+                const stIcon=st==='domino'?'✅':st==='estudei'?'🟡':'⬜';
+
+                return(
+                  <div key={i} onClick={()=>toggleEditalStatus(editalMatSel,item.t)}
+                    style={{padding:'10px 12px',borderRadius:10,background:bgItem,border:`1px solid ${borderItem}`,marginBottom:6,cursor:'pointer'}}>
+                    <div style={{display:'flex',alignItems:'flex-start',gap:8}}>
+                      <span style={{fontSize:14,flexShrink:0,marginTop:1}}>{stIcon}</span>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{fontSize:11,color:'var(--text)',fontWeight:600,lineHeight:1.4}}>{item.t}</div>
+                        <div style={{display:'flex',gap:6,marginTop:4,flexWrap:'wrap',alignItems:'center'}}>
+                          {/* Peso no edital */}
+                          <span style={{fontSize:9,padding:'1px 6px',borderRadius:4,background:'rgba(96,165,250,.12)',color:'#60a5fa',fontFamily:"'DM Mono',monospace",fontWeight:700}}>
+                            📊 {item.p}% da prova
+                          </span>
+                          {/* Acerto real */}
+                          {acerto!==null
+                            ?<span style={{fontSize:9,padding:'1px 6px',borderRadius:4,background:`${acerto>=70?'rgba(52,211,153,.12)':acerto>=50?'rgba(251,191,36,.12)':'rgba(248,113,113,.12)'}`,color:acerto>=70?'#34d399':acerto>=50?'#fbbf24':'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:700}}>
+                              🎯 você: {acerto}% ({reg.q}Q)
+                            </span>
+                            :<span style={{fontSize:9,color:'var(--text4)'}}>sem questões registradas</span>
+                          }
+                          {/* Alert label */}
+                          {alertLabel&&<span style={{fontSize:9,color:corItem,fontWeight:800}}>{alertLabel}</span>}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {/* Resumo + alerta de perigos */}
+              {(()=>{
+                const perigos=EDITAL[editalMatSel].top.filter(t=>{
+                  const k=editalMatSel+'|||'+t.t;
+                  const reg=porAssunto[k];
+                  const ac=reg?Math.round(reg.a/reg.q*100):null;
+                  return ac!==null&&ac<70&&t.p>=5;
+                });
+                return(
+                  <div style={{marginTop:10}}>
+                    <div style={{display:'flex',gap:8,padding:'8px 12px',borderRadius:9,background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.08)',marginBottom:perigos.length?8:0}}>
+                      <div style={{flex:1,textAlign:'center'}}><div style={{fontSize:14,fontWeight:900,color:'#34d399'}}>{domino}</div><div style={{fontSize:8,color:'var(--text4)'}}>Domino ✅</div></div>
+                      <div style={{flex:1,textAlign:'center'}}><div style={{fontSize:14,fontWeight:900,color:'#fbbf24'}}>{estudei}</div><div style={{fontSize:8,color:'var(--text4)'}}>Estudei 🟡</div></div>
+                      <div style={{flex:1,textAlign:'center'}}><div style={{fontSize:14,fontWeight:900,color:'#475569'}}>{tops.length-domino-estudei}</div><div style={{fontSize:8,color:'var(--text4)'}}>Pendente ⬜</div></div>
+                      {perigos.length>0&&<div style={{flex:1,textAlign:'center'}}><div style={{fontSize:14,fontWeight:900,color:'#f87171'}}>{perigos.length}</div><div style={{fontSize:8,color:'#f87171'}}>⚠️ Perigo</div></div>}
+                    </div>
+                    {perigos.length>0&&(
+                      <div style={{padding:'8px 11px',borderRadius:9,background:'rgba(248,113,113,.06)',border:'1px solid rgba(248,113,113,.25)'}}>
+                        <div style={{fontSize:9,color:'#f87171',fontWeight:800,marginBottom:4}}>⚠️ TÓPICOS CRÍTICOS — alto peso + baixo acerto</div>
+                        {perigos.map((t,i)=>{
+                          const k=editalMatSel+'|||'+t.t;
+                          const reg=porAssunto[k];
+                          const ac=reg?Math.round(reg.a/reg.q*100):0;
+                          return<div key={i} style={{fontSize:10,color:'var(--text2)',marginBottom:2}}>• {t.t} <span style={{color:'#f87171',fontFamily:"'DM Mono',monospace"}}>{t.p}% prova · {ac}% acerto</span></div>;
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+            </div>}
+          </div>
+        );
+      })()}
 
       {/* ANKI */}
       {aba==='anki'&&<div>
