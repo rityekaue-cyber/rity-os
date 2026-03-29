@@ -1721,7 +1721,7 @@ function TabHoje({feitos,onAddHoras}){
 
   const salvarTec=()=>{
     if(!tecForm.mat)return;
-    const prazoDias={'D+3':3,'D+15':15,'D+30':30}[tecForm.prazo]||3;
+    const prazoDias={'D+3':3,'D+15':15,'D+45':45}[tecForm.prazo]||3;
     const prazoDate=new Date();prazoDate.setDate(prazoDate.getDate()+prazoDias);
     const prazoStr=prazoDate.toISOString().split('T')[0];
     const pct=tecForm.feitas&&tecForm.acertei?Math.round(parseInt(tecForm.acertei)/parseInt(tecForm.feitas)*100):null;
@@ -1741,7 +1741,7 @@ function TabHoje({feitos,onAddHoras}){
         const proxFase=fase+1;
         const proxDias=proxFase===2?15:30;
         const novo=new Date();novo.setDate(novo.getDate()+proxDias);
-        return{...t,prazo:novo.toISOString().split('T')[0],prazoLabel:proxFase===2?'D+15':'D+30',fase:proxFase};
+        return{...t,prazo:novo.toISOString().split('T')[0],prazoLabel:proxFase===2?'D+15':'D+45',fase:proxFase};
       }
       const fase=t.fase||1;
       const voltaDias=fase===3?15:3;
@@ -1797,11 +1797,36 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
     </button>
   );
 
+  // ── Sub-aba estado ────────────────────────────────────────────
+  const[subAba,setSubAba]=useState('hoje');
+  // ── Hoje sem pensar: feitos locais ───────────────────────────
+  const[hspFeito,setHspFeito]=useState(()=>lsGet(`hsp_${hoje}`,{b1:false,b2:false,min:false,planob:false}));
+  const marcarHsp=k=>{const n={...hspFeito,[k]:true};setHspFeito(n);lsSet(`hsp_${hoje}`,n);};
+  const hspTodos=Object.values(hspFeito).every(Boolean);
+
+  // ── Calcular blocos do "Hoje sem pensar" ─────────────────────
+  const hspPlan=useMemo(()=>{
+    const feitosSet=new Set(feitos);
+    const pendentes=CICLO.filter(s=>!feitosSet.has(s.id));
+    // Bloco 1: mais crítico do ciclo
+    const criticos=pendentes.filter(s=>s.tag?.includes('CRÍTICO')||s.tag?.includes('ATRASADA'));
+    const b1=criticos[0]||pendentes[0]||null;
+    // Bloco 2: TEC vencendo hoje OU segundo bloco
+    const tecVencendo=tecHoje.d3.length>0;
+    const b2desc=tecVencendo
+      ?{label:`TEC — ${tecHoje.d3.length} revisão(ões) vencendo`,mat:'TEC',h:0.5,ic:'🔴',motivo:'não pode atrasar — afeta fixação'}
+      :(pendentes.find(s=>s.id!==(b1?.id))||null);
+    // Revisão mínima: Anki 25 cards da matéria mais crítica
+    const mat1=ankiMaterias[0]?.mat||'matéria prioritária';
+    // Plano B fixo
+    return{b1,b2:b2desc,mat1};
+  },[feitos,tecHoje,ankiMaterias]);
+
   return(
     <div style={{maxWidth:680,margin:'0 auto'}}>
 
       {/* HEADER */}
-      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
         <div>
           <div style={{fontSize:18,fontWeight:900,color:'var(--text)',fontFamily:"'DM Serif Display',serif"}}>{NOMES_DW[dw]}</div>
           <div style={{fontSize:11,color:'var(--text4)'}}>{totalH}h disponíveis · bloco {feitos?.length||0}/25{trabalha?' · 💼 trabalho':''}</div>
@@ -1810,6 +1835,392 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
           {despachoLoad?'⏳':'🤖 Despacho'}
         </button>
       </div>
+
+      {/* SUB-ABAS */}
+      <div style={{display:'flex',gap:4,marginBottom:12,overflowX:'auto',scrollbarWidth:'none'}}>
+        {[
+          {id:'hoje',l:'🧭 Hoje sem pensar'},
+          {id:'blocos',l:'📅 Blocos'},
+          {id:'tec',l:`🔴 TEC${tecHoje.d3.length>0?` (${tecHoje.d3.length})`:''}` },
+          {id:'radar',l:'🎯 Radar'},
+        ].map(s=>{
+          const at=subAba===s.id;
+          return(
+            <button key={s.id} onClick={()=>setSubAba(s.id)} style={{flexShrink:0,padding:'8px 12px',borderRadius:9,border:`1px solid ${at?'var(--tab-active-border)':'var(--border)'}`,background:at?'var(--tab-active-bg)':'transparent',color:at?'var(--tab-active-color)':'var(--tab-inactive-color)',fontSize:11,fontWeight:700,fontFamily:"'DM Mono',monospace",cursor:'pointer',whiteSpace:'nowrap'}}>
+              {s.l}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* ── SUB-ABA: HOJE SEM PENSAR ── */}
+      {subAba==='hoje'&&(
+        <div>
+          <div style={{padding:'10px 13px',borderRadius:11,background:'rgba(96,165,250,.06)',border:'1px solid rgba(96,165,250,.2)',marginBottom:14}}>
+            <div style={{fontSize:9,color:'#60a5fa',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:2}}>🧭 HOJE SEM PENSAR — itens inegociáveis</div>
+            <div style={{fontSize:10,color:'var(--text4)'}}>Calculado automaticamente · sem IA · sem espera · marque ao fazer</div>
+          </div>
+
+          {hspTodos&&(
+            <div style={{padding:'16px',borderRadius:13,background:'rgba(52,211,153,.08)',border:'2px solid rgba(52,211,153,.4)',marginBottom:14,textAlign:'center'}}>
+              <div style={{fontSize:22,marginBottom:4}}>✅</div>
+              <div style={{fontSize:15,fontWeight:900,color:'#34d399',fontFamily:"'DM Serif Display',serif"}}>Dia salvo!</div>
+              <div style={{fontSize:11,color:'var(--text4)',marginTop:3}}>Você fez o que importava hoje.</div>
+            </div>
+          )}
+
+          {/* Bloco 1 */}
+          <div style={{padding:'14px',borderRadius:13,background:hspFeito.b1?'rgba(52,211,153,.07)':'rgba(248,113,113,.07)',border:`2px solid ${hspFeito.b1?'rgba(52,211,153,.4)':'rgba(248,113,113,.35)'}`,marginBottom:8}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:8}}>
+              <div style={{flex:1}}>
+                <div style={{fontSize:9,color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:4}}>🔴 BLOCO 1 — MAIOR RETORNO AGORA</div>
+                {hspPlan.b1
+                  ?<>
+                    <div style={{fontSize:14,fontWeight:900,color:'var(--text)'}}>{hspPlan.b1.ic} {hspPlan.b1.mat}</div>
+                    <div style={{fontSize:11,color:'var(--text4)',marginTop:2}}>{hspPlan.b1.conteudo}</div>
+                    <div style={{display:'flex',gap:6,marginTop:5}}>
+                      <span style={{fontSize:9,padding:'1px 6px',borderRadius:4,background:'rgba(248,113,113,.12)',color:'#f87171',fontFamily:"'DM Mono',monospace"}}>{hspPlan.b1.h}h · {hspPlan.b1.tipo}</span>
+                      <span style={{fontSize:9,color:'var(--text4)'}}>{hspPlan.b1.tag}</span>
+                    </div>
+                  </>
+                  :<div style={{fontSize:13,color:'#34d399',fontWeight:700}}>✅ Ciclo completo!</div>
+                }
+              </div>
+            </div>
+            {!hspFeito.b1
+              ?<button onClick={()=>marcarHsp('b1')} style={{width:'100%',padding:'10px',borderRadius:9,border:'none',background:'#f87171',color:'#0f172a',fontSize:12,fontWeight:800,cursor:'pointer'}}>✅ Fiz</button>
+              :<div style={{textAlign:'center',fontSize:12,color:'#34d399',fontWeight:700}}>✅ Feito!</div>
+            }
+          </div>
+
+          {/* Bloco 2 */}
+          <div style={{padding:'14px',borderRadius:13,background:hspFeito.b2?'rgba(52,211,153,.07)':'rgba(251,191,36,.06)',border:`2px solid ${hspFeito.b2?'rgba(52,211,153,.4)':'rgba(251,191,36,.3)'}`,marginBottom:8}}>
+            <div style={{marginBottom:8}}>
+              <div style={{fontSize:9,color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:4}}>🟡 BLOCO 2 — SEGUNDA PRIORIDADE</div>
+              {hspPlan.b2&&typeof hspPlan.b2==='object'&&hspPlan.b2.mat==='TEC'
+                ?<>
+                  <div style={{fontSize:14,fontWeight:900,color:'var(--text)'}}>{hspPlan.b2.label}</div>
+                  <div style={{fontSize:11,color:'var(--text4)',marginTop:2}}>{hspPlan.b2.motivo}</div>
+                  <span style={{fontSize:9,padding:'1px 6px',borderRadius:4,background:'rgba(248,113,113,.12)',color:'#f87171',fontFamily:"'DM Mono',monospace",marginTop:5,display:'inline-block'}}>~30min</span>
+                </>
+                :hspPlan.b2
+                  ?<>
+                    <div style={{fontSize:14,fontWeight:900,color:'var(--text)'}}>{hspPlan.b2.ic} {hspPlan.b2.mat}</div>
+                    <div style={{fontSize:11,color:'var(--text4)',marginTop:2}}>{hspPlan.b2.conteudo}</div>
+                    <span style={{fontSize:9,padding:'1px 6px',borderRadius:4,background:'rgba(251,191,36,.12)',color:'#fbbf24',fontFamily:"'DM Mono',monospace",marginTop:5,display:'inline-block'}}>{hspPlan.b2.h}h · {hspPlan.b2.tipo}</span>
+                  </>
+                  :<div style={{fontSize:13,color:'#34d399',fontWeight:700}}>✅ Nada pendente</div>
+              }
+            </div>
+            {!hspFeito.b2
+              ?<button onClick={()=>marcarHsp('b2')} style={{width:'100%',padding:'10px',borderRadius:9,border:'none',background:'#fbbf24',color:'#0f172a',fontSize:12,fontWeight:800,cursor:'pointer'}}>✅ Fiz</button>
+              :<div style={{textAlign:'center',fontSize:12,color:'#34d399',fontWeight:700}}>✅ Feito!</div>
+            }
+          </div>
+
+          {/* Revisão mínima */}
+          <div style={{padding:'14px',borderRadius:13,background:hspFeito.min?'rgba(52,211,153,.07)':'rgba(167,139,250,.06)',border:`2px solid ${hspFeito.min?'rgba(52,211,153,.4)':'rgba(167,139,250,.3)'}`,marginBottom:8}}>
+            <div style={{marginBottom:8}}>
+              <div style={{fontSize:9,color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:4}}>🟢 REVISÃO MÍNIMA — o mínimo do mínimo</div>
+              <div style={{fontSize:14,fontWeight:900,color:'var(--text)'}}>🃏 Anki — 25 cards</div>
+              <div style={{fontSize:11,color:'var(--text4)',marginTop:2}}>Matéria: {hspPlan.mat1} · só os mais urgentes</div>
+              <span style={{fontSize:9,padding:'1px 6px',borderRadius:4,background:'rgba(167,139,250,.12)',color:'#a78bfa',fontFamily:"'DM Mono',monospace",marginTop:5,display:'inline-block'}}>~15min · impede o dia de ser perdido</span>
+            </div>
+            {!hspFeito.min
+              ?<button onClick={()=>marcarHsp('min')} style={{width:'100%',padding:'10px',borderRadius:9,border:'none',background:'#a78bfa',color:'#0f172a',fontSize:12,fontWeight:800,cursor:'pointer'}}>✅ Fiz o Anki mínimo</button>
+              :<div style={{textAlign:'center',fontSize:12,color:'#34d399',fontWeight:700}}>✅ Feito!</div>
+            }
+          </div>
+
+          {/* Plano B */}
+          <div style={{padding:'14px',borderRadius:13,background:hspFeito.planob?'rgba(52,211,153,.07)':'rgba(148,163,184,.05)',border:`2px solid ${hspFeito.planob?'rgba(52,211,153,.4)':'rgba(148,163,184,.2)'}`,marginBottom:8}}>
+            <div style={{marginBottom:8}}>
+              <div style={{fontSize:9,color:'var(--text4)',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:4}}>⚪ PLANO B — se a rotina quebrar</div>
+              <div style={{fontSize:13,fontWeight:700,color:'var(--text)'}}>20min: Anki 10 cards + 1 TEC</div>
+              <div style={{fontSize:11,color:'var(--text4)',marginTop:3,lineHeight:1.6}}>
+                Se só tiver <strong style={{color:'var(--text)'}}>30min</strong>: só o Anki mínimo (25 cards)<br/>
+                Se só tiver <strong style={{color:'var(--text)'}}>20min</strong>: Anki 10 cards + marcar 1 TEC<br/>
+                Se o dia for <strong style={{color:'var(--text)'}}>perdido</strong>: leia 1 tópico do edital antes de dormir
+              </div>
+            </div>
+            {!hspFeito.planob
+              ?<button onClick={()=>marcarHsp('planob')} style={{width:'100%',padding:'10px',borderRadius:9,border:'1px solid rgba(148,163,184,.3)',background:'transparent',color:'var(--text4)',fontSize:12,fontWeight:700,cursor:'pointer'}}>✅ Usei o Plano B</button>
+              :<div style={{textAlign:'center',fontSize:12,color:'#34d399',fontWeight:700}}>✅ Registrado</div>
+            }
+          </div>
+        </div>
+      )}
+
+      {/* ── SUB-ABA: BLOCOS (conteúdo original da aba Hoje) ── */}
+      {subAba==='blocos'&&(
+        <div>
+          {/* DESPACHO IA */}
+          <div style={{background:'linear-gradient(135deg,rgba(251,191,36,.08),rgba(251,191,36,.03))',border:'1px solid rgba(251,191,36,.2)',borderRadius:12,marginBottom:10,overflow:'hidden'}}>
+            <button onClick={()=>toggle('despacho')} style={{width:'100%',display:'flex',justifyContent:'space-between',alignItems:'center',padding:'10px 14px',background:'transparent',border:'none',cursor:'pointer'}}>
+              <span style={{fontSize:10,color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:700,letterSpacing:'1px'}}>🤖 ASSESSORA — {hoje}</span>
+              <span style={{fontSize:10,color:'var(--text4)'}}>{abertos.despacho?'▲':'▼'}</span>
+            </button>
+            {abertos.despacho&&<div style={{padding:'0 14px 12px',fontSize:12,color:'var(--text2)',lineHeight:1.7,whiteSpace:'pre-line'}}>
+              {despacho||<span style={{color:'var(--text4)'}}>{getAK()?.startsWith('sk-ant')?'Gerando...':'Configure a chave IA em ⚙️'}</span>}
+            </div>}
+            {!abertos.despacho&&despacho&&<div style={{padding:'0 14px 10px',fontSize:11,color:'var(--text4)',lineHeight:1.5}}>{despacho.split('\n')[0]}</div>}
+          </div>
+
+          {/* ALERTA DE OXIDAÇÃO */}
+          {alertaOxidacao.length>0&&(
+            <div style={{padding:'10px 13px',borderRadius:11,background:'rgba(251,191,36,.08)',border:'1px solid rgba(251,191,36,.35)',marginBottom:10}}>
+              <div style={{fontSize:9,color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:6}}>🟡 RISCO DE OXIDAÇÃO — matérias sólidas paradas</div>
+              <div style={{display:'flex',flexWrap:'wrap',gap:5}}>
+                {alertaOxidacao.map(item=>(
+                  <div key={item.mat} style={{padding:'4px 9px',borderRadius:7,background:'rgba(251,191,36,.12)',border:'1px solid rgba(251,191,36,.3)'}}>
+                    <span style={{fontSize:11,color:'#fbbf24',fontWeight:700}}>{item.mat}</span>
+                    <span style={{fontSize:9,color:'#94a3b8',marginLeft:5}}>{item.pct}% · {item.diasSem}d sem revisar</span>
+                  </div>
+                ))}
+              </div>
+              <div style={{fontSize:9,color:'#94a3b8',marginTop:6}}>Matéria ≥85% sem aparecer há 15+ dias pode travar na prova.</div>
+            </div>
+          )}
+
+          {/* CARDS COLAPSÁVEIS: ANKI, TEC resumo, NLM */}
+          <div style={{border:'1px solid var(--border)',borderRadius:13,overflow:'hidden',background:'var(--card)'}}>
+            {/* ANKI */}
+            <div style={{borderBottom:'1px solid var(--border)'}}>
+              <CardHeader emoji="🟣" titulo="ANKI — 75 cards" resumo={ankiFeito?`✅ feito · ${ankiFeito.cards} cards`:`${ankiMaterias.map(m=>m.mat.split(' ')[0]+' '+m.cards).join(' · ')}`} key_="anki" cor="#a78bfa" feito={!!ankiFeito} nfz={!!naoFiz.anki}/>
+              {abertos.anki&&!ankiFeito&&!naoFiz.anki&&<div style={{padding:'0 14px 14px'}}>
+                <div style={{fontSize:10,color:'var(--text4)',fontFamily:"'DM Mono',monospace",marginBottom:8}}>DISTRIBUIÇÃO DE HOJE</div>
+                {ankiMaterias.map((m,i)=>(
+                  <div key={m.mat} style={{display:'flex',alignItems:'center',gap:8,padding:'8px 10px',borderRadius:9,background:`rgba(167,139,250,${i===0?'.1':'.05'})`,border:`1px solid rgba(167,139,250,${i===0?'.3':'.15'})`,marginBottom:6}}>
+                    <div style={{flex:1}}>
+                      <div style={{fontSize:12,fontWeight:700,color:'var(--text)'}}>{m.mat}</div>
+                      <div style={{fontSize:10,color:'var(--text4)'}}>{m.motivo}</div>
+                    </div>
+                    <div style={{textAlign:'right'}}>
+                      <div style={{fontSize:11,color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:3}}>{m.cards} cards</div>
+                      <input type="number" placeholder={String(m.cards)} value={ankiCards[m.mat]||''} onChange={e=>setAnkiCards(p=>({...p,[m.mat]:e.target.value}))}
+                        style={{width:60,padding:'4px 6px',borderRadius:6,border:'1px solid rgba(167,139,250,.3)',background:'rgba(167,139,250,.05)',color:'#a78bfa',fontSize:12,fontWeight:700,textAlign:'center',outline:'none',fontFamily:"'DM Mono',monospace"}}/>
+                    </div>
+                  </div>
+                ))}
+                {totalAnkiInput>0&&<div style={{fontSize:10,color:'var(--text4)',textAlign:'center',marginBottom:8}}>
+                  Total: <strong style={{color:'#a78bfa'}}>{totalAnkiInput}</strong> cards
+                  {totalAnkiInput>=75&&<span style={{color:'#34d399',marginLeft:6}}>✅ Meta batida!</span>}
+                  {totalAnkiInput>0&&totalAnkiInput<75&&<span style={{color:'#fbbf24',marginLeft:6}}>⚠️ faltam {75-totalAnkiInput}</span>}
+                </div>}
+                <div style={{display:'flex',gap:6}}>
+                  <button onClick={marcarAnki} style={{flex:2,padding:'10px',borderRadius:9,border:'none',background:'#a78bfa',color:'#0f172a',fontSize:12,fontWeight:800,cursor:'pointer'}}>✅ Fiz o Anki</button>
+                  <BtnNaoFiz tipo="anki"/>
+                </div>
+              </div>}
+              {abertos.anki&&ankiFeito&&<div style={{padding:'0 14px 14px'}}>
+                <div style={{fontSize:11,color:'#34d399',fontWeight:700,marginBottom:6}}>✅ Feito hoje — {ankiFeito.cards} cards</div>
+                {ankiFeito.mats?.map(m=><div key={m.mat} style={{fontSize:10,color:'var(--text4)',marginBottom:2}}>• {m.mat}: {ankiFeito.porMat?.[m.mat]||m.cards} cards</div>)}
+              </div>}
+            </div>
+            {/* NLM */}
+            <div>
+              <CardHeader emoji="🔵" titulo="NLM — 1h30 teoria" resumo={naoFiz.nlm?'❌ não fiz':nlmSugerido?`${nlmSugerido.mat} · ${nlmSugerido.pct}% acerto · ${nlmSugerido.diasNlm}d sem NLM${nlmSugerido.emJanela?' · ⚡ janela ativa':''}`:'-'} key_="nlm" cor="#34d399" feito={!!lsGet(`nlm_feito_${hoje}`,false)} nfz={!!naoFiz.nlm}/>
+              {abertos.nlm&&!naoFiz.nlm&&<div style={{padding:'0 14px 14px'}}>
+                {nlmSugerido&&<div style={{padding:'10px 12px',borderRadius:10,background:'rgba(52,211,153,.06)',border:'1px solid rgba(52,211,153,.2)',marginBottom:10}}>
+                  <div style={{fontSize:13,fontWeight:700,color:'var(--text)',marginBottom:4}}>{nlmSugerido.mat}</div>
+                  <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+                    <span style={{fontSize:10,color:nlmSugerido.pct>=70?'#fbbf24':'#f87171'}}>{nlmSugerido.pct}% acerto</span>
+                    <span style={{fontSize:10,color:'var(--text4)'}}>travou {nlmSugerido.travou}x</span>
+                    <span style={{fontSize:10,color:'var(--text4)'}}>{nlmSugerido.diasNlm}d sem NLM</span>
+                    {nlmSugerido.emJanela&&<span style={{fontSize:10,color:'#34d399',fontWeight:700}}>⚡ janela do ciclo</span>}
+                  </div>
+                </div>}
+                <div style={{display:'flex',gap:6}}>
+                  <button onClick={()=>{lsSet(`nlm_feito_${hoje}`,true);if(onAddHoras)onAddHoras({mat:`NLM — ${nlmSugerido?.mat||''}`,min:90,dt:Date.now()});}} style={{flex:2,padding:'9px',borderRadius:9,border:'none',background:'#34d399',color:'#0f172a',fontSize:12,fontWeight:800,cursor:'pointer'}}>✅ Fiz o NLM</button>
+                  <BtnNaoFiz tipo="nlm"/>
+                </div>
+              </div>}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── SUB-ABA: TEC — unificado caderno + registros ── */}
+      {subAba==='tec'&&(()=>{
+        const todosItens=lsGet('rev_caderno',[]);
+        const tecItens=todosItens.filter(t=>t.prazo&&!t.feito&&!t.dominado);
+        const todayStr=new Date().toISOString().split('T')[0];
+        const proxStr=new Date(Date.now()+7*86400000).toISOString().split('T')[0];
+        const vencendo=tecItens.filter(t=>t.prazo<=todayStr).sort((a,b)=>a.prazo.localeCompare(b.prazo));
+        const proximos=tecItens.filter(t=>t.prazo>todayStr&&t.prazo<=proxStr).sort((a,b)=>a.prazo.localeCompare(b.prazo));
+        const futuros=tecItens.filter(t=>t.prazo>proxStr).sort((a,b)=>a.prazo.localeCompare(b.prazo));
+        const faseCor={1:'#60a5fa',2:'#fbbf24',3:'#34d399'};
+        const dominados=todosItens.filter(t=>t.dominado).length;
+
+        const ItemTEC=({t,destacado})=>{
+          const fc=faseCor[t.fase||1]||'#60a5fa';
+          const atrasado=t.prazo<todayStr;
+          return(
+            <div style={{padding:'11px 13px',borderRadius:11,background:destacado?`rgba(248,113,113,.06)`:'rgba(255,255,255,.03)',border:`1px solid ${atrasado?'rgba(248,113,113,.45)':destacado?'rgba(248,113,113,.22)':'var(--border)'}`,marginBottom:7}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:7}}>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:12,fontWeight:800,color:'var(--text)'}}>{t.mat}</div>
+                  {t.assunto&&<div style={{fontSize:10,color:'var(--text4)',marginTop:1}}>{t.assunto}</div>}
+                  <div style={{display:'flex',gap:5,marginTop:4,flexWrap:'wrap'}}>
+                    <span style={{fontSize:9,padding:'1px 7px',borderRadius:4,background:`${fc}20`,color:fc,fontWeight:700,fontFamily:"'DM Mono',monospace"}}>{t.prazoLabel||'D+3'} · fase {t.fase||1}/3</span>
+                    <span style={{fontSize:9,color:'var(--text4)',fontFamily:"'DM Mono',monospace"}}>📅 {t.prazo}</span>
+                    {t.origem&&<span style={{fontSize:9,color:'var(--text4)'}}>via {t.origem==='caderno'?'Caderno':'TEC'}</span>}
+                    {atrasado&&<span style={{fontSize:9,color:'#f87171',fontWeight:700}}>⚠️ atrasado</span>}
+                  </div>
+                </div>
+              </div>
+              {destacado&&<div style={{display:'flex',gap:6}}>
+                <button onClick={()=>marcarTecItem(t.id,true)} style={{flex:1,padding:'8px',borderRadius:8,border:'none',background:'rgba(52,211,153,.15)',color:'#34d399',fontSize:11,fontWeight:800,cursor:'pointer'}}>✅ Acertei</button>
+                <button onClick={()=>marcarTecItem(t.id,false)} style={{flex:1,padding:'8px',borderRadius:8,border:'none',background:'rgba(248,113,113,.15)',color:'#f87171',fontSize:11,fontWeight:800,cursor:'pointer'}}>❌ Errei</button>
+              </div>}
+            </div>
+          );
+        };
+
+        return(
+          <div>
+            {/* Contadores */}
+            <div style={{display:'flex',gap:6,marginBottom:12,flexWrap:'wrap'}}>
+              {[
+                [`📅 Hoje (${vencendo.length})`,'#f87171',vencendo.length>0],
+                [`📆 7 dias (${proximos.length})`,'#fbbf24',false],
+                [`🗓️ Futuros (${futuros.length})`,'#60a5fa',false],
+                [`✅ Dominados (${dominados})`,'#34d399',false],
+              ].map(([l,c,destaque])=>(
+                <div key={l} style={{padding:'5px 10px',borderRadius:8,background:`${c}${destaque?'18':'0d'}`,border:`1px solid ${c}${destaque?'45':'22'}`}}>
+                  <span style={{fontSize:10,color:c,fontWeight:destaque?900:700}}>{l}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Vencendo hoje */}
+            {vencendo.length>0&&<>
+              <div style={{fontSize:10,color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:8}}>📅 REVISAR HOJE</div>
+              {vencendo.map(t=><ItemTEC key={t.id} t={t} destacado={true}/>)}
+            </>}
+
+            {/* Próximos 7 dias */}
+            {proximos.length>0&&<>
+              <div style={{fontSize:10,color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:8,marginTop:10}}>📆 PRÓXIMOS 7 DIAS</div>
+              {proximos.map(t=><ItemTEC key={t.id} t={t} destacado={false}/>)}
+            </>}
+
+            {/* Futuros */}
+            {futuros.length>0&&<>
+              <div style={{fontSize:10,color:'#60a5fa',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:8,marginTop:10}}>🗓️ PROGRAMADOS</div>
+              {futuros.map(t=><ItemTEC key={t.id} t={t} destacado={false}/>)}
+            </>}
+
+            {vencendo.length===0&&proximos.length===0&&futuros.length===0&&(
+              <div style={{textAlign:'center',padding:'30px',color:'var(--text4)',fontSize:12}}>
+                <div style={{fontSize:28,marginBottom:8}}>✅</div>
+                Nenhuma revisão pendente. Registre um erro abaixo para começar o ciclo.
+              </div>
+            )}
+
+            {/* Registrar novo erro */}
+            <div style={{marginTop:14,borderTop:'1px solid var(--border)',paddingTop:14}}>
+              <button onClick={()=>setTecModal(true)} style={{width:'100%',padding:'12px',borderRadius:10,border:'none',background:'#f87171',color:'#0f172a',fontSize:13,fontWeight:900,cursor:'pointer'}}>+ Registrar novo erro</button>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ── SUB-ABA: RADAR DO EDITAL ── */}
+      {subAba==='radar'&&(()=>{
+        const perigos=calcTop5Perigos(8);
+        return(
+          <div>
+            <div style={{padding:'10px 12px',borderRadius:10,background:'rgba(248,113,113,.06)',border:'1px solid rgba(248,113,113,.2)',marginBottom:12}}>
+              <div style={{fontSize:9,color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:2}}>🎯 RADAR DO EDITAL — TOP PERIGOS</div>
+              <div style={{fontSize:10,color:'var(--text4)'}}>peso da prova × seu déficit de acerto × tempo parado</div>
+            </div>
+            {perigos.map((p,i)=>{
+              const scoreNorm=Math.min(Math.round(p.score),100);
+              const c=p.acerto!==null?(p.acerto<50?'#f87171':p.acerto<70?'#fbbf24':'#34d399'):'#64748b';
+              const prioridade=scoreNorm>=60?'🔴 ATACAR AGORA':scoreNorm>=30?'🟡 MANTER VIVO':'⬜ PODE ESPERAR';
+              const corPri=scoreNorm>=60?'#f87171':scoreNorm>=30?'#fbbf24':'#64748b';
+              return(
+                <div key={i} style={{padding:'11px 13px',borderRadius:11,background:`${corPri}08`,border:`1px solid ${corPri}22`,marginBottom:7}}>
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:5}}>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontSize:10,color:'var(--text4)',marginBottom:1}}>{p.mat}</div>
+                      <div style={{fontSize:12,fontWeight:700,color:'var(--text)',lineHeight:1.3,paddingRight:8}}>{p.topico}</div>
+                    </div>
+                    <span style={{fontSize:9,padding:'2px 7px',borderRadius:5,background:`${corPri}18`,color:corPri,fontWeight:800,fontFamily:"'DM Mono',monospace",whiteSpace:'nowrap',flexShrink:0}}>{prioridade}</span>
+                  </div>
+                  <div style={{display:'flex',gap:7,flexWrap:'wrap'}}>
+                    <span style={{fontSize:9,padding:'1px 6px',borderRadius:4,background:'rgba(96,165,250,.12)',color:'#60a5fa',fontFamily:"'DM Mono',monospace"}}>📊 {p.pesoEdital}% da prova</span>
+                    {p.acerto!==null
+                      ?<span style={{fontSize:9,padding:'1px 6px',borderRadius:4,background:`${c}12`,color:c,fontFamily:"'DM Mono',monospace"}}>🎯 você: {p.acerto}%</span>
+                      :<span style={{fontSize:9,color:'var(--text4)'}}>sem dado ainda</span>
+                    }
+                    {p.diasSem>0&&<span style={{fontSize:9,color:'var(--text4)'}}>{p.diasSem}d parado</span>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        );
+      })()}
+
+      {/* MODAL NÃO FIZ */}
+      {naoFizModal&&<div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.8)',zIndex:200,display:'flex',alignItems:'flex-end'}}>
+        <div style={{width:'100%',background:'var(--card)',border:'1px solid var(--border)',borderRadius:'16px 16px 0 0',padding:'20px 16px'}}>
+          <div style={{fontSize:12,color:'var(--text)',fontWeight:700,marginBottom:12}}>❌ Por que não fez {naoFizModal==='anki'?'o Anki':naoFizModal==='tec'?'o TEC':'o NLM'}?</div>
+          <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:12}}>
+            {['Falta de tempo','Cansaço','Sem material','Esqueci','Outro'].map(m=>(
+              <button key={m} onClick={()=>setNaoFizMotivo(m)} style={{padding:'7px 12px',borderRadius:8,border:`1px solid ${naoFizMotivo===m?'#f87171':'var(--border)'}`,background:naoFizMotivo===m?'rgba(248,113,113,.15)':'transparent',color:naoFizMotivo===m?'#f87171':'var(--text3)',fontSize:11,cursor:'pointer'}}>{m}</button>
+            ))}
+          </div>
+          <input value={naoFizMotivo} onChange={e=>setNaoFizMotivo(e.target.value)} placeholder="ou escreva aqui..." style={{width:'100%',padding:'9px 12px',borderRadius:9,border:'1px solid var(--border)',background:'var(--input-bg)',color:'var(--text)',fontSize:12,outline:'none',boxSizing:'border-box',marginBottom:12}}/>
+          <div style={{display:'flex',gap:6}}>
+            <button onClick={marcarNaoFiz} disabled={!naoFizMotivo} style={{flex:2,padding:'11px',borderRadius:9,border:'none',background:naoFizMotivo?'#f87171':'var(--border)',color:naoFizMotivo?'#0f172a':'var(--text4)',fontSize:12,fontWeight:800,cursor:'pointer'}}>Salvar</button>
+            <button onClick={()=>setNaoFizModal(null)} style={{flex:1,padding:'11px',borderRadius:9,border:'1px solid var(--border)',background:'transparent',color:'var(--text4)',fontSize:12,cursor:'pointer'}}>Cancelar</button>
+          </div>
+        </div>
+      </div>}
+
+      {/* MODAL REGISTRAR TEC */}
+      {tecModal&&<div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.85)',zIndex:200,display:'flex',alignItems:'flex-end'}}>
+        <div style={{width:'100%',background:'var(--card)',border:'1px solid rgba(248,113,113,.3)',borderRadius:'18px 18px 0 0',padding:'20px 16px',maxHeight:'90dvh',overflowY:'auto'}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
+            <div style={{fontSize:11,color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800}}>🔴 REGISTRAR ERRO — TEC</div>
+            <button onClick={()=>setTecModal(false)} style={{padding:'4px 10px',borderRadius:6,border:'1px solid var(--border)',background:'transparent',color:'var(--text4)',fontSize:12,cursor:'pointer'}}>✕</button>
+          </div>
+          <div style={{marginBottom:10}}>
+            <div style={{fontSize:10,color:'var(--text4)',marginBottom:5}}>MATÉRIA</div>
+            <MatBtn value={tecForm.mat} onChange={v=>setTecForm(f=>({...f,mat:v}))}/>
+          </div>
+          <div style={{marginBottom:10}}>
+            <div style={{fontSize:10,color:'var(--text4)',marginBottom:4}}>ASSUNTO ESPECÍFICO</div>
+            <input value={tecForm.assunto} onChange={e=>setTecForm(f=>({...f,assunto:e.target.value}))} placeholder="ex: Princípios Tributários, Peculato..." style={{width:'100%',padding:'9px 11px',borderRadius:8,border:'1px solid var(--border)',background:'var(--input-bg)',color:'var(--text)',fontSize:12,outline:'none',boxSizing:'border-box'}}/>
+          </div>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:6,marginBottom:10}}>
+            <div><div style={{fontSize:9,color:'var(--text4)',marginBottom:3}}>FEITAS</div>
+              <input type="number" value={tecForm.feitas} onChange={e=>setTecForm(f=>({...f,feitas:e.target.value}))} placeholder="0" style={{width:'100%',padding:'9px',borderRadius:7,border:'1px solid rgba(248,113,113,.25)',background:'rgba(248,113,113,.04)',color:'#f87171',fontSize:15,fontWeight:900,textAlign:'center',outline:'none',boxSizing:'border-box',fontFamily:"'DM Mono',monospace"}}/></div>
+            <div><div style={{fontSize:9,color:'var(--text4)',marginBottom:3}}>ACERTEI</div>
+              <input type="number" value={tecForm.acertei} onChange={e=>setTecForm(f=>({...f,acertei:e.target.value}))} placeholder="0" style={{width:'100%',padding:'9px',borderRadius:7,border:'1px solid rgba(52,211,153,.25)',background:'rgba(52,211,153,.04)',color:'#34d399',fontSize:15,fontWeight:900,textAlign:'center',outline:'none',boxSizing:'border-box',fontFamily:"'DM Mono',monospace"}}/></div>
+            <div><div style={{fontSize:9,color:'var(--text4)',marginBottom:3}}>%</div>
+              <div style={{padding:'9px',borderRadius:7,border:`2px solid ${pctCor}50`,background:`${pctCor}12`,color:pctCor,fontSize:15,fontWeight:900,textAlign:'center',fontFamily:"'DM Mono',monospace"}}>{pctLive!==null?`${pctLive}%`:'—'}</div></div>
+          </div>
+          <div style={{marginBottom:10}}>
+            <div style={{fontSize:10,color:'var(--text4)',marginBottom:5}}>PRÓXIMA REVISÃO</div>
+            <div style={{display:'flex',gap:6}}>
+              {['D+3','D+15','D+45'].map(p=>(
+                <button key={p} onClick={()=>setTecForm(f=>({...f,prazo:p}))} style={{flex:1,padding:'9px',borderRadius:8,border:`1px solid ${tecForm.prazo===p?'#f87171':'var(--border)'}`,background:tecForm.prazo===p?'rgba(248,113,113,.2)':'transparent',color:tecForm.prazo===p?'#f87171':'var(--text4)',fontSize:12,fontWeight:700,cursor:'pointer'}}>{p}</button>
+              ))}
+            </div>
+          </div>
+          <div style={{marginBottom:12}}>
+            <div style={{fontSize:10,color:'var(--text4)',marginBottom:4}}>OBSERVAÇÃO</div>
+            <input value={tecForm.obs} onChange={e=>setTecForm(f=>({...f,obs:e.target.value}))} placeholder="ex: confundi com art. 37..." style={{width:'100%',padding:'9px 11px',borderRadius:8,border:'1px solid var(--border)',background:'var(--input-bg)',color:'var(--text)',fontSize:12,outline:'none',boxSizing:'border-box'}}/>
+          </div>
+          <button onClick={salvarTec} disabled={!tecForm.mat} style={{width:'100%',padding:'13px',borderRadius:10,border:'none',background:tecForm.mat?'#f87171':'var(--border)',color:tecForm.mat?'#0f172a':'var(--text4)',fontSize:13,fontWeight:900,cursor:'pointer'}}>{tecSalvo?'✅ SALVO!':'💾 SALVAR'}</button>
+        </div>
+      </div>}
+    </div>
+  );
 
       {/* DESPACHO IA */}
       <div style={{background:'linear-gradient(135deg,rgba(251,191,36,.08),rgba(251,191,36,.03))',border:'1px solid rgba(251,191,36,.2)',borderRadius:12,marginBottom:10,overflow:'hidden'}}>
@@ -1933,7 +2344,7 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
               <div style={{fontSize:10,color:'#f87171',fontFamily:"'DM Mono',monospace",marginBottom:6}}>📅 REVISAR HOJE — D+3</div>
               {tecHoje.d3.map(t=>{
                 const fase=t.fase||1;
-                const faseLabel=fase===1?'D+3':fase===2?'D+15':'D+30';
+                const faseLabel=fase===1?'D+3':fase===2?'D+15':'D+45';
                 const faseCor=fase===1?'#60a5fa':fase===2?'#fbbf24':'#34d399';
                 return(
                   <div key={t.id} style={{padding:'10px 12px',borderRadius:10,background:'rgba(248,113,113,.06)',border:`1px solid ${t.atrasado?'rgba(248,113,113,.5)':'rgba(248,113,113,.2)'}`,marginBottom:6}}>
@@ -1993,64 +2404,6 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
         </div>
       </div>
 
-      {/* MODAL NÃO FIZ */}
-      {naoFizModal&&<div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.8)',zIndex:200,display:'flex',alignItems:'flex-end'}}>
-        <div style={{width:'100%',background:'var(--card)',border:'1px solid var(--border)',borderRadius:'16px 16px 0 0',padding:'20px 16px'}}>
-          <div style={{fontSize:12,color:'var(--text)',fontWeight:700,marginBottom:12}}>❌ Por que não fez {naoFizModal==='anki'?'o Anki':naoFizModal==='tec'?'o TEC':'o NLM'}?</div>
-          <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:12}}>
-            {['Falta de tempo','Cansaço','Sem material','Esqueci','Outro'].map(m=>(
-              <button key={m} onClick={()=>setNaoFizMotivo(m)} style={{padding:'7px 12px',borderRadius:8,border:`1px solid ${naoFizMotivo===m?'#f87171':'var(--border)'}`,background:naoFizMotivo===m?'rgba(248,113,113,.15)':'transparent',color:naoFizMotivo===m?'#f87171':'var(--text3)',fontSize:11,cursor:'pointer'}}>{m}</button>
-            ))}
-          </div>
-          <input value={naoFizMotivo} onChange={e=>setNaoFizMotivo(e.target.value)} placeholder="ou escreva aqui..." style={{width:'100%',padding:'9px 12px',borderRadius:9,border:'1px solid var(--border)',background:'var(--input-bg)',color:'var(--text)',fontSize:12,outline:'none',boxSizing:'border-box',marginBottom:12}}/>
-          <div style={{display:'flex',gap:6}}>
-            <button onClick={marcarNaoFiz} disabled={!naoFizMotivo} style={{flex:2,padding:'11px',borderRadius:9,border:'none',background:naoFizMotivo?'#f87171':'var(--border)',color:naoFizMotivo?'#0f172a':'var(--text4)',fontSize:12,fontWeight:800,cursor:'pointer'}}>Salvar</button>
-            <button onClick={()=>setNaoFizModal(null)} style={{flex:1,padding:'11px',borderRadius:9,border:'1px solid var(--border)',background:'transparent',color:'var(--text4)',fontSize:12,cursor:'pointer'}}>Cancelar</button>
-          </div>
-        </div>
-      </div>}
-
-      {/* MODAL REGISTRAR TEC */}
-      {tecModal&&<div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.85)',zIndex:200,display:'flex',alignItems:'flex-end'}}>
-        <div style={{width:'100%',background:'var(--card)',border:'1px solid rgba(248,113,113,.3)',borderRadius:'18px 18px 0 0',padding:'20px 16px',maxHeight:'90dvh',overflowY:'auto'}}>
-          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
-            <div style={{fontSize:11,color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800}}>🔴 REGISTRAR ERRO TEC</div>
-            <button onClick={()=>setTecModal(false)} style={{padding:'4px 10px',borderRadius:6,border:'1px solid var(--border)',background:'transparent',color:'var(--text4)',fontSize:12,cursor:'pointer'}}>✕</button>
-          </div>
-          <div style={{marginBottom:10}}>
-            <div style={{fontSize:10,color:'var(--text4)',marginBottom:5}}>MATÉRIA</div>
-            <MatBtn value={tecForm.mat} onChange={v=>setTecForm(f=>({...f,mat:v}))}/>
-          </div>
-          <div style={{marginBottom:10}}>
-            <div style={{fontSize:10,color:'var(--text4)',marginBottom:4}}>ASSUNTO ESPECÍFICO</div>
-            <input value={tecForm.assunto} onChange={e=>setTecForm(f=>({...f,assunto:e.target.value}))} placeholder="ex: Princípios Tributários, Peculato..." style={{width:'100%',padding:'9px 11px',borderRadius:8,border:'1px solid var(--border)',background:'var(--input-bg)',color:'var(--text)',fontSize:12,outline:'none',boxSizing:'border-box'}}/>
-          </div>
-          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:6,marginBottom:10}}>
-            <div><div style={{fontSize:9,color:'var(--text4)',marginBottom:3}}>FEITAS</div>
-              <input type="number" value={tecForm.feitas} onChange={e=>setTecForm(f=>({...f,feitas:e.target.value}))} placeholder="0" style={{width:'100%',padding:'9px',borderRadius:7,border:'1px solid rgba(248,113,113,.25)',background:'rgba(248,113,113,.04)',color:'#f87171',fontSize:15,fontWeight:900,textAlign:'center',outline:'none',boxSizing:'border-box',fontFamily:"'DM Mono',monospace"}}/></div>
-            <div><div style={{fontSize:9,color:'var(--text4)',marginBottom:3}}>ACERTEI</div>
-              <input type="number" value={tecForm.acertei} onChange={e=>setTecForm(f=>({...f,acertei:e.target.value}))} placeholder="0" style={{width:'100%',padding:'9px',borderRadius:7,border:'1px solid rgba(52,211,153,.25)',background:'rgba(52,211,153,.04)',color:'#34d399',fontSize:15,fontWeight:900,textAlign:'center',outline:'none',boxSizing:'border-box',fontFamily:"'DM Mono',monospace"}}/></div>
-            <div><div style={{fontSize:9,color:'var(--text4)',marginBottom:3}}>%</div>
-              <div style={{padding:'9px',borderRadius:7,border:`2px solid ${pctCor}50`,background:`${pctCor}12`,color:pctCor,fontSize:15,fontWeight:900,textAlign:'center',fontFamily:"'DM Mono',monospace"}}>{pctLive!==null?`${pctLive}%`:'—'}</div></div>
-          </div>
-          <div style={{marginBottom:10}}>
-            <div style={{fontSize:10,color:'var(--text4)',marginBottom:5}}>PRÓXIMA REVISÃO</div>
-            <div style={{display:'flex',gap:6}}>
-              {['D+3','D+15','D+30'].map(p=>(
-                <button key={p} onClick={()=>setTecForm(f=>({...f,prazo:p}))} style={{flex:1,padding:'9px',borderRadius:8,border:`1px solid ${tecForm.prazo===p?'#f87171':'var(--border)'}`,background:tecForm.prazo===p?'rgba(248,113,113,.2)':'transparent',color:tecForm.prazo===p?'#f87171':'var(--text4)',fontSize:12,fontWeight:700,cursor:'pointer'}}>{p}</button>
-              ))}
-            </div>
-          </div>
-          <div style={{marginBottom:12}}>
-            <div style={{fontSize:10,color:'var(--text4)',marginBottom:4}}>OBSERVAÇÃO</div>
-            <input value={tecForm.obs} onChange={e=>setTecForm(f=>({...f,obs:e.target.value}))} placeholder="ex: confundi com art. 37..." style={{width:'100%',padding:'9px 11px',borderRadius:8,border:'1px solid var(--border)',background:'var(--input-bg)',color:'var(--text)',fontSize:12,outline:'none',boxSizing:'border-box'}}/>
-          </div>
-          <button onClick={salvarTec} disabled={!tecForm.mat} style={{width:'100%',padding:'13px',borderRadius:10,border:'none',background:tecForm.mat?'#f87171':'var(--border)',color:tecForm.mat?'#0f172a':'var(--text4)',fontSize:13,fontWeight:900,cursor:'pointer'}}>{tecSalvo?'✅ SALVO!':'💾 SALVAR'}</button>
-        </div>
-      </div>}
-    </div>
-  );
-}
 
 
 function TabEstudo({feitos,cicloNum,horas,onConcluir,onIrPara,onDesmarcar,onAddHoras,onSyncHistorico,mit,planoSemana,onSavePlano}){
@@ -3518,8 +3871,8 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras}){
               updated={...item,fase:2,prazoLabel:'D+15',prazo:d.toISOString().split('T')[0],feito:false};
             }else if(item.fase===2){
               // D+15 → avança para D+30
-              const d=new Date();d.setDate(d.getDate()+30);
-              updated={...item,fase:3,prazoLabel:'D+30',prazo:d.toISOString().split('T')[0],feito:false};
+              const d=new Date();d.setDate(d.getDate()+45);
+              updated={...item,fase:3,prazoLabel:'D+45',prazo:d.toISOString().split('T')[0],feito:false};
             }else{
               // D+30 → dominado ✅
               updated={...item,dominado:true,feito:true};
