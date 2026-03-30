@@ -776,6 +776,78 @@ function calcPontosEmRisco(){
   }).sort((a,b)=>b.pontosRisco-a.pontosRisco);
 }
 
+// ── SAÚDE DA SEMANA — score composto 0-10 ────────────────────
+function calcSaude(){
+  const hoje=getDK();
+  const todayMs=new Date().setHours(0,0,0,0);
+  const semStart=todayMs-6*86400000;
+
+  // Fator 1: Meta de horas (peso 2)
+  const horas=lsGet('horas',[]);
+  const minSem=horas.filter(e=>e.dt>=semStart).reduce((s,e)=>s+e.min,0);
+  const metaH=lsGet('meta_horas_sem',35)*60;
+  const pctMeta=metaH>0?minSem/metaH:0;
+  const f1=pctMeta>=0.8?2:pctMeta>=0.5?1:0;
+  const f1label=pctMeta>=0.8?'✅':pctMeta>=0.5?'⚠️':'🔴';
+
+  // Fator 2: Revisão TEC em dia (itens atrasados)
+  const caderno=lsGet('rev_caderno',[]);
+  const todayStr=new Date().toISOString().split('T')[0];
+  const atrasados=caderno.filter(t=>!t.feito&&!t.dominado&&t.prazo&&t.prazo<todayStr).length;
+  const f2=atrasados===0?2:atrasados<=2?1:0;
+  const f2label=atrasados===0?'✅':atrasados<=2?'⚠️':'🔴';
+
+  // Fator 3: Sequência de Anki (dias seguidos)
+  let sequenciaAnki=0;
+  for(let i=0;i<7;i++){
+    const d=new Date(todayMs-i*86400000);
+    const dk=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    if(lsGet(`anki_feito_${dk}`,null))sequenciaAnki++;
+    else break;
+  }
+  const f3=sequenciaAnki>=3?2:sequenciaAnki>=1?1:0;
+  const f3label=sequenciaAnki>=3?'✅':sequenciaAnki>=1?'⚠️':'🔴';
+
+  // Fator 4: Matérias críticas sem contato há 7+ dias
+  const hist=lsGet('historico_diario',[]);
+  const sete=todayMs-7*86400000;
+  const porMat={};
+  hist.forEach(r=>{
+    if(!r.materia||!parseInt(r.questoes))return;
+    if(!porMat[r.materia])porMat[r.materia]={q:0,a:0,lastDt:0};
+    porMat[r.materia].q+=parseInt(r.questoes)||0;
+    porMat[r.materia].a+=parseInt(r.acertei)||0;
+    if((r.dt||0)>porMat[r.materia].lastDt)porMat[r.materia].lastDt=r.dt||0;
+  });
+  const criticasSemContato=Object.entries(porMat).filter(([,v])=>{
+    const pct=v.q>0?Math.round(v.a/v.q*100):100;
+    return pct<70&&v.lastDt<sete;
+  }).length;
+  const f4=criticasSemContato===0?2:criticasSemContato<=2?1:0;
+  const f4label=criticasSemContato===0?'✅':criticasSemContato<=2?'⚠️':'🔴';
+
+  // Fator 5: Travamentos na semana
+  const travamentos=hist.filter(r=>r.travou&&(r.dt||0)>=semStart).length;
+  const f5=travamentos<=1?2:travamentos<=3?1:0;
+  const f5label=travamentos<=1?'✅':travamentos<=3?'⚠️':'🔴';
+
+  const score=f1+f2+f3+f4+f5;
+  const nivel=score>=8?'ÓTIMA':score>=6?'BOA':score>=4?'ATENÇÃO':'RISCO';
+  const cor=score>=8?'#34d399':score>=6?'#a3e635':score>=4?'#fbbf24':'#f87171';
+  const emoji=score>=8?'💚':score>=6?'🟢':score>=4?'🟡':'🔴';
+
+  return{
+    score,nivel,cor,emoji,
+    fatores:[
+      {k:'Meta',label:f1label,detalhe:`${Math.round(pctMeta*100)}% da meta (${Math.floor(minSem/60)}h/${lsGet('meta_horas_sem',35)}h)`,val:f1},
+      {k:'TEC',label:f2label,detalhe:`${atrasados} revisão(ões) atrasada(s)`,val:f2},
+      {k:'Anki',label:f3label,detalhe:`${sequenciaAnki} dia(s) seguidos`,val:f3},
+      {k:'Críticas',label:f4label,detalhe:`${criticasSemContato} matéria(s) crítica(s) sem contato`,val:f4},
+      {k:'Travou',label:f5label,detalhe:`${travamentos} travamento(s) esta semana`,val:f5},
+    ]
+  };
+}
+
 // ── Helpers de aproveitamento ──────────────────────────────────
 function calcRankingAproveitamento(){
   const historico=lsGet('historico_diario',[]);
@@ -1836,6 +1908,63 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
         </button>
       </div>
 
+      {/* SAÚDE DA SEMANA */}
+      {(()=>{
+        const saude=calcSaude();
+        const [saudeAberta,setSaudeAberta]=React.useState(()=>lsGet('saude_aberta',false));
+        const toggle=()=>{const n=!saudeAberta;setSaudeAberta(n);lsSet('saude_aberta',n);};
+        const barW=Math.round(saude.score/10*100);
+        return(
+          <div style={{borderRadius:13,overflow:'hidden',border:`1px solid ${saude.cor}40`,marginBottom:10}}>
+            <button onClick={toggle} style={{width:'100%',padding:'10px 14px',background:`${saude.cor}0d`,border:'none',cursor:'pointer',textAlign:'left'}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
+                <div style={{display:'flex',alignItems:'center',gap:7}}>
+                  <span style={{fontSize:16}}>{saude.emoji}</span>
+                  <div>
+                    <span style={{fontSize:10,color:saude.cor,fontFamily:"'DM Mono',monospace",fontWeight:900,letterSpacing:'1px'}}>SAÚDE DA SEMANA</span>
+                    <span style={{fontSize:10,color:saude.cor,fontWeight:900,marginLeft:8}}>{saude.score}/10 — {saude.nivel}</span>
+                  </div>
+                </div>
+                <div style={{display:'flex',gap:6,alignItems:'center'}}>
+                  {saude.fatores.map(f=>(
+                    <span key={f.k} style={{fontSize:13}}>{f.label}</span>
+                  ))}
+                  <span style={{fontSize:10,color:'var(--text4)',marginLeft:2}}>{saudeAberta?'▲':'▼'}</span>
+                </div>
+              </div>
+              {/* Barra de progresso */}
+              <div style={{height:5,borderRadius:3,background:'rgba(148,163,184,.2)',overflow:'hidden'}}>
+                <div style={{height:'100%',width:`${barW}%`,background:saude.cor,borderRadius:3,transition:'width .4s'}}/>
+              </div>
+            </button>
+            {saudeAberta&&(
+              <div style={{padding:'10px 14px 12px',background:`${saude.cor}06`,borderTop:`1px solid ${saude.cor}20`}}>
+                {saude.fatores.map(f=>{
+                  const fc=f.val===2?'#34d399':f.val===1?'#fbbf24':'#f87171';
+                  return(
+                    <div key={f.k} style={{display:'flex',alignItems:'center',gap:10,padding:'6px 10px',borderRadius:8,background:`${fc}0a`,border:`1px solid ${fc}20`,marginBottom:5}}>
+                      <span style={{fontSize:14,flexShrink:0}}>{f.label}</span>
+                      <div style={{flex:1}}>
+                        <span style={{fontSize:11,fontWeight:700,color:'var(--text)'}}>{f.k}</span>
+                        <span style={{fontSize:10,color:'var(--text4)',marginLeft:6}}>{f.detalhe}</span>
+                      </div>
+                      <div style={{display:'flex',gap:3,flexShrink:0}}>
+                        {[0,1,2].map(n=>(
+                          <div key={n} style={{width:8,height:8,borderRadius:'50%',background:f.val>=n+1?fc:'rgba(148,163,184,.2)'}}/>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+                <div style={{fontSize:9,color:'var(--text4)',marginTop:6,fontStyle:'italic'}}>
+                  Meta · TEC em dia · Sequência Anki · Matérias críticas · Travamentos
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
       {/* SUB-ABAS */}
       <div style={{display:'flex',gap:4,marginBottom:12,overflowX:'auto',scrollbarWidth:'none'}}>
         {[
@@ -2181,44 +2310,107 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
         </div>
       </div>}
 
-      {/* MODAL REGISTRAR TEC */}
-      {tecModal&&<div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.85)',zIndex:200,display:'flex',alignItems:'flex-end'}}>
-        <div style={{width:'100%',background:'var(--card)',border:'1px solid rgba(248,113,113,.3)',borderRadius:'18px 18px 0 0',padding:'20px 16px',maxHeight:'90dvh',overflowY:'auto'}}>
-          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
-            <div style={{fontSize:11,color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800}}>🔴 REGISTRAR ERRO — TEC</div>
-            <button onClick={()=>setTecModal(false)} style={{padding:'4px 10px',borderRadius:6,border:'1px solid var(--border)',background:'transparent',color:'var(--text4)',fontSize:12,cursor:'pointer'}}>✕</button>
-          </div>
-          <div style={{marginBottom:10}}>
-            <div style={{fontSize:10,color:'var(--text4)',marginBottom:5}}>MATÉRIA</div>
-            <MatBtn value={tecForm.mat} onChange={v=>setTecForm(f=>({...f,mat:v}))}/>
-          </div>
-          <div style={{marginBottom:10}}>
-            <div style={{fontSize:10,color:'var(--text4)',marginBottom:4}}>ASSUNTO ESPECÍFICO</div>
-            <input value={tecForm.assunto} onChange={e=>setTecForm(f=>({...f,assunto:e.target.value}))} placeholder="ex: Princípios Tributários, Peculato..." style={{width:'100%',padding:'9px 11px',borderRadius:8,border:'1px solid var(--border)',background:'var(--input-bg)',color:'var(--text)',fontSize:12,outline:'none',boxSizing:'border-box'}}/>
-          </div>
-          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:6,marginBottom:10}}>
-            <div><div style={{fontSize:9,color:'var(--text4)',marginBottom:3}}>FEITAS</div>
-              <input type="number" value={tecForm.feitas} onChange={e=>setTecForm(f=>({...f,feitas:e.target.value}))} placeholder="0" style={{width:'100%',padding:'9px',borderRadius:7,border:'1px solid rgba(248,113,113,.25)',background:'rgba(248,113,113,.04)',color:'#f87171',fontSize:15,fontWeight:900,textAlign:'center',outline:'none',boxSizing:'border-box',fontFamily:"'DM Mono',monospace"}}/></div>
-            <div><div style={{fontSize:9,color:'var(--text4)',marginBottom:3}}>ACERTEI</div>
-              <input type="number" value={tecForm.acertei} onChange={e=>setTecForm(f=>({...f,acertei:e.target.value}))} placeholder="0" style={{width:'100%',padding:'9px',borderRadius:7,border:'1px solid rgba(52,211,153,.25)',background:'rgba(52,211,153,.04)',color:'#34d399',fontSize:15,fontWeight:900,textAlign:'center',outline:'none',boxSizing:'border-box',fontFamily:"'DM Mono',monospace"}}/></div>
-            <div><div style={{fontSize:9,color:'var(--text4)',marginBottom:3}}>%</div>
-              <div style={{padding:'9px',borderRadius:7,border:`2px solid ${pctCor}50`,background:`${pctCor}12`,color:pctCor,fontSize:15,fontWeight:900,textAlign:'center',fontFamily:"'DM Mono',monospace"}}>{pctLive!==null?`${pctLive}%`:'—'}</div></div>
-          </div>
-          <div style={{marginBottom:10}}>
-            <div style={{fontSize:10,color:'var(--text4)',marginBottom:5}}>PRÓXIMA REVISÃO</div>
-            <div style={{display:'flex',gap:6}}>
-              {['D+3','D+15','D+45'].map(p=>(
-                <button key={p} onClick={()=>setTecForm(f=>({...f,prazo:p}))} style={{flex:1,padding:'9px',borderRadius:8,border:`1px solid ${tecForm.prazo===p?'#f87171':'var(--border)'}`,background:tecForm.prazo===p?'rgba(248,113,113,.2)':'transparent',color:tecForm.prazo===p?'#f87171':'var(--text4)',fontSize:12,fontWeight:700,cursor:'pointer'}}>{p}</button>
-              ))}
+      {/* MODAL REGISTRAR TEC — FULLSCREEN */}
+      {tecModal&&(
+        <div style={{position:'fixed',inset:0,background:'var(--bg)',zIndex:300,display:'flex',flexDirection:'column'}}>
+          {/* Header fixo */}
+          <div style={{padding:'12px 16px',background:'var(--header-bg)',borderBottom:'1px solid rgba(248,113,113,.3)',display:'flex',alignItems:'center',gap:12,flexShrink:0}}>
+            <button onClick={()=>{setTecModal(false);setTecForm({mat:'',assunto:'',feitas:'',acertei:'',prazo:'D+3',obs:''}); setTecSalvo(false);}} style={{padding:'8px 14px',borderRadius:9,border:'1px solid rgba(248,113,113,.35)',background:'rgba(248,113,113,.1)',color:'#f87171',fontSize:13,fontWeight:800,cursor:'pointer',display:'flex',alignItems:'center',gap:5}}>
+              ← Voltar
+            </button>
+            <div style={{flex:1,textAlign:'center'}}>
+              <div style={{fontSize:12,color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:900,letterSpacing:'1px'}}>🔴 REGISTRAR ERRO — TEC</div>
             </div>
+            <div style={{width:70}}/>
           </div>
-          <div style={{marginBottom:12}}>
-            <div style={{fontSize:10,color:'var(--text4)',marginBottom:4}}>OBSERVAÇÃO</div>
-            <input value={tecForm.obs} onChange={e=>setTecForm(f=>({...f,obs:e.target.value}))} placeholder="ex: confundi com art. 37..." style={{width:'100%',padding:'9px 11px',borderRadius:8,border:'1px solid var(--border)',background:'var(--input-bg)',color:'var(--text)',fontSize:12,outline:'none',boxSizing:'border-box'}}/>
+
+          {/* Conteúdo scrollável */}
+          <div style={{flex:1,overflowY:'auto',padding:'20px 16px'}}>
+
+            {/* Matéria */}
+            <div style={{marginBottom:16}}>
+              <div style={{fontSize:11,color:'var(--text4)',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:8,letterSpacing:'1px'}}>MATÉRIA</div>
+              <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:8}}>
+                {CICLO.map(s=>s.mat).filter((v,i,a)=>a.indexOf(v)===i).map(m=>(
+                  <button key={m} onClick={()=>setTecForm(f=>({...f,mat:m}))}
+                    style={{padding:'7px 12px',borderRadius:8,border:`1.5px solid ${tecForm.mat===m?'#f87171':'var(--border)'}`,background:tecForm.mat===m?'rgba(248,113,113,.18)':'transparent',color:tecForm.mat===m?'#f87171':'var(--text3)',fontSize:12,fontWeight:tecForm.mat===m?800:400,cursor:'pointer',transition:'all .1s'}}>
+                    {m}
+                  </button>
+                ))}
+              </div>
+              <input value={tecForm.mat&&!CICLO.map(s=>s.mat).includes(tecForm.mat)?tecForm.mat:''} onChange={e=>setTecForm(f=>({...f,mat:e.target.value}))} placeholder="Ou digitar matéria..." style={{width:'100%',padding:'10px 12px',borderRadius:9,border:'1px solid var(--border)',background:'var(--input-bg)',color:'var(--text)',fontSize:13,outline:'none',boxSizing:'border-box'}}/>
+            </div>
+
+            {/* Assunto */}
+            <div style={{marginBottom:16}}>
+              <div style={{fontSize:11,color:'var(--text4)',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:8,letterSpacing:'1px'}}>ASSUNTO ESPECÍFICO</div>
+              <input value={tecForm.assunto} onChange={e=>setTecForm(f=>({...f,assunto:e.target.value}))} placeholder="ex: Princípios Tributários, Peculato, LRF art. 15..." style={{width:'100%',padding:'12px 14px',borderRadius:9,border:'1px solid var(--border)',background:'var(--input-bg)',color:'var(--text)',fontSize:14,outline:'none',boxSizing:'border-box'}}/>
+            </div>
+
+            {/* Questões */}
+            <div style={{marginBottom:16}}>
+              <div style={{fontSize:11,color:'var(--text4)',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:8,letterSpacing:'1px'}}>QUESTÕES</div>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:10}}>
+                <div>
+                  <div style={{fontSize:10,color:'var(--text4)',marginBottom:5,textAlign:'center'}}>FEITAS</div>
+                  <input type="number" value={tecForm.feitas} onChange={e=>setTecForm(f=>({...f,feitas:e.target.value}))} placeholder="0"
+                    style={{width:'100%',padding:'14px 8px',borderRadius:10,border:'2px solid rgba(248,113,113,.35)',background:'rgba(248,113,113,.06)',color:'#f87171',fontSize:22,fontWeight:900,textAlign:'center',outline:'none',boxSizing:'border-box',fontFamily:"'DM Mono',monospace"}}/>
+                </div>
+                <div>
+                  <div style={{fontSize:10,color:'var(--text4)',marginBottom:5,textAlign:'center'}}>ACERTEI</div>
+                  <input type="number" value={tecForm.acertei} onChange={e=>setTecForm(f=>({...f,acertei:e.target.value}))} placeholder="0"
+                    style={{width:'100%',padding:'14px 8px',borderRadius:10,border:'2px solid rgba(52,211,153,.35)',background:'rgba(52,211,153,.06)',color:'#34d399',fontSize:22,fontWeight:900,textAlign:'center',outline:'none',boxSizing:'border-box',fontFamily:"'DM Mono',monospace"}}/>
+                </div>
+                <div>
+                  <div style={{fontSize:10,color:'var(--text4)',marginBottom:5,textAlign:'center'}}>ACERTO</div>
+                  <div style={{width:'100%',padding:'14px 8px',borderRadius:10,border:`2px solid ${pctCor}50`,background:`${pctCor}10`,color:pctCor,fontSize:22,fontWeight:900,textAlign:'center',fontFamily:"'DM Mono',monospace"}}>
+                    {pctLive!==null?`${pctLive}%`:'—'}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Próxima revisão */}
+            <div style={{marginBottom:16}}>
+              <div style={{fontSize:11,color:'var(--text4)',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:8,letterSpacing:'1px'}}>PRÓXIMA REVISÃO</div>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:10}}>
+                {[
+                  {p:'D+3', desc:'3 dias', cor:'#f87171'},
+                  {p:'D+15', desc:'15 dias', cor:'#fbbf24'},
+                  {p:'D+45', desc:'45 dias', cor:'#34d399'},
+                ].map(({p,desc,cor})=>(
+                  <button key={p} onClick={()=>setTecForm(f=>({...f,prazo:p}))}
+                    style={{padding:'12px 8px',borderRadius:10,border:`2px solid ${tecForm.prazo===p?cor:'var(--border)'}`,background:tecForm.prazo===p?`${cor}18`:'transparent',cursor:'pointer',textAlign:'center'}}>
+                    <div style={{fontSize:15,fontWeight:900,color:tecForm.prazo===p?cor:'var(--text4)',fontFamily:"'DM Mono',monospace"}}>{p}</div>
+                    <div style={{fontSize:10,color:'var(--text4)',marginTop:2}}>{desc}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Observação */}
+            <div style={{marginBottom:24}}>
+              <div style={{fontSize:11,color:'var(--text4)',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:8,letterSpacing:'1px'}}>OBSERVAÇÃO</div>
+              <textarea value={tecForm.obs} onChange={e=>setTecForm(f=>({...f,obs:e.target.value}))} rows={3} placeholder="ex: confundi com art. 37... / conceito mal fixado / travei na pegadinha da banca..."
+                style={{width:'100%',padding:'12px 14px',borderRadius:9,border:'1px solid var(--border)',background:'var(--input-bg)',color:'var(--text)',fontSize:13,outline:'none',resize:'none',boxSizing:'border-box',lineHeight:1.6}}/>
+            </div>
+
+            {/* Espaço para o botão fixo não cobrir */}
+            <div style={{height:80}}/>
           </div>
-          <button onClick={salvarTec} disabled={!tecForm.mat} style={{width:'100%',padding:'13px',borderRadius:10,border:'none',background:tecForm.mat?'#f87171':'var(--border)',color:tecForm.mat?'#0f172a':'var(--text4)',fontSize:13,fontWeight:900,cursor:'pointer'}}>{tecSalvo?'✅ SALVO!':'💾 SALVAR'}</button>
+
+          {/* Rodapé fixo com botão salvar */}
+          <div style={{padding:'12px 16px',background:'var(--header-bg)',borderTop:'1px solid var(--border)',flexShrink:0}}>
+            {!tecForm.mat&&(
+              <div style={{fontSize:11,color:'var(--text4)',textAlign:'center',marginBottom:8}}>Selecione uma matéria para salvar</div>
+            )}
+            <button onClick={salvarTec} disabled={!tecForm.mat}
+              style={{width:'100%',padding:'15px',borderRadius:12,border:'none',background:tecForm.mat?'linear-gradient(135deg,#e05555,#f87171)':'var(--border)',color:tecForm.mat?'#fff':'var(--text4)',fontSize:15,fontWeight:900,cursor:tecForm.mat?'pointer':'default',letterSpacing:'1px',fontFamily:"'DM Mono',monospace",boxShadow:tecForm.mat?'0 4px 14px rgba(248,113,113,.35)':'none',transition:'all .2s'}}>
+              {tecSalvo?'✅ SALVO! Voltando...':'💾 SALVAR ERRO'}
+            </button>
+          </div>
         </div>
-      </div>}
+      )}
     </div>
   );
 }
