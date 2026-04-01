@@ -1732,6 +1732,55 @@ function calcRevisaoHoje(feitos){
 }
 
 // ─── ABA: HOJE (Modo 3 — redesenhada) ────────────────────────
+function CardSaude(){
+  const[saudeAberta,setSaudeAberta]=useState(()=>lsGet('saude_aberta',false));
+  const saude=calcSaude();
+  const toggle=()=>{const n=!saudeAberta;setSaudeAberta(n);lsSet('saude_aberta',n);};
+  const barW=Math.round(saude.score/10*100);
+  return(
+    <div style={{borderRadius:13,overflow:'hidden',border:`1px solid ${saude.cor}40`,marginBottom:10}}>
+      <button onClick={toggle} style={{width:'100%',padding:'10px 14px',background:`${saude.cor}0d`,border:'none',cursor:'pointer',textAlign:'left'}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
+          <div style={{display:'flex',alignItems:'center',gap:7}}>
+            <span style={{fontSize:16}}>{saude.emoji}</span>
+            <div>
+              <span style={{fontSize:10,color:saude.cor,fontFamily:"'DM Mono',monospace",fontWeight:900,letterSpacing:'1px'}}>SAÚDE DA SEMANA</span>
+              <span style={{fontSize:10,color:saude.cor,fontWeight:900,marginLeft:8}}>{saude.score}/10 — {saude.nivel}</span>
+            </div>
+          </div>
+          <div style={{display:'flex',gap:6,alignItems:'center'}}>
+            {saude.fatores.map(f=>(<span key={f.k} style={{fontSize:13}}>{f.label}</span>))}
+            <span style={{fontSize:10,color:'var(--text4)',marginLeft:2}}>{saudeAberta?'▲':'▼'}</span>
+          </div>
+        </div>
+        <div style={{height:5,borderRadius:3,background:'rgba(148,163,184,.2)',overflow:'hidden'}}>
+          <div style={{height:'100%',width:`${barW}%`,background:saude.cor,borderRadius:3,transition:'width .4s'}}/>
+        </div>
+      </button>
+      {saudeAberta&&(
+        <div style={{padding:'10px 14px 12px',background:`${saude.cor}06`,borderTop:`1px solid ${saude.cor}20`}}>
+          {saude.fatores.map(f=>{
+            const fc=f.val===2?'#34d399':f.val===1?'#fbbf24':'#f87171';
+            return(
+              <div key={f.k} style={{display:'flex',alignItems:'center',gap:10,padding:'6px 10px',borderRadius:8,background:`${fc}0a`,border:`1px solid ${fc}20`,marginBottom:5}}>
+                <span style={{fontSize:14,flexShrink:0}}>{f.label}</span>
+                <div style={{flex:1}}>
+                  <span style={{fontSize:11,fontWeight:700,color:'var(--text)'}}>{f.k}</span>
+                  <span style={{fontSize:10,color:'var(--text4)',marginLeft:6}}>{f.detalhe}</span>
+                </div>
+                <div style={{display:'flex',gap:3,flexShrink:0}}>
+                  {[0,1,2].map(n=>(<div key={n} style={{width:8,height:8,borderRadius:'50%',background:f.val>=n+1?fc:'rgba(148,163,184,.2)'}}/>))}
+                </div>
+              </div>
+            );
+          })}
+          <div style={{fontSize:9,color:'var(--text4)',marginTop:6,fontStyle:'italic'}}>Meta · TEC em dia · Sequência Anki · Matérias críticas · Travamentos</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function TabHoje({feitos,onAddHoras}){
   const hoje=getDK();
   const dw=new Date().getDay();
@@ -1970,61 +2019,7 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
       </div>
 
       {/* SAÚDE DA SEMANA */}
-      {(()=>{
-        const saude=calcSaude();
-        const [saudeAberta,setSaudeAberta]=React.useState(()=>lsGet('saude_aberta',false));
-        const toggle=()=>{const n=!saudeAberta;setSaudeAberta(n);lsSet('saude_aberta',n);};
-        const barW=Math.round(saude.score/10*100);
-        return(
-          <div style={{borderRadius:13,overflow:'hidden',border:`1px solid ${saude.cor}40`,marginBottom:10}}>
-            <button onClick={toggle} style={{width:'100%',padding:'10px 14px',background:`${saude.cor}0d`,border:'none',cursor:'pointer',textAlign:'left'}}>
-              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
-                <div style={{display:'flex',alignItems:'center',gap:7}}>
-                  <span style={{fontSize:16}}>{saude.emoji}</span>
-                  <div>
-                    <span style={{fontSize:10,color:saude.cor,fontFamily:"'DM Mono',monospace",fontWeight:900,letterSpacing:'1px'}}>SAÚDE DA SEMANA</span>
-                    <span style={{fontSize:10,color:saude.cor,fontWeight:900,marginLeft:8}}>{saude.score}/10 — {saude.nivel}</span>
-                  </div>
-                </div>
-                <div style={{display:'flex',gap:6,alignItems:'center'}}>
-                  {saude.fatores.map(f=>(
-                    <span key={f.k} style={{fontSize:13}}>{f.label}</span>
-                  ))}
-                  <span style={{fontSize:10,color:'var(--text4)',marginLeft:2}}>{saudeAberta?'▲':'▼'}</span>
-                </div>
-              </div>
-              {/* Barra de progresso */}
-              <div style={{height:5,borderRadius:3,background:'rgba(148,163,184,.2)',overflow:'hidden'}}>
-                <div style={{height:'100%',width:`${barW}%`,background:saude.cor,borderRadius:3,transition:'width .4s'}}/>
-              </div>
-            </button>
-            {saudeAberta&&(
-              <div style={{padding:'10px 14px 12px',background:`${saude.cor}06`,borderTop:`1px solid ${saude.cor}20`}}>
-                {saude.fatores.map(f=>{
-                  const fc=f.val===2?'#34d399':f.val===1?'#fbbf24':'#f87171';
-                  return(
-                    <div key={f.k} style={{display:'flex',alignItems:'center',gap:10,padding:'6px 10px',borderRadius:8,background:`${fc}0a`,border:`1px solid ${fc}20`,marginBottom:5}}>
-                      <span style={{fontSize:14,flexShrink:0}}>{f.label}</span>
-                      <div style={{flex:1}}>
-                        <span style={{fontSize:11,fontWeight:700,color:'var(--text)'}}>{f.k}</span>
-                        <span style={{fontSize:10,color:'var(--text4)',marginLeft:6}}>{f.detalhe}</span>
-                      </div>
-                      <div style={{display:'flex',gap:3,flexShrink:0}}>
-                        {[0,1,2].map(n=>(
-                          <div key={n} style={{width:8,height:8,borderRadius:'50%',background:f.val>=n+1?fc:'rgba(148,163,184,.2)'}}/>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })}
-                <div style={{fontSize:9,color:'var(--text4)',marginTop:6,fontStyle:'italic'}}>
-                  Meta · TEC em dia · Sequência Anki · Matérias críticas · Travamentos
-                </div>
-              </div>
-            )}
-          </div>
-        );
-      })()}
+      <CardSaude/>
 
       {/* SUB-ABAS */}
       <div style={{display:'flex',gap:4,marginBottom:12,overflowX:'auto',scrollbarWidth:'none'}}>
@@ -3302,80 +3297,7 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
           );})}
         </div>}
 
-        {/* IMPORTAR GURUJA POR ASSUNTO */}
-        {(()=>{
-          const[gurujaMatSel,setGurujaMatSel]=React.useState('Auditoria Governamental');
-          const[gurujaTxtAssuntos,setGurujaTxtAssuntos]=React.useState('');
-          const[gurujaIALoad,setGurujaIALoad]=React.useState(false);
-          const[gurujaImportSalvo,setGurujaImportSalvo]=React.useState(false);
-          const dadosAtuais=getGurujaAssuntos();
-          const mats=CICLO.map(s=>s.mat).filter((v,i,a)=>a.indexOf(v)===i);
-
-          const importarAssuntos=async()=>{
-            if(!gurujaTxtAssuntos.trim())return;
-            setGurujaIALoad(true);
-            try{
-              const k=getAK();
-              if(!k?.startsWith('sk-ant')){alert('Configure a chave IA em ⚙️');setGurujaIALoad(false);return;}
-              const res=await chamarClaude(
-                `Você recebe uma tabela do Guruja Concursos com dados de desempenho por atividade/assunto. Extraia os dados e retorne APENAS JSON sem markdown no formato:
-{"assuntos":[{"titulo":"nome do assunto","acerto":87.5,"diffMedia":11.5,"relevancia":4,"tempoCump":"1h30m","questoes":28,"acertos":23}]}
-Extraia: título da atividade (campo "Título da atividade"), taxa de acertos (número sem %), diferença pra média (número com sinal, ex: -8.3 ou 11.5), relevância (número de estrelas 1-5), tempo de cumprimento (string), questões e acertos (números).`,
-                [{role:'user',content:`Matéria: ${gurujaMatSel}\n\nTabela Guruja:\n${gurujaTxtAssuntos}`}],
-                800
-              );
-              const parsed=JSON.parse(res.replace(/```json|```/g,'').trim());
-              if(parsed.assuntos?.length){
-                const atual=lsGet('guruja_assuntos',{});
-                const novo={...atual,[gurujaMatSel]:{importadoEm:getDK(),assuntos:parsed.assuntos}};
-                lsSet('guruja_assuntos',novo);
-                setGurujaTxtAssuntos('');
-                setGurujaImportSalvo(true);
-                setTimeout(()=>setGurujaImportSalvo(false),3000);
-              }
-            }catch(e){alert('Erro ao importar: '+e.message);}
-            setGurujaIALoad(false);
-          };
-
-          return(
-            <div style={{marginTop:16,background:'rgba(52,211,153,.04)',border:'1px solid rgba(52,211,153,.25)',borderRadius:13,padding:'14px'}}>
-              <div style={{fontSize:9,color:'#34d399',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:3,letterSpacing:'1px'}}>📥 IMPORTAR GURUJA — por assunto</div>
-              <div style={{fontSize:10,color:'var(--text4)',marginBottom:12}}>Cole a tabela "Análise por atividade" do Guruja · Uma matéria por vez · Atualizar mensalmente</div>
-
-              {/* Seletor de matéria */}
-              <div style={{marginBottom:10}}>
-                <div style={{fontSize:9,color:'var(--text4)',marginBottom:6}}>MATÉRIA</div>
-                <div style={{display:'flex',flexWrap:'wrap',gap:4}}>
-                  {mats.map(m=>(
-                    <button key={m} onClick={()=>setGurujaMatSel(m)} style={{padding:'5px 9px',borderRadius:7,border:`1px solid ${gurujaMatSel===m?'#34d399':'var(--border)'}`,background:gurujaMatSel===m?'rgba(52,211,153,.15)':'transparent',color:gurujaMatSel===m?'#34d399':'var(--text4)',fontSize:9,cursor:'pointer'}}>
-                      {m.length>14?m.slice(0,13)+'…':m}
-                      {dadosAtuais[m]&&<span style={{marginLeft:3,color:'#34d399'}}>✓</span>}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Status da matéria selecionada */}
-              {dadosAtuais[gurujaMatSel]&&(
-                <div style={{padding:'7px 10px',borderRadius:8,background:'rgba(52,211,153,.08)',border:'1px solid rgba(52,211,153,.2)',marginBottom:10}}>
-                  <span style={{fontSize:10,color:'#34d399'}}>✅ {dadosAtuais[gurujaMatSel].assuntos.length} assuntos importados · {dadosAtuais[gurujaMatSel].importadoEm}</span>
-                </div>
-              )}
-
-              {/* Campo de texto */}
-              <textarea
-                value={gurujaTxtAssuntos}
-                onChange={e=>setGurujaTxtAssuntos(e.target.value)}
-                rows={5}
-                placeholder={`Cole aqui a tabela do Guruja para ${gurujaMatSel}...\n\nEx:\nAUDG.2284.68944  3  Geral  8  7  87,5%  11,5% ↑  1h  Auditoria Financeira (NBASP 200)  ★★★☆☆`}
-                style={{width:'100%',padding:'10px',borderRadius:9,border:'1px solid rgba(52,211,153,.25)',background:'rgba(52,211,153,.04)',color:'var(--text)',fontSize:11,outline:'none',resize:'vertical',boxSizing:'border-box',lineHeight:1.6,marginBottom:10}}
-              />
-              <button onClick={importarAssuntos} disabled={gurujaIALoad||!gurujaTxtAssuntos.trim()} style={{width:'100%',padding:'12px',borderRadius:9,border:'none',background:gurujaTxtAssuntos.trim()?'#34d399':'var(--border)',color:gurujaTxtAssuntos.trim()?'#0f172a':'var(--text4)',fontSize:12,fontWeight:800,cursor:'pointer'}}>
-                {gurujaIALoad?'⏳ Extraindo dados...':gurujaImportSalvo?'✅ Importado!':'🤖 Importar com IA'}
-              </button>
-            </div>
-          );
-        })()}
+        <CardGurujaImport/>
       </div>}
     </div>
   );
@@ -3415,6 +3337,81 @@ function Estrelas({val,onChange}){
 }
 
 // ─── TAB: REVISÃO (reformulada) ──────────────────────────────
+function CardNlmTempoMorto({motor,tmFeitoNlm,setTmFeitoNlm,hoje}){
+  const[idx80,setIdx80]=useState(0);
+  const filaNlm=(motor?.nlm?.ranking||[]).filter(r=>r.pct===null||r.pct>=80);
+  const top80=filaNlm[0]||motor?.nlm?.top;
+  const idxFinal=Math.min(idx80,Math.max(filaNlm.length-1,0));
+  const matAtual=filaNlm[idxFinal]||top80;
+  return(
+    <div style={{padding:'16px',borderRadius:12,background:tmFeitoNlm?'rgba(52,211,153,.08)':'rgba(52,211,153,.06)',border:`2px solid ${tmFeitoNlm?'rgba(52,211,153,.5)':'rgba(52,211,153,.3)'}`,marginBottom:10,textAlign:'center'}}>
+      <div style={{fontSize:8,color:'#34d399',fontFamily:"'DM Mono',monospace",letterSpacing:'2px',marginBottom:10}}>🎧 OUVIR AGORA — manutenção ≥80%</div>
+      {tmFeitoNlm
+        ?<div style={{fontSize:16,fontWeight:900,color:'#34d399',fontFamily:"'DM Serif Display',serif"}}>✅ Ouvido hoje!</div>
+        :<>
+          <div style={{fontSize:20,fontWeight:900,color:'var(--text)',fontFamily:"'DM Serif Display',serif",marginBottom:4}}>{matAtual?.mat||'—'}</div>
+          <div style={{fontSize:11,color:'#34d399',marginBottom:matAtual?.pct!=null?4:10}}>NotebookLM · manutenção</div>
+          {matAtual?.pct!=null&&<div style={{fontSize:10,color:'var(--text4)',marginBottom:10}}>{matAtual.pct}% acerto</div>}
+          <div style={{display:'flex',gap:6,justifyContent:'center'}}>
+            <button onClick={()=>{setTmFeitoNlm(true);lsSet(`tm_nlm_${hoje}`,true);}} style={{padding:'10px 20px',borderRadius:9,border:'none',background:'#34d399',color:'#0f172a',fontSize:12,fontWeight:800,cursor:'pointer'}}>✅ Ouvi hoje</button>
+            {filaNlm.length>1&&idxFinal<filaNlm.length-1&&<button onClick={()=>setIdx80(i=>i+1)} style={{padding:'10px 14px',borderRadius:9,border:'1px solid rgba(52,211,153,.3)',background:'transparent',color:'#34d399',fontSize:12,cursor:'pointer'}}>🔄 Trocar</button>}
+          </div>
+        </>
+      }
+    </div>
+  );
+}
+
+function CardGurujaImport(){
+  const[gurujaMatSel,setGurujaMatSel]=useState('Auditoria Governamental');
+  const[gurujaTxt,setGurujaTxt]=useState('');
+  const[load,setLoad]=useState(false);
+  const[salvo,setSalvo]=useState(false);
+  const dadosAtuais=getGurujaAssuntos();
+  const mats=CICLO.map(s=>s.mat).filter((v,i,a)=>a.indexOf(v)===i);
+
+  const importar=async()=>{
+    if(!gurujaTxt.trim())return;
+    setLoad(true);
+    try{
+      const k=getAK();
+      if(!k?.startsWith('sk-ant')){alert('Configure a chave IA em ⚙️');setLoad(false);return;}
+      const res=await chamarClaude(
+        'Você recebe uma tabela do Guruja Concursos. Extraia e retorne APENAS JSON sem markdown: {"assuntos":[{"titulo":"nome","acerto":87.5,"diffMedia":11.5,"relevancia":4,"tempoCump":"1h30m","questoes":28,"acertos":23}]}. Extraia: título da atividade, taxa de acertos (número), diferença pra média (com sinal), relevância (estrelas 1-5), tempo, questões e acertos.',
+        [{role:'user',content:`Matéria: ${gurujaMatSel}\n\n${gurujaTxt}`}],800);
+      const parsed=JSON.parse(res.replace(/```json|```/g,'').trim());
+      if(parsed.assuntos?.length){
+        const atual=lsGet('guruja_assuntos',{});
+        lsSet('guruja_assuntos',{...atual,[gurujaMatSel]:{importadoEm:getDK(),assuntos:parsed.assuntos}});
+        setGurujaTxt('');setSalvo(true);setTimeout(()=>setSalvo(false),3000);
+      }
+    }catch(e){alert('Erro: '+e.message);}
+    setLoad(false);
+  };
+
+  return(
+    <div style={{marginTop:16,background:'rgba(52,211,153,.04)',border:'1px solid rgba(52,211,153,.25)',borderRadius:13,padding:'14px'}}>
+      <div style={{fontSize:9,color:'#34d399',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:3,letterSpacing:'1px'}}>📥 IMPORTAR GURUJA — por assunto</div>
+      <div style={{fontSize:10,color:'var(--text4)',marginBottom:12}}>Cole a tabela "Análise por atividade" · Uma matéria por vez · Atualizar mensalmente</div>
+      <div style={{marginBottom:10}}>
+        <div style={{fontSize:9,color:'var(--text4)',marginBottom:6}}>MATÉRIA</div>
+        <div style={{display:'flex',flexWrap:'wrap',gap:4}}>
+          {mats.map(m=>(
+            <button key={m} onClick={()=>setGurujaMatSel(m)} style={{padding:'5px 9px',borderRadius:7,border:`1px solid ${gurujaMatSel===m?'#34d399':'var(--border)'}`,background:gurujaMatSel===m?'rgba(52,211,153,.15)':'transparent',color:gurujaMatSel===m?'#34d399':'var(--text4)',fontSize:9,cursor:'pointer'}}>
+              {m.length>14?m.slice(0,13)+'…':m}{dadosAtuais[m]&&<span style={{marginLeft:3,color:'#34d399'}}>✓</span>}
+            </button>
+          ))}
+        </div>
+      </div>
+      {dadosAtuais[gurujaMatSel]&&<div style={{padding:'7px 10px',borderRadius:8,background:'rgba(52,211,153,.08)',border:'1px solid rgba(52,211,153,.2)',marginBottom:10,fontSize:10,color:'#34d399'}}>✅ {dadosAtuais[gurujaMatSel].assuntos?.length||0} assuntos · {dadosAtuais[gurujaMatSel].importadoEm}</div>}
+      <textarea value={gurujaTxt} onChange={e=>setGurujaTxt(e.target.value)} rows={5} placeholder={`Cole a tabela do Guruja para ${gurujaMatSel}...`} style={{width:'100%',padding:'10px',borderRadius:9,border:'1px solid rgba(52,211,153,.25)',background:'rgba(52,211,153,.04)',color:'var(--text)',fontSize:11,outline:'none',resize:'vertical',boxSizing:'border-box',lineHeight:1.6,marginBottom:10}}/>
+      <button onClick={importar} disabled={load||!gurujaTxt.trim()} style={{width:'100%',padding:'12px',borderRadius:9,border:'none',background:gurujaTxt.trim()?'#34d399':'var(--border)',color:gurujaTxt.trim()?'#0f172a':'var(--text4)',fontSize:12,fontWeight:800,cursor:'pointer'}}>
+        {load?'⏳ Extraindo...':salvo?'✅ Importado!':'🤖 Importar com IA'}
+      </button>
+    </div>
+  );
+}
+
 function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras}){
   const hoje=getDK();
   const[aba,setAba]=useState('morto');
@@ -3638,30 +3635,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras}){
               {tmFeitoAnki?<div style={{fontSize:11,color:'#34d399',fontWeight:700}}>✅ Feito hoje!</div>:<button onClick={()=>{setTmFeitoAnki(true);lsSet(`tm_anki_${hoje}`,true);}} style={{padding:'8px 18px',borderRadius:8,border:'none',background:'#a78bfa',color:'#0f172a',fontSize:11,fontWeight:800,cursor:'pointer'}}>✓ Fiz!</button>}
             </div>
             {/* NLM — card mínimo com fila ≥80% */}
-            {(()=>{
-              const filaNlm=motor.nlm.ranking.filter(r=>r.pct===null||r.pct>=80);
-              const top80=filaNlm[0]||motor.nlm.top;
-              const [idx80,setIdx80]=React.useState(0);
-              const idxFinal=Math.min(idx80,filaNlm.length-1);
-              const matAtual80=filaNlm[idxFinal]||top80;
-              return(
-                <div style={{padding:'16px',borderRadius:12,background:tmFeitoNlm?'rgba(52,211,153,.08)':'rgba(52,211,153,.06)',border:`2px solid ${tmFeitoNlm?'rgba(52,211,153,.5)':'rgba(52,211,153,.3)'}`,marginBottom:10,textAlign:'center'}}>
-                  <div style={{fontSize:8,color:'#34d399',fontFamily:"'DM Mono',monospace",letterSpacing:'2px',marginBottom:10}}>🎧 OUVIR AGORA — manutenção ≥80%</div>
-                  {tmFeitoNlm
-                    ?<div style={{fontSize:16,fontWeight:900,color:'#34d399',fontFamily:"'DM Serif Display',serif"}}>✅ Ouvido hoje!</div>
-                    :<>
-                      <div style={{fontSize:20,fontWeight:900,color:'var(--text)',fontFamily:"'DM Serif Display',serif",marginBottom:4}}>{matAtual80?.mat||'—'}</div>
-                      <div style={{fontSize:11,color:'#34d399',marginBottom:matAtual80?.pct!==null?4:10}}>NotebookLM · manutenção</div>
-                      {matAtual80?.pct!==null&&<div style={{fontSize:10,color:'var(--text4)',marginBottom:10}}>{matAtual80.pct}% acerto</div>}
-                      <div style={{display:'flex',gap:6,justifyContent:'center'}}>
-                        <button onClick={()=>{setTmFeitoNlm(true);lsSet(`tm_nlm_${hoje}`,true);}} style={{padding:'10px 20px',borderRadius:9,border:'none',background:'#34d399',color:'#0f172a',fontSize:12,fontWeight:800,cursor:'pointer'}}>✅ Ouvi hoje</button>
-                        {filaNlm.length>1&&idxFinal<filaNlm.length-1&&<button onClick={()=>setIdx80(i=>i+1)} style={{padding:'10px 14px',borderRadius:9,border:'1px solid rgba(52,211,153,.3)',background:'transparent',color:'#34d399',fontSize:12,cursor:'pointer'}}>🔄 Trocar</button>}
-                      </div>
-                    </>
-                  }
-                </div>
-              );
-            })()}
+            <CardNlmTempoMorto motor={motor} tmFeitoNlm={tmFeitoNlm} setTmFeitoNlm={setTmFeitoNlm} hoje={hoje}/>
             <div style={{padding:'13px',borderRadius:12,background:'rgba(251,191,36,.06)',border:'2px solid rgba(251,191,36,.3)',marginBottom:10}}>
               <div style={{fontSize:8,color:'#fbbf24',fontFamily:"'DM Mono',monospace",letterSpacing:'2px',marginBottom:8}}>📖 REVISÃO 1h — peso edital × 2 + ausência × 0.5 + deficit × 1</div>
               {motor.rev1h.top.slice(0,3).map((r,i)=>(<div key={r.mat} style={{display:'flex',alignItems:'center',gap:8,padding:'7px 10px',borderRadius:9,background:i===0?'rgba(251,191,36,.1)':'rgba(255,255,255,.03)',border:`1px solid ${i===0?'rgba(251,191,36,.3)':'rgba(255,255,255,.06)'}`,marginBottom:5}}><span style={{fontSize:11,fontWeight:900,color:'#fbbf24',width:16,flexShrink:0}}>{i+1}</span><div style={{flex:1}}><div style={{fontSize:12,color:'var(--text)',fontWeight:700}}>{r.mat}</div><div style={{fontSize:9,color:'var(--text4)'}}>{r.diasSemRev}d sem revisão · {r.pct!==null?r.pct+'% acerto':'sem dado'}</div></div></div>))}
