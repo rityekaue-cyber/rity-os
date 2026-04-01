@@ -1552,13 +1552,25 @@ function calcMotorCanais(feitos,horas,historico){
   ].filter(Boolean);
   if(!ankiMaterias.length)ankiMaterias.push({mat:'Matéria prioritária',cards:75,motivo:'meta do dia'});
 
-  // ── CANAL NLM ÁUDIO: score = diasSemNlm × 0.6 + déficit × 1.5 + pesoEdital × 0.3 ──
-  // Forma 1: prioriza tempo sem teoria (NLM é canal passivo/teórico)
-  // Forma 4: penaliza ausência no canal NLM especificamente
-  const rankNlm=Object.entries(porMat).map(([mat,v])=>{
-    const score=diasSem(v.lastNlm)*0.6 + deficit(v)*1.5 + pesoEdital(mat)*0.3 + v.travou*0.8;
-    return{mat,score,pct:v.q>0?Math.round(v.a/v.q*100):null,diasNlm:diasSem(v.lastNlm)};
+  // ── CANAL NLM ÁUDIO (tempo morto): score = diasSemNlm × 0.7 + acerto × 0.3 ──
+  // Forma 1: prioriza tempo sem teoria no canal NLM
+  // Filtro: só matérias com acerto ≥80% (manutenção, atenção parcial)
+  // Fallback: se nenhuma ≥80%, pega as mais próximas de 80%
+  const rankNlmBase=Object.entries(porMat).map(([mat,v])=>{
+    const pct=v.q>0?Math.round(v.a/v.q*100):null;
+    const score=diasSem(v.lastNlm)*0.7 + (pct!==null?pct/100*0.3:0.15);
+    return{mat,score,pct,diasNlm:diasSem(v.lastNlm)};
   }).sort((a,b)=>b.score-a.score);
+
+  // Tenta filtrar ≥80%
+  let rankNlm=rankNlmBase.filter(r=>r.pct!==null&&r.pct>=80);
+  // Fallback 1: sem dado de acerto (matérias não estudadas ainda)
+  if(rankNlm.length<2){
+    const semDado=rankNlmBase.filter(r=>r.pct===null);
+    rankNlm=[...rankNlm,...semDado].slice(0,5);
+  }
+  // Fallback 2: se ainda vazio, pega as mais próximas de 80%
+  if(!rankNlm.length) rankNlm=rankNlmBase.slice(0,3);
   const nlmTop=rankNlm[0]||null;
 
   // ── CANAL REVISÃO 1h: score = pesoEdital × 2 + diasSemRev × 0.5 + déficit × 1 ──
@@ -1682,6 +1694,8 @@ function TabHoje({feitos,onAddHoras}){
   const[naoFizMotivo,setNaoFizMotivo]=useState('');
   const[ankiCards,setAnkiCards]=useState({});
   const[ankiExpandMats,setAnkiExpandMats]=useState(false);
+  const[ankiFeitosMat,setAnkiFeitosMat]=useState(()=>lsGet(`anki_mats_${hoje}`,{}));
+  const[nlmFilaIdx,setNlmFilaIdx]=useState(0);
 
   // ── Motor: calcula tudo ───────────────────────────────────────
   const rev=useMemo(()=>calcRevisaoHoje(feitos),[feitos,hoje]);
@@ -1734,7 +1748,7 @@ function TabHoje({feitos,onAddHoras}){
     return{d3,d15,d30,total:caderno.filter(t=>!t.feito&&!t.dominado).length};
   },[hoje]);
 
-  // ── Motor NLM: usa novo motor de canais ─────────────────────
+  // ── Motor NLM: ≥80% acerto, mais dias sem aparecer ─────────
   const nlmSugerido=useMemo(()=>{
     const hist=lsGet('historico_diario',[]);
     const motor=calcMotorCanais(feitos,lsGet('horas',[]),hist);
@@ -1742,10 +1756,26 @@ function TabHoje({feitos,onAddHoras}){
     const emJanela=(blocoAtual>=12&&blocoAtual<=14)||(blocoAtual>=20&&blocoAtual<=22);
     const top=motor.nlm.top;
     if(!top)return null;
-    return{mat:top.mat,pct:top.pct,diasNlm:top.diasNlm,travou:0,emJanela,score:top.score};
+    // Fila completa para botão "Trocar"
+    const fila=motor.nlm.ranking.slice(0,5);
+    return{mat:top.mat,pct:top.pct,diasNlm:top.diasNlm,travou:0,emJanela,score:top.score,fila};
   },[feitos,hoje]);
 
   // ── Ações ─────────────────────────────────────────────────────
+  const marcarAnkiMat=(mat)=>{
+    const novos={...ankiFeitosMat,[mat]:{feito:true,cards:parseInt(ankiCards[mat])||0,dt:Date.now()}};
+    setAnkiFeitosMat(novos);
+    lsSet(`anki_mats_${hoje}`,novos);
+    // Se todas as matérias foram feitas, marca o Anki geral
+    if(ankiMaterias.every(m=>novos[m.mat]?.feito)){
+      const totalCards=Object.values(novos).reduce((s,v)=>s+(v.cards||0),0)||75;
+      const registro={feito:true,cards:totalCards,porMat:Object.fromEntries(Object.entries(novos).map(([k,v])=>[k,v.cards])),mats:ankiMaterias,dt:Date.now()};
+      lsSet(`anki_feito_${hoje}`,registro);
+      setAnkiFeito(registro);
+      if(onAddHoras)onAddHoras({mat:'Anki',min:30,dt:Date.now()});
+    }
+  };
+
   const marcarAnki=()=>{
     const total=Object.values(ankiCards).reduce((s,v)=>s+(parseInt(v)||0),0)||75;
     const registro={feito:true,cards:total,porMat:ankiCards,mats:ankiMaterias,dt:Date.now()};
@@ -2087,53 +2117,81 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
             <div style={{borderBottom:'1px solid var(--border)'}}>
               <CardHeader emoji="🟣" titulo="ANKI — 75 cards" resumo={ankiFeito?`✅ feito · ${ankiFeito.cards} cards`:`${ankiMaterias.map(m=>m.mat.split(' ')[0]+' '+m.cards).join(' · ')}`} key_="anki" cor="#a78bfa" feito={!!ankiFeito} nfz={!!naoFiz.anki}/>
               {abertos.anki&&!ankiFeito&&!naoFiz.anki&&<div style={{padding:'0 14px 14px'}}>
-                <div style={{fontSize:10,color:'var(--text4)',fontFamily:"'DM Mono',monospace",marginBottom:8}}>DISTRIBUIÇÃO DE HOJE</div>
-                {ankiMaterias.map((m,i)=>(
-                  <div key={m.mat} style={{display:'flex',alignItems:'center',gap:8,padding:'8px 10px',borderRadius:9,background:`rgba(167,139,250,${i===0?'.1':'.05'})`,border:`1px solid rgba(167,139,250,${i===0?'.3':'.15'})`,marginBottom:6}}>
-                    <div style={{flex:1}}>
-                      <div style={{fontSize:12,fontWeight:700,color:'var(--text)'}}>{m.mat}</div>
-                      <div style={{fontSize:10,color:'var(--text4)'}}>{m.motivo}</div>
+                <div style={{fontSize:10,color:'var(--text4)',fontFamily:"'DM Mono',monospace",marginBottom:8}}>DISTRIBUIÇÃO DE HOJE — marque cada matéria ao terminar</div>
+                {ankiMaterias.map((m,i)=>{
+                  const matFeita=ankiFeitosMat[m.mat]?.feito;
+                  return(
+                    <div key={m.mat} style={{padding:'10px 12px',borderRadius:10,background:matFeita?'rgba(52,211,153,.08)':`rgba(167,139,250,${i===0?'.1':'.05'})`,border:`1px solid ${matFeita?'rgba(52,211,153,.35)':`rgba(167,139,250,${i===0?'.3':'.15'})`}`,marginBottom:8}}>
+                      <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:matFeita?0:8}}>
+                        <div style={{flex:1}}>
+                          <div style={{fontSize:13,fontWeight:700,color:matFeita?'#34d399':'var(--text)'}}>{matFeita?'✅ ':''}{m.mat}</div>
+                          <div style={{fontSize:10,color:'var(--text4)',marginTop:1}}>{m.motivo}</div>
+                        </div>
+                        <div style={{textAlign:'right',flexShrink:0}}>
+                          <div style={{fontSize:12,color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:700}}>{m.cards} cards</div>
+                          {!matFeita&&<input type="number" placeholder={String(m.cards)} value={ankiCards[m.mat]||''} onChange={e=>setAnkiCards(p=>({...p,[m.mat]:e.target.value}))}
+                            style={{width:60,padding:'4px 6px',borderRadius:6,border:'1px solid rgba(167,139,250,.3)',background:'rgba(167,139,250,.05)',color:'#a78bfa',fontSize:12,fontWeight:700,textAlign:'center',outline:'none',fontFamily:"'DM Mono',monospace",marginTop:3}}/>}
+                        </div>
+                      </div>
+                      {!matFeita&&(
+                        <div style={{display:'flex',gap:6}}>
+                          <button onClick={()=>marcarAnkiMat(m.mat)} style={{flex:2,padding:'8px',borderRadius:8,border:'none',background:'#a78bfa',color:'#0f172a',fontSize:11,fontWeight:800,cursor:'pointer'}}>✅ Fiz — {m.mat.split(' ')[0]}</button>
+                          <button onClick={()=>{setNaoFizModal('anki');setNaoFizMotivo('');}} style={{padding:'8px 10px',borderRadius:8,border:'1px solid rgba(248,113,113,.3)',background:'transparent',color:'#f87171',fontSize:11,cursor:'pointer'}}>❌</button>
+                        </div>
+                      )}
                     </div>
-                    <div style={{textAlign:'right'}}>
-                      <div style={{fontSize:11,color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:3}}>{m.cards} cards</div>
-                      <input type="number" placeholder={String(m.cards)} value={ankiCards[m.mat]||''} onChange={e=>setAnkiCards(p=>({...p,[m.mat]:e.target.value}))}
-                        style={{width:60,padding:'4px 6px',borderRadius:6,border:'1px solid rgba(167,139,250,.3)',background:'rgba(167,139,250,.05)',color:'#a78bfa',fontSize:12,fontWeight:700,textAlign:'center',outline:'none',fontFamily:"'DM Mono',monospace"}}/>
+                  );
+                })}
+                {/* Total e botão geral */}
+                {(()=>{
+                  const nFeitas=Object.values(ankiFeitosMat).filter(v=>v.feito).length;
+                  const totalCards=Object.values(ankiFeitosMat).reduce((s,v)=>s+(v.cards||0),0);
+                  if(nFeitas===0)return null;
+                  return(
+                    <div style={{padding:'8px 12px',borderRadius:9,background:'rgba(52,211,153,.06)',border:'1px solid rgba(52,211,153,.2)',marginBottom:8,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                      <span style={{fontSize:11,color:'#34d399'}}>{nFeitas}/{ankiMaterias.length} matérias feitas · {totalCards} cards</span>
+                      {nFeitas<ankiMaterias.length&&<button onClick={marcarAnki} style={{padding:'6px 12px',borderRadius:7,border:'none',background:'#a78bfa',color:'#0f172a',fontSize:11,fontWeight:800,cursor:'pointer'}}>✅ Marcar todas</button>}
                     </div>
-                  </div>
-                ))}
-                {totalAnkiInput>0&&<div style={{fontSize:10,color:'var(--text4)',textAlign:'center',marginBottom:8}}>
-                  Total: <strong style={{color:'#a78bfa'}}>{totalAnkiInput}</strong> cards
-                  {totalAnkiInput>=75&&<span style={{color:'#34d399',marginLeft:6}}>✅ Meta batida!</span>}
-                  {totalAnkiInput>0&&totalAnkiInput<75&&<span style={{color:'#fbbf24',marginLeft:6}}>⚠️ faltam {75-totalAnkiInput}</span>}
-                </div>}
-                <div style={{display:'flex',gap:6}}>
-                  <button onClick={marcarAnki} style={{flex:2,padding:'10px',borderRadius:9,border:'none',background:'#a78bfa',color:'#0f172a',fontSize:12,fontWeight:800,cursor:'pointer'}}>✅ Fiz o Anki</button>
-                  <BtnNaoFiz tipo="anki"/>
-                </div>
+                  );
+                })()}
+                <BtnNaoFiz tipo="anki"/>
               </div>}
               {abertos.anki&&ankiFeito&&<div style={{padding:'0 14px 14px'}}>
                 <div style={{fontSize:11,color:'#34d399',fontWeight:700,marginBottom:6}}>✅ Feito hoje — {ankiFeito.cards} cards</div>
                 {ankiFeito.mats?.map(m=><div key={m.mat} style={{fontSize:10,color:'var(--text4)',marginBottom:2}}>• {m.mat}: {ankiFeito.porMat?.[m.mat]||m.cards} cards</div>)}
               </div>}
             </div>
-            {/* NLM */}
+            {/* NLM — card mínimo tempo morto */}
             <div>
-              <CardHeader emoji="🔵" titulo="NLM — 1h30 teoria" resumo={naoFiz.nlm?'❌ não fiz':nlmSugerido?`${nlmSugerido.mat} · ${nlmSugerido.pct}% acerto · ${nlmSugerido.diasNlm}d sem NLM${nlmSugerido.emJanela?' · ⚡ janela ativa':''}`:'-'} key_="nlm" cor="#34d399" feito={!!lsGet(`nlm_feito_${hoje}`,false)} nfz={!!naoFiz.nlm}/>
-              {abertos.nlm&&!naoFiz.nlm&&<div style={{padding:'0 14px 14px'}}>
-                {nlmSugerido&&<div style={{padding:'10px 12px',borderRadius:10,background:'rgba(52,211,153,.06)',border:'1px solid rgba(52,211,153,.2)',marginBottom:10}}>
-                  <div style={{fontSize:13,fontWeight:700,color:'var(--text)',marginBottom:4}}>{nlmSugerido.mat}</div>
-                  <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
-                    <span style={{fontSize:10,color:nlmSugerido.pct>=70?'#fbbf24':'#f87171'}}>{nlmSugerido.pct}% acerto</span>
-                    <span style={{fontSize:10,color:'var(--text4)'}}>travou {nlmSugerido.travou}x</span>
-                    <span style={{fontSize:10,color:'var(--text4)'}}>{nlmSugerido.diasNlm}d sem NLM</span>
-                    {nlmSugerido.emJanela&&<span style={{fontSize:10,color:'#34d399',fontWeight:700}}>⚡ janela do ciclo</span>}
-                  </div>
-                </div>}
-                <div style={{display:'flex',gap:6}}>
-                  <button onClick={()=>{lsSet(`nlm_feito_${hoje}`,true);if(onAddHoras)onAddHoras({mat:`NLM — ${nlmSugerido?.mat||''}`,min:90,dt:Date.now()});}} style={{flex:2,padding:'9px',borderRadius:9,border:'none',background:'#34d399',color:'#0f172a',fontSize:12,fontWeight:800,cursor:'pointer'}}>✅ Fiz o NLM</button>
-                  <BtnNaoFiz tipo="nlm"/>
-                </div>
-              </div>}
+              {(()=>{
+                const nlmFeito=lsGet(`nlm_feito_${hoje}`,false);
+                const fila=nlmSugerido?.fila||[];
+                const idxValido=Math.min(nlmFilaIdx,fila.length-1);
+                const matAtual=fila[idxValido]||nlmSugerido;
+                const podeProximo=fila.length>1&&idxValido<fila.length-1;
+                return(
+                  <>
+                    <CardHeader emoji="🎧" titulo="NLM — tempo morto" resumo={nlmFeito?`✅ ouvido hoje`:`${matAtual?.mat||'—'} · manutenção`} key_="nlm" cor="#34d399" feito={!!nlmFeito} nfz={!!naoFiz.nlm}/>
+                    {abertos.nlm&&!naoFiz.nlm&&!nlmFeito&&matAtual&&(
+                      <div style={{padding:'0 14px 14px'}}>
+                        {/* Card mínimo */}
+                        <div style={{padding:'18px 16px',borderRadius:12,background:'rgba(52,211,153,.07)',border:'2px solid rgba(52,211,153,.3)',marginBottom:10,textAlign:'center'}}>
+                          <div style={{fontSize:9,color:'#34d399',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'2px',marginBottom:8}}>🎧 OUVIR AGORA</div>
+                          <div style={{fontSize:20,fontWeight:900,color:'var(--text)',fontFamily:"'DM Serif Display',serif",marginBottom:4}}>{matAtual.mat}</div>
+                          <div style={{fontSize:11,color:'#34d399',marginBottom:2}}>NotebookLM · manutenção</div>
+                          {matAtual.pct!==null&&<div style={{fontSize:10,color:'var(--text4)',marginBottom:0}}>{matAtual.pct}% acerto · domínio consolidado</div>}
+                        </div>
+                        <div style={{display:'flex',gap:6}}>
+                          <button onClick={()=>{lsSet(`nlm_feito_${hoje}`,true);if(onAddHoras)onAddHoras({mat:`NLM — ${matAtual?.mat||''}`,min:45,dt:Date.now()});}} style={{flex:2,padding:'10px',borderRadius:9,border:'none',background:'#34d399',color:'#0f172a',fontSize:12,fontWeight:800,cursor:'pointer'}}>✅ Ouvi hoje</button>
+                          {podeProximo&&<button onClick={()=>setNlmFilaIdx(i=>Math.min(i+1,fila.length-1))} style={{padding:'10px 14px',borderRadius:9,border:'1px solid rgba(52,211,153,.3)',background:'transparent',color:'#34d399',fontSize:12,cursor:'pointer'}}>🔄 Trocar</button>}
+                          <BtnNaoFiz tipo="nlm"/>
+                        </div>
+                      </div>
+                    )}
+                    {abertos.nlm&&nlmFeito&&<div style={{padding:'0 14px 14px',fontSize:11,color:'#34d399',fontWeight:700}}>✅ Ouvido hoje!</div>}
+                  </>
+                );
+              })()}
             </div>
           </div>
         </div>
@@ -3418,15 +3476,31 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras}){
               </div>
               {tmFeitoAnki?<div style={{fontSize:11,color:'#34d399',fontWeight:700}}>✅ Feito hoje!</div>:<button onClick={()=>{setTmFeitoAnki(true);lsSet(`tm_anki_${hoje}`,true);}} style={{padding:'8px 18px',borderRadius:8,border:'none',background:'#a78bfa',color:'#0f172a',fontSize:11,fontWeight:800,cursor:'pointer'}}>✓ Fiz!</button>}
             </div>
-            <div style={{padding:'13px',borderRadius:12,background:tmFeitoNlm?'rgba(52,211,153,.08)':'rgba(52,211,153,.06)',border:`2px solid ${tmFeitoNlm?'rgba(52,211,153,.5)':'rgba(52,211,153,.3)'}`,marginBottom:10}}>
-              <div style={{fontSize:8,color:'#34d399',fontFamily:"'DM Mono',monospace",letterSpacing:'2px',marginBottom:6}}>🎧 NLM ÁUDIO — ausência × 0.6 + deficit × 1.5 + peso edital × 0.3</div>
-              <div style={{fontSize:18,fontWeight:900,color:tmFeitoNlm?'#34d399':'var(--text)',fontFamily:"'DM Serif Display',serif",marginBottom:4}}>{ia&&ia.dia===hoje2?ia.nlm:motor.nlm.top?.mat||'—'}</div>
-              {motor.nlm.top&&<div style={{fontSize:10,color:'var(--text4)',marginBottom:8}}>{motor.nlm.top.diasNlm}d sem NLM · {motor.nlm.top.pct!==null?motor.nlm.top.pct+'% acerto':'sem dado'}</div>}
-              <div style={{display:'flex',gap:5,marginBottom:10,flexWrap:'wrap'}}>
-                {motor.nlm.ranking.slice(0,5).map((r,i)=>(<span key={r.mat} style={{fontSize:9,padding:'2px 7px',borderRadius:5,background:i===0?'rgba(52,211,153,.2)':'rgba(148,163,184,.1)',color:i===0?'#34d399':'var(--text4)',fontFamily:"'DM Mono',monospace"}}>{i+1}. {r.mat.split(' ')[0]} {r.diasNlm}d</span>))}
-              </div>
-              {tmFeitoNlm?<div style={{fontSize:11,color:'#34d399',fontWeight:700}}>✅ Feito hoje!</div>:<button onClick={()=>{setTmFeitoNlm(true);lsSet(`tm_nlm_${hoje}`,true);}} style={{padding:'8px 18px',borderRadius:8,border:'none',background:'#34d399',color:'#0f172a',fontSize:11,fontWeight:800,cursor:'pointer'}}>✓ Ouvi!</button>}
-            </div>
+            {/* NLM — card mínimo com fila ≥80% */}
+            {(()=>{
+              const filaNlm=motor.nlm.ranking.filter(r=>r.pct===null||r.pct>=80);
+              const top80=filaNlm[0]||motor.nlm.top;
+              const [idx80,setIdx80]=React.useState(0);
+              const idxFinal=Math.min(idx80,filaNlm.length-1);
+              const matAtual80=filaNlm[idxFinal]||top80;
+              return(
+                <div style={{padding:'16px',borderRadius:12,background:tmFeitoNlm?'rgba(52,211,153,.08)':'rgba(52,211,153,.06)',border:`2px solid ${tmFeitoNlm?'rgba(52,211,153,.5)':'rgba(52,211,153,.3)'}`,marginBottom:10,textAlign:'center'}}>
+                  <div style={{fontSize:8,color:'#34d399',fontFamily:"'DM Mono',monospace",letterSpacing:'2px',marginBottom:10}}>🎧 OUVIR AGORA — manutenção ≥80%</div>
+                  {tmFeitoNlm
+                    ?<div style={{fontSize:16,fontWeight:900,color:'#34d399',fontFamily:"'DM Serif Display',serif"}}>✅ Ouvido hoje!</div>
+                    :<>
+                      <div style={{fontSize:20,fontWeight:900,color:'var(--text)',fontFamily:"'DM Serif Display',serif",marginBottom:4}}>{matAtual80?.mat||'—'}</div>
+                      <div style={{fontSize:11,color:'#34d399',marginBottom:matAtual80?.pct!==null?4:10}}>NotebookLM · manutenção</div>
+                      {matAtual80?.pct!==null&&<div style={{fontSize:10,color:'var(--text4)',marginBottom:10}}>{matAtual80.pct}% acerto</div>}
+                      <div style={{display:'flex',gap:6,justifyContent:'center'}}>
+                        <button onClick={()=>{setTmFeitoNlm(true);lsSet(`tm_nlm_${hoje}`,true);}} style={{padding:'10px 20px',borderRadius:9,border:'none',background:'#34d399',color:'#0f172a',fontSize:12,fontWeight:800,cursor:'pointer'}}>✅ Ouvi hoje</button>
+                        {filaNlm.length>1&&idxFinal<filaNlm.length-1&&<button onClick={()=>setIdx80(i=>i+1)} style={{padding:'10px 14px',borderRadius:9,border:'1px solid rgba(52,211,153,.3)',background:'transparent',color:'#34d399',fontSize:12,cursor:'pointer'}}>🔄 Trocar</button>}
+                      </div>
+                    </>
+                  }
+                </div>
+              );
+            })()}
             <div style={{padding:'13px',borderRadius:12,background:'rgba(251,191,36,.06)',border:'2px solid rgba(251,191,36,.3)',marginBottom:10}}>
               <div style={{fontSize:8,color:'#fbbf24',fontFamily:"'DM Mono',monospace",letterSpacing:'2px',marginBottom:8}}>📖 REVISÃO 1h — peso edital × 2 + ausência × 0.5 + deficit × 1</div>
               {motor.rev1h.top.slice(0,3).map((r,i)=>(<div key={r.mat} style={{display:'flex',alignItems:'center',gap:8,padding:'7px 10px',borderRadius:9,background:i===0?'rgba(251,191,36,.1)':'rgba(255,255,255,.03)',border:`1px solid ${i===0?'rgba(251,191,36,.3)':'rgba(255,255,255,.06)'}`,marginBottom:5}}><span style={{fontSize:11,fontWeight:900,color:'#fbbf24',width:16,flexShrink:0}}>{i+1}</span><div style={{flex:1}}><div style={{fontSize:12,color:'var(--text)',fontWeight:700}}>{r.mat}</div><div style={{fontSize:9,color:'var(--text4)'}}>{r.diasSemRev}d sem revisão · {r.pct!==null?r.pct+'% acerto':'sem dado'}</div></div></div>))}
