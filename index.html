@@ -1490,6 +1490,63 @@ function MatBtn({value,onChange,placeholder}){
   );
 }
 
+// ── GURUJA: dados por assunto (atualizado mensalmente) ────────
+// Fonte: tabela "Análise por atividade" do Guruja · Área Fiscal
+// Para adicionar nova matéria: cole via campo na aba Revisão → Planejamento
+// ou edite diretamente esta constante como seed inicial.
+
+const GURUJA_SEED={
+  'Auditoria Governamental':{
+    importadoEm:'2026-04-01',
+    assuntos:[
+      {titulo:'Auditoria Financeira (NBASP 200)',              acerto:87.5, diffMedia:11.5,  relevancia:3, tempoCump:'1h',    questoes:8,  acertos:7},
+      {titulo:'Estrutura Conceitual para Trabalhos de Asseguração', acerto:92.5, diffMedia:8.4, relevancia:5, tempoCump:'2h',   questoes:27, acertos:25},
+      {titulo:'Resolução de questões favoritas',               acerto:82.1, diffMedia:4.2,  relevancia:4, tempoCump:'1h30m', questoes:28, acertos:23},
+      {titulo:'Documentação de Auditoria',                     acerto:80.7, diffMedia:-1.7, relevancia:5, tempoCump:'1h',    questoes:26, acertos:21},
+      {titulo:'Conceitos Iniciais. Evolução. Auditoria Interna e Externa', acerto:70.3, diffMedia:-4.3, relevancia:5, tempoCump:'2h', questoes:27, acertos:19},
+      {titulo:'Auditoria Operacional (NBASP 300 e 3000)',      acerto:73.9, diffMedia:-4.9, relevancia:3, tempoCump:'2h',    questoes:23, acertos:17},
+      {titulo:'Planejamento de Auditoria',                     acerto:72.7, diffMedia:-6.4, relevancia:4, tempoCump:'1h40m', questoes:22, acertos:16},
+      {titulo:'Execução da Auditoria. Testes de Auditoria. Técnicas e Procedimentos', acerto:71.4, diffMedia:-7.1, relevancia:5, tempoCump:'2h', questoes:28, acertos:20},
+      {titulo:'Auditoria de Conformidade (NBASP 400 e 4000)',  acerto:70.5, diffMedia:-8.3, relevancia:4, tempoCump:'1h30m', questoes:17, acertos:12},
+    ]
+  }
+};
+
+// Retorna dados do Guruja: seed + dados importados pelo usuário (usuário vence)
+function getGurujaAssuntos(){
+  const importados=lsGet('guruja_assuntos',{});
+  return{...GURUJA_SEED,...importados};
+}
+
+// Score de urgência por assunto: acerto baixo + abaixo da média + relevância alta
+function calcScoreAssunto(a){
+  const deficitAcerto=(1-a.acerto/100)*3;
+  const penalMedia=a.diffMedia<0?Math.abs(a.diffMedia)*0.2:0; // negativo = urgente
+  const bonusRel=a.relevancia*0.3;
+  return deficitAcerto+penalMedia+bonusRel;
+}
+
+// Retorna assuntos críticos de uma matéria (acerto <80% ou diffMedia negativa)
+function getAssuntosCriticos(mat,n=5){
+  const dados=getGurujaAssuntos();
+  const assuntos=dados[mat]?.assuntos||[];
+  return assuntos
+    .map(a=>({...a,score:calcScoreAssunto(a)}))
+    .sort((a,b)=>b.score-a.score)
+    .filter(a=>a.acerto<80||a.diffMedia<0)
+    .slice(0,n);
+}
+
+// Retorna assuntos de manutenção de uma matéria (acerto ≥80% + diffMedia positiva ou neutra)
+function getAssuntosManutencao(mat,n=5){
+  const dados=getGurujaAssuntos();
+  const assuntos=dados[mat]?.assuntos||[];
+  return assuntos
+    .filter(a=>a.acerto>=80)
+    .sort((a,b)=>a.acerto-b.acerto) // menor acerto primeiro entre os bons
+    .slice(0,n);
+}
+
 // ── MOTOR UNIFICADO: Forma 1 (roteamento por canal) + Forma 4 (penalidade de ausência) ──
 // Cada canal tem lógica própria e memória de quando cada matéria apareceu nele.
 // Penalidade: quanto mais dias sem aparecer naquele canal, maior o score naquele canal.
@@ -1553,23 +1610,27 @@ function calcMotorCanais(feitos,horas,historico){
   if(!ankiMaterias.length)ankiMaterias.push({mat:'Matéria prioritária',cards:75,motivo:'meta do dia'});
 
   // ── CANAL NLM ÁUDIO (tempo morto): score = diasSemNlm × 0.7 + acerto × 0.3 ──
-  // Forma 1: prioriza tempo sem teoria no canal NLM
-  // Filtro: só matérias com acerto ≥80% (manutenção, atenção parcial)
-  // Fallback: se nenhuma ≥80%, pega as mais próximas de 80%
+  // Filtro: só matérias/assuntos com acerto ≥80% (manutenção, atenção parcial)
+  // Quando há dados Guruja: sugere assunto específico, não só matéria
   const rankNlmBase=Object.entries(porMat).map(([mat,v])=>{
     const pct=v.q>0?Math.round(v.a/v.q*100):null;
-    const score=diasSem(v.lastNlm)*0.7 + (pct!==null?pct/100*0.3:0.15);
-    return{mat,score,pct,diasNlm:diasSem(v.lastNlm)};
+    // Usa acerto do Guruja se disponível
+    const gurujaData=getGurujaAssuntos();
+    const gurujaAcerto=gurujaData[mat]
+      ?Math.round(gurujaData[mat].assuntos.reduce((s,a)=>s+a.acerto,0)/gurujaData[mat].assuntos.length)
+      :null;
+    const acertoFinal=gurujaAcerto||pct;
+    const score=diasSem(v.lastNlm)*0.7+(acertoFinal!==null?acertoFinal/100*0.3:0.15);
+    // Assuntos de manutenção do Guruja para esta matéria
+    const assuntosManut=getAssuntosManutencao(mat,3);
+    return{mat,score,pct:acertoFinal,diasNlm:diasSem(v.lastNlm),assuntosManut};
   }).sort((a,b)=>b.score-a.score);
 
-  // Tenta filtrar ≥80%
   let rankNlm=rankNlmBase.filter(r=>r.pct!==null&&r.pct>=80);
-  // Fallback 1: sem dado de acerto (matérias não estudadas ainda)
   if(rankNlm.length<2){
     const semDado=rankNlmBase.filter(r=>r.pct===null);
     rankNlm=[...rankNlm,...semDado].slice(0,5);
   }
-  // Fallback 2: se ainda vazio, pega as mais próximas de 80%
   if(!rankNlm.length) rankNlm=rankNlmBase.slice(0,3);
   const nlmTop=rankNlm[0]||null;
 
@@ -2122,7 +2183,7 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
                   const matFeita=ankiFeitosMat[m.mat]?.feito;
                   return(
                     <div key={m.mat} style={{padding:'10px 12px',borderRadius:10,background:matFeita?'rgba(52,211,153,.08)':`rgba(167,139,250,${i===0?'.1':'.05'})`,border:`1px solid ${matFeita?'rgba(52,211,153,.35)':`rgba(167,139,250,${i===0?'.3':'.15'})`}`,marginBottom:8}}>
-                      <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:matFeita?0:8}}>
+                      <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:matFeita?0:6}}>
                         <div style={{flex:1}}>
                           <div style={{fontSize:13,fontWeight:700,color:matFeita?'#34d399':'var(--text)'}}>{matFeita?'✅ ':''}{m.mat}</div>
                           <div style={{fontSize:10,color:'var(--text4)',marginTop:1}}>{m.motivo}</div>
@@ -2133,6 +2194,23 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
                             style={{width:60,padding:'4px 6px',borderRadius:6,border:'1px solid rgba(167,139,250,.3)',background:'rgba(167,139,250,.05)',color:'#a78bfa',fontSize:12,fontWeight:700,textAlign:'center',outline:'none',fontFamily:"'DM Mono',monospace",marginTop:3}}/>}
                         </div>
                       </div>
+                      {/* Foco por assunto do Guruja */}
+                      {!matFeita&&(()=>{
+                        const criticos=getAssuntosCriticos(m.mat,2);
+                        if(!criticos.length)return null;
+                        return(
+                          <div style={{padding:'7px 9px',borderRadius:7,background:'rgba(248,113,113,.07)',border:'1px solid rgba(248,113,113,.2)',marginBottom:7}}>
+                            <div style={{fontSize:8,color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:4,letterSpacing:'1px'}}>🎯 FOCO GURUJA — assuntos críticos</div>
+                            {criticos.map((a,j)=>(
+                              <div key={j} style={{display:'flex',alignItems:'center',gap:6,marginBottom:j<criticos.length-1?3:0}}>
+                                <span style={{fontSize:10,color:'var(--text)',flex:1,lineHeight:1.3}}>{a.titulo.length>40?a.titulo.slice(0,38)+'…':a.titulo}</span>
+                                <span style={{fontSize:9,color:a.acerto<70?'#f87171':'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:700,flexShrink:0}}>{a.acerto}%</span>
+                                {a.diffMedia<0&&<span style={{fontSize:9,color:'#f87171',flexShrink:0}}>⬇️{Math.abs(a.diffMedia).toFixed(1)}%</span>}
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })()}
                       {!matFeita&&(
                         <div style={{display:'flex',gap:6}}>
                           <button onClick={()=>marcarAnkiMat(m.mat)} style={{flex:2,padding:'8px',borderRadius:8,border:'none',background:'#a78bfa',color:'#0f172a',fontSize:11,fontWeight:800,cursor:'pointer'}}>✅ Fiz — {m.mat.split(' ')[0]}</button>
@@ -2166,20 +2244,28 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
               {(()=>{
                 const nlmFeito=lsGet(`nlm_feito_${hoje}`,false);
                 const fila=nlmSugerido?.fila||[];
-                const idxValido=Math.min(nlmFilaIdx,fila.length-1);
+                const idxValido=Math.min(nlmFilaIdx,Math.max(fila.length-1,0));
                 const matAtual=fila[idxValido]||nlmSugerido;
                 const podeProximo=fila.length>1&&idxValido<fila.length-1;
+                // Assunto específico do Guruja para a matéria sugerida
+                const assuntosManut=matAtual?getAssuntosManutencao(matAtual.mat,1):[];
+                const assuntoEspecifico=assuntosManut[0]||null;
                 return(
                   <>
-                    <CardHeader emoji="🎧" titulo="NLM — tempo morto" resumo={nlmFeito?`✅ ouvido hoje`:`${matAtual?.mat||'—'} · manutenção`} key_="nlm" cor="#34d399" feito={!!nlmFeito} nfz={!!naoFiz.nlm}/>
+                    <CardHeader emoji="🎧" titulo="NLM — tempo morto" resumo={nlmFeito?'✅ ouvido hoje':`${assuntoEspecifico?assuntoEspecifico.titulo.slice(0,28)+'…':matAtual?.mat||'—'} · manutenção`} key_="nlm" cor="#34d399" feito={!!nlmFeito} nfz={!!naoFiz.nlm}/>
                     {abertos.nlm&&!naoFiz.nlm&&!nlmFeito&&matAtual&&(
                       <div style={{padding:'0 14px 14px'}}>
-                        {/* Card mínimo */}
                         <div style={{padding:'18px 16px',borderRadius:12,background:'rgba(52,211,153,.07)',border:'2px solid rgba(52,211,153,.3)',marginBottom:10,textAlign:'center'}}>
-                          <div style={{fontSize:9,color:'#34d399',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'2px',marginBottom:8}}>🎧 OUVIR AGORA</div>
-                          <div style={{fontSize:20,fontWeight:900,color:'var(--text)',fontFamily:"'DM Serif Display',serif",marginBottom:4}}>{matAtual.mat}</div>
-                          <div style={{fontSize:11,color:'#34d399',marginBottom:2}}>NotebookLM · manutenção</div>
-                          {matAtual.pct!==null&&<div style={{fontSize:10,color:'var(--text4)',marginBottom:0}}>{matAtual.pct}% acerto · domínio consolidado</div>}
+                          <div style={{fontSize:9,color:'#34d399',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'2px',marginBottom:8}}>🎧 OUVIR AGORA — manutenção</div>
+                          <div style={{fontSize:18,fontWeight:900,color:'var(--text)',fontFamily:"'DM Serif Display',serif",marginBottom:3}}>{matAtual.mat}</div>
+                          {assuntoEspecifico?(
+                            <>
+                              <div style={{fontSize:11,color:'#34d399',marginBottom:4,fontWeight:700}}>{assuntoEspecifico.titulo}</div>
+                              <div style={{fontSize:10,color:'var(--text4)'}}>{assuntoEspecifico.acerto}% acerto{assuntoEspecifico.diffMedia>0?` · ⬆️${assuntoEspecifico.diffMedia}% da média`:''}</div>
+                            </>
+                          ):(
+                            <div style={{fontSize:11,color:'#34d399'}}>NotebookLM · teoria</div>
+                          )}
                         </div>
                         <div style={{display:'flex',gap:6}}>
                           <button onClick={()=>{lsSet(`nlm_feito_${hoje}`,true);if(onAddHoras)onAddHoras({mat:`NLM — ${matAtual?.mat||''}`,min:45,dt:Date.now()});}} style={{flex:2,padding:'10px',borderRadius:9,border:'none',background:'#34d399',color:'#0f172a',fontSize:12,fontWeight:800,cursor:'pointer'}}>✅ Ouvi hoje</button>
@@ -3215,6 +3301,81 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
             </div>
           );})}
         </div>}
+
+        {/* IMPORTAR GURUJA POR ASSUNTO */}
+        {(()=>{
+          const[gurujaMatSel,setGurujaMatSel]=React.useState('Auditoria Governamental');
+          const[gurujaTxtAssuntos,setGurujaTxtAssuntos]=React.useState('');
+          const[gurujaIALoad,setGurujaIALoad]=React.useState(false);
+          const[gurujaImportSalvo,setGurujaImportSalvo]=React.useState(false);
+          const dadosAtuais=getGurujaAssuntos();
+          const mats=CICLO.map(s=>s.mat).filter((v,i,a)=>a.indexOf(v)===i);
+
+          const importarAssuntos=async()=>{
+            if(!gurujaTxtAssuntos.trim())return;
+            setGurujaIALoad(true);
+            try{
+              const k=getAK();
+              if(!k?.startsWith('sk-ant')){alert('Configure a chave IA em ⚙️');setGurujaIALoad(false);return;}
+              const res=await chamarClaude(
+                `Você recebe uma tabela do Guruja Concursos com dados de desempenho por atividade/assunto. Extraia os dados e retorne APENAS JSON sem markdown no formato:
+{"assuntos":[{"titulo":"nome do assunto","acerto":87.5,"diffMedia":11.5,"relevancia":4,"tempoCump":"1h30m","questoes":28,"acertos":23}]}
+Extraia: título da atividade (campo "Título da atividade"), taxa de acertos (número sem %), diferença pra média (número com sinal, ex: -8.3 ou 11.5), relevância (número de estrelas 1-5), tempo de cumprimento (string), questões e acertos (números).`,
+                [{role:'user',content:`Matéria: ${gurujaMatSel}\n\nTabela Guruja:\n${gurujaTxtAssuntos}`}],
+                800
+              );
+              const parsed=JSON.parse(res.replace(/```json|```/g,'').trim());
+              if(parsed.assuntos?.length){
+                const atual=lsGet('guruja_assuntos',{});
+                const novo={...atual,[gurujaMatSel]:{importadoEm:getDK(),assuntos:parsed.assuntos}};
+                lsSet('guruja_assuntos',novo);
+                setGurujaTxtAssuntos('');
+                setGurujaImportSalvo(true);
+                setTimeout(()=>setGurujaImportSalvo(false),3000);
+              }
+            }catch(e){alert('Erro ao importar: '+e.message);}
+            setGurujaIALoad(false);
+          };
+
+          return(
+            <div style={{marginTop:16,background:'rgba(52,211,153,.04)',border:'1px solid rgba(52,211,153,.25)',borderRadius:13,padding:'14px'}}>
+              <div style={{fontSize:9,color:'#34d399',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:3,letterSpacing:'1px'}}>📥 IMPORTAR GURUJA — por assunto</div>
+              <div style={{fontSize:10,color:'var(--text4)',marginBottom:12}}>Cole a tabela "Análise por atividade" do Guruja · Uma matéria por vez · Atualizar mensalmente</div>
+
+              {/* Seletor de matéria */}
+              <div style={{marginBottom:10}}>
+                <div style={{fontSize:9,color:'var(--text4)',marginBottom:6}}>MATÉRIA</div>
+                <div style={{display:'flex',flexWrap:'wrap',gap:4}}>
+                  {mats.map(m=>(
+                    <button key={m} onClick={()=>setGurujaMatSel(m)} style={{padding:'5px 9px',borderRadius:7,border:`1px solid ${gurujaMatSel===m?'#34d399':'var(--border)'}`,background:gurujaMatSel===m?'rgba(52,211,153,.15)':'transparent',color:gurujaMatSel===m?'#34d399':'var(--text4)',fontSize:9,cursor:'pointer'}}>
+                      {m.length>14?m.slice(0,13)+'…':m}
+                      {dadosAtuais[m]&&<span style={{marginLeft:3,color:'#34d399'}}>✓</span>}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Status da matéria selecionada */}
+              {dadosAtuais[gurujaMatSel]&&(
+                <div style={{padding:'7px 10px',borderRadius:8,background:'rgba(52,211,153,.08)',border:'1px solid rgba(52,211,153,.2)',marginBottom:10}}>
+                  <span style={{fontSize:10,color:'#34d399'}}>✅ {dadosAtuais[gurujaMatSel].assuntos.length} assuntos importados · {dadosAtuais[gurujaMatSel].importadoEm}</span>
+                </div>
+              )}
+
+              {/* Campo de texto */}
+              <textarea
+                value={gurujaTxtAssuntos}
+                onChange={e=>setGurujaTxtAssuntos(e.target.value)}
+                rows={5}
+                placeholder={`Cole aqui a tabela do Guruja para ${gurujaMatSel}...\n\nEx:\nAUDG.2284.68944  3  Geral  8  7  87,5%  11,5% ↑  1h  Auditoria Financeira (NBASP 200)  ★★★☆☆`}
+                style={{width:'100%',padding:'10px',borderRadius:9,border:'1px solid rgba(52,211,153,.25)',background:'rgba(52,211,153,.04)',color:'var(--text)',fontSize:11,outline:'none',resize:'vertical',boxSizing:'border-box',lineHeight:1.6,marginBottom:10}}
+              />
+              <button onClick={importarAssuntos} disabled={gurujaIALoad||!gurujaTxtAssuntos.trim()} style={{width:'100%',padding:'12px',borderRadius:9,border:'none',background:gurujaTxtAssuntos.trim()?'#34d399':'var(--border)',color:gurujaTxtAssuntos.trim()?'#0f172a':'var(--text4)',fontSize:12,fontWeight:800,cursor:'pointer'}}>
+                {gurujaIALoad?'⏳ Extraindo dados...':gurujaImportSalvo?'✅ Importado!':'🤖 Importar com IA'}
+              </button>
+            </div>
+          );
+        })()}
       </div>}
     </div>
   );
@@ -4034,6 +4195,62 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras}){
                 ))}
               </div>
             )}
+
+            {/* SUGESTÕES DO GURUJA — assuntos críticos para o TEC */}
+            {(()=>{
+              const dados=getGurujaAssuntos();
+              const todasSugestoes=[];
+              Object.entries(dados).forEach(([mat,d])=>{
+                if(!d.assuntos)return;
+                d.assuntos
+                  .filter(a=>a.acerto<75||a.diffMedia<-3)
+                  .forEach(a=>todasSugestoes.push({...a,mat,score:calcScoreAssunto(a)}));
+              });
+              todasSugestoes.sort((a,b)=>b.score-a.score);
+              if(!todasSugestoes.length)return null;
+              const caderno=lsGet('rev_caderno',[]);
+              // Filtra os que já estão no TEC ativos
+              const jaNoTec=new Set(caderno.filter(t=>!t.dominado).map(t=>`${t.mat}||${t.assunto}`));
+              const sugestoesFiltradas=todasSugestoes.filter(s=>!jaNoTec.has(`${s.mat}||${s.titulo}`)).slice(0,5);
+              if(!sugestoesFiltradas.length)return null;
+
+              const addGurujaAoTec=(s)=>{
+                const prazoDate=new Date();prazoDate.setDate(prazoDate.getDate()+3);
+                const novo={
+                  id:Date.now()+Math.random(),
+                  mat:s.mat,assunto:s.titulo,
+                  feitas:s.questoes||0,acertei:s.acertos||0,
+                  pct:s.acerto,prazo:prazoDate.toISOString().split('T')[0],
+                  prazoLabel:'D+3',fase:1,tentativas:1,feito:false,dominado:false,
+                  dia:getDK(),obs:`Guruja: ${s.acerto}% · ⬇️${Math.abs(s.diffMedia)}% da média`,
+                  origem:'guruja'
+                };
+                const novoCaderno=[...lsGet('rev_caderno',[]),novo];
+                lsSet('rev_caderno',novoCaderno);
+                setCadRegs(novoCaderno.filter(t=>!t.prazoLabel&&!t.fase));
+              };
+
+              return(
+                <div style={{background:'rgba(251,191,36,.04)',border:'1px solid rgba(251,191,36,.25)',borderRadius:13,padding:'13px',marginBottom:12}}>
+                  <div style={{fontSize:9,color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:3,letterSpacing:'1px'}}>📥 SUGESTÕES GURUJA — assuntos críticos</div>
+                  <div style={{fontSize:10,color:'var(--text4)',marginBottom:10}}>Toque em + para criar D+3 no TEC. Ordenados por urgência (acerto + diferença da média).</div>
+                  {sugestoesFiltradas.map((s,i)=>(
+                    <div key={i} style={{display:'flex',alignItems:'center',gap:8,padding:'8px 10px',borderRadius:9,background:s.diffMedia<-5?'rgba(248,113,113,.07)':'rgba(251,191,36,.05)',border:`1px solid ${s.diffMedia<-5?'rgba(248,113,113,.25)':'rgba(251,191,36,.2)'}`,marginBottom:6}}>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{fontSize:11,color:'var(--text)',fontWeight:700,lineHeight:1.3}}>{s.titulo.length>45?s.titulo.slice(0,43)+'…':s.titulo}</div>
+                        <div style={{display:'flex',gap:6,marginTop:3,flexWrap:'wrap'}}>
+                          <span style={{fontSize:9,color:'var(--text4)'}}>{s.mat}</span>
+                          <span style={{fontSize:9,color:s.acerto<70?'#f87171':'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:700}}>{s.acerto}%</span>
+                          {s.diffMedia<0&&<span style={{fontSize:9,color:'#f87171',fontWeight:700}}>⬇️{Math.abs(s.diffMedia).toFixed(1)}% da média</span>}
+                          {'⭐'.repeat(s.relevancia)&&<span style={{fontSize:8,color:'var(--text4)'}}>{'★'.repeat(s.relevancia)}</span>}
+                        </div>
+                      </div>
+                      <button onClick={()=>addGurujaAoTec(s)} style={{padding:'7px 12px',borderRadius:8,border:'none',background:'#fbbf24',color:'#0f172a',fontSize:11,fontWeight:900,cursor:'pointer',flexShrink:0}}>+ D+3</button>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
 
             {/* FORMULÁRIO de novo registro */}
             <div style={{background:'rgba(248,113,113,.04)',border:'1px solid rgba(248,113,113,.18)',borderRadius:13,padding:'14px',marginBottom:12}}>
