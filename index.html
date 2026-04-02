@@ -4588,6 +4588,362 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras}){
 }
 
 // ─── TAB: AGENDA ─────────────────────────────────────────────
+// ─── ABA: MAPA DA PROVA ──────────────────────────────────────
+function TabMapa(){
+  const[aba,setAba]=useState('ranking');
+  const[matSel,setMatSel]=useState('Auditoria Governamental');
+  const[ordemTabela,setOrdemTabela]=useState('risco'); // risco|acerto|peso
+
+  // Lê dados
+  const hist=lsGet('historico_diario',[]);
+  const guruja=getGurujaAssuntos();
+  const todayMs=new Date().setHours(0,0,0,0);
+
+  // Acerto real por assunto do historico
+  const acertoPorAssunto=useMemo(()=>{
+    const por={};
+    hist.forEach(r=>{
+      if(!r.materia||!r.assunto||!parseInt(r.questoes))return;
+      const k=r.materia+'|||'+r.assunto;
+      if(!por[k])por[k]={q:0,a:0,lastDt:0};
+      por[k].q+=parseInt(r.questoes)||0;
+      por[k].a+=parseInt(r.acertei)||0;
+      if((r.dt||0)>por[k].lastDt)por[k].lastDt=r.dt||0;
+    });
+    return por;
+  },[hist.length]);
+
+  // Monta lista completa de assuntos cruzando Guruja + historico
+  const todosAssuntos=useMemo(()=>{
+    const lista=[];
+    Object.entries(guruja).forEach(([mat,dados])=>{
+      if(!dados.assuntos)return;
+      dados.assuntos.forEach(a=>{
+        const k=mat+'|||'+a.titulo;
+        const reg=acertoPorAssunto[k]||null;
+        const acertoApp=reg?Math.round(reg.a/reg.q*100):null;
+        // Acerto combinado: se tem dado no app, pondera com Guruja
+        const acertoComb=acertoApp!==null
+          ?Math.round((a.acerto*(a.questoes||20)+acertoApp*(reg.q))/(( a.questoes||20)+reg.q))
+          :a.acerto;
+        const estudado=reg!==null||a.acerto>0;
+        const pesoTopico=a.relevancia*2; // proxy de peso: relevância × 2
+        const pontosRisco=Math.round(pesoTopico*(1-acertoComb/100)*10)/10;
+        const diasSem=reg?.lastDt?Math.floor((todayMs-reg.lastDt)/86400000):null;
+        lista.push({
+          mat,titulo:a.titulo,
+          pesoEdital:pesoTopico,
+          acertoGuruja:a.acerto,
+          acertoApp,
+          acertoComb,
+          diffMedia:a.diffMedia,
+          relevancia:a.relevancia,
+          tempoCump:a.tempoCump,
+          questoesGuruja:a.questoes,
+          pontosRisco,
+          estudado,
+          diasSem,
+          status:acertoComb>=85?'dominio':acertoComb>=75?'atencao':estudado?'critico':'nao_estudado',
+        });
+      });
+    });
+    return lista;
+  },[guruja,acertoPorAssunto]);
+
+  const corStatus={dominio:'#34d399',atencao:'#fbbf24',critico:'#f87171',nao_estudado:'#64748b'};
+  const emojiStatus={dominio:'🟢',atencao:'🟡',critico:'🔴',nao_estudado:'⬜'};
+  const labelStatus={dominio:'Dominado',atencao:'Atenção',critico:'Crítico',nao_estudado:'Não estudado'};
+
+  const ABAS_MAPA=[
+    {id:'ranking',l:'🏆 Ranking Risco'},
+    {id:'tabela', l:'📋 Tabela'},
+    {id:'barras',  l:'📊 Barras'},
+    {id:'painel',  l:'🎯 Por Matéria'},
+    {id:'nao_estudados',l:'⬜ Não estudados'},
+  ];
+
+  return(
+    <div style={{maxWidth:680,margin:'0 auto'}}>
+      <div style={{marginBottom:12}}>
+        <div style={{fontSize:18,fontWeight:900,color:'var(--text)',fontFamily:"'DM Serif Display',serif",marginBottom:2}}>📊 Mapa da Prova</div>
+        <div style={{fontSize:11,color:'var(--text4)'}}>Peso no edital × seu desempenho real · {todosAssuntos.length} assuntos mapeados</div>
+      </div>
+
+      {/* Sub-abas */}
+      <div style={{display:'flex',gap:4,marginBottom:14,overflowX:'auto',scrollbarWidth:'none',paddingBottom:2}}>
+        {ABAS_MAPA.map(a=>{const at=aba===a.id;return(
+          <button key={a.id} onClick={()=>setAba(a.id)} style={{flexShrink:0,padding:'8px 11px',borderRadius:9,border:`1px solid ${at?'var(--tab-active-border)':'var(--border)'}`,background:at?'var(--tab-active-bg)':'transparent',color:at?'var(--tab-active-color)':'var(--tab-inactive-color)',fontSize:10,fontWeight:700,fontFamily:"'DM Mono',monospace",cursor:'pointer',whiteSpace:'nowrap'}}>{a.l}</button>
+        );})}
+      </div>
+
+      {/* MODO 3 — Ranking de pontos em risco */}
+      {aba==='ranking'&&(()=>{
+        const sorted=[...todosAssuntos].sort((a,b)=>b.pontosRisco-a.pontosRisco);
+        const naoEst=sorted.filter(a=>a.status==='nao_estudado');
+        const criticos=sorted.filter(a=>a.status==='critico');
+        const atencao=sorted.filter(a=>a.status==='atencao');
+
+        const Item=({a,i})=>{
+          const cor=corStatus[a.status];
+          return(
+            <div style={{display:'flex',alignItems:'center',gap:8,padding:'10px 12px',borderRadius:10,background:`${cor}08`,border:`1px solid ${cor}22`,marginBottom:6}}>
+              <span style={{fontSize:12,width:20,flexShrink:0,fontWeight:900,color:cor}}>{i+1}</span>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:11,fontWeight:700,color:'var(--text)',lineHeight:1.3}}>{a.titulo.length>44?a.titulo.slice(0,42)+'…':a.titulo}</div>
+                <div style={{fontSize:9,color:'var(--text4)',marginTop:2}}>{a.mat}</div>
+                <div style={{display:'flex',gap:6,marginTop:3,flexWrap:'wrap'}}>
+                  <span style={{fontSize:9,padding:'1px 5px',borderRadius:4,background:`${cor}15`,color:cor,fontWeight:700}}>{emojiStatus[a.status]} {labelStatus[a.status]}</span>
+                  {a.diffMedia<0&&<span style={{fontSize:9,color:'#f87171'}}>⬇️{Math.abs(a.diffMedia).toFixed(1)}% da média</span>}
+                  <span style={{fontSize:9,color:'var(--text4)'}}>{'★'.repeat(a.relevancia)}</span>
+                </div>
+              </div>
+              <div style={{textAlign:'right',flexShrink:0}}>
+                <div style={{fontSize:15,fontWeight:900,color:cor,fontFamily:"'DM Mono',monospace"}}>{a.status==='nao_estudado'?'—':a.acertoComb+'%'}</div>
+                <div style={{fontSize:8,color:'var(--text4)'}}>Guruja: {a.acertoGuruja}%</div>
+              </div>
+            </div>
+          );
+        };
+
+        return(
+          <div>
+            <div style={{display:'flex',gap:6,marginBottom:12,flexWrap:'wrap'}}>
+              {[['⬜ Não estudados',naoEst.length,'#64748b'],['🔴 Críticos',criticos.length,'#f87171'],['🟡 Atenção',atencao.length,'#fbbf24'],['🟢 Dominados',todosAssuntos.filter(a=>a.status==='dominio').length,'#34d399']].map(([l,v,c])=>(
+                <div key={l} style={{flex:1,minWidth:60,padding:'8px',borderRadius:9,background:`${c}0d`,border:`1px solid ${c}25`,textAlign:'center'}}>
+                  <div style={{fontSize:16,fontWeight:900,color:c,fontFamily:"'DM Mono',monospace"}}>{v}</div>
+                  <div style={{fontSize:8,color:'var(--text4)',marginTop:2}}>{l}</div>
+                </div>
+              ))}
+            </div>
+            {naoEst.length>0&&<><div style={{fontSize:9,color:'#64748b',fontFamily:"'DM Mono',monospace",marginBottom:6,marginTop:8}}>⬜ NÃO ESTUDADOS — por relevância</div>{naoEst.slice(0,5).map((a,i)=><Item key={a.mat+a.titulo} a={a} i={i}/>)}</>}
+            {criticos.length>0&&<><div style={{fontSize:9,color:'#f87171',fontFamily:"'DM Mono',monospace",marginBottom:6,marginTop:12}}>🔴 CRÍTICOS — acerto {'<'}75%</div>{criticos.map((a,i)=><Item key={a.mat+a.titulo} a={a} i={i}/>)}</>}
+            {atencao.length>0&&<><div style={{fontSize:9,color:'#fbbf24',fontFamily:"'DM Mono',monospace",marginBottom:6,marginTop:12}}>🟡 ATENÇÃO — acerto 75–84%</div>{atencao.slice(0,8).map((a,i)=><Item key={a.mat+a.titulo} a={a} i={i}/>)}</>}
+          </div>
+        );
+      })()}
+
+      {/* MODO 1 — Tabela por assunto */}
+      {aba==='tabela'&&(()=>{
+        const cols={risco:'Risco',acerto:'Acerto',peso:'Peso'};
+        const sorted=[...todosAssuntos].sort((a,b)=>{
+          if(ordemTabela==='acerto')return a.acertoComb-b.acertoComb;
+          if(ordemTabela==='peso')return b.relevancia-a.relevancia;
+          // risco: não estudados primeiro, depois por pontosRisco
+          if(a.status==='nao_estudado'&&b.status!=='nao_estudado')return -1;
+          if(b.status==='nao_estudado'&&a.status!=='nao_estudado')return 1;
+          return b.pontosRisco-a.pontosRisco;
+        });
+        return(
+          <div>
+            <div style={{display:'flex',gap:6,marginBottom:10}}>
+              <span style={{fontSize:10,color:'var(--text4)'}}>Ordenar por:</span>
+              {Object.entries(cols).map(([k,l])=>(
+                <button key={k} onClick={()=>setOrdemTabela(k)} style={{padding:'4px 10px',borderRadius:7,border:`1px solid ${ordemTabela===k?'#60a5fa':'var(--border)'}`,background:ordemTabela===k?'rgba(96,165,250,.15)':'transparent',color:ordemTabela===k?'#60a5fa':'var(--text4)',fontSize:10,cursor:'pointer'}}>{l}</button>
+              ))}
+            </div>
+            {sorted.map((a,i)=>{
+              const cor=corStatus[a.status];
+              return(
+                <div key={a.mat+a.titulo} style={{display:'flex',alignItems:'center',gap:8,padding:'8px 10px',borderRadius:9,background:`${cor}07`,border:`1px solid ${cor}20`,marginBottom:4}}>
+                  <span style={{fontSize:12,flexShrink:0}}>{emojiStatus[a.status]}</span>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontSize:11,color:'var(--text)',fontWeight:600,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{a.titulo}</div>
+                    <div style={{fontSize:9,color:'var(--text4)'}}>{a.mat} · {'★'.repeat(a.relevancia)} · {a.tempoCump}</div>
+                  </div>
+                  <div style={{textAlign:'right',flexShrink:0,minWidth:60}}>
+                    <div style={{fontSize:13,fontWeight:900,color:cor,fontFamily:"'DM Mono',monospace"}}>{a.status==='nao_estudado'?'⬜':a.acertoComb+'%'}</div>
+                    {a.diffMedia!==undefined&&<div style={{fontSize:8,color:a.diffMedia<0?'#f87171':'#34d399'}}>{a.diffMedia>0?'+':''}{a.diffMedia.toFixed(1)}%</div>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        );
+      })()}
+
+      {/* MODO 2 — Dashboard visual com barras */}
+      {aba==='barras'&&(()=>{
+        const mats=Object.keys(guruja);
+        return(
+          <div>
+            <div style={{fontSize:10,color:'var(--text4)',marginBottom:12}}>Barra cinza = relevância do assunto · Barra colorida = seu acerto · Lacuna = pontos em risco</div>
+            {mats.map(mat=>{
+              const assuntos=(guruja[mat]?.assuntos||[]).map(a=>{
+                const k=mat+'|||'+a.titulo;
+                const reg=acertoPorAssunto[k];
+                const acertoComb=reg?Math.round((a.acerto*(a.questoes||20)+Math.round(reg.a/reg.q*100)*reg.q)/((a.questoes||20)+reg.q)):a.acerto;
+                return{...a,acertoComb,status:acertoComb>=85?'dominio':acertoComb>=75?'atencao':acertoComb>0?'critico':'nao_estudado'};
+              });
+              const mediaAcerto=Math.round(assuntos.reduce((s,a)=>s+a.acertoComb,0)/assuntos.length);
+              const corMat=mediaAcerto>=85?'#34d399':mediaAcerto>=75?'#fbbf24':'#f87171';
+              return(
+                <div key={mat} style={{marginBottom:16,padding:'12px 13px',borderRadius:12,background:'var(--card)',border:'1px solid var(--border)'}}>
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+                    <div style={{fontSize:13,fontWeight:800,color:'var(--text)'}}>{mat}</div>
+                    <span style={{fontSize:12,fontWeight:900,color:corMat,fontFamily:"'DM Mono',monospace"}}>{mediaAcerto}% média</span>
+                  </div>
+                  {assuntos.map((a,i)=>{
+                    const cor=corStatus[a.status];
+                    const largBarra=Math.max(a.relevancia/5*100,20); // largura relativa
+                    return(
+                      <div key={i} style={{marginBottom:7}}>
+                        <div style={{display:'flex',justifyContent:'space-between',marginBottom:2}}>
+                          <span style={{fontSize:10,color:'var(--text)',lineHeight:1.3,flex:1,paddingRight:8}}>{a.titulo.length>40?a.titulo.slice(0,38)+'…':a.titulo}</span>
+                          <span style={{fontSize:10,fontWeight:700,color:cor,fontFamily:"'DM Mono',monospace",flexShrink:0}}>{a.acertoComb}%</span>
+                        </div>
+                        {/* Barra dupla */}
+                        <div style={{height:8,borderRadius:4,background:'rgba(148,163,184,.15)',overflow:'hidden',position:'relative'}}>
+                          {/* Barra de relevância (cinza) */}
+                          <div style={{position:'absolute',left:0,top:0,bottom:0,width:`${largBarra}%`,background:'rgba(148,163,184,.25)',borderRadius:4}}/>
+                          {/* Barra de acerto (colorida) */}
+                          <div style={{position:'absolute',left:0,top:0,bottom:0,width:`${a.acertoComb}%`,background:cor,borderRadius:4,opacity:0.8,transition:'width .4s'}}/>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })}
+          </div>
+        );
+      })()}
+
+      {/* MODO 4 — Painel por matéria com 3 seções */}
+      {aba==='painel'&&(()=>{
+        const mats=Object.keys(guruja);
+        const assuntosMat=(guruja[matSel]?.assuntos||[]).map(a=>{
+          const k=matSel+'|||'+a.titulo;
+          const reg=acertoPorAssunto[k];
+          const acertoApp=reg?Math.round(reg.a/reg.q*100):null;
+          const acertoComb=acertoApp!==null?Math.round((a.acerto*(a.questoes||20)+acertoApp*reg.q)/((a.questoes||20)+reg.q)):a.acerto;
+          const status=acertoComb>=85?'dominio':acertoComb>=75?'atencao':acertoComb>0?'critico':'nao_estudado';
+          const diasSem=reg?.lastDt?Math.floor((todayMs-reg.lastDt)/86400000):null;
+          return{...a,acertoComb,acertoApp,status,diasSem,reg};
+        });
+
+        const naoEst=assuntosMat.filter(a=>a.status==='nao_estudado').sort((a,b)=>b.relevancia-a.relevancia);
+        const comRisco=assuntosMat.filter(a=>a.status==='critico'||a.status==='atencao').sort((a,b)=>(1-a.acertoComb/100)*b.relevancia-(1-b.acertoComb/100)*a.relevancia);
+        const dominados=assuntosMat.filter(a=>a.status==='dominio').sort((a,b)=>(b.diasSem||0)-(a.diasSem||0));
+
+        const addTEC=(a)=>{
+          const prazoDate=new Date();prazoDate.setDate(prazoDate.getDate()+3);
+          const novo={id:Date.now()+Math.random(),mat:matSel,assunto:a.titulo,feitas:a.questoes||0,acertei:a.acertos||0,pct:a.acertoComb,prazo:prazoDate.toISOString().split('T')[0],prazoLabel:'D+3',fase:1,tentativas:1,feito:false,dominado:false,dia:getDK(),obs:`Guruja: ${a.acertoComb}% · ⬇️${Math.abs(a.diffMedia||0)}% da média`,origem:'mapa'};
+          const cad=[...lsGet('rev_caderno',[]),novo];lsSet('rev_caderno',cad);
+        };
+
+        const ItemPainel=({a,mostrarBotao})=>{
+          const cor=corStatus[a.status];
+          return(
+            <div style={{padding:'9px 11px',borderRadius:10,background:`${cor}07`,border:`1px solid ${cor}22`,marginBottom:6}}>
+              <div style={{display:'flex',alignItems:'center',gap:8}}>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:11,fontWeight:700,color:'var(--text)',lineHeight:1.3}}>{a.titulo}</div>
+                  <div style={{display:'flex',gap:6,marginTop:3,flexWrap:'wrap'}}>
+                    <span style={{fontSize:9,color:'var(--text4)'}}>{'★'.repeat(a.relevancia)} · {a.tempoCump}</span>
+                    {a.diffMedia<0&&<span style={{fontSize:9,color:'#f87171'}}>⬇️{Math.abs(a.diffMedia).toFixed(1)}%</span>}
+                    {a.diasSem!==null&&<span style={{fontSize:9,color:'var(--text4)'}}>{a.diasSem}d atrás</span>}
+                  </div>
+                </div>
+                <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:4,flexShrink:0}}>
+                  <span style={{fontSize:14,fontWeight:900,color:cor,fontFamily:"'DM Mono',monospace"}}>{a.status==='nao_estudado'?'—':a.acertoComb+'%'}</span>
+                  {mostrarBotao&&<button onClick={()=>addTEC(a)} style={{padding:'3px 8px',borderRadius:6,border:'none',background:'#f87171',color:'#0f172a',fontSize:9,fontWeight:800,cursor:'pointer'}}>+ TEC</button>}
+                </div>
+              </div>
+            </div>
+          );
+        };
+
+        return(
+          <div>
+            {/* Seletor de matéria */}
+            <div style={{display:'flex',flexWrap:'wrap',gap:4,marginBottom:14}}>
+              {mats.map(m=>(
+                <button key={m} onClick={()=>setMatSel(m)} style={{padding:'6px 10px',borderRadius:8,border:`1px solid ${matSel===m?'#60a5fa':'var(--border)'}`,background:matSel===m?'rgba(96,165,250,.15)':'transparent',color:matSel===m?'#60a5fa':'var(--text4)',fontSize:10,cursor:'pointer',fontWeight:matSel===m?700:400}}>
+                  {m.length>14?m.slice(0,13)+'…':m}
+                </button>
+              ))}
+            </div>
+
+            {/* Resumo da matéria */}
+            {(()=>{
+              const media=assuntosMat.length?Math.round(assuntosMat.reduce((s,a)=>s+a.acertoComb,0)/assuntosMat.length):0;
+              const cor=media>=85?'#34d399':media>=75?'#fbbf24':'#f87171';
+              return(
+                <div style={{display:'flex',gap:8,marginBottom:14}}>
+                  {[['Média geral',`${media}%`,cor],['Não estudados',naoEst.length,'#64748b'],['Com risco',comRisco.length,'#f87171'],['Dominados',dominados.length,'#34d399']].map(([l,v,c])=>(
+                    <div key={l} style={{flex:1,padding:'8px',borderRadius:9,background:`${c}0d`,border:`1px solid ${c}22`,textAlign:'center'}}>
+                      <div style={{fontSize:14,fontWeight:900,color:c,fontFamily:"'DM Mono',monospace"}}>{v}</div>
+                      <div style={{fontSize:8,color:'var(--text4)',marginTop:2}}>{l}</div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+
+            {naoEst.length>0&&<>
+              <div style={{fontSize:9,color:'#64748b',fontFamily:"'DM Mono',monospace",marginBottom:6}}>⬜ NÃO ESTUDADOS — por relevância</div>
+              {naoEst.map(a=><ItemPainel key={a.titulo} a={a} mostrarBotao={false}/>)}
+            </>}
+            {comRisco.length>0&&<>
+              <div style={{fontSize:9,color:'#f87171',fontFamily:"'DM Mono',monospace",marginBottom:6,marginTop:12}}>⚠️ COM RISCO — adicione ao TEC</div>
+              {comRisco.map(a=><ItemPainel key={a.titulo} a={a} mostrarBotao={true}/>)}
+            </>}
+            {dominados.length>0&&<>
+              <div style={{fontSize:9,color:'#34d399',fontFamily:"'DM Mono',monospace",marginBottom:6,marginTop:12}}>🟢 DOMINADOS — manutenção</div>
+              {dominados.map(a=><ItemPainel key={a.titulo} a={a} mostrarBotao={false}/>)}
+            </>}
+          </div>
+        );
+      })()}
+
+      {/* MODO 5 — Não estudados por prioridade */}
+      {aba==='nao_estudados'&&(()=>{
+        const naoEst=[...todosAssuntos]
+          .filter(a=>a.status==='nao_estudado')
+          .sort((a,b)=>b.relevancia-a.relevancia||a.mat.localeCompare(b.mat));
+        const porMat={};
+        naoEst.forEach(a=>{if(!porMat[a.mat])porMat[a.mat]=[];porMat[a.mat].push(a);});
+
+        return(
+          <div>
+            <div style={{padding:'10px 12px',borderRadius:10,background:'rgba(96,165,250,.06)',border:'1px solid rgba(96,165,250,.2)',marginBottom:14}}>
+              <div style={{fontSize:9,color:'#60a5fa',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:2}}>⬜ {naoEst.length} ASSUNTOS SEM ESTUDO REGISTRADO</div>
+              <div style={{fontSize:10,color:'var(--text4)'}}>Ordenados por relevância. Estes assuntos existem no Guruja mas você ainda não registrou questões específicas deles no app.</div>
+            </div>
+            {Object.entries(porMat).map(([mat,assuntos])=>(
+              <div key={mat} style={{marginBottom:14}}>
+                <div style={{fontSize:11,fontWeight:800,color:'var(--text)',marginBottom:6,padding:'4px 0',borderBottom:'1px solid var(--border)'}}>{mat} <span style={{fontSize:9,color:'var(--text4)',fontWeight:400}}>({assuntos.length} assuntos)</span></div>
+                {assuntos.map((a,i)=>(
+                  <div key={i} style={{display:'flex',alignItems:'center',gap:8,padding:'8px 10px',borderRadius:9,background:'rgba(148,163,184,.06)',border:'1px solid rgba(148,163,184,.15)',marginBottom:4}}>
+                    <span style={{fontSize:11,flexShrink:0}}>⬜</span>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontSize:11,color:'var(--text)',lineHeight:1.3}}>{a.titulo}</div>
+                      <div style={{display:'flex',gap:6,marginTop:2}}>
+                        <span style={{fontSize:9,color:'var(--text4)'}}>{'★'.repeat(a.relevancia)} · {a.tempoCump}</span>
+                        <span style={{fontSize:9,color:'var(--text4)'}}>Guruja base: {a.acertoGuruja}%</span>
+                      </div>
+                    </div>
+                    <div style={{textAlign:'right',flexShrink:0}}>
+                      <div style={{fontSize:9,color:'#64748b',fontFamily:"'DM Mono',monospace"}}>{'★'.repeat(a.relevancia)}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ))}
+            {naoEst.length===0&&(
+              <div style={{textAlign:'center',padding:'40px 20px',color:'var(--text4)'}}>
+                <div style={{fontSize:28,marginBottom:8}}>✅</div>
+                <div style={{fontSize:14,fontWeight:700,color:'#34d399'}}>Todos os assuntos têm registro!</div>
+                <div style={{fontSize:11,marginTop:4}}>Continue registrando questões por assunto no campo de registro de estudo.</div>
+              </div>
+            )}
+          </div>
+        );
+      })()}
+    </div>
+  );
+}
+
 function TabAgenda({planoSemana,onSetTab}){
   const[view,setView]=useState('hoje');
   const now=new Date();
@@ -5341,7 +5697,7 @@ function App(){
     {id:'estudo',e:'📚',l:'Estudo'},
     {id:'hoje',e:'📅',l:'Hoje'},
     {id:'revisao',e:'🧠',l:'Revisão'},
-    {id:'agenda',e:'🗓️',l:'Agenda'},
+    {id:'mapa',e:'📊',l:'Mapa'},
   ];
 
   return(
@@ -5380,7 +5736,7 @@ function App(){
         {tab==='estudo' &&<TabEstudo feitos={feitos} cicloNum={cicloNum} horas={horas} onConcluir={concluir} onIrPara={irPara} onDesmarcar={desmarcar} onAddHoras={addHoras} onSyncHistorico={syncHistorico} mit={mit} planoSemana={planoSemana} onSavePlano={savePlano}/>}
         {tab==='hoje'   &&<TabHoje feitos={feitos} onAddHoras={addHoras}/>}
         {tab==='revisao'&&<TabRevisao totalBlocos={feitos.length} tmSugestao={tmSugestao} tmIA={tmIA} onSyncHistorico={syncHistorico} onAddHoras={addHoras}/>}
-        
+        {tab==='mapa'   &&<TabMapa/>}
         {tab==='agenda' &&<TabAgenda planoSemana={planoSemana} onSetTab={setTab}/>}
         <div style={{height:80}}/>
       </div>
