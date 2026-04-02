@@ -1579,7 +1579,12 @@ function _buildBaseMat(historico){
 function calcMotorCanais(feitos,horas,historico){
   const{porMat,todayMs}=_buildBaseMat(historico);
 
-  const diasSem=(lastDt)=>Math.floor((todayMs-(lastDt||0))/86400000);
+  const diasSem=(lastDt)=>{
+    if(!lastDt)return null; // sem dado — nunca registrado neste canal
+    return Math.min(Math.floor((todayMs-lastDt)/86400000),60);
+  };
+  // Para score: usa 30 dias como padrão quando sem dado (incentiva rotação sem distorcer)
+  const diasSemScore=(lastDt)=>diasSem(lastDt)??30;
   const deficit=(v)=>v.q>0?(1-v.a/v.q):0.5; // sem dado = assume 50% déficit
   const difMedia=(v)=>v.difs.length?v.difs.reduce((s,d)=>s+d,0)/v.difs.length:2.5;
   const pesoEdital=(mat)=>{
@@ -1587,27 +1592,105 @@ function calcMotorCanais(feitos,horas,historico){
     return tops.reduce((s,t)=>s+t.p,0)/100; // normalizado 0-1
   };
 
-  // ── CANAL ANKI: score = déficit × 3 + diasSemAnki × 0.4 + travou × 1.5 ──
-  // Forma 1: prioriza déficit de acerto
-  // Forma 4: penaliza ausência no canal Anki especificamente
-  const rankAnki=Object.entries(porMat).map(([mat,v])=>{
-    const score=deficit(v)*3 + diasSem(v.lastAnki)*0.4 + v.travou*1.5 + difMedia(v)*0.5;
-    return{mat,score,pct:v.q>0?Math.round(v.a/v.q*100):null,diasSemAnki:diasSem(v.lastAnki),motivo:''};
-  }).sort((a,b)=>b.score-a.score);
+  // ── CANAL ANKI — Forma 3: baseado exclusivamente no historico_diario ──
+  // Slot 1: menor % de acerto, não apareceu no historico nos últimos 7 dias — 35 cards
+  // Slot 2: dos 3 últimos registros, o de maior dificuldade declarada — 20 cards
+  // Slot 3: matéria há mais tempo sem aparecer no historico (ou nunca) — 20 cards
+  // Regra: as 3 devem ser obrigatoriamente diferentes
 
-  // 3 matérias para Anki sem repetição, cada uma com justificativa
-  const anki1=rankAnki[0]||null;
-  const anki2=rankAnki.find(r=>r.mat!==anki1?.mat)||null;
-  const anki3=rankAnki.find(r=>r.mat!==anki1?.mat&&r.mat!==anki2?.mat)||null;
-  if(anki1)anki1.motivo=`déficit ${anki1.pct!==null?anki1.pct+'%':'sem dado'} · ${anki1.diasSemAnki}d sem Anki`;
-  if(anki2)anki2.motivo=`${anki2.diasSemAnki}d sem Anki · déficit ${anki2.pct!==null?anki2.pct+'%':'sem dado'}`;
-  if(anki3)anki3.motivo=`${anki3.diasSemAnki}d sem Anki`;
+  const set7dias=todayMs-7*86400000;
+  const set3dias=todayMs-3*86400000;
+  const todasMats=CICLO.map(s=>s.mat).filter((v,i,a)=>a.indexOf(v)===i);
+
+  // Acumulado por matéria (últimos 60 dias)
+  const acumMat={};
+  historico.slice(-120).forEach(r=>{
+    if(!r.materia)return;
+    if(!acumMat[r.materia])acumMat[r.materia]={q:0,a:0,dif:[],lastDt:0,ultRegs:[]};
+    const q=parseInt(r.questoes)||0;
+    const a=parseInt(r.acertei)||0;
+    if(q>0){acumMat[r.materia].q+=q;acumMat[r.materia].a+=a;}
+    if(r.dificuldade)acumMat[r.materia].dif.push(r.dificuldade);
+    if((r.dt||0)>acumMat[r.materia].lastDt)acumMat[r.materia].lastDt=r.dt||0;
+    acumMat[r.materia].ultRegs.push(r);
+  });
+
+  // SLOT 1: pior acerto, excluindo matérias que apareceram nos últimos 7 dias
+  // Janela: começa em 7d, relaxa para 3d se não encontrar candidatas
+  let slot1=null;
+  for(const janela of[set7dias,set3dias,0]){
+    const candidatas=todasMats
+      .map(mat=>{
+        const v=acumMat[mat]||{q:0,a:0,lastDt:0};
+        const pct=v.q>0?Math.round(v.a/v.q*100):null;
+        const apareceuRecente=v.lastDt>=(janela);
+        return{mat,pct,lastDt:v.lastDt,apareceuRecente};
+      })
+      .filter(r=>!r.apareceuRecente&&r.pct!==null)
+      .sort((a,b)=>a.pct-b.pct); // pior acerto primeiro
+    if(candidatas.length){slot1=candidatas[0];break;}
+  }
+  // Fallback slot1: matéria com pior acerto sem restrição de janela
+  if(!slot1){
+    const fb=todasMats
+      .map(mat=>{const v=acumMat[mat]||{q:0,a:0};const pct=v.q>0?Math.round(v.a/v.q*100):null;return{mat,pct,lastDt:v.lastDt||0};})
+      .filter(r=>r.pct!==null)
+      .sort((a,b)=>a.pct-b.pct)[0];
+    slot1=fb||{mat:todasMats[0],pct:null,lastDt:0};
+  }
+
+  // SLOT 2: dos 3 últimos registros, maior dificuldade, diferente do slot1
+  const ult3Regs=historico.filter(r=>r.materia&&r.materia!==slot1?.mat).slice(-10);
+  const ult3Mats=[...new Set(ult3Regs.map(r=>r.materia))].slice(0,3);
+  let slot2=null;
+  if(ult3Mats.length){
+    // Entre as 3 últimas matérias, pega a de maior dificuldade média
+    const com_dif=ult3Mats.map(mat=>{
+      const regs=historico.filter(r=>r.materia===mat&&r.dificuldade);
+      const difMedia=regs.length?regs.reduce((s,r)=>s+r.dificuldade,0)/regs.length:0;
+      // Fallback sem dificuldade: usa déficit de acerto
+      const v=acumMat[mat]||{q:0,a:0};
+      const pct=v.q>0?Math.round(v.a/v.q*100):50;
+      const score=difMedia>0?difMedia:(1-pct/100)*5;
+      return{mat,difMedia,score,pct};
+    }).sort((a,b)=>b.score-a.score);
+    slot2=com_dif[0]||null;
+  }
+  // Fallback slot2: segunda matéria com pior acerto (diferente do slot1)
+  if(!slot2){
+    const fb=todasMats
+      .filter(m=>m!==slot1?.mat)
+      .map(mat=>{const v=acumMat[mat]||{q:0,a:0};const pct=v.q>0?Math.round(v.a/v.q*100):null;return{mat,pct};})
+      .filter(r=>r.pct!==null)
+      .sort((a,b)=>a.pct-b.pct)[0];
+    slot2=fb?{mat:fb.mat,difMedia:0,score:0,pct:fb.pct}:{mat:todasMats.find(m=>m!==slot1?.mat)||todasMats[1],difMedia:0,score:0,pct:null};
+  }
+
+  // SLOT 3: há mais tempo sem aparecer no historico, diferente dos anteriores
+  const excluir=new Set([slot1?.mat,slot2?.mat].filter(Boolean));
+  const slot3cands=todasMats
+    .filter(m=>!excluir.has(m))
+    .map(mat=>{const v=acumMat[mat]||{lastDt:0};return{mat,lastDt:v.lastDt||0};})
+    .sort((a,b)=>a.lastDt-b.lastDt); // mais antiga/nunca primeiro
+  const slot3=slot3cands[0]||null;
+
+  // Monta motivos
+  const s1pct=slot1?.pct!==null?`${slot1.pct}% acerto`:'sem dado';
+  const s2dif=slot2?.difMedia>0?`dif ${slot2.difMedia.toFixed(1)}★`:'maior dificuldade';
+  const s3dias=slot3&&acumMat[slot3.mat]?.lastDt
+    ?`${Math.floor((todayMs-acumMat[slot3.mat].lastDt)/86400000)}d sem aparecer`
+    :'nunca registrada';
+
+  const rankAnki=[slot1,slot2,slot3].filter(Boolean);
+  // Para compatibilidade com código legado que usa rankAnki
+  rankAnki.forEach((r,i)=>{if(r&&!r.motivo)r.motivo='';});
+
   const ankiMaterias=[
-    anki1?{mat:anki1.mat,cards:35,motivo:anki1.motivo}:null,
-    anki2?{mat:anki2.mat,cards:20,motivo:anki2.motivo}:null,
-    anki3?{mat:anki3.mat,cards:20,motivo:anki3.motivo}:null,
+    slot1?{mat:slot1.mat,cards:35,motivo:`${s1pct} · pior acerto`}:null,
+    slot2?{mat:slot2.mat,cards:20,motivo:`${s2dif} · estudou recentemente`}:null,
+    slot3?{mat:slot3.mat,cards:20,motivo:s3dias}:null,
   ].filter(Boolean);
-  if(!ankiMaterias.length)ankiMaterias.push({mat:'Matéria prioritária',cards:75,motivo:'meta do dia'});
+  if(!ankiMaterias.length)ankiMaterias.push({mat:'Qualquer matéria',cards:75,motivo:'meta do dia'});
 
   // ── CANAL NLM ÁUDIO (tempo morto): score = diasSemNlm × 0.7 + acerto × 0.3 ──
   // Filtro: só matérias/assuntos com acerto ≥80% (manutenção, atenção parcial)
@@ -1620,8 +1703,7 @@ function calcMotorCanais(feitos,horas,historico){
       ?Math.round(gurujaData[mat].assuntos.reduce((s,a)=>s+a.acerto,0)/gurujaData[mat].assuntos.length)
       :null;
     const acertoFinal=gurujaAcerto||pct;
-    const score=diasSem(v.lastNlm)*0.7+(acertoFinal!==null?acertoFinal/100*0.3:0.15);
-    // Assuntos de manutenção do Guruja para esta matéria
+    const score=diasSemScore(v.lastNlm)*0.7+(acertoFinal!==null?acertoFinal/100*0.3:0.15);
     const assuntosManut=getAssuntosManutencao(mat,3);
     return{mat,score,pct:acertoFinal,diasNlm:diasSem(v.lastNlm),assuntosManut};
   }).sort((a,b)=>b.score-a.score);
@@ -1638,7 +1720,7 @@ function calcMotorCanais(feitos,horas,historico){
   // Forma 1: prioriza impacto na nota (peso no edital)
   // Forma 4: penaliza ausência no canal Revisão 1h especificamente
   const rankRev1h=Object.entries(porMat).map(([mat,v])=>{
-    const score=pesoEdital(mat)*2 + diasSem(v.lastRev1h)*0.5 + deficit(v)*1 + v.travou*0.5;
+    const score=pesoEdital(mat)*2 + diasSemScore(v.lastRev1h)*0.5 + deficit(v)*1 + v.travou*0.5;
     return{mat,score,pct:v.q>0?Math.round(v.a/v.q*100):null,diasSemRev:diasSem(v.lastRev1h)};
   }).sort((a,b)=>b.score-a.score);
   const rev1hTop=rankRev1h.slice(0,3);
@@ -1836,11 +1918,70 @@ function TabHoje({feitos,onAddHoras}){
       .sort((a,b)=>b.diasSem-a.diasSem);
   },[hoje]);
 
-  // ── Motor ANKI + NLM: usa novo motor de canais (Forma 1 + Forma 4) ────────
+  // ── Motor ANKI — Forma 3: baseado exclusivamente no historico_diario ──
   const ankiMaterias=useMemo(()=>{
     const hist=lsGet('historico_diario',[]);
-    const motor=calcMotorCanais(feitos,lsGet('horas',[]),hist);
-    return motor.anki.materias;
+    const todayMs=new Date().setHours(0,0,0,0);
+    const set7dias=todayMs-7*86400000;
+    const set3dias=todayMs-3*86400000;
+    const todasMats=CICLO.map(s=>s.mat).filter((v,i,a)=>a.indexOf(v)===i);
+
+    // Acumulado por matéria
+    const acum={};
+    hist.slice(-120).forEach(r=>{
+      if(!r.materia)return;
+      if(!acum[r.materia])acum[r.materia]={q:0,a:0,dif:[],lastDt:0};
+      const q=parseInt(r.questoes)||0;const a=parseInt(r.acertei)||0;
+      if(q>0){acum[r.materia].q+=q;acum[r.materia].a+=a;}
+      if(r.dificuldade)acum[r.materia].dif.push(r.dificuldade);
+      if((r.dt||0)>acum[r.materia].lastDt)acum[r.materia].lastDt=r.dt||0;
+    });
+
+    // SLOT 1: pior acerto, não apareceu nos últimos 7 dias
+    let s1=null;
+    for(const janela of[set7dias,set3dias,0]){
+      const cands=todasMats
+        .map(mat=>{const v=acum[mat]||{q:0,a:0,lastDt:0};const pct=v.q>0?Math.round(v.a/v.q*100):null;return{mat,pct,lastDt:v.lastDt};})
+        .filter(r=>r.pct!==null&&r.lastDt<janela)
+        .sort((a,b)=>a.pct-b.pct);
+      if(cands.length){s1=cands[0];break;}
+    }
+    if(!s1){
+      const fb=todasMats.map(mat=>{const v=acum[mat]||{q:0,a:0};const pct=v.q>0?Math.round(v.a/v.q*100):null;return{mat,pct,lastDt:v.lastDt||0};}).filter(r=>r.pct!==null).sort((a,b)=>a.pct-b.pct)[0];
+      s1=fb||{mat:todasMats[0],pct:null,lastDt:0};
+    }
+
+    // SLOT 2: dos 3 últimos registros, maior dificuldade, diferente do slot1
+    const ult3Mats=[...new Set(hist.filter(r=>r.materia&&r.materia!==s1?.mat).slice(-10).map(r=>r.materia))].slice(0,3);
+    let s2=null;
+    if(ult3Mats.length){
+      const com_dif=ult3Mats.map(mat=>{
+        const regs=hist.filter(r=>r.materia===mat&&r.dificuldade);
+        const difMedia=regs.length?regs.reduce((s,r)=>s+r.dificuldade,0)/regs.length:0;
+        const v=acum[mat]||{q:0,a:0};
+        const pct=v.q>0?Math.round(v.a/v.q*100):50;
+        return{mat,difMedia,score:difMedia>0?difMedia:(1-pct/100)*5,pct};
+      }).sort((a,b)=>b.score-a.score);
+      s2=com_dif[0]||null;
+    }
+    if(!s2){
+      const fb=todasMats.filter(m=>m!==s1?.mat).map(mat=>{const v=acum[mat]||{q:0,a:0};const pct=v.q>0?Math.round(v.a/v.q*100):null;return{mat,pct};}).filter(r=>r.pct!==null).sort((a,b)=>a.pct-b.pct)[0];
+      s2=fb?{mat:fb.mat,difMedia:0,pct:fb.pct}:{mat:todasMats.find(m=>m!==s1?.mat)||todasMats[1],difMedia:0,pct:null};
+    }
+
+    // SLOT 3: há mais tempo sem aparecer, diferente dos anteriores
+    const excluir=new Set([s1?.mat,s2?.mat].filter(Boolean));
+    const s3=todasMats.filter(m=>!excluir.has(m)).map(mat=>{const v=acum[mat]||{lastDt:0};return{mat,lastDt:v.lastDt||0};}).sort((a,b)=>a.lastDt-b.lastDt)[0]||null;
+
+    const s1pct=s1?.pct!==null&&s1?.pct!=null?`${s1.pct}% acerto`:'sem dado ainda';
+    const s2dif=s2?.difMedia>0?`dif ${s2.difMedia.toFixed(1)}★`:'último registro';
+    const s3d=s3&&acum[s3.mat]?.lastDt?`${Math.floor((todayMs-acum[s3.mat].lastDt)/86400000)}d sem aparecer`:'nunca registrada';
+
+    return[
+      s1?{mat:s1.mat,cards:35,motivo:`${s1pct} · pior acerto`}:null,
+      s2?{mat:s2.mat,cards:20,motivo:`${s2dif} · estudou recentemente`}:null,
+      s3?{mat:s3.mat,cards:20,motivo:s3d}:null,
+    ].filter(Boolean);
   },[feitos,hoje]);
 
   // ── Motor TEC: usa rev_caderno unificado ──────────────────────
@@ -3638,7 +3779,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras}){
             <CardNlmTempoMorto motor={motor} tmFeitoNlm={tmFeitoNlm} setTmFeitoNlm={setTmFeitoNlm} hoje={hoje}/>
             <div style={{padding:'13px',borderRadius:12,background:'rgba(251,191,36,.06)',border:'2px solid rgba(251,191,36,.3)',marginBottom:10}}>
               <div style={{fontSize:8,color:'#fbbf24',fontFamily:"'DM Mono',monospace",letterSpacing:'2px',marginBottom:8}}>📖 REVISÃO 1h — peso edital × 2 + ausência × 0.5 + deficit × 1</div>
-              {motor.rev1h.top.slice(0,3).map((r,i)=>(<div key={r.mat} style={{display:'flex',alignItems:'center',gap:8,padding:'7px 10px',borderRadius:9,background:i===0?'rgba(251,191,36,.1)':'rgba(255,255,255,.03)',border:`1px solid ${i===0?'rgba(251,191,36,.3)':'rgba(255,255,255,.06)'}`,marginBottom:5}}><span style={{fontSize:11,fontWeight:900,color:'#fbbf24',width:16,flexShrink:0}}>{i+1}</span><div style={{flex:1}}><div style={{fontSize:12,color:'var(--text)',fontWeight:700}}>{r.mat}</div><div style={{fontSize:9,color:'var(--text4)'}}>{r.diasSemRev}d sem revisão · {r.pct!==null?r.pct+'% acerto':'sem dado'}</div></div></div>))}
+              {motor.rev1h.top.slice(0,3).map((r,i)=>(<div key={r.mat} style={{display:'flex',alignItems:'center',gap:8,padding:'7px 10px',borderRadius:9,background:i===0?'rgba(251,191,36,.1)':'rgba(255,255,255,.03)',border:`1px solid ${i===0?'rgba(251,191,36,.3)':'rgba(255,255,255,.06)'}`,marginBottom:5}}><span style={{fontSize:11,fontWeight:900,color:'#fbbf24',width:16,flexShrink:0}}>{i+1}</span><div style={{flex:1}}><div style={{fontSize:12,color:'var(--text)',fontWeight:700}}>{r.mat}</div><div style={{fontSize:9,color:'var(--text4)'}}>{r.diasSemRev!==null?`${r.diasSemRev}d sem revisão`:'sem revisão registrada'} · {r.pct!==null?r.pct+'% acerto':'sem dado'}</div></div></div>))}
             </div>
             <button onClick={()=>{lsSet('tm_ia_cache',null);chamarIaTempoMorto();}} style={{width:'100%',padding:'8px',borderRadius:8,border:'1px solid rgba(251,191,36,.25)',background:'rgba(251,191,36,.05)',color:'#fbbf24',fontSize:10,cursor:'pointer',marginBottom:10}}>🔄 Recalcular com IA</button>
             {motor.travouRecente.length>0&&(<div style={{padding:'10px 12px',borderRadius:10,background:'rgba(248,113,113,.06)',border:'1px solid rgba(248,113,113,.2)'}}>
