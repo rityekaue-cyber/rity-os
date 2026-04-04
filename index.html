@@ -1768,22 +1768,28 @@ function calcMotorCanais(feitos,horas,historico){
     acumMat[r.materia].ultRegs.push(r);
   });
 
-  // SLOT 1: pior acerto, excluindo matérias que apareceram nos últimos 7 dias
-  // Janela: começa em 7d, relaxa para 3d se não encontrar candidatas
+  // Mapa de última vez que cada matéria apareceu no canal Anki (rev_anki)
+  const lastAnkiMat={};
+  lsGet('rev_anki',[]).forEach(r=>{
+    if(r.mat&&(r.dt||0)>(lastAnkiMat[r.mat]||0))lastAnkiMat[r.mat]=r.dt||0;
+  });
+
+  // SLOT 1: pior acerto, priorizando matérias que não foram Anki nos últimos 3 dias
+  // Janela: começa em 3d no canal Anki, relaxa para 0 se não encontrar
   let slot1=null;
-  for(const janela of[set7dias,set3dias,0]){
+  for(const janela of[set3dias,0]){
     const candidatas=todasMats
       .map(mat=>{
         const v=acumMat[mat]||{q:0,a:0,lastDt:0};
         const pct=v.q>0?Math.round(v.a/v.q*100):null;
-        const apareceuRecente=v.lastDt>=(janela);
-        return{mat,pct,lastDt:v.lastDt,apareceuRecente};
+        const fezAnkiRecente=(lastAnkiMat[mat]||0)>=(janela);
+        return{mat,pct,lastDt:v.lastDt,fezAnkiRecente};
       })
-      .filter(r=>!r.apareceuRecente&&r.pct!==null)
-      .sort((a,b)=>a.pct-b.pct); // pior acerto primeiro
+      .filter(r=>!r.fezAnkiRecente&&r.pct!==null)
+      .sort((a,b)=>a.pct-b.pct);
     if(candidatas.length){slot1=candidatas[0];break;}
   }
-  // Fallback slot1: matéria com pior acerto sem restrição de janela
+  // Fallback slot1: matéria com pior acerto sem restrição
   if(!slot1){
     const fb=todasMats
       .map(mat=>{const v=acumMat[mat]||{q:0,a:0};const pct=v.q>0?Math.round(v.a/v.q*100):null;return{mat,pct,lastDt:v.lastDt||0};})
@@ -1792,22 +1798,27 @@ function calcMotorCanais(feitos,horas,historico){
     slot1=fb||{mat:todasMats[0],pct:null,lastDt:0};
   }
 
-  // SLOT 2: dos 3 últimos registros, maior dificuldade, diferente do slot1
-  const ult3Regs=historico.filter(r=>r.materia&&r.materia!==slot1?.mat).slice(-10);
-  const ult3Mats=[...new Set(ult3Regs.map(r=>r.materia))].slice(0,3);
+  // SLOT 2: matéria com maior dificuldade média E que não foi Anki nos últimos 2 dias, diferente do slot1
+  const set2dias=todayMs-2*86400000;
   let slot2=null;
-  if(ult3Mats.length){
-    // Entre as 3 últimas matérias, pega a de maior dificuldade média
-    const com_dif=ult3Mats.map(mat=>{
-      const regs=historico.filter(r=>r.materia===mat&&r.dificuldade);
-      const difMedia=regs.length?regs.reduce((s,r)=>s+r.dificuldade,0)/regs.length:0;
-      // Fallback sem dificuldade: usa déficit de acerto
-      const v=acumMat[mat]||{q:0,a:0};
-      const pct=v.q>0?Math.round(v.a/v.q*100):50;
-      const score=difMedia>0?difMedia:(1-pct/100)*5;
-      return{mat,difMedia,score,pct};
-    }).sort((a,b)=>b.score-a.score);
-    slot2=com_dif[0]||null;
+  {
+    const cands=todasMats
+      .filter(m=>m!==slot1?.mat)
+      .map(mat=>{
+        const regs=historico.filter(r=>r.materia===mat&&r.dificuldade);
+        const difMedia=regs.length?regs.reduce((s,r)=>s+r.dificuldade,0)/regs.length:0;
+        const v=acumMat[mat]||{q:0,a:0};
+        const pct=v.q>0?Math.round(v.a/v.q*100):50;
+        const score=difMedia>0?difMedia:(1-pct/100)*5;
+        const fezAnkiRecente=(lastAnkiMat[mat]||0)>=set2dias;
+        return{mat,difMedia,score,pct,fezAnkiRecente};
+      })
+      .sort((a,b)=>{
+        // Prefere quem não fez Anki recente; desempate por score
+        if(a.fezAnkiRecente!==b.fezAnkiRecente)return a.fezAnkiRecente?1:-1;
+        return b.score-a.score;
+      });
+    slot2=cands[0]||null;
   }
   // Fallback slot2: segunda matéria com pior acerto (diferente do slot1)
   if(!slot2){
@@ -1819,20 +1830,20 @@ function calcMotorCanais(feitos,horas,historico){
     slot2=fb?{mat:fb.mat,difMedia:0,score:0,pct:fb.pct}:{mat:todasMats.find(m=>m!==slot1?.mat)||todasMats[1],difMedia:0,score:0,pct:null};
   }
 
-  // SLOT 3: há mais tempo sem aparecer no historico, diferente dos anteriores
+  // SLOT 3: há mais tempo sem aparecer no canal Anki (lastAnkiMat), diferente dos anteriores
   const excluir=new Set([slot1?.mat,slot2?.mat].filter(Boolean));
   const slot3cands=todasMats
     .filter(m=>!excluir.has(m))
-    .map(mat=>{const v=acumMat[mat]||{lastDt:0};return{mat,lastDt:v.lastDt||0};})
-    .sort((a,b)=>a.lastDt-b.lastDt); // mais antiga/nunca primeiro
+    .map(mat=>({mat,lastAnki:lastAnkiMat[mat]||0}))
+    .sort((a,b)=>a.lastAnki-b.lastAnki); // nunca feito Anki ou mais antigo primeiro
   const slot3=slot3cands[0]||null;
 
   // Monta motivos
-  const s1pct=slot1?.pct!==null?`${slot1.pct}% acerto`:'sem dado';
+  const s1pct=slot1?.pct!==null?`${slot1.pct}% acerto`:'pior acerto';
   const s2dif=slot2?.difMedia>0?`dif ${slot2.difMedia.toFixed(1)}★`:'maior dificuldade';
-  const s3dias=slot3&&acumMat[slot3.mat]?.lastDt
-    ?`${Math.floor((todayMs-acumMat[slot3.mat].lastDt)/86400000)}d sem aparecer`
-    :'nunca registrada';
+  const s3dias=slot3&&lastAnkiMat[slot3.mat]
+    ?`${Math.floor((todayMs-lastAnkiMat[slot3.mat])/86400000)}d sem Anki`
+    :'nunca fez Anki';
 
   const rankAnki=[slot1,slot2,slot3].filter(Boolean);
   // Para compatibilidade com código legado que usa rankAnki
@@ -2090,12 +2101,17 @@ function TabHoje({feitos,onAddHoras}){
       if((r.dt||0)>acum[r.materia].lastDt)acum[r.materia].lastDt=r.dt||0;
     });
 
-    // SLOT 1: pior acerto, não apareceu nos últimos 7 dias
+    // Mapa de última vez no canal Anki
+    const lastAnkiMat2={};
+    lsGet('rev_anki',[]).forEach(r=>{if(r.mat&&(r.dt||0)>(lastAnkiMat2[r.mat]||0))lastAnkiMat2[r.mat]=r.dt||0;});
+    const set2d=todayMs-2*86400000;
+
+    // SLOT 1: pior acerto, priorizando quem não fez Anki nos últimos 3 dias
     let s1=null;
-    for(const janela of[set7dias,set3dias,0]){
+    for(const janela of[set3dias,0]){
       const cands=todasMats
-        .map(mat=>{const v=acum[mat]||{q:0,a:0,lastDt:0};const pct=v.q>0?Math.round(v.a/v.q*100):null;return{mat,pct,lastDt:v.lastDt};})
-        .filter(r=>r.pct!==null&&r.lastDt<janela)
+        .map(mat=>{const v=acum[mat]||{q:0,a:0,lastDt:0};const pct=v.q>0?Math.round(v.a/v.q*100):null;return{mat,pct,lastDt:v.lastDt,fezAnkiRecente:(lastAnkiMat2[mat]||0)>=janela};})
+        .filter(r=>r.pct!==null&&!r.fezAnkiRecente)
         .sort((a,b)=>a.pct-b.pct);
       if(cands.length){s1=cands[0];break;}
     }
@@ -2104,31 +2120,30 @@ function TabHoje({feitos,onAddHoras}){
       s1=fb||{mat:todasMats[0],pct:null,lastDt:0};
     }
 
-    // SLOT 2: dos 3 últimos registros, maior dificuldade, diferente do slot1
-    const ult3Mats=[...new Set(hist.filter(r=>r.materia&&r.materia!==s1?.mat).slice(-10).map(r=>r.materia))].slice(0,3);
+    // SLOT 2: maior dificuldade média, priorizando quem não fez Anki nos últimos 2 dias, diferente do slot1
     let s2=null;
-    if(ult3Mats.length){
-      const com_dif=ult3Mats.map(mat=>{
+    {
+      const cands=todasMats.filter(m=>m!==s1?.mat).map(mat=>{
         const regs=hist.filter(r=>r.materia===mat&&r.dificuldade);
         const difMedia=regs.length?regs.reduce((s,r)=>s+r.dificuldade,0)/regs.length:0;
         const v=acum[mat]||{q:0,a:0};
         const pct=v.q>0?Math.round(v.a/v.q*100):50;
-        return{mat,difMedia,score:difMedia>0?difMedia:(1-pct/100)*5,pct};
-      }).sort((a,b)=>b.score-a.score);
-      s2=com_dif[0]||null;
+        return{mat,difMedia,score:difMedia>0?difMedia:(1-pct/100)*5,pct,fezAnkiRecente:(lastAnkiMat2[mat]||0)>=set2d};
+      }).sort((a,b)=>{if(a.fezAnkiRecente!==b.fezAnkiRecente)return a.fezAnkiRecente?1:-1;return b.score-a.score;});
+      s2=cands[0]||null;
     }
     if(!s2){
       const fb=todasMats.filter(m=>m!==s1?.mat).map(mat=>{const v=acum[mat]||{q:0,a:0};const pct=v.q>0?Math.round(v.a/v.q*100):null;return{mat,pct};}).filter(r=>r.pct!==null).sort((a,b)=>a.pct-b.pct)[0];
       s2=fb?{mat:fb.mat,difMedia:0,pct:fb.pct}:{mat:todasMats.find(m=>m!==s1?.mat)||todasMats[1],difMedia:0,pct:null};
     }
 
-    // SLOT 3: há mais tempo sem aparecer, diferente dos anteriores
+    // SLOT 3: mais tempo sem aparecer no canal Anki, diferente dos anteriores
     const excluir=new Set([s1?.mat,s2?.mat].filter(Boolean));
-    const s3=todasMats.filter(m=>!excluir.has(m)).map(mat=>{const v=acum[mat]||{lastDt:0};return{mat,lastDt:v.lastDt||0};}).sort((a,b)=>a.lastDt-b.lastDt)[0]||null;
+    const s3=todasMats.filter(m=>!excluir.has(m)).map(mat=>({mat,lastAnki:lastAnkiMat2[mat]||0})).sort((a,b)=>a.lastAnki-b.lastAnki)[0]||null;
 
-    const s1pct=s1?.pct!==null&&s1?.pct!=null?`${s1.pct}% acerto`:'sem dado ainda';
-    const s2dif=s2?.difMedia>0?`dif ${s2.difMedia.toFixed(1)}★`:'último registro';
-    const s3d=s3&&acum[s3.mat]?.lastDt?`${Math.floor((todayMs-acum[s3.mat].lastDt)/86400000)}d sem aparecer`:'nunca registrada';
+    const s1pct=s1?.pct!==null&&s1?.pct!=null?`${s1.pct}% acerto`:'pior acerto';
+    const s2dif=s2?.difMedia>0?`dif ${s2.difMedia.toFixed(1)}★`:'maior dificuldade';
+    const s3d=s3&&lastAnkiMat2[s3.mat]?`${Math.floor((todayMs-lastAnkiMat2[s3.mat])/86400000)}d sem Anki`:'nunca fez Anki';
 
     return[
       s1?{mat:s1.mat,cards:35,motivo:`${s1pct} · pior acerto`}:null,
