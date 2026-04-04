@@ -2027,6 +2027,21 @@ function CardSaude(){
   );
 }
 
+// ── URGÊNCIA DO CADERNO — Modo 5 ─────────────────────────────
+// score = (tentativas × 3) + (diasAtraso × 2) + (pesoEdital/10) + bônus de fase
+// nivel: urgente(≥15) | atencao(≥7) | normal(<7)
+// reincidente: ≥3 tentativas = tópico travado
+function calcUrgencia(item){
+  const todayStr=new Date().toISOString().split('T')[0];
+  const tentativas=item.tentativas||1;
+  const diasAtraso=item.prazo?Math.max(0,Math.round((new Date(todayStr)-new Date(item.prazo))/86400000)):0;
+  const pesoEdital=(()=>{const tops=EDITAL[item.mat]?.top||[];return tops.reduce((s,t)=>s+t.p,0);})();
+  const bonusFase=(item.fase||1)===1?4:(item.fase||1)===2?1:0; // D+3 mais urgente
+  const score=(tentativas*3)+(diasAtraso*2)+(pesoEdital/10)+bonusFase;
+  const nivel=score>=15?'urgente':score>=7?'atencao':'normal';
+  return{score:Math.round(score),nivel,reincidente:tentativas>=3,diasAtraso};
+}
+
 function TabHoje({feitos,onAddHoras}){
   const hoje=getDK();
   const dw=new Date().getDay();
@@ -2216,7 +2231,7 @@ function TabHoje({feitos,onAddHoras}){
     const prazoDate=new Date();prazoDate.setDate(prazoDate.getDate()+prazoDias);
     const prazoStr=prazoDate.toISOString().split('T')[0];
     const pct=tecForm.feitas&&tecForm.acertei?Math.round(parseInt(tecForm.acertei)/parseInt(tecForm.feitas)*100):null;
-    const novo={id:Date.now(),mat:tecForm.mat,assunto:tecForm.assunto,feitas:parseInt(tecForm.feitas)||0,acertei:parseInt(tecForm.acertei)||0,pct,prazo:prazoStr,prazoLabel:tecForm.prazo,fase:1,tentativas:1,feito:false,dominado:false,dia:hoje,obs:tecForm.obs,origem:'hoje'};
+    const novo={id:Date.now(),mat:tecForm.mat,assunto:tecForm.assunto,feitas:parseInt(tecForm.feitas)||0,acertei:parseInt(tecForm.acertei)||0,pct,prazo:prazoStr,prazoLabel:tecForm.prazo,fase:1,tentativas:1,feito:false,dominado:false,dia:hoje,obs:tecForm.obs,origem:'hoje',historico:[{data:hoje,acao:'criado',fasePara:'D+3'}]};
     const caderno=[...lsGet('rev_caderno',[]),novo];
     lsSet('rev_caderno',caderno);
     setTecForm({mat:'',assunto:'',feitas:'',acertei:'',prazo:'D+3',obs:''});
@@ -2226,19 +2241,27 @@ function TabHoje({feitos,onAddHoras}){
   const marcarTecItem=(id,acertou)=>{
     const caderno=lsGet('rev_caderno',[]).map(t=>{
       if(t.id!==id)return t;
+      const faseDe=t.prazoLabel||'D+3';
       if(acertou){
         const fase=t.fase||1;
-        if(fase>=3)return{...t,feito:true,dominado:true};
+        if(fase>=3){
+          const entrada={data:getDK(),acao:'acertou',faseDe,fasePara:'dominado'};
+          return{...t,feito:true,dominado:true,historico:[...(t.historico||[]),entrada]};
+        }
         const proxFase=fase+1;
         const proxDias=proxFase===2?15:30;
         const novo=new Date();novo.setDate(novo.getDate()+proxDias);
-        return{...t,prazo:novo.toISOString().split('T')[0],prazoLabel:proxFase===2?'D+15':'D+45',fase:proxFase};
+        const novaLabel=proxFase===2?'D+15':'D+45';
+        const entrada={data:getDK(),acao:'acertou',faseDe,fasePara:novaLabel};
+        return{...t,prazo:novo.toISOString().split('T')[0],prazoLabel:novaLabel,fase:proxFase,historico:[...(t.historico||[]),entrada]};
       }
       const fase=t.fase||1;
       const voltaDias=fase===3?15:3;
       const voltaFase=fase===3?2:1;
+      const novaLabel=voltaFase===1?'D+3':'D+15';
       const novo=new Date();novo.setDate(novo.getDate()+voltaDias);
-      return{...t,prazo:novo.toISOString().split('T')[0],prazoLabel:fase===3?'D+15':'D+3',fase:voltaFase,tentativas:(t.tentativas||1)+1};
+      const entrada={data:getDK(),acao:'errou',faseDe,fasePara:novaLabel};
+      return{...t,prazo:novo.toISOString().split('T')[0],prazoLabel:novaLabel,fase:voltaFase,tentativas:(t.tentativas||1)+1,historico:[...(t.historico||[]),entrada]};
     });
     lsSet('rev_caderno',caderno);
   };
@@ -3718,6 +3741,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
   const[slotSalvo,setSlotSalvo]=useState(false);
   const[tmFeitoAnki,setTmFeitoAnki]=useState(()=>lsGet(`tm_anki_${hoje}`,false));
   const[tmFeitoNlm,setTmFeitoNlm]=useState(()=>lsGet(`tm_nlm_${hoje}`,false));
+  const[cadExpandidos,setCadExpandidos]=useState(()=>new Set());
 
   const MATS=CICLO.map(c=>c.mat).filter((v,i,a)=>a.indexOf(v)===i);
   const CORS_DIF=['#34d399','#a3e635','#fbbf24','#fb923c','#f87171'];
@@ -3819,7 +3843,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
     // Se tem questões registradas, cria item D+3 automático no TEC
     if(parseInt(cadForm.questoes)>0){
       const prazoDate=new Date();prazoDate.setDate(prazoDate.getDate()+3);
-      const tecNovo={id:sessaoId+1,mat:cadForm.mat,assunto:cadForm.obs||'',feitas:parseInt(cadForm.questoes)||0,acertei:0,pct:null,prazo:prazoDate.toISOString().split('T')[0],prazoLabel:'D+3',fase:1,tentativas:1,feito:false,dominado:false,dia:hoje,obs:`via Caderno de Erros`,origem:'caderno'};
+      const tecNovo={id:sessaoId+1,mat:cadForm.mat,assunto:cadForm.obs||'',feitas:parseInt(cadForm.questoes)||0,acertei:0,pct:null,prazo:prazoDate.toISOString().split('T')[0],prazoLabel:'D+3',fase:1,tentativas:1,feito:false,dominado:false,dia:hoje,obs:`via Caderno de Erros`,origem:'caderno',historico:[{data:getDK(),acao:'criado',fasePara:'D+3'}]};
       const cad=[...lsGet('rev_caderno',[]).filter(t=>t.tipo==='sessao'||!t.prazoLabel),tecNovo];
       novo.tipo='sessao';
       cad.push(novo);
@@ -4475,29 +4499,30 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
           const todos=lsGet('rev_caderno',[]);
           const item=todos.find(t=>t.id===id);
           if(!item)return;
+          const faseDe=item.prazoLabel||'D+3';
           let updated;
           if(acertou){
             if(item.fase===1){
-              // D+3 → avança para D+15
               const d=new Date();d.setDate(d.getDate()+15);
-              updated={...item,fase:2,prazoLabel:'D+15',prazo:d.toISOString().split('T')[0],feito:false};
+              const entrada={data:getDK(),acao:'acertou',faseDe,fasePara:'D+15'};
+              updated={...item,fase:2,prazoLabel:'D+15',prazo:d.toISOString().split('T')[0],feito:false,historico:[...(item.historico||[]),entrada]};
             }else if(item.fase===2){
-              // D+15 → avança para D+30
               const d=new Date();d.setDate(d.getDate()+45);
-              updated={...item,fase:3,prazoLabel:'D+45',prazo:d.toISOString().split('T')[0],feito:false};
+              const entrada={data:getDK(),acao:'acertou',faseDe,fasePara:'D+45'};
+              updated={...item,fase:3,prazoLabel:'D+45',prazo:d.toISOString().split('T')[0],feito:false,historico:[...(item.historico||[]),entrada]};
             }else{
-              // D+30 → dominado ✅
-              updated={...item,dominado:true,feito:true};
+              const entrada={data:getDK(),acao:'acertou',faseDe,fasePara:'dominado'};
+              updated={...item,dominado:true,feito:true,historico:[...(item.historico||[]),entrada]};
             }
           }else{
-            // Errou: reinicia conforme regra
             let dias=3;
-            if(item.fase===2)dias=3;   // errou D+15 → novo D+3
-            if(item.fase===3)dias=15;  // errou D+30 → volta D+15
+            if(item.fase===2)dias=3;
+            if(item.fase===3)dias=15;
             const d=new Date();d.setDate(d.getDate()+dias);
             const novaFase=item.fase===3?2:1;
             const novaLabel=novaFase===1?'D+3':'D+15';
-            updated={...item,fase:novaFase,prazoLabel:novaLabel,prazo:d.toISOString().split('T')[0],feito:false};
+            const entrada={data:getDK(),acao:'errou',faseDe,fasePara:novaLabel};
+            updated={...item,fase:novaFase,prazoLabel:novaLabel,prazo:d.toISOString().split('T')[0],feito:false,tentativas:(item.tentativas||1)+1,historico:[...(item.historico||[]),entrada]};
           }
           const novos=todos.map(t=>t.id===id?updated:t);
           lsSet('rev_caderno',novos);
@@ -4506,75 +4531,163 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
 
         const faseCor={1:'#60a5fa',2:'#fbbf24',3:'#34d399'};
 
-        return(
-          <div>
-            {/* SEÇÃO TEC — itens com fase */}
-            {vencendoHoje.length>0&&(
-              <div style={{marginBottom:14}}>
-                <div style={{fontSize:10,color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:8}}>📅 REVISAR HOJE — {vencendoHoje.length} item{vencendoHoje.length>1?'s':''}</div>
-                {vencendoHoje.map(t=>{
-                  const fc=faseCor[t.fase||1]||'#60a5fa';
-                  const atrasado=t.prazo<todayStr;
-                  return(
-                    <div key={t.id} style={{padding:'11px 13px',borderRadius:11,background:'rgba(248,113,113,.06)',border:`1px solid ${atrasado?'rgba(248,113,113,.5)':'rgba(248,113,113,.25)'}`,marginBottom:7}}>
-                      <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:7}}>
-                        <div style={{flex:1}}>
-                          <div style={{fontSize:13,fontWeight:800,color:'var(--text)'}}>{t.mat}</div>
-                          {t.assunto&&<div style={{fontSize:11,color:'var(--text4)',marginTop:1}}>{t.assunto}</div>}
-                          <div style={{display:'flex',gap:6,marginTop:4,flexWrap:'wrap'}}>
-                            <span style={{fontSize:9,padding:'2px 8px',borderRadius:4,background:`${fc}20`,color:fc,fontWeight:700,fontFamily:"'DM Mono',monospace"}}>{t.prazoLabel||'D+3'} · fase {t.fase||1}/3</span>
-                            {atrasado&&<span style={{fontSize:9,color:'#f87171',fontWeight:700}}>⚠️ atrasado</span>}
-                            {t.feitas>0&&<span style={{fontSize:9,color:'var(--text4)',fontFamily:"'DM Mono',monospace"}}>{t.feitas}Q</span>}
-                          </div>
+        // ── Modo 5: ordenar por urgência ──
+        const ativos=tecItens.filter(t=>!t.feito&&!t.dominado)
+          .map(t=>({...t,_urg:calcUrgencia(t)}))
+          .sort((a,b)=>b._urg.score-a._urg.score);
+        const vencendoHoje2=ativos.filter(t=>t.prazo<=todayStr);
+        const proximos2=ativos.filter(t=>t.prazo>todayStr&&t.prazo<=proxStr);
+        const futuros2=ativos.filter(t=>t.prazo>proxStr);
+        const dominados=tecItens.filter(t=>t.dominado);
+        const urgCor={urgente:'#f87171',atencao:'#fbbf24',normal:'#34d399'};
+        const urgLabel={urgente:'🔴 URGENTE',atencao:'🟡 ATENÇÃO',normal:'🟢 NORMAL'};
+
+        // ── Modo 3: card com timeline ──
+        const ItemCaderno=({t,comBotoes})=>{
+          const urg=t._urg||calcUrgencia(t);
+          const fc=faseCor[t.fase||1]||'#60a5fa';
+          const atrasado=t.prazo<todayStr;
+          const expandido=cadExpandidos.has(t.id);
+          const toggleExpand=()=>setCadExpandidos(prev=>{const n=new Set(prev);expandido?n.delete(t.id):n.add(t.id);return n;});
+          const hist=t.historico||[];
+          return(
+            <div style={{borderRadius:12,background:urg.nivel==='urgente'?'rgba(248,113,113,.06)':urg.nivel==='atencao'?'rgba(251,191,36,.04)':'rgba(255,255,255,.02)',border:`1px solid ${atrasado?'rgba(248,113,113,.5)':urg.nivel==='urgente'?'rgba(248,113,113,.3)':urg.nivel==='atencao'?'rgba(251,191,36,.25)':'var(--border)'}`,marginBottom:8,overflow:'hidden'}}>
+              <div style={{padding:'11px 13px'}}>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:5}}>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{display:'flex',alignItems:'center',gap:5,flexWrap:'wrap',marginBottom:3}}>
+                      <span style={{fontSize:13,fontWeight:800,color:'var(--text)'}}>{t.mat}</span>
+                      <span style={{fontSize:8,padding:'1px 6px',borderRadius:4,background:`${urgCor[urg.nivel]}20`,color:urgCor[urg.nivel],fontFamily:"'DM Mono',monospace",fontWeight:700}}>{urgLabel[urg.nivel]}</span>
+                      {urg.reincidente&&<span style={{fontSize:8,padding:'1px 6px',borderRadius:4,background:'rgba(251,191,36,.2)',color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:800}}>⚠️ REINCIDENTE</span>}
+                    </div>
+                    {t.assunto&&<div style={{fontSize:11,color:'var(--text4)',marginBottom:4}}>{t.assunto}</div>}
+                    <div style={{display:'flex',gap:5,flexWrap:'wrap'}}>
+                      <span style={{fontSize:9,padding:'1px 7px',borderRadius:4,background:`${fc}20`,color:fc,fontWeight:700,fontFamily:"'DM Mono',monospace"}}>{t.prazoLabel||'D+3'} · fase {t.fase||1}/3</span>
+                      <span style={{fontSize:9,color:'var(--text4)',fontFamily:"'DM Mono',monospace"}}>📅 {t.prazo}</span>
+                      {(t.tentativas||1)>1&&<span style={{fontSize:9,padding:'1px 6px',borderRadius:4,background:'rgba(167,139,250,.15)',color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:700}}>↻ {t.tentativas}x</span>}
+                      {atrasado&&<span style={{fontSize:9,color:'#f87171',fontWeight:700}}>⚠️ {urg.diasAtraso}d atrasado</span>}
+                    </div>
+                  </div>
+                  <div style={{textAlign:'right',flexShrink:0,marginLeft:8}}>
+                    <div style={{fontSize:17,fontWeight:900,color:urgCor[urg.nivel],fontFamily:"'DM Mono',monospace",lineHeight:1}}>{urg.score}</div>
+                    <div style={{fontSize:7,color:'var(--text4)',marginTop:1}}>urgência</div>
+                  </div>
+                </div>
+                {comBotoes&&(
+                  <div style={{display:'flex',gap:6,marginBottom:hist.length>0?6:0}}>
+                    <button onClick={()=>marcarItemCaderno(t.id,true)} style={{flex:1,padding:'9px',borderRadius:8,border:'none',background:'rgba(52,211,153,.15)',color:'#34d399',fontSize:12,fontWeight:800,cursor:'pointer'}}>✅ Acertei</button>
+                    <button onClick={()=>marcarItemCaderno(t.id,false)} style={{flex:1,padding:'9px',borderRadius:8,border:'none',background:'rgba(248,113,113,.15)',color:'#f87171',fontSize:12,fontWeight:800,cursor:'pointer'}}>❌ Errei de novo</button>
+                  </div>
+                )}
+                {hist.length>0&&(
+                  <button onClick={toggleExpand} style={{width:'100%',padding:'5px',borderRadius:6,border:'1px solid var(--border)',background:'transparent',color:'var(--text4)',fontSize:9,cursor:'pointer',fontFamily:"'DM Mono',monospace",marginTop:comBotoes?4:0}}>
+                    {expandido?'▲ ocultar histórico':'▼ histórico ('+hist.length+' eventos)'}
+                  </button>
+                )}
+              </div>
+              {expandido&&hist.length>0&&(
+                <div style={{borderTop:'1px solid var(--border)',padding:'10px 13px',background:'rgba(0,0,0,.1)'}}>
+                  <div style={{fontSize:8,color:'var(--text4)',fontFamily:"'DM Mono',monospace",letterSpacing:'1px',marginBottom:8}}>LINHA DO TEMPO</div>
+                  {hist.map((ev,i)=>{
+                    const isAcertou=ev.acao==='acertou',isErrou=ev.acao==='errou';
+                    const cor=isAcertou?'#34d399':isErrou?'#f87171':'#60a5fa';
+                    const icon=isAcertou?'✅':isErrou?'❌':'📌';
+                    const desc=ev.acao==='criado'?`Criado → ${ev.fasePara}`:isAcertou?`Acertou ${ev.faseDe} → ${ev.fasePara==='dominado'?'✅ Dominado':ev.fasePara}`:`Errou ${ev.faseDe} → voltou ${ev.fasePara}`;
+                    return(
+                      <div key={i} style={{display:'flex',alignItems:'center',gap:8,marginBottom:i<hist.length-1?7:0}}>
+                        <div style={{display:'flex',flexDirection:'column',alignItems:'center',flexShrink:0}}>
+                          <div style={{width:20,height:20,borderRadius:'50%',background:`${cor}22`,border:`1.5px solid ${cor}`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:9}}>{icon}</div>
+                          {i<hist.length-1&&<div style={{width:1,height:10,background:'var(--border)',margin:'2px 0'}}/>}
+                        </div>
+                        <div>
+                          <div style={{fontSize:10,color:cor,fontWeight:700}}>{desc}</div>
+                          <div style={{fontSize:9,color:'var(--text4)',fontFamily:"'DM Mono',monospace"}}>{ev.data}</div>
                         </div>
                       </div>
-                      <div style={{display:'flex',gap:6}}>
-                        <button onClick={()=>marcarItemCaderno(t.id,true)} style={{flex:1,padding:'8px',borderRadius:8,border:'none',background:'rgba(52,211,153,.15)',color:'#34d399',fontSize:12,fontWeight:800,cursor:'pointer'}}>✅ Acertei</button>
-                        <button onClick={()=>marcarItemCaderno(t.id,false)} style={{flex:1,padding:'8px',borderRadius:8,border:'none',background:'rgba(248,113,113,.15)',color:'#f87171',fontSize:12,fontWeight:800,cursor:'pointer'}}>❌ Errei</button>
-                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        };
+
+        return(
+          <div>
+            {/* Contadores */}
+            <div style={{display:'flex',gap:6,marginBottom:12,flexWrap:'wrap'}}>
+              {[
+                [`🔴 Hoje (${vencendoHoje2.length})`,'#f87171',vencendoHoje2.length>0],
+                [`🟡 7 dias (${proximos2.length})`,'#fbbf24',false],
+                [`⬜ Futuros (${futuros2.length})`,'#60a5fa',false],
+                [`✅ Dominados (${dominados.length})`,'#34d399',false],
+              ].map(([l,c,destaque])=>(
+                <div key={l} style={{padding:'5px 10px',borderRadius:8,background:`${c}${destaque?'18':'0d'}`,border:`1px solid ${c}${destaque?'45':'22'}`}}>
+                  <span style={{fontSize:10,color:c,fontWeight:destaque?900:700}}>{l}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Alerta reincidentes */}
+            {ativos.filter(t=>t._urg.reincidente).length>0&&(
+              <div style={{padding:'10px 13px',borderRadius:10,background:'rgba(251,191,36,.08)',border:'2px solid rgba(251,191,36,.4)',marginBottom:12}}>
+                <div style={{fontSize:9,color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:5}}>⚠️ TÓPICOS REINCIDENTES — errou 3+ vezes</div>
+                <div style={{display:'flex',flexWrap:'wrap',gap:5}}>
+                  {ativos.filter(t=>t._urg.reincidente).map(t=>(
+                    <div key={t.id} style={{padding:'3px 9px',borderRadius:6,background:'rgba(251,191,36,.15)',border:'1px solid rgba(251,191,36,.3)'}}>
+                      <span style={{fontSize:10,color:'#fbbf24',fontWeight:700}}>{t.mat}</span>
+                      {t.assunto&&<span style={{fontSize:9,color:'var(--text4)',marginLeft:4}}>{t.assunto.slice(0,22)}</span>}
+                      <span style={{fontSize:9,color:'#fbbf24',fontFamily:"'DM Mono',monospace",marginLeft:4}}>↻{t.tentativas}x</span>
                     </div>
-                  );
-                })}
+                  ))}
+                </div>
               </div>
             )}
 
-            {proximos.length>0&&(
+            {/* Vencendo hoje */}
+            {vencendoHoje2.length>0&&(
               <div style={{marginBottom:14}}>
-                <div style={{fontSize:9,color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:6}}>📆 PRÓXIMOS 7 DIAS ({proximos.length})</div>
-                {proximos.map(t=>{
-                  const fc=faseCor[t.fase||1]||'#60a5fa';
-                  return(
-                    <div key={t.id} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'8px 11px',borderRadius:9,background:'rgba(251,191,36,.05)',border:'1px solid rgba(251,191,36,.18)',marginBottom:4}}>
-                      <div>
-                        <span style={{fontSize:12,color:'var(--text)',fontWeight:600}}>{t.mat}</span>
-                        {t.assunto&&<span style={{fontSize:10,color:'var(--text4)',marginLeft:6}}>{t.assunto}</span>}
-                        <span style={{fontSize:9,marginLeft:7,padding:'1px 6px',borderRadius:4,background:`${fc}18`,color:fc,fontFamily:"'DM Mono',monospace"}}>{t.prazoLabel}</span>
-                      </div>
-                      <span style={{fontSize:10,color:'#fbbf24',fontFamily:"'DM Mono',monospace",flexShrink:0}}>{t.prazo}</span>
-                    </div>
-                  );
-                })}
+                <div style={{fontSize:10,color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:8}}>📅 REVISAR HOJE — ordem por urgência</div>
+                {vencendoHoje2.map(t=><ItemCaderno key={t.id} t={t} comBotoes={true}/>)}
               </div>
             )}
 
-            {vencendoHoje.length===0&&proximos.length===0&&tecItens.filter(t=>!t.dominado).length===0&&(
-              <div style={{padding:'12px',borderRadius:10,background:'rgba(52,211,153,.06)',border:'1px solid rgba(52,211,153,.2)',marginBottom:12,textAlign:'center'}}>
-                <div style={{fontSize:13,color:'#34d399',fontWeight:700}}>✅ Nenhuma revisão TEC pendente</div>
-                <div style={{fontSize:10,color:'var(--text4)',marginTop:3}}>Registre um novo erro abaixo para iniciar o ciclo D+3/D+15/D+30</div>
+            {/* Próximos 7 dias — com botões */}
+            {proximos2.length>0&&(
+              <div style={{marginBottom:14}}>
+                <div style={{fontSize:10,color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:8}}>📆 PRÓXIMOS 7 DIAS</div>
+                {proximos2.map(t=><ItemCaderno key={t.id} t={t} comBotoes={true}/>)}
               </div>
             )}
 
-            {/* Contador geral */}
+            {/* Futuros — visualização + timeline, sem botões */}
+            {futuros2.length>0&&(
+              <div style={{marginBottom:14}}>
+                <div style={{fontSize:10,color:'#60a5fa',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:8}}>🗓️ PROGRAMADOS</div>
+                {futuros2.map(t=><ItemCaderno key={t.id} t={t} comBotoes={false}/>)}
+              </div>
+            )}
+
+            {vencendoHoje2.length===0&&proximos2.length===0&&futuros2.length===0&&(
+              <div style={{padding:'24px',borderRadius:12,background:'rgba(52,211,153,.06)',border:'1px solid rgba(52,211,153,.2)',marginBottom:12,textAlign:'center'}}>
+                <div style={{fontSize:22,marginBottom:6}}>✅</div>
+                <div style={{fontSize:13,color:'#34d399',fontWeight:700}}>Nenhuma revisão pendente</div>
+                <div style={{fontSize:10,color:'var(--text4)',marginTop:3}}>Registre um novo erro abaixo para iniciar o ciclo D+3/D+15/D+45</div>
+              </div>
+            )}
+
+            {/* Contador com reincidentes */}
             {tecItens.length>0&&(
               <div style={{display:'flex',gap:6,marginBottom:14,flexWrap:'wrap'}}>
                 {[
-                  ['Em revisão',tecItens.filter(t=>!t.dominado&&!t.feito).length,'#60a5fa'],
-                  ['Dominados ✅',tecItens.filter(t=>t.dominado).length,'#34d399'],
+                  ['Em revisão',ativos.length,'#60a5fa'],
+                  ['Reincidentes ⚠️',ativos.filter(t=>t._urg.reincidente).length,'#fbbf24'],
+                  ['Dominados ✅',dominados.length,'#34d399'],
                   ['Total',tecItens.length,'#64748b'],
                 ].map(([l,v,c])=>(
-                  <div key={l} style={{flex:1,minWidth:70,padding:'8px',borderRadius:9,background:`${c}0d`,border:`1px solid ${c}25`,textAlign:'center'}}>
-                    <div style={{fontSize:16,fontWeight:900,color:c,fontFamily:"'DM Mono',monospace"}}>{v}</div>
-                    <div style={{fontSize:8,color:'var(--text4)',marginTop:2}}>{l}</div>
+                  <div key={l} style={{flex:1,minWidth:55,padding:'8px 4px',borderRadius:9,background:`${c}0d`,border:`1px solid ${c}25`,textAlign:'center'}}>
+                    <div style={{fontSize:14,fontWeight:900,color:c,fontFamily:"'DM Mono',monospace"}}>{v}</div>
+                    <div style={{fontSize:8,color:'var(--text4)',marginTop:2,lineHeight:1.2}}>{l}</div>
                   </div>
                 ))}
               </div>
@@ -4607,7 +4720,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
                   pct:s.acerto,prazo:prazoDate.toISOString().split('T')[0],
                   prazoLabel:'D+3',fase:1,tentativas:1,feito:false,dominado:false,
                   dia:getDK(),obs:`Guruja: ${s.acerto}% · ⬇️${Math.abs(s.diffMedia)}% da média`,
-                  origem:'guruja'
+                  origem:'guruja',historico:[{data:getDK(),acao:'criado',fasePara:'D+3'}]
                 };
                 const novoCaderno=[...lsGet('rev_caderno',[]),novo];
                 lsSet('rev_caderno',novoCaderno);
