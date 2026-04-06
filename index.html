@@ -2625,24 +2625,64 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
         const ItemTEC=({t,destacado})=>{
           const fc=faseCor[t.fase||1]||'#60a5fa';
           const atrasado=t.prazo<todayStr;
+          const pct=t.feitas>0?Math.round((t.acertei||0)/t.feitas*100):null;
+          const pctCor=pct===null?'var(--text4)':pct>=80?'#34d399':pct>=60?'#fbbf24':'#f87171';
+          const difLabels=['','FÁCIL','TRANQUILO','MÉDIO','DIFÍCIL','MTO DIFÍCIL'];
+          const difCors=['','#34d399','#a3e635','#fbbf24','#fb923c','#f87171'];
+          // Próximo passo visual
+          const proximoPasso=(acertou)=>{
+            const fase=t.fase||1;
+            if(acertou){
+              if(fase>=3)return{label:'✅ DOMINA',cor:'#34d399'};
+              const prox=fase===1?'D+15':'D+45';
+              return{label:`→ ${prox}`,cor:'#34d399'};
+            }
+            const volta=fase===3?'volta D+15':'reinicia D+3';
+            return{label:`↩ ${volta}`,cor:'#f87171'};
+          };
           return(
-            <div style={{padding:'11px 13px',borderRadius:11,background:destacado?`rgba(248,113,113,.06)`:'rgba(255,255,255,.03)',border:`1px solid ${atrasado?'rgba(248,113,113,.45)':destacado?'rgba(248,113,113,.22)':'var(--border)'}`,marginBottom:7}}>
-              <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:7}}>
-                <div style={{flex:1}}>
+            <div style={{padding:'11px 13px',borderRadius:11,background:destacado?'rgba(248,113,113,.06)':'rgba(255,255,255,.03)',border:`1px solid ${atrasado?'rgba(248,113,113,.45)':destacado?'rgba(248,113,113,.22)':'var(--border)'}`,marginBottom:7}}>
+              {/* Header */}
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:6}}>
+                <div style={{flex:1,minWidth:0}}>
                   <div style={{fontSize:12,fontWeight:800,color:'var(--text)'}}>{t.mat}</div>
                   {t.assunto&&<div style={{fontSize:10,color:'var(--text4)',marginTop:1}}>{t.assunto}</div>}
                   <div style={{display:'flex',gap:5,marginTop:4,flexWrap:'wrap'}}>
                     <span style={{fontSize:9,padding:'1px 7px',borderRadius:4,background:`${fc}20`,color:fc,fontWeight:700,fontFamily:"'DM Mono',monospace"}}>{t.prazoLabel||'D+3'} · fase {t.fase||1}/3</span>
                     <span style={{fontSize:9,color:'var(--text4)',fontFamily:"'DM Mono',monospace"}}>📅 {t.prazo}</span>
-                    {t.origem&&<span style={{fontSize:9,color:'var(--text4)'}}>via {t.origem==='caderno'?'Caderno':'TEC'}</span>}
                     {atrasado&&<span style={{fontSize:9,color:'#f87171',fontWeight:700}}>⚠️ atrasado</span>}
+                    {(t.tentativas||1)>1&&<span style={{fontSize:9,color:'#a78bfa',fontFamily:"'DM Mono',monospace"}}>↻ {t.tentativas}x</span>}
                   </div>
                 </div>
+                {/* Score de acerto */}
+                {pct!==null&&(
+                  <div style={{textAlign:'right',flexShrink:0,marginLeft:8}}>
+                    <div style={{fontSize:16,fontWeight:900,color:pctCor,fontFamily:"'DM Mono',monospace",lineHeight:1}}>{pct}%</div>
+                    <div style={{fontSize:8,color:'var(--text4)',marginTop:1}}>{t.feitas}Q · {t.acertei||0}✓</div>
+                  </div>
+                )}
               </div>
-              {destacado&&<div style={{display:'flex',gap:6}}>
-                <button onClick={()=>marcarTecItem(t.id,true)} style={{flex:1,padding:'8px',borderRadius:8,border:'none',background:'rgba(52,211,153,.15)',color:'#34d399',fontSize:11,fontWeight:800,cursor:'pointer'}}>✅ Acertei</button>
-                <button onClick={()=>marcarTecItem(t.id,false)} style={{flex:1,padding:'8px',borderRadius:8,border:'none',background:'rgba(248,113,113,.15)',color:'#f87171',fontSize:11,fontWeight:800,cursor:'pointer'}}>❌ Errei</button>
-              </div>}
+
+              {/* Linha de métricas */}
+              {(t.feitas>0||t.dificuldade>0)&&(
+                <div style={{display:'flex',gap:6,marginBottom:8,flexWrap:'wrap'}}>
+                  {t.feitas>0&&<span style={{fontSize:9,padding:'2px 7px',borderRadius:5,background:'rgba(251,191,36,.1)',color:'#fbbf24',fontFamily:"'DM Mono',monospace"}}>📝 {t.feitas} questões</span>}
+                  {t.acertei>0&&<span style={{fontSize:9,padding:'2px 7px',borderRadius:5,background:'rgba(52,211,153,.1)',color:'#34d399',fontFamily:"'DM Mono',monospace"}}>✅ {t.acertei} acertos</span>}
+                  {t.dificuldade>0&&<span style={{fontSize:9,padding:'2px 7px',borderRadius:5,background:`${difCors[t.dificuldade]}18`,color:difCors[t.dificuldade],fontFamily:"'DM Mono',monospace"}}>⭐ {difLabels[t.dificuldade]}</span>}
+                </div>
+              )}
+
+              {/* Botões com próximo passo */}
+              {destacado&&(
+                <div style={{display:'flex',gap:6}}>
+                  <button onClick={()=>marcarTecItem(t.id,true)} style={{flex:1,padding:'8px',borderRadius:8,border:'none',background:'rgba(52,211,153,.15)',color:'#34d399',fontSize:11,fontWeight:800,cursor:'pointer'}}>
+                    ✅ Acertei <span style={{fontSize:9,opacity:.8}}>{proximoPasso(true).label}</span>
+                  </button>
+                  <button onClick={()=>marcarTecItem(t.id,false)} style={{flex:1,padding:'8px',borderRadius:8,border:'none',background:'rgba(248,113,113,.15)',color:'#f87171',fontSize:11,fontWeight:800,cursor:'pointer'}}>
+                    ❌ Errei <span style={{fontSize:9,opacity:.8}}>{proximoPasso(false).label}</span>
+                  </button>
+                </div>
+              )}
             </div>
           );
         };
@@ -3735,7 +3775,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
   const[ankiSalvo,setAnkiSalvo]=useState(false);
   const[nlmForm,setNlmForm]=useState({mat:'',oque:'',tempo:'',questoes:'',dif:0});
   const[nlmSalvo,setNlmSalvo]=useState(false);
-  const[cadForm,setCadForm]=useState({mat:'',tempo:'',questoes:'',anki:'',nlm:'',obs:''});
+  const[cadForm,setCadForm]=useState({mat:'',assunto:'',questoes:'',acertei:'',dificuldade:0,prazo:'D+3',obs:''});
   const[cadSalvo,setCadSalvo]=useState(false);
   const[slots,setSlots]=useState([{mat:'',oque:[],tempo:'',questoes:'',dif:0,salvo:false},{mat:'',oque:[],tempo:'',questoes:'',dif:0,salvo:false},{mat:'',oque:[],tempo:'',questoes:'',dif:0,salvo:false}]);
   const[slotSalvo,setSlotSalvo]=useState(false);
@@ -3837,23 +3877,26 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
   };
   const salvarCaderno=()=>{
     if(!cadForm.mat)return;
-    // Cria entrada de sessão
-    const sessaoId=Date.now();
-    const novo={...cadForm,id:sessaoId,dt:Date.now(),dia:hoje};
-    // Se tem questões registradas, cria item D+3 automático no TEC
-    if(parseInt(cadForm.questoes)>0){
-      const prazoDate=new Date();prazoDate.setDate(prazoDate.getDate()+3);
-      const tecNovo={id:sessaoId+1,mat:cadForm.mat,assunto:cadForm.obs||'',feitas:parseInt(cadForm.questoes)||0,acertei:0,pct:null,prazo:prazoDate.toISOString().split('T')[0],prazoLabel:'D+3',fase:1,tentativas:1,feito:false,dominado:false,dia:hoje,obs:`via Caderno de Erros`,origem:'caderno',historico:[{data:getDK(),acao:'criado',fasePara:'D+3'}]};
-      const cad=[...lsGet('rev_caderno',[]).filter(t=>t.tipo==='sessao'||!t.prazoLabel),tecNovo];
-      novo.tipo='sessao';
-      cad.push(novo);
-      setCadRegs(cad.filter(t=>t.tipo==='sessao'));lsSet('rev_caderno',cad);
-    } else {
-      const n=[...cadRegs,novo];setCadRegs(n);lsSet('rev_caderno',n);
-    }
-    const mins=parseInt(cadForm.tempo)||0;
+    const prazoDias={'D+3':3,'D+15':15,'D+45':45}[cadForm.prazo||'D+3']||3;
+    const prazoDate=new Date();prazoDate.setDate(prazoDate.getDate()+prazoDias);
+    const prazoStr=prazoDate.toISOString().split('T')[0];
+    const q=parseInt(cadForm.questoes)||0;
+    const a=parseInt(cadForm.acertei)||0;
+    const pct=q>0?Math.round(a/q*100):null;
+    const faseInicial={'D+3':1,'D+15':2,'D+45':3}[cadForm.prazo||'D+3']||1;
+    const novo={
+      id:Date.now(),mat:cadForm.mat,assunto:cadForm.assunto||cadForm.obs||'',
+      feitas:q,acertei:a,pct,dificuldade:cadForm.dificuldade||0,
+      prazo:prazoStr,prazoLabel:cadForm.prazo||'D+3',fase:faseInicial,
+      tentativas:1,feito:false,dominado:false,dia:hoje,obs:cadForm.obs||'',origem:'caderno',
+      historico:[{data:getDK(),acao:'criado',fasePara:cadForm.prazo||'D+3'}]
+    };
+    const caderno=[...lsGet('rev_caderno',[]),novo];
+    lsSet('rev_caderno',caderno);
+    setCadRegs(caderno.filter(t=>!t.prazoLabel&&!t.fase));
+    const mins=60;
     if(mins>0&&onAddHoras)onAddHoras({mat:`Caderno — ${cadForm.mat}`,min:mins,dt:Date.now()});
-    setCadForm({mat:'',tempo:'',questoes:'',anki:'',nlm:'',obs:''});
+    setCadForm({mat:'',assunto:'',questoes:'',acertei:'',dificuldade:0,prazo:'D+3',obs:''});
     setCadSalvo(true);setTimeout(()=>setCadSalvo(false),2000);
   };
   const salvarSlotIndividual=(i)=>{
@@ -4567,18 +4610,31 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
                       {(t.tentativas||1)>1&&<span style={{fontSize:9,padding:'1px 6px',borderRadius:4,background:'rgba(167,139,250,.15)',color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:700}}>↻ {t.tentativas}x</span>}
                       {atrasado&&<span style={{fontSize:9,color:'#f87171',fontWeight:700}}>⚠️ {urg.diasAtraso}d atrasado</span>}
                     </div>
+                    {/* Métricas: questões, acerto, dificuldade */}
+                    {(t.feitas>0||t.dificuldade>0)&&(
+                      <div style={{display:'flex',gap:5,marginTop:5,flexWrap:'wrap'}}>
+                        {t.feitas>0&&<span style={{fontSize:9,padding:'2px 7px',borderRadius:5,background:'rgba(251,191,36,.1)',color:'#fbbf24',fontFamily:"'DM Mono',monospace"}}>📝 {t.feitas}Q</span>}
+                        {t.acertei>0&&<span style={{fontSize:9,padding:'2px 7px',borderRadius:5,background:'rgba(52,211,153,.1)',color:'#34d399',fontFamily:"'DM Mono',monospace"}}>✅ {t.acertei} · {t.feitas>0?Math.round(t.acertei/t.feitas*100)+'%':''}</span>}
+                        {t.dificuldade>0&&<span style={{fontSize:9,padding:'2px 7px',borderRadius:5,background:`${['','#34d399','#a3e635','#fbbf24','#fb923c','#f87171'][t.dificuldade]||'#64748b'}18`,color:['','#34d399','#a3e635','#fbbf24','#fb923c','#f87171'][t.dificuldade]||'#64748b',fontFamily:"'DM Mono',monospace"}}>⭐ {['','FÁCIL','TRANQUILO','MÉDIO','DIFÍCIL','MTO DIFÍCIL'][t.dificuldade]}</span>}
+                      </div>
+                    )}
                   </div>
                   <div style={{textAlign:'right',flexShrink:0,marginLeft:8}}>
                     <div style={{fontSize:17,fontWeight:900,color:urgCor[urg.nivel],fontFamily:"'DM Mono',monospace",lineHeight:1}}>{urg.score}</div>
                     <div style={{fontSize:7,color:'var(--text4)',marginTop:1}}>urgência</div>
                   </div>
                 </div>
-                {comBotoes&&(
-                  <div style={{display:'flex',gap:6,marginBottom:hist.length>0?6:0}}>
-                    <button onClick={()=>marcarItemCaderno(t.id,true)} style={{flex:1,padding:'9px',borderRadius:8,border:'none',background:'rgba(52,211,153,.15)',color:'#34d399',fontSize:12,fontWeight:800,cursor:'pointer'}}>✅ Acertei</button>
-                    <button onClick={()=>marcarItemCaderno(t.id,false)} style={{flex:1,padding:'9px',borderRadius:8,border:'none',background:'rgba(248,113,113,.15)',color:'#f87171',fontSize:12,fontWeight:800,cursor:'pointer'}}>❌ Errei de novo</button>
-                  </div>
-                )}
+                {comBotoes&&(()=>{
+                  const fase=t.fase||1;
+                  const proxAcertou=fase>=3?'✅ DOMINA':fase===1?'→ D+15':'→ D+45';
+                  const proxErrou=fase===3?'↩ volta D+15':'↩ reinicia D+3';
+                  return(
+                    <div style={{display:'flex',gap:6,marginBottom:hist.length>0?6:0}}>
+                      <button onClick={()=>marcarItemCaderno(t.id,true)} style={{flex:1,padding:'9px',borderRadius:8,border:'none',background:'rgba(52,211,153,.15)',color:'#34d399',fontSize:11,fontWeight:800,cursor:'pointer'}}>✅ Acertei <span style={{fontSize:9,opacity:.8}}>{proxAcertou}</span></button>
+                      <button onClick={()=>marcarItemCaderno(t.id,false)} style={{flex:1,padding:'9px',borderRadius:8,border:'none',background:'rgba(248,113,113,.15)',color:'#f87171',fontSize:11,fontWeight:800,cursor:'pointer'}}>❌ Errei <span style={{fontSize:9,opacity:.8}}>{proxErrou}</span></button>
+                    </div>
+                  );
+                })()}
                 {hist.length>0&&(
                   <button onClick={toggleExpand} style={{width:'100%',padding:'5px',borderRadius:6,border:'1px solid var(--border)',background:'transparent',color:'var(--text4)',fontSize:9,cursor:'pointer',fontFamily:"'DM Mono',monospace",marginTop:comBotoes?4:0}}>
                     {expandido?'▲ ocultar histórico':'▼ histórico ('+hist.length+' eventos)'}
@@ -4751,20 +4807,70 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
 
             {/* FORMULÁRIO de novo registro */}
             <div style={{background:'rgba(248,113,113,.04)',border:'1px solid rgba(248,113,113,.18)',borderRadius:13,padding:'14px',marginBottom:12}}>
-              <div style={{fontSize:9,color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:10}}>➕ NOVO REGISTRO</div>
-              <div style={{marginBottom:10}}><div style={{fontSize:9,color:'var(--text4)',marginBottom:5}}>MATÉRIA</div><MatBtn value={cadForm.mat} onChange={v=>setCadForm(f=>({...f,mat:v}))}/></div>
-              <div style={{marginBottom:8}}>
-                <div style={{fontSize:9,color:'var(--text4)',marginBottom:4}}>⏱ TEMPO (min)</div>
-                <input type="number" value={cadForm.tempo||''} onChange={e=>setCadForm(f=>({...f,tempo:e.target.value}))} placeholder="ex: 45" style={{width:'100%',padding:'10px',borderRadius:8,border:'1px solid rgba(248,113,113,.3)',background:'rgba(248,113,113,.06)',color:'#f87171',fontSize:16,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
+              <div style={{fontSize:9,color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:12}}>➕ NOVO REGISTRO</div>
+
+              {/* Matéria */}
+              <div style={{marginBottom:10}}>
+                <div style={{fontSize:9,color:'var(--text4)',marginBottom:5}}>MATÉRIA</div>
+                <MatBtn value={cadForm.mat} onChange={v=>setCadForm(f=>({...f,mat:v}))}/>
               </div>
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:6,marginBottom:10}}>
-                {[['📝 QUESTÕES','questoes','#f87171'],['🃏 ANKI','anki','#a78bfa'],['🎧 NLM','nlm','#34d399']].map(([l,k,col])=>(
-                  <div key={k}><div style={{fontSize:7,color:'var(--text4)',marginBottom:3}}>{l}</div>
-                  <input type="number" value={cadForm[k]||''} onChange={e=>setCadForm(f=>({...f,[k]:e.target.value}))} placeholder="0" style={{width:'100%',padding:'9px 4px',borderRadius:8,border:`1px solid ${col}25`,background:`${col}06`,color:col,fontSize:15,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/></div>
-                ))}
+
+              {/* Assunto */}
+              <div style={{marginBottom:10}}>
+                <div style={{fontSize:9,color:'var(--text4)',marginBottom:4}}>📖 ASSUNTO / TÓPICO</div>
+                <input value={cadForm.assunto||''} onChange={e=>setCadForm(f=>({...f,assunto:e.target.value}))} placeholder="ex: NBC TA 700, Contratos em geral, art. 37..." style={{width:'100%',padding:'9px 11px',borderRadius:8,border:'1px solid rgba(248,113,113,.2)',background:'rgba(248,113,113,.04)',color:'var(--text)',fontSize:12,outline:'none',boxSizing:'border-box'}}/>
               </div>
-              <input value={cadForm.obs||''} onChange={e=>setCadForm(f=>({...f,obs:e.target.value}))} placeholder="Assunto específico / observação..." style={{width:'100%',padding:'8px 10px',borderRadius:8,border:'1px solid rgba(248,113,113,.15)',background:'rgba(248,113,113,.03)',color:'var(--text)',fontSize:12,outline:'none',boxSizing:'border-box',marginBottom:12}}/>
-              <button onClick={salvarCaderno} disabled={!cadForm.mat} style={{width:'100%',padding:'12px',borderRadius:10,border:'none',background:cadForm.mat?'#f87171':'var(--border)',color:cadForm.mat?'#0f172a':'var(--text4)',fontSize:13,fontWeight:900,cursor:'pointer'}}>{cadSalvo?'✅ SALVO! (D+3 criado)':'💾 SALVAR + CRIAR D+3'}</button>
+
+              {/* Questões + Acertei + % */}
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:7,marginBottom:10}}>
+                <div>
+                  <div style={{fontSize:8,color:'var(--text4)',marginBottom:3}}>📝 QUESTÕES</div>
+                  <input type="number" value={cadForm.questoes||''} onChange={e=>setCadForm(f=>({...f,questoes:e.target.value}))} placeholder="ex: 20" style={{width:'100%',padding:'10px 4px',borderRadius:8,border:'1px solid rgba(251,191,36,.3)',background:'rgba(251,191,36,.06)',color:'#fbbf24',fontSize:16,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
+                </div>
+                <div>
+                  <div style={{fontSize:8,color:'var(--text4)',marginBottom:3}}>✅ ACERTEI</div>
+                  <input type="number" value={cadForm.acertei||''} onChange={e=>setCadForm(f=>({...f,acertei:e.target.value}))} placeholder="ex: 10" style={{width:'100%',padding:'10px 4px',borderRadius:8,border:'1px solid rgba(52,211,153,.3)',background:'rgba(52,211,153,.06)',color:'#34d399',fontSize:16,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
+                </div>
+                <div>
+                  <div style={{fontSize:8,color:'var(--text4)',marginBottom:3}}>📊 ACERTO</div>
+                  {(()=>{
+                    const q=parseInt(cadForm.questoes)||0;const a=parseInt(cadForm.acertei)||0;
+                    if(!q)return <div style={{width:'100%',padding:'10px 4px',borderRadius:8,border:'1px solid rgba(148,163,184,.15)',background:'rgba(148,163,184,.04)',color:'var(--text4)',fontSize:16,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center'}}>—%</div>;
+                    const pct=Math.round(a/q*100);
+                    const cor=pct>=80?'#34d399':pct>=60?'#fbbf24':'#f87171';
+                    return <div style={{width:'100%',padding:'10px 4px',borderRadius:8,border:`2px solid ${cor}50`,background:`${cor}12`,color:cor,fontSize:16,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center'}}>{pct}%</div>;
+                  })()}
+                </div>
+              </div>
+
+              {/* Dificuldade */}
+              <div style={{marginBottom:10}}>
+                <div style={{fontSize:9,color:'var(--text4)',marginBottom:6}}>DIFICULDADE</div>
+                <div style={{display:'flex',gap:5}}>
+                  {[1,2,3,4,5].map(s=>{const cors=['#34d399','#a3e635','#fbbf24','#fb923c','#f87171'];return(
+                    <button key={s} onClick={()=>setCadForm(f=>({...f,dificuldade:s}))} style={{flex:1,padding:'9px 4px',borderRadius:8,border:`2px solid ${cadForm.dificuldade>=s?cors[s-1]:'rgba(148,163,184,.28)'}`,background:cadForm.dificuldade>=s?`${cors[s-1]}22`:'rgba(255,255,255,.02)',fontSize:15,cursor:'pointer'}}>⭐</button>
+                  );})}
+                </div>
+                {cadForm.dificuldade>0&&<div style={{textAlign:'center',fontSize:9,color:['#34d399','#a3e635','#fbbf24','#fb923c','#f87171'][cadForm.dificuldade-1],marginTop:3,fontFamily:"'DM Mono',monospace",fontWeight:700}}>{['FÁCIL','TRANQUILO','MÉDIO','DIFÍCIL','MUITO DIFÍCIL'][cadForm.dificuldade-1]}</div>}
+              </div>
+
+              {/* Fase inicial — D+3 / D+15 / D+45 */}
+              <div style={{marginBottom:12}}>
+                <div style={{fontSize:9,color:'var(--text4)',marginBottom:6}}>📅 INICIAR EM</div>
+                <div style={{display:'flex',gap:6}}>
+                  {[['D+3','Errei agora','#f87171'],['D+15','Já revisei antes','#fbbf24'],['D+45','Sei mas quero fixar','#34d399']].map(([val,desc,cor])=>(
+                    <button key={val} onClick={()=>setCadForm(f=>({...f,prazo:val}))}
+                      style={{flex:1,padding:'8px 4px',borderRadius:9,border:`2px solid ${cadForm.prazo===val?cor:'rgba(148,163,184,.2)'}`,background:cadForm.prazo===val?`${cor}18`:'transparent',cursor:'pointer',textAlign:'center'}}>
+                      <div style={{fontSize:11,fontWeight:800,color:cadForm.prazo===val?cor:'var(--text4)',fontFamily:"'DM Mono',monospace"}}>{val}</div>
+                      <div style={{fontSize:8,color:'var(--text4)',marginTop:2,lineHeight:1.3}}>{desc}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <button onClick={salvarCaderno} disabled={!cadForm.mat} style={{width:'100%',padding:'13px',borderRadius:10,border:'none',background:cadForm.mat?'#f87171':'var(--border)',color:cadForm.mat?'#0f172a':'var(--text4)',fontSize:13,fontWeight:900,cursor:'pointer',letterSpacing:'1px',fontFamily:"'DM Mono',monospace"}}>
+                {cadSalvo?'✅ SALVO!':'💾 SALVAR → CRIAR '+( cadForm.prazo||'D+3')}
+              </button>
             </div>
 
             {/* SESSÕES HISTÓRICAS */}
