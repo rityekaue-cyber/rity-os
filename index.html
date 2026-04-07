@@ -2317,23 +2317,52 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
   const[hspFeito,setHspFeito]=useState(()=>lsGet(`hsp_${hoje}`,{b1:false,b2:false,min:false,planob:false}));
   const marcarHsp=k=>{const n={...hspFeito,[k]:true};setHspFeito(n);lsSet(`hsp_${hoje}`,n);};
   const hspTodos=Object.values(hspFeito).every(Boolean);
+  // ── Críticos revisados hoje (Modo 3) ─────────────────────────
+  const[criticosRevisadosHoje,setCriticosRevisadosHoje]=useState(()=>lsGet(`criticos_rev_${hoje}`,[]))
+  const marcarCriticoRevisado=(id)=>{
+    const hist=lsGet('historico_diario',[]);
+    const item=lsGet('criticos_manuais',[]).find(c=>c.id===id);
+    if(item){
+      const reg={id:hoje+'_crit_'+id,materia:item.mat,assunto:'Revisão Crítica Manual',questoes:'',acertei:'',dificuldade:item.prioridade==='alta'?4:item.prioridade==='media'?3:2,tempo:'',obs:item.motivo||'',dt:Date.now()};
+      lsSet('historico_diario',[...hist,reg]);
+    }
+    const novos=[...criticosRevisadosHoje,id];
+    setCriticosRevisadosHoje(novos);lsSet(`criticos_rev_${hoje}`,novos);
+  };
 
   // ── Calcular blocos do "Hoje sem pensar" ─────────────────────
   const hspPlan=useMemo(()=>{
     const feitosSet=new Set(feitos);
     const pendentes=CICLO.filter(s=>!feitosSet.has(s.id));
-    // Bloco 1: mais crítico do ciclo
-    const criticos=pendentes.filter(s=>s.tag?.includes('CRÍTICO')||s.tag?.includes('ATRASADA'));
-    const b1=criticos[0]||pendentes[0]||null;
-    // Bloco 2: TEC vencendo hoje OU segundo bloco
+    // Modo 2: crítico manual de alta prioridade assume B1
+    const criticosManuais=lsGet('criticos_manuais',[]);
+    const criticoAlta=criticosManuais.filter(c=>c.prioridade==='alta').sort((a,b)=>a.dt-b.dt)[0]||null;
+    let b1=null;
+    let b1IsCritico=false;
+    if(criticoAlta){
+      b1={_critico:true,id:'crit_'+criticoAlta.id,mat:criticoAlta.mat,ic:'🎯',cor:'#f87171',tag:'🔴 CRÍTICO MANUAL',h:1.5,tipo:'Revisão',conteudo:criticoAlta.motivo||'Revisar este tópico hoje',_criticoId:criticoAlta.id};
+      b1IsCritico=true;
+    }
+    // Se não tem crítico alto, usa lógica normal
+    if(!b1){
+      const criticos=pendentes.filter(s=>s.tag?.includes('CRÍTICO')||s.tag?.includes('ATRASADA'));
+      b1=criticos[0]||pendentes[0]||null;
+    }
+    // Bloco 2: se B1 é crítico manual, B2 = primeiro bloco do ciclo; senão lógica normal
     const tecVencendo=tecHoje.d3.length>0;
-    const b2desc=tecVencendo
-      ?{label:`TEC — ${tecHoje.d3.length} revisão(ões) vencendo`,mat:'TEC',h:0.5,ic:'🔴',motivo:'não pode atrasar — afeta fixação'}
-      :(pendentes.find(s=>s.id!==(b1?.id))||null);
-    // Revisão mínima: Anki 25 cards da matéria mais crítica
+    let b2;
+    if(b1IsCritico){
+      const cricosCiclo=pendentes.filter(s=>s.tag?.includes('CRÍTICO')||s.tag?.includes('ATRASADA'));
+      b2=tecVencendo
+        ?{label:`TEC — ${tecHoje.d3.length} revisão(ões) vencendo`,mat:'TEC',h:0.5,ic:'🔴',motivo:'não pode atrasar — afeta fixação'}
+        :(cricosCiclo[0]||pendentes[0]||null);
+    } else {
+      b2=tecVencendo
+        ?{label:`TEC — ${tecHoje.d3.length} revisão(ões) vencendo`,mat:'TEC',h:0.5,ic:'🔴',motivo:'não pode atrasar — afeta fixação'}
+        :(pendentes.find(s=>s.id!==(b1?.id))||null);
+    }
     const mat1=ankiMaterias[0]?.mat||'matéria prioritária';
-    // Plano B fixo
-    return{b1,b2:b2desc,mat1};
+    return{b1,b2,mat1,b1IsCritico};
   },[feitos,tecHoje,ankiMaterias]);
 
   return(
@@ -2387,17 +2416,20 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
           )}
 
           {/* Bloco 1 */}
-          <div style={{padding:'14px',borderRadius:13,background:hspFeito.b1?'rgba(52,211,153,.07)':'rgba(248,113,113,.07)',border:`2px solid ${hspFeito.b1?'rgba(52,211,153,.4)':'rgba(248,113,113,.35)'}`,marginBottom:8}}>
+          <div style={{padding:'14px',borderRadius:13,background:hspFeito.b1?'rgba(52,211,153,.07)':hspPlan.b1IsCritico?'rgba(248,113,113,.1)':'rgba(248,113,113,.07)',border:`2px solid ${hspFeito.b1?'rgba(52,211,153,.4)':hspPlan.b1IsCritico?'rgba(248,113,113,.6)':'rgba(248,113,113,.35)'}`,marginBottom:8}}>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:8}}>
               <div style={{flex:1}}>
-                <div style={{fontSize:9,color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:4}}>🔴 BLOCO 1 — MAIOR RETORNO AGORA</div>
+                <div style={{fontSize:9,color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:4}}>
+                  {hspPlan.b1IsCritico?'🎯 BLOCO 1 — CRÍTICO MANUAL PENDENTE':'🔴 BLOCO 1 — MAIOR RETORNO AGORA'}
+                </div>
                 {hspPlan.b1
                   ?<>
                     <div style={{fontSize:14,fontWeight:900,color:'var(--text)'}}>{hspPlan.b1.ic} {hspPlan.b1.mat}</div>
                     <div style={{fontSize:11,color:'var(--text4)',marginTop:2}}>{hspPlan.b1.conteudo}</div>
-                    <div style={{display:'flex',gap:6,marginTop:5}}>
+                    <div style={{display:'flex',gap:6,marginTop:5,flexWrap:'wrap'}}>
                       <span style={{fontSize:9,padding:'1px 6px',borderRadius:4,background:'rgba(248,113,113,.12)',color:'#f87171',fontFamily:"'DM Mono',monospace"}}>{hspPlan.b1.h}h · {hspPlan.b1.tipo}</span>
                       <span style={{fontSize:9,color:'var(--text4)'}}>{hspPlan.b1.tag}</span>
+                      {hspPlan.b1IsCritico&&<span style={{fontSize:9,padding:'1px 6px',borderRadius:4,background:'rgba(248,113,113,.2)',color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:700}}>você marcou como crítico</span>}
                     </div>
                   </>
                   :<div style={{fontSize:13,color:'#34d399',fontWeight:700}}>✅ Ciclo completo!</div>
@@ -2405,7 +2437,7 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
               </div>
             </div>
             {!hspFeito.b1
-              ?<button onClick={()=>marcarHsp('b1')} style={{width:'100%',padding:'10px',borderRadius:9,border:'none',background:'#f87171',color:'#0f172a',fontSize:12,fontWeight:800,cursor:'pointer'}}>✅ Fiz</button>
+              ?<button onClick={()=>{marcarHsp('b1');if(hspPlan.b1IsCritico&&hspPlan.b1._criticoId)marcarCriticoRevisado(hspPlan.b1._criticoId);}} style={{width:'100%',padding:'10px',borderRadius:9,border:'none',background:'#f87171',color:'#0f172a',fontSize:12,fontWeight:800,cursor:'pointer'}}>✅ Fiz</button>
               :<div style={{textAlign:'center',fontSize:12,color:'#34d399',fontWeight:700}}>✅ Feito!</div>
             }
           </div>
@@ -2471,6 +2503,40 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
       {/* ── SUB-ABA: BLOCOS (conteúdo original da aba Hoje) ── */}
       {subAba==='blocos'&&(
         <div>
+          {/* MODO 3 — CRÍTICOS MANUAIS PENDENTES */}
+          {(()=>{
+            const criticosManuais=lsGet('criticos_manuais',[]);
+            const pendentes=criticosManuais.filter(c=>!criticosRevisadosHoje.includes(c.id));
+            if(!pendentes.length)return null;
+            const corPri={alta:'#f87171',media:'#fbbf24',baixa:'#34d399'};
+            const bgPri={alta:'rgba(248,113,113,.08)',media:'rgba(251,191,36,.06)',baixa:'rgba(52,211,153,.06)'};
+            const borderPri={alta:'rgba(248,113,113,.45)',media:'rgba(251,191,36,.35)',baixa:'rgba(52,211,153,.3)'};
+            return(
+              <div style={{marginBottom:12}}>
+                <div style={{fontSize:9,color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:8}}>🎯 REVISÃO CRÍTICA — você marcou como prioridade</div>
+                {pendentes.map(c=>{
+                  const cor=corPri[c.prioridade]||'#f87171';
+                  return(
+                    <div key={c.id} style={{padding:'12px 14px',borderRadius:12,background:bgPri[c.prioridade]||bgPri.alta,border:`2px solid ${borderPri[c.prioridade]||borderPri.alta}`,marginBottom:8}}>
+                      <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:8}}>
+                        <div style={{flex:1,minWidth:0}}>
+                          <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:3,flexWrap:'wrap'}}>
+                            <span style={{fontSize:14,fontWeight:900,color:'var(--text)'}}>🎯 {c.mat}</span>
+                            <span style={{fontSize:8,padding:'1px 6px',borderRadius:4,background:`${cor}20`,color:cor,fontFamily:"'DM Mono',monospace",fontWeight:700}}>{c.prioridade==='alta'?'🔴 ALTA':c.prioridade==='media'?'🟡 MÉDIA':'🟢 BAIXA'}</span>
+                          </div>
+                          {c.motivo&&<div style={{fontSize:11,color:'var(--text4)',lineHeight:1.5}}>{c.motivo}</div>}
+                        </div>
+                      </div>
+                      <div style={{display:'flex',gap:6}}>
+                        <button onClick={()=>marcarCriticoRevisado(c.id)} style={{flex:2,padding:'10px',borderRadius:9,border:'none',background:cor,color:'#0f172a',fontSize:12,fontWeight:800,cursor:'pointer'}}>✅ Revisei hoje</button>
+                        <button onClick={()=>{const n=lsGet('criticos_manuais',[]).filter(x=>x.id!==c.id);lsSet('criticos_manuais',n);}} style={{flex:1,padding:'10px',borderRadius:9,border:`1px solid ${cor}44`,background:'transparent',color:cor,fontSize:11,fontWeight:700,cursor:'pointer'}}>🗑️ Remover</button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
           {/* DESPACHO IA */}
           <div style={{background:'linear-gradient(135deg,rgba(251,191,36,.08),rgba(251,191,36,.03))',border:'1px solid rgba(251,191,36,.2)',borderRadius:12,marginBottom:10,overflow:'hidden'}}>
             <button onClick={()=>toggle('despacho')} style={{width:'100%',display:'flex',justifyContent:'space-between',alignItems:'center',padding:'10px 14px',background:'transparent',border:'none',cursor:'pointer'}}>
