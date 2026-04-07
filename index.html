@@ -2979,8 +2979,11 @@ function TabEstudo({feitos,cicloNum,horas,onConcluir,onIrPara,onDesmarcar,onAddH
   const hoje=getDK();
   const[historico,setHistorico]=useState(()=>lsGet('historico_diario',[]));
   const regHoje=historico.find(r=>r.id===hoje)||null;
-  const[rForm,setRForm]=useState({materia:regHoje?.materia||ativo?.mat||'',assunto:regHoje?.assunto||'',tempo:regHoje?.tempo||'',questoes:regHoje?.questoes||'',acertei:regHoje?.acertei||'',questoesAnki:regHoje?.questoesAnki||'',questoesNlm:regHoje?.questoesNlm||'',dificuldade:regHoje?.dificuldade||0,travou:regHoje?.travou||'',obs:regHoje?.obs||''});
+  // Último bloco concluído — pré-preenche o Registro automaticamente
+  const[ultimoBlocoMat,setUltimoBlocoMat]=useState(null); // {mat, conteudo, tipo}
+  const[rForm,setRForm]=useState({materia:regHoje?.materia||ativo?.mat||'',assunto:regHoje?.assunto||'',tempo:regHoje?.tempo||'',questoes:regHoje?.questoes||'',acertei:regHoje?.acertei||'',dificuldade:regHoje?.dificuldade||0,obs:regHoje?.obs||''});
   const[rSalvo,setRSalvo]=useState(false);
+  const[obsExpandida,setObsExpandida]=useState(false);
 
   // Revisão
   const[gurujaTxt,setGurujaTxt]=useState('');
@@ -3063,7 +3066,7 @@ APENAS JSON sem markdown: {"diagnostico":"2 frases","plano":[{"mat":"nome","hora
     const n=[...historico.filter(r=>r.id!==hoje),novo].sort((a,b)=>a.id.localeCompare(b.id));
     setHistorico(n);lsSet('historico_diario',n);
     if(rForm.tempo){onAddHoras({mat:rForm.materia,min:parseInt(rForm.tempo)||0,dt:Date.now()});}
-    if(rForm.questoesAnki){const h=lsGet('horas',[]);lsSet('horas',[...h,{mat:`Anki — ${rForm.materia}`,min:Math.round((parseInt(rForm.questoesAnki)||0)*0.4),dt:Date.now()}]);}
+    setUltimoBlocoMat(null);
     setRSalvo(true);setTimeout(()=>setRSalvo(false),2500);if(onSyncHistorico)onSyncHistorico();
   };
 
@@ -3165,7 +3168,16 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
               <div style={{fontSize:12,color:'#94a3b8',marginBottom:18}}>{CICLO.find(s=>s.id===confJaFiz)?.mat}</div>
               <div style={{display:'flex',gap:8}}>
                 <button onClick={()=>setConfJaFiz(null)} style={{flex:1,padding:'11px',borderRadius:8,border:'1px solid rgba(255,255,255,.08)',background:'transparent',color:'#94a3b8',fontSize:11,cursor:'pointer'}}>Cancelar</button>
-                <button onClick={()=>{onConcluir(confJaFiz);setConfJaFiz(null);}} style={{flex:1,padding:'11px',borderRadius:8,border:'none',background:'#34d399',color:'#050a14',fontSize:11,fontWeight:800,cursor:'pointer'}}>✓ Confirmar</button>
+                <button onClick={()=>{
+                  const blocoConc=CICLO.find(s=>s.id===confJaFiz);
+                  onConcluir(confJaFiz);
+                  setConfJaFiz(null);
+                  if(blocoConc){
+                    setUltimoBlocoMat({mat:blocoConc.mat,conteudo:blocoConc.conteudo,tipo:blocoConc.tipo});
+                    setRForm(f=>({...f,materia:blocoConc.mat,assunto:blocoConc.conteudo||''}));
+                    setAba('registro');
+                  }
+                }} style={{flex:1,padding:'11px',borderRadius:8,border:'none',background:'#34d399',color:'#050a14',fontSize:11,fontWeight:800,cursor:'pointer'}}>✓ Confirmar</button>
               </div>
             </div>
           </div>
@@ -3188,8 +3200,22 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
       {/* ── REGISTRO ─────────────────────────────────────────── */}
       {aba==='registro'&&<div>
         {regHoje&&<div style={{padding:'9px 12px',borderRadius:9,background:'rgba(52,211,153,.08)',border:'1px solid rgba(52,211,153,.25)',marginBottom:12,fontSize:11,color:'#34d399',fontWeight:700}}>✅ Registro de hoje já salvo — você pode atualizar</div>}
+
+        {/* Banner: veio do Foco */}
+        {ultimoBlocoMat&&(
+          <div style={{padding:'10px 13px',borderRadius:10,background:'rgba(96,165,250,.08)',border:'1px solid rgba(96,165,250,.35)',marginBottom:12,display:'flex',alignItems:'center',gap:10}}>
+            <span style={{fontSize:16}}>✅</span>
+            <div style={{flex:1}}>
+              <div style={{fontSize:11,fontWeight:700,color:'#60a5fa'}}>Bloco concluído — dados pré-preenchidos</div>
+              <div style={{fontSize:10,color:'var(--text4)',marginTop:1}}>{ultimoBlocoMat.mat} · {ultimoBlocoMat.conteudo}</div>
+            </div>
+            <button onClick={()=>setUltimoBlocoMat(null)} style={{padding:'2px 7px',borderRadius:5,border:'none',background:'transparent',color:'var(--text4)',fontSize:11,cursor:'pointer'}}>×</button>
+          </div>
+        )}
+
         <div style={{background:'rgba(96,165,250,.05)',border:'1px solid rgba(96,165,250,.2)',borderRadius:13,padding:'14px',marginBottom:12}}>
           <div style={{fontSize:9,letterSpacing:'2px',color:'#60a5fa',fontFamily:"'DM Mono',monospace",marginBottom:12}}>📝 REGISTRO EXPRESSO — {hoje}</div>
+
           {/* Matéria */}
           <div style={{marginBottom:10}}>
             <div style={{fontSize:9,color:'#64748b',marginBottom:5}}>MATÉRIA ESTUDADA</div>
@@ -3198,6 +3224,25 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
             </div>
             <input value={MATS.includes(rForm.materia)?'':rForm.materia} onChange={e=>setRForm(f=>({...f,materia:e.target.value}))} placeholder="Ou digitar outra matéria..." style={{width:'100%',padding:'8px 10px',borderRadius:8,border:'1px solid rgba(96,165,250,.15)',background:'rgba(96,165,250,.03)',color:'#f1f5f9',fontSize:12,outline:'none',boxSizing:'border-box'}}/>
           </div>
+
+          {/* Assunto */}
+          <div style={{marginBottom:10}}>
+            <div style={{fontSize:9,color:'#64748b',marginBottom:5}}>📖 ASSUNTO ESTUDADO</div>
+            {/* Atalhos do edital para a matéria selecionada */}
+            {EDITAL[rForm.materia]&&(
+              <div style={{display:'flex',flexWrap:'wrap',gap:4,marginBottom:6}}>
+                {EDITAL[rForm.materia].top.slice(0,5).map((item,i)=>(
+                  <button key={i} onClick={()=>setRForm(f=>({...f,assunto:item.t}))}
+                    style={{padding:'3px 8px',borderRadius:6,border:`1px solid ${rForm.assunto===item.t?'#60a5fa':'rgba(96,165,250,.2)'}`,background:rForm.assunto===item.t?'rgba(96,165,250,.18)':'transparent',color:rForm.assunto===item.t?'#60a5fa':'#64748b',fontSize:9,cursor:'pointer'}}>
+                    {item.t.length>28?item.t.slice(0,26)+'…':item.t}
+                    <span style={{color:'#fbbf24',fontFamily:"'DM Mono',monospace",marginLeft:3}}>{item.p}%</span>
+                  </button>
+                ))}
+              </div>
+            )}
+            <input value={rForm.assunto||''} onChange={e=>setRForm(f=>({...f,assunto:e.target.value}))} placeholder="ex: NBC TA 700, Contratos em geral, art. 37 caput..." style={{width:'100%',padding:'9px 11px',borderRadius:8,border:'1px solid rgba(96,165,250,.2)',background:'rgba(96,165,250,.04)',color:'#f1f5f9',fontSize:12,outline:'none',boxSizing:'border-box'}}/>
+          </div>
+
           {/* Tempo + Questões + Acertei + % — grid 2×2 */}
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:7,marginBottom:10}}>
             <div>
@@ -3223,6 +3268,7 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
               })()}
             </div>
           </div>
+
           {/* Dificuldade */}
           <div style={{marginBottom:12}}>
             <div style={{fontSize:9,color:'#64748b',marginBottom:6}}>DIFICULDADE DO CONTEÚDO</div>
@@ -3233,6 +3279,22 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
             </div>
             {rForm.dificuldade>0&&<div style={{textAlign:'center',fontSize:10,color:['#34d399','#a3e635','#fbbf24','#fb923c','#f87171'][rForm.dificuldade-1],marginTop:4,fontFamily:"'DM Mono',monospace",fontWeight:700}}>{['FÁCIL','TRANQUILO','MÉDIO','DIFÍCIL','MUITO DIFÍCIL'][rForm.dificuldade-1]}</div>}
           </div>
+
+          {/* Informações complementares — colapsável */}
+          <div style={{marginBottom:12}}>
+            <button onClick={()=>setObsExpandida(v=>!v)} style={{width:'100%',padding:'8px 11px',borderRadius:8,border:'1px solid rgba(148,163,184,.2)',background:'rgba(148,163,184,.04)',color:'var(--text4)',fontSize:11,cursor:'pointer',display:'flex',justifyContent:'space-between',alignItems:'center',fontFamily:"'DM Mono',monospace"}}>
+              <span>📎 Informações complementares</span>
+              <span style={{fontSize:10}}>{obsExpandida?'▲ ocultar':'▼ adicionar'}</span>
+            </button>
+            {obsExpandida&&(
+              <div style={{marginTop:8,padding:'12px',borderRadius:9,border:'1px solid rgba(148,163,184,.18)',background:'rgba(148,163,184,.04)'}}>
+                <div style={{fontSize:9,color:'#64748b',marginBottom:6}}>O que mais quer registrar desta sessão?</div>
+                <textarea value={rForm.obs||''} onChange={e=>setRForm(f=>({...f,obs:e.target.value}))} rows={3} placeholder="ex: Travei em NBC TA 700 item 12, confundi com art. 37, preciso rever os prazos da LRF..." style={{width:'100%',padding:'9px 11px',borderRadius:8,border:'1px solid rgba(148,163,184,.2)',background:'rgba(148,163,184,.05)',color:'#f1f5f9',fontSize:12,outline:'none',resize:'vertical',boxSizing:'border-box',lineHeight:1.6}}/>
+                <div style={{fontSize:9,color:'#475569',marginTop:5}}>Este campo alimenta o motor de Tempo Morto e fica visível no histórico.</div>
+              </div>
+            )}
+          </div>
+
           <button onClick={salvarRegistro} disabled={!rForm.materia||!rForm.dificuldade} style={{width:'100%',padding:'14px',borderRadius:11,border:'none',background:rForm.materia&&rForm.dificuldade?'linear-gradient(135deg,#60a5fa,#60a5fa)':'rgba(148,163,184,.22)',color:rForm.materia&&rForm.dificuldade?'#050a14':'#1e293b',fontSize:14,fontWeight:900,letterSpacing:'2px',cursor:'pointer',fontFamily:"'DM Mono',monospace"}}>
             {rSalvo?'✅ DIA REGISTRADO!':'💾 SALVAR DIA'}
           </button>
@@ -3247,7 +3309,7 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
                 <div>
                   <div style={{fontSize:12,color:'#f1f5f9',fontWeight:700}}>{r.materia}</div>
-                  <div style={{fontSize:9,color:'#64748b'}}>{r.tempo?`${r.tempo}min · `:''}{r.assunto&&<span style={{color:'#60a5fa',marginRight:4}}>{r.assunto.slice(0,25)}</span>}Q:{r.questoes||0}{r.acertei?` ✅${r.acertei}(${Math.round(parseInt(r.acertei)/parseInt(r.questoes)*100)}%)`:''}</div>
+                  <div style={{fontSize:9,color:'#64748b'}}>{r.tempo?`${r.tempo}min · `:''}{r.assunto&&<span style={{color:'#60a5fa',marginRight:4}}>{r.assunto.slice(0,30)}</span>}Q:{r.questoes||0}{r.acertei?` ✅${r.acertei}(${Math.round(parseInt(r.acertei)/parseInt(r.questoes)*100)}%)`:''}{r.obs?<span style={{color:'#94a3b8',marginLeft:4}}>· {r.obs.slice(0,25)}</span>:''}</div>
                 </div>
                 <div style={{textAlign:'right'}}>
                   <div style={{fontSize:10,color:c,fontFamily:"'DM Mono',monospace",fontWeight:700}}>{'⭐'.repeat(r.dificuldade||0)}</div>
