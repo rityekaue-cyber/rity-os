@@ -2967,6 +2967,9 @@ function TabEstudo({feitos,cicloNum,horas,onConcluir,onIrPara,onDesmarcar,onAddH
   const[aba,setAba]=useState('foco');
   const feitosSet=useMemo(()=>new Set(feitos),[feitos]);
   const pendentes=useMemo(()=>CICLO.filter(s=>!feitosSet.has(s.id)),[feitosSet]);
+  // Ciclo Extras — precisa ser declarado ANTES de ativo
+  const[cicloExtras,setCicloExtras]=useState(()=>lsGet('ciclo_extras',[]));
+  const extrasAtivos=useMemo(()=>cicloExtras.filter(e=>!e.feito),[cicloExtras]);
   // Extras ativos entram na frente da fila — ativo é sempre extra primeiro
   const ativoIsExtra=extrasAtivos.length>0;
   const ativo=ativoIsExtra?extrasAtivos[0]:(pendentes[0]||null);
@@ -2986,10 +2989,7 @@ function TabEstudo({feitos,cicloNum,horas,onConcluir,onIrPara,onDesmarcar,onAddH
   const[rForm,setRForm]=useState({materia:regHoje?.materia||ativo?.mat||'',assunto:regHoje?.assunto||'',tempo:regHoje?.tempo||'',questoes:regHoje?.questoes||'',acertei:regHoje?.acertei||'',dificuldade:regHoje?.dificuldade||0,obs:regHoje?.obs||''});
   const[rSalvo,setRSalvo]=useState(false);
   const[obsExpandida,setObsExpandida]=useState(false);
-  // ── Ciclo Extras — fila paralela de pendências ────────────────
-  const[cicloExtras,setCicloExtras]=useState(()=>lsGet('ciclo_extras',[]));
-  const extrasAtivos=useMemo(()=>cicloExtras.filter(e=>!e.feito),[cicloExtras]);
-  const[modalPct,setModalPct]=useState(null); // {blocoId, blocoData}
+  const[modalPct,setModalPct]=useState(null);
   const[pctSel,setPctSel]=useState(100);
   const[pendenteTxt,setPendenteTxt]=useState('');
 
