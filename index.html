@@ -334,7 +334,7 @@ const Sync={
       });
       // Após pull, empurra chaves locais que não estão na nuvem
       const cloudKeys=new Set((data||[]).map(r=>r.key));
-      const syncKeys=['feitos','cicloNum','horas','historico_diario','rev_anki','rev_nlm','rev_caderno','rev_1h30','rev_topicos','anki_meta','dif_base_materias','criticos_manuais','edital_status','guruja_data','plano_semanal','urgentes_ia','ia_hist','theme_mode','ciclo_versao'];
+      const syncKeys=['feitos','cicloNum','horas','historico_diario','rev_anki','rev_nlm','rev_caderno','rev_1h30','rev_topicos','anki_meta','dif_base_materias','criticos_manuais','edital_status','guruja_data','plano_semanal','urgentes_ia','ia_hist','theme_mode','ciclo_versao','ciclo_extras'];
       for(const k of syncKeys){
         if(!cloudKeys.has(k)){
           const v=localStorage.getItem(k);
@@ -2967,8 +2967,10 @@ function TabEstudo({feitos,cicloNum,horas,onConcluir,onIrPara,onDesmarcar,onAddH
   const[aba,setAba]=useState('foco');
   const feitosSet=useMemo(()=>new Set(feitos),[feitos]);
   const pendentes=useMemo(()=>CICLO.filter(s=>!feitosSet.has(s.id)),[feitosSet]);
-  const ativo=pendentes[0]||null;
-  const cor=ativo?.tag?.includes('TRIÂNGULO')?'#fbbf24':ativo?.cor||'#fbbf24';
+  // Extras ativos entram na frente da fila — ativo é sempre extra primeiro
+  const ativoIsExtra=extrasAtivos.length>0;
+  const ativo=ativoIsExtra?extrasAtivos[0]:(pendentes[0]||null);
+  const cor=ativoIsExtra?'#fb923c':(ativo?.tag?.includes('TRIÂNGULO')?'#fbbf24':ativo?.cor||'#fbbf24');
   const todayStart=useMemo(()=>{const d=new Date();d.setHours(0,0,0,0);return d.getTime();},[]);
   const semStart=todayStart-6*86400000;
   const minHoje=horas.filter(e=>e.dt>=todayStart).reduce((s,e)=>s+e.min,0);
@@ -2984,6 +2986,30 @@ function TabEstudo({feitos,cicloNum,horas,onConcluir,onIrPara,onDesmarcar,onAddH
   const[rForm,setRForm]=useState({materia:regHoje?.materia||ativo?.mat||'',assunto:regHoje?.assunto||'',tempo:regHoje?.tempo||'',questoes:regHoje?.questoes||'',acertei:regHoje?.acertei||'',dificuldade:regHoje?.dificuldade||0,obs:regHoje?.obs||''});
   const[rSalvo,setRSalvo]=useState(false);
   const[obsExpandida,setObsExpandida]=useState(false);
+  // ── Ciclo Extras — fila paralela de pendências ────────────────
+  const[cicloExtras,setCicloExtras]=useState(()=>lsGet('ciclo_extras',[]));
+  const extrasAtivos=useMemo(()=>cicloExtras.filter(e=>!e.feito),[cicloExtras]);
+  const[modalPct,setModalPct]=useState(null); // {blocoId, blocoData}
+  const[pctSel,setPctSel]=useState(100);
+  const[pendenteTxt,setPendenteTxt]=useState('');
+
+  const criarExtra=(bloco,pct,pendente)=>{
+    if(pct>=100||!pendente?.trim())return;
+    const novo={
+      id:'extra_'+Date.now(),
+      mat:bloco.mat,ic:bloco.ic||'📌',cor:bloco.cor||'#fb923c',
+      tag:'⏸ CONTINUA',conteudo:pendente.trim(),
+      pctAnterior:pct,h:1.5,tipo:'Continuação',
+      criadoEm:getDK(),feito:false
+    };
+    const n=[...lsGet('ciclo_extras',[]),novo];
+    lsSet('ciclo_extras',n);setCicloExtras(n);
+  };
+
+  const concluirExtra=(id)=>{
+    const n=cicloExtras.map(e=>e.id===id?{...e,feito:true}:e);
+    lsSet('ciclo_extras',n);setCicloExtras(n);
+  };
 
   // Revisão
   const[gurujaTxt,setGurujaTxt]=useState('');
@@ -3066,6 +3092,10 @@ APENAS JSON sem markdown: {"diagnostico":"2 frases","plano":[{"mat":"nome","hora
     const n=[...historico.filter(r=>r.id!==hoje),novo].sort((a,b)=>a.id.localeCompare(b.id));
     setHistorico(n);lsSet('historico_diario',n);
     if(rForm.tempo){onAddHoras({mat:rForm.materia,min:parseInt(rForm.tempo)||0,dt:Date.now()});}
+    // Se preencheu "ficou pendente", cria extra
+    if(rForm.pendente?.trim()){
+      criarExtra({mat:rForm.materia,ic:'📌',cor:'#fb923c',conteudo:rForm.pendente.trim()},50,rForm.pendente.trim());
+    }
     setUltimoBlocoMat(null);
     setRSalvo(true);setTimeout(()=>setRSalvo(false),2500);if(onSyncHistorico)onSyncHistorico();
   };
@@ -3126,24 +3156,46 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
           {planoSemana.plano?.slice(0,3).map((p,i)=><div key={i} style={{fontSize:10,color:'#94a3b8',marginTop:2}}>{i+1}. {p.mat} — {p.horasEditadas||p.horasSugeridas}h</div>)}
         </div>}
         {ativo?(
-          <div style={{borderRadius:14,border:`2px solid ${cor}30`,background:`linear-gradient(150deg,${cor}08,rgba(5,10,20,.98) 60%)`,marginBottom:12,overflow:'hidden'}}>
-            <div style={{padding:'12px 14px 10px',background:`${cor}10`,borderBottom:`1px solid ${cor}18`,display:'flex',alignItems:'flex-start',gap:12}}>
+          <div style={{borderRadius:14,border:`2px ${ativoIsExtra?'dashed':'solid'} ${ativoIsExtra?'#fb923c':cor}${ativoIsExtra?'':'30'}`,background:ativoIsExtra?'linear-gradient(150deg,rgba(251,146,60,.1),rgba(5,10,20,.98) 60%)':`linear-gradient(150deg,${cor}08,rgba(5,10,20,.98) 60%)`,marginBottom:12,overflow:'hidden'}}>
+            <div style={{padding:'12px 14px 10px',background:ativoIsExtra?'rgba(251,146,60,.12)':`${cor}10`,borderBottom:`1px solid ${ativoIsExtra?'rgba(251,146,60,.25)':cor+'18'}`,display:'flex',alignItems:'flex-start',gap:12}}>
               <span style={{fontSize:24,flexShrink:0}}>{ativo.ic}</span>
               <div style={{flex:1}}>
-                <div style={{display:'flex',gap:6,marginBottom:5,flexWrap:'wrap'}}><Chip label={ativo.tag} cor={cor}/><Chip label={`B${ativo.id}/${N}`} cor="#1e2d40" sm/></div>
+                <div style={{display:'flex',gap:6,marginBottom:5,flexWrap:'wrap'}}>
+                  {ativoIsExtra
+                    ?<><Chip label="⏸ CONTINUA DE ONTEM" cor="#fb923c"/><Chip label={`${ativo.pctAnterior}% feito anteriormente`} cor="#fb923c" sm/></>
+                    :<><Chip label={ativo.tag} cor={cor}/><Chip label={`B${ativo.id}/${N}`} cor="#1e2d40" sm/></>
+                  }
+                </div>
                 <div style={{fontSize:18,fontWeight:900,color:'#e8edf5',lineHeight:1.1,fontFamily:"'DM Serif Display',serif"}}>{ativo.mat}</div>
-                <div style={{fontSize:11,color:'#94a3b8',marginTop:3}}>{ativo.acao}</div>
+                <div style={{fontSize:11,color:'#94a3b8',marginTop:3}}>{ativo.conteudo}</div>
+                {ativoIsExtra&&(
+                  <div style={{marginTop:8}}>
+                    <div style={{display:'flex',justifyContent:'space-between',marginBottom:3}}>
+                      <span style={{fontSize:8,color:'#fb923c',fontFamily:"'DM Mono',monospace"}}>PROGRESSO DA META</span>
+                      <span style={{fontSize:8,color:'#fb923c',fontFamily:"'DM Mono',monospace"}}>{ativo.pctAnterior}% já feito</span>
+                    </div>
+                    <div style={{height:5,borderRadius:3,background:'rgba(255,255,255,.08)',overflow:'hidden'}}>
+                      <div style={{width:`${ativo.pctAnterior}%`,height:'100%',background:'#fb923c',borderRadius:3,transition:'width .5s'}}/>
+                    </div>
+                    <div style={{fontSize:8,color:'#64748b',marginTop:3}}>Criado em {ativo.criadoEm}</div>
+                  </div>
+                )}
               </div>
-              <div style={{padding:'7px 10px',borderRadius:9,background:`${cor}15`,border:`1px solid ${cor}30`,textAlign:'center',flexShrink:0}}>
-                <div style={{fontSize:16,fontWeight:900,fontFamily:"'DM Mono',monospace",color:cor}}>{ativo.h}</div>
+              <div style={{padding:'7px 10px',borderRadius:9,background:ativoIsExtra?'rgba(251,146,60,.15)':`${cor}15`,border:`1px solid ${ativoIsExtra?'rgba(251,146,60,.3)':cor+'30'}`,textAlign:'center',flexShrink:0}}>
+                <div style={{fontSize:16,fontWeight:900,fontFamily:"'DM Mono',monospace",color:ativoIsExtra?'#fb923c':cor}}>{ativo.h}</div>
               </div>
             </div>
             <div style={{padding:'12px 14px'}}>
-              <div style={{marginBottom:10,padding:'9px 11px',borderRadius:9,background:`${cor}05`,border:`1px solid ${cor}15`}}>
-                {(ativo.dica||'').split('\n').map((l,i)=><div key={i} style={{fontSize:11,color:'#94a3b8',lineHeight:1.7}}>{l}</div>)}
+              <div style={{marginBottom:10,padding:'9px 11px',borderRadius:9,background:ativoIsExtra?'rgba(251,146,60,.05)':`${cor}05`,border:`1px solid ${ativoIsExtra?'rgba(251,146,60,.15)':cor+'15'}`}}>
+                {ativoIsExtra
+                  ?<div style={{fontSize:11,color:'#94a3b8',lineHeight:1.7}}>🎯 Continue de onde parou: <strong style={{color:'#fb923c'}}>{ativo.conteudo}</strong></div>
+                  :(ativo.dica||'').split('\n').map((l,i)=><div key={i} style={{fontSize:11,color:'#94a3b8',lineHeight:1.7}}>{l}</div>)
+                }
               </div>
-              <Pomodoro cor={cor} onFase={min=>onAddHoras({mat:ativo.mat,min,dt:Date.now()})}/>
-              <button onClick={()=>setConfJaFiz(ativo.id)} style={{width:'100%',padding:'13px',borderRadius:11,border:'none',cursor:'pointer',background:`linear-gradient(135deg,${cor}cc,${cor})`,color:'#050a14',fontSize:14,fontWeight:900,letterSpacing:'3px',fontFamily:"'DM Mono',monospace"}}>✓ CONCLUÍDO</button>
+              <Pomodoro cor={ativoIsExtra?'#fb923c':cor} onFase={min=>onAddHoras({mat:ativo.mat,min,dt:Date.now()})}/>
+              <button onClick={()=>setConfJaFiz(ativoIsExtra?ativo.id:ativo.id)} style={{width:'100%',padding:'13px',borderRadius:11,border:'none',cursor:'pointer',background:ativoIsExtra?'linear-gradient(135deg,#fb923c,#fb923c)':`linear-gradient(135deg,${cor}cc,${cor})`,color:'#050a14',fontSize:14,fontWeight:900,letterSpacing:'3px',fontFamily:"'DM Mono',monospace"}}>
+                {ativoIsExtra?'⏸ CONTINUA — CONCLUIR':'✓ CONCLUÍDO'}
+              </button>
             </div>
           </div>
         ):(
@@ -3161,23 +3213,85 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
           );})}
         </div>}
         {/* Modais inline */}
-        {confJaFiz!==null&&(
+        {confJaFiz!==null&&!modalPct&&(
           <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.85)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:100,padding:20}}>
-            <div style={{background:'#1e293b',border:'1px solid rgba(52,211,153,.25)',borderRadius:16,padding:'22px 20px',maxWidth:300,width:'100%'}}>
-              <div style={{fontSize:14,fontWeight:700,color:'#e8edf5',marginBottom:6}}>Marcar como concluído?</div>
-              <div style={{fontSize:12,color:'#94a3b8',marginBottom:18}}>{CICLO.find(s=>s.id===confJaFiz)?.mat}</div>
+            <div style={{background:'#1e293b',border:'1px solid rgba(52,211,153,.25)',borderRadius:16,padding:'22px 20px',maxWidth:320,width:'100%'}}>
+              <div style={{fontSize:14,fontWeight:700,color:'#e8edf5',marginBottom:4}}>Marcar como concluído?</div>
+              <div style={{fontSize:12,color:'#94a3b8',marginBottom:18}}>
+                {ativoIsExtra
+                  ?`⏸ ${ativo?.mat} — Continuação`
+                  :CICLO.find(s=>s.id===confJaFiz)?.mat}
+              </div>
               <div style={{display:'flex',gap:8}}>
                 <button onClick={()=>setConfJaFiz(null)} style={{flex:1,padding:'11px',borderRadius:8,border:'1px solid rgba(255,255,255,.08)',background:'transparent',color:'#94a3b8',fontSize:11,cursor:'pointer'}}>Cancelar</button>
                 <button onClick={()=>{
-                  const blocoConc=CICLO.find(s=>s.id===confJaFiz);
-                  onConcluir(confJaFiz);
-                  setConfJaFiz(null);
-                  if(blocoConc){
+                  const blocoConc=ativoIsExtra?ativo:CICLO.find(s=>s.id===confJaFiz);
+                  setModalPct({blocoId:confJaFiz,blocoData:blocoConc});
+                  setPctSel(100);setPendenteTxt('');
+                }} style={{flex:1,padding:'11px',borderRadius:8,border:'none',background:'#34d399',color:'#050a14',fontSize:11,fontWeight:800,cursor:'pointer'}}>→ Quanto concluiu?</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal Passo 2 — % concluído + campo pendente */}
+        {modalPct&&(
+          <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.9)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:101,padding:16}}>
+            <div style={{background:'#1e293b',border:'1px solid rgba(251,191,36,.3)',borderRadius:16,padding:'20px',maxWidth:340,width:'100%'}}>
+              <div style={{fontSize:13,fontWeight:800,color:'#fbbf24',fontFamily:"'DM Mono',monospace",marginBottom:4}}>📊 QUANTO DA META CONCLUIU?</div>
+              <div style={{fontSize:11,color:'#94a3b8',marginBottom:14}}>{modalPct.blocoData?.mat} · {modalPct.blocoData?.conteudo?.slice(0,40)}</div>
+
+              {/* Seletor % */}
+              <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:6,marginBottom:14}}>
+                {[25,50,75,100].map(p=>(
+                  <button key={p} onClick={()=>setPctSel(p)} style={{padding:'12px 4px',borderRadius:9,border:`2px solid ${pctSel===p?(p===100?'#34d399':'#fb923c'):'rgba(148,163,184,.2)'}`,background:pctSel===p?(p===100?'rgba(52,211,153,.18)':'rgba(251,146,60,.18)'):'transparent',cursor:'pointer'}}>
+                    <div style={{fontSize:15,fontWeight:900,color:pctSel===p?(p===100?'#34d399':'#fb923c'):'#64748b',fontFamily:"'DM Mono',monospace"}}>{p}%</div>
+                    <div style={{fontSize:8,color:'#475569',marginTop:2}}>{p===25?'início':p===50?'metade':p===75?'quase':' tudo ✓'}</div>
+                  </button>
+                ))}
+              </div>
+
+              {/* Campo pendente — só aparece se < 100% */}
+              {pctSel<100&&(
+                <div style={{marginBottom:14}}>
+                  <div style={{fontSize:9,color:'#fb923c',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:6}}>📌 O QUE FICOU PARA CONTINUAR?</div>
+                  <input
+                    value={pendenteTxt}
+                    onChange={e=>setPendenteTxt(e.target.value)}
+                    placeholder="ex: Impostos Municipais e Repartição Constitucional..."
+                    style={{width:'100%',padding:'10px 12px',borderRadius:9,border:'1px solid rgba(251,146,60,.35)',background:'rgba(251,146,60,.06)',color:'#f1f5f9',fontSize:12,outline:'none',boxSizing:'border-box'}}
+                    autoFocus
+                  />
+                  <div style={{fontSize:9,color:'#475569',marginTop:4}}>Isso vira o próximo bloco ativo no Foco amanhã.</div>
+                </div>
+              )}
+
+              {/* Botões finais */}
+              <div style={{display:'flex',gap:8}}>
+                <button onClick={()=>{setModalPct(null);setConfJaFiz(null);}} style={{flex:1,padding:'11px',borderRadius:8,border:'1px solid rgba(255,255,255,.08)',background:'transparent',color:'#94a3b8',fontSize:11,cursor:'pointer'}}>Cancelar</button>
+                <button
+                  disabled={pctSel<100&&!pendenteTxt.trim()}
+                  onClick={()=>{
+                    const blocoConc=modalPct.blocoData;
+                    // Concluir o bloco (CICLO ou extra)
+                    if(ativoIsExtra){
+                      concluirExtra(blocoConc.id);
+                    } else {
+                      onConcluir(modalPct.blocoId);
+                    }
+                    // Criar extra se incompleto
+                    if(pctSel<100&&pendenteTxt.trim()){
+                      criarExtra(blocoConc,pctSel,pendenteTxt);
+                    }
+                    // Ir para Registro com matéria pré-preenchida
                     setUltimoBlocoMat({mat:blocoConc.mat,conteudo:blocoConc.conteudo,tipo:blocoConc.tipo});
                     setRForm(f=>({...f,materia:blocoConc.mat,assunto:blocoConc.conteudo||''}));
                     setAba('registro');
-                  }
-                }} style={{flex:1,padding:'11px',borderRadius:8,border:'none',background:'#34d399',color:'#050a14',fontSize:11,fontWeight:800,cursor:'pointer'}}>✓ Confirmar</button>
+                    setModalPct(null);setConfJaFiz(null);setPctSel(100);setPendenteTxt('');
+                  }}
+                  style={{flex:2,padding:'11px',borderRadius:8,border:'none',background:(pctSel<100&&!pendenteTxt.trim())?'rgba(148,163,184,.2)':(pctSel===100?'#34d399':'#fb923c'),color:(pctSel<100&&!pendenteTxt.trim())?'#334155':'#050a14',fontSize:12,fontWeight:800,cursor:'pointer'}}>
+                  {pctSel===100?'✅ Concluído!':'⏸ Salvar + criar pendência'}
+                </button>
               </div>
             </div>
           </div>
@@ -3278,6 +3392,13 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
               );})}
             </div>
             {rForm.dificuldade>0&&<div style={{textAlign:'center',fontSize:10,color:['#34d399','#a3e635','#fbbf24','#fb923c','#f87171'][rForm.dificuldade-1],marginTop:4,fontFamily:"'DM Mono',monospace",fontWeight:700}}>{['FÁCIL','TRANQUILO','MÉDIO','DIFÍCIL','MUITO DIFÍCIL'][rForm.dificuldade-1]}</div>}
+          </div>
+
+          {/* Ficou pendente — cria extra automaticamente ao salvar */}
+          <div style={{marginBottom:12}}>
+            <div style={{fontSize:9,color:'#fb923c',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:6}}>📌 FICOU PENDENTE? (opcional)</div>
+            <input value={rForm.pendente||''} onChange={e=>setRForm(f=>({...f,pendente:e.target.value}))} placeholder="ex: Impostos Municipais — faltou ~30%" style={{width:'100%',padding:'9px 11px',borderRadius:8,border:'1px solid rgba(251,146,60,.25)',background:'rgba(251,146,60,.04)',color:'#f1f5f9',fontSize:12,outline:'none',boxSizing:'border-box'}}/>
+            <div style={{fontSize:9,color:'#475569',marginTop:4}}>Se preencher, vira bloco ativo no Foco amanhã com tag ⏸ CONTINUA.</div>
           </div>
 
           {/* Informações complementares — colapsável */}
