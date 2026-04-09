@@ -198,38 +198,78 @@ const _w=console.warn;console.warn=(...a)=>{if(String(a[0]||'').includes('Babel'
 const{useState,useEffect,useRef,useMemo,useCallback}=React;
 
 // ─── CONSTANTES ───────────────────────────────────────────────
-// ── CICLO 8 — 04/04/2026 a 10/04/2026 ────────────────────────
+// ── CICLO 9 — Meirelles Ponderado — 09/04 a 16/04/2026 ───────
+// Lógica: pesado→leve→pesado | nunca mesma disciplina em dias consecutivos
+// Tags derivadas da Matriz Meirelles: ⭐⭐⭐⭐⭐+jornada baixa = 🔴 URGENTE
 const CICLO=[
-  // ── Sábado 04/04 ──────────────────────────────────────────
-  {id:1,  dia:1, mat:'Dir. Civil',               ic:'⚖️',  cor:'#a78bfa', tag:'🔴 ATRASADA',    h:1.5, tipo:'Questões',   conteudo:'Contratos em Geral'},
-  {id:2,  dia:1, mat:'Discursivas',              ic:'✍️',  cor:'#fb923c', tag:'🔴 ATRASADA',    h:1.5, tipo:'Teoria',     conteudo:'Questão — Tema: LRF. Despesas de Pessoal'},
-  {id:3,  dia:1, mat:'Contabilidade Pública',    ic:'📊', cor:'#34d399', tag:'🟡 ATENÇÃO',     h:1.5, tipo:'Teoria',     conteudo:'Questões Contas — Partes 02 e 03'},
-  // ── Domingo 05/04 ─────────────────────────────────────────
-  {id:4,  dia:2, mat:'Contabilidade Pública',    ic:'📊', cor:'#34d399', tag:'🟡 ATENÇÃO',     h:1.5, tipo:'Teoria',     conteudo:'Questões Contas — Partes 04 e 05'},
-  {id:5,  dia:2, mat:'Mat. Financeira',          ic:'🧮', cor:'#a78bfa', tag:'🔴 CRÍTICO',     h:1.5, tipo:'Mapeamento', conteudo:'Mapeamento — Aula 19'},
-  {id:6,  dia:2, mat:'Contabilidade Pública',    ic:'📊', cor:'#34d399', tag:'🟡 ATENÇÃO',     h:1.5, tipo:'Questões',   conteudo:'Questões Aula 05'},
-  // ── Segunda 06/04 ─────────────────────────────────────────
-  {id:7,  dia:3, mat:'Contabilidade Pública',    ic:'📊', cor:'#34d399', tag:'🟡 ATENÇÃO',     h:1.5, tipo:'Revisão',    conteudo:'Revisão Aulas 3, 4 e 5'},
-  {id:8,  dia:3, mat:'Adm. Pública',             ic:'🏛️',  cor:'#fb923c', tag:'⚡ PRIORIDADE', h:1.5, tipo:'Mapeamento', conteudo:'Mapeamento Aula 00'},
-  {id:9,  dia:3, mat:'Mat. Financeira',          ic:'🧮', cor:'#a78bfa', tag:'🔴 CRÍTICO',     h:1.5, tipo:'Questões',   conteudo:'Questões Aula 19'},
-  // ── Terça 07/04 ───────────────────────────────────────────
-  {id:10, dia:4, mat:'Contabilidade Pública',    ic:'📊', cor:'#34d399', tag:'🟡 ATENÇÃO',     h:1.5, tipo:'Teste',      conteudo:'Teste Aulas 1-5'},
-  {id:11, dia:4, mat:'Controle Externo',         ic:'🏛️',  cor:'#60a5fa', tag:'🔴 CRÍTICO',     h:1.5, tipo:'Questões',   conteudo:'Controle de Constitucionalidade pelos Tribunais de Contas'},
-  {id:12, dia:4, mat:'Dir. Processual Civil',    ic:'📋', cor:'#a78bfa', tag:'🟢 MANUTENÇÃO',  h:1.5, tipo:'Questões',   conteudo:'Atos Processuais'},
-  // ── Quarta 08/04 ──────────────────────────────────────────
-  {id:13, dia:5, mat:'Contabilidade Pública',    ic:'📊', cor:'#34d399', tag:'🟡 ATENÇÃO',     h:1.5, tipo:'Teoria',     conteudo:'Noções do Balanço Patrimonial — Partes 01 e 02'},
-  {id:14, dia:5, mat:'Contabilidade Pública',    ic:'📊', cor:'#34d399', tag:'🟡 ATENÇÃO',     h:1.5, tipo:'Teoria',     conteudo:'Plano de Contas — Exercícios. Escrituração'},
-  {id:15, dia:5, mat:'Dir. Constitucional',      ic:'📜', cor:'#60a5fa', tag:'🔴 CRÍTICO',     h:1.5, tipo:'Questões',   conteudo:'Poder Executivo'},
-  // ── Quinta 09/04 ──────────────────────────────────────────
-  {id:16, dia:6, mat:'Dir. Tributário',          ic:'💰', cor:'#fbbf24', tag:'🟡 ATENÇÃO',     h:1.5, tipo:'Questões',   conteudo:'Impostos Estaduais — Repartição Constitucional'},
-  {id:17, dia:6, mat:'Contabilidade Pública',    ic:'📊', cor:'#34d399', tag:'🟡 ATENÇÃO',     h:1.5, tipo:'Teoria',     conteudo:'Livros de Escrituração'},
-  {id:18, dia:6, mat:'Português',                ic:'📝', cor:'#f472b6', tag:'🔴 URGENTE',     h:1.5, tipo:'Teste',      conteudo:'Resolução de Prova'},
-  // ── Sexta 10/04 ───────────────────────────────────────────
-  {id:19, dia:7, mat:'TI / Análise de Dados',    ic:'💻', cor:'#38bdf8', tag:'🔴 ATRASADA',    h:1.5, tipo:'Teoria',     conteudo:'Modelagem Conceitual'},
-  {id:20, dia:7, mat:'Dir. Civil',               ic:'⚖️',  cor:'#a78bfa', tag:'🔴 ATRASADA',    h:1.5, tipo:'Questões',   conteudo:'Contratos em Geral — Reforço/Revisão'},
-  {id:21, dia:7, mat:'Discursivas',              ic:'✍️',  cor:'#fb923c', tag:'🔴 ATRASADA',    h:1.5, tipo:'Teoria',     conteudo:'Questão — Tema: LRF. Despesas de Pessoal — Reforço/Revisão'},
+  // ── Qui 09/04 (trabalho) ──────────────────────────────────
+  {id:1,  dia:1, mat:'Adm. Pública',         ic:'🏛️',  cor:'#f87171', tag:'🔴 URGENTE',   h:1.5, tipo:'Mapeamento', ferramenta:'Guruja',           conteudo:'Conceitos Gerais — Aula 00'},
+  {id:2,  dia:1, mat:'Dir. Tributário',      ic:'💰', cor:'#fbbf24', tag:'🟠 ALTA',       h:1.5, tipo:'Questões',   ferramenta:'TecConcursos FGV', conteudo:'Impostos Estaduais — Repartição Constitucional Pt.1'},
+  {id:3,  dia:1, mat:'Dir. Administrativo',  ic:'📜', cor:'#34d399', tag:'🟢 LEVE',       h:1.5, tipo:'Questões',   ferramenta:'TecConcursos',     conteudo:'Resolução de Questões'},
+  // ── Sex 10/04 (trabalho) ──────────────────────────────────
+  {id:4,  dia:2, mat:'Auditoria Governamental',ic:'🔍',cor:'#f87171', tag:'🔴 URGENTE',   h:1.5, tipo:'Questões',   ferramenta:'Guruja',           conteudo:'Amostragem em Auditoria'},
+  {id:5,  dia:2, mat:'Contabilidade Pública', ic:'📊', cor:'#fb923c', tag:'🟠 ALTA',       h:1.5, tipo:'Teoria',    ferramenta:'TecConcursos',     conteudo:'Livros de Escrituração'},
+  {id:6,  dia:2, mat:'AFO',                  ic:'📈', cor:'#60a5fa', tag:'🟡 MÉDIA',      h:1.5, tipo:'Questões',   ferramenta:'TecConcursos',     conteudo:'LRF Arts. 25 a 42'},
+  // ── Sáb 11/04 (livre) ────────────────────────────────────
+  {id:7,  dia:3, mat:'Raciocínio Lógico',    ic:'🔢', cor:'#f87171', tag:'🔴 URGENTE',   h:1.5, tipo:'Teoria',     ferramenta:'Gran Cursos',      conteudo:'Revisão Aula 00 — Fundamentos'},
+  {id:8,  dia:3, mat:'Português',            ic:'📝', cor:'#fb923c', tag:'🟠 ALTA',       h:1.5, tipo:'Questões',   ferramenta:'TecConcursos',     conteudo:'Resolução de Questões — Filtro FGV/CEBRASPE'},
+  {id:9,  dia:3, mat:'Mat. Financeira',      ic:'🧮', cor:'#60a5fa', tag:'🟡 MÉDIA',      h:1.5, tipo:'Mapeamento', ferramenta:'Gran Cursos',      conteudo:'Mapeamento Aula 19'},
+  // ── Dom 12/04 — DESCANSO (Hetero BH na segunda) ───────────
+  // ── Seg 13/04 (livre) ────────────────────────────────────
+  {id:10, dia:4, mat:'Discursivas',          ic:'✍️',  cor:'#f87171', tag:'🔴 URGENTE',   h:1.5, tipo:'Teoria',    ferramenta:'Papel + caneta',   conteudo:'Questão Dissertativa ⭐⭐⭐⭐⭐ — Tema prova'},
+  {id:11, dia:4, mat:'Dir. Tributário',      ic:'💰', cor:'#fb923c', tag:'🟠 ALTA',       h:1.5, tipo:'Questões',   ferramenta:'TecConcursos FGV', conteudo:'Impostos Estaduais — Repartição Constitucional Pt.2'},
+  {id:12, dia:4, mat:'Adm. Pública',         ic:'🏛️',  cor:'#60a5fa', tag:'🟡 MÉDIA',      h:1.5, tipo:'Questões',  ferramenta:'Guruja',           conteudo:'Reformas Administrativas'},
+  // ── Ter 14/04 (trabalho) ──────────────────────────────────
+  {id:13, dia:5, mat:'Mat. Financeira',      ic:'🧮', cor:'#f87171', tag:'🔴 URGENTE',   h:1.5, tipo:'Teoria',     ferramenta:'Gran Cursos',      conteudo:'Juros Simples — Conceitos e exercícios'},
+  {id:14, dia:5, mat:'Contabilidade Pública',ic:'📊', cor:'#fb923c', tag:'🟠 ALTA',       h:1.5, tipo:'Questões',   ferramenta:'TecConcursos',     conteudo:'Fórmulas de Lançamentos Contábeis'},
+  {id:15, dia:5, mat:'Mat. Financeira',      ic:'🧮', cor:'#60a5fa', tag:'🟡 MÉDIA',      h:1.5, tipo:'Questões',   ferramenta:'TecConcursos',     conteudo:'Questões Aula 19'},
+  // ── Qua 15/04 (livre) ────────────────────────────────────
+  {id:16, dia:6, mat:'Raciocínio Lógico',    ic:'🔢', cor:'#f87171', tag:'🟠 ALTA',       h:1.5, tipo:'Questões',  ferramenta:'Gran Cursos',      conteudo:'Conectivos Lógicos ⭐⭐⭐⭐⭐'},
+  {id:17, dia:6, mat:'TI / Análise de Dados',ic:'💻', cor:'#60a5fa', tag:'🟡 MÉDIA',      h:1.5, tipo:'Mapeamento', ferramenta:'Gran Cursos',      conteudo:'Mapeamento Conceitual — Bancos de Dados'},
+  {id:18, dia:6, mat:'Mat. Financeira',      ic:'🧮', cor:'#94a3b8', tag:'🟡 MÉDIA',      h:1.5, tipo:'Revisão',    ferramenta:'Gran Cursos',      conteudo:'Revisão Aula 19'},
+  // ── Qui 16/04 (trabalho) ──────────────────────────────────
+  {id:19, dia:7, mat:'Raciocínio Lógico',    ic:'🔢', cor:'#60a5fa', tag:'🟡 MÉDIA',      h:1.5, tipo:'Questões',  ferramenta:'Gran Cursos',      conteudo:'Conectivos Lógicos ⭐⭐⭐⭐'},
+  {id:20, dia:7, mat:'Discursivas',          ic:'✍️',  cor:'#94a3b8', tag:'🟡 MÉDIA',      h:1.5, tipo:'Teoria',    ferramenta:'Papel + caneta',   conteudo:'Questão Dissertativa ⭐⭐⭐⭐ — Tema prova'},
+  {id:21, dia:7, mat:'Dir. Civil',           ic:'⚖️',  cor:'#34d399', tag:'🟢 LEVE',       h:1.5, tipo:'Questões',  ferramenta:'TecConcursos',     conteudo:'Contratos em Geral'},
 ];
 const N=CICLO.length;
+
+// ── MATRIZ MEIRELLES — lógica estrelas + desempenho + jornada ─
+// Fonte: arquivo de planejamento 08/04/2026
+// estrelas = importância do tópico para a prova (por tópico, não por matéria)
+// prioridade = estrelas × déficit × jornada
+const MATRIZ_MEIRELLES={
+  'Adm. Pública':        {prioridade:'urgente', estrelas:5, pctAcerto:76.2, jornada:4,  nivel:'Aprendiz', ferramenta:'Guruja',           motivo:'⭐⭐⭐⭐⭐ + 76% + só 4% jornada'},
+  'Auditoria Governamental':{prioridade:'urgente',estrelas:5,pctAcerto:77.6,jornada:25, nivel:'Expert',   ferramenta:'Guruja',           motivo:'⭐⭐⭐⭐⭐ + 77% + abaixo média'},
+  'Raciocínio Lógico':   {prioridade:'urgente', estrelas:5, pctAcerto:null, jornada:7,  nivel:'Aprendiz', ferramenta:'Gran Cursos',      motivo:'⭐⭐⭐⭐⭐ + sem % + 7% jornada'},
+  'Discursivas':         {prioridade:'urgente', estrelas:5, pctAcerto:null, jornada:36, nivel:'Expert',   ferramenta:'Papel + caneta',   motivo:'⭐⭐⭐⭐⭐ + core da prova'},
+  'Mat. Financeira':     {prioridade:'urgente', estrelas:5, pctAcerto:null, jornada:10, nivel:'Aprendiz', ferramenta:'Gran Cursos',      motivo:'⭐⭐⭐⭐⭐ + sem % + 10% jornada'},
+  'Raciocínio Lógico-2': {prioridade:'alta',    estrelas:5, pctAcerto:null, jornada:7,  nivel:'Aprendiz', ferramenta:'Gran Cursos',      motivo:'Conectivos ⭐⭐⭐⭐⭐'},
+  'Contabilidade Pública':{prioridade:'alta',   estrelas:5, pctAcerto:84.6, jornada:11, nivel:'Aprendiz', ferramenta:'TecConcursos',     motivo:'⭐⭐⭐⭐⭐ + 84% + 11% jornada'},
+  'Dir. Tributário':     {prioridade:'alta',    estrelas:5, pctAcerto:82.8, jornada:27, nivel:'Expert',   ferramenta:'TecConcursos FGV', motivo:'⭐⭐⭐⭐⭐ + Impostos Estaduais'},
+  'Português':           {prioridade:'alta',    estrelas:5, pctAcerto:null, jornada:28, nivel:'Expert',   ferramenta:'TecConcursos',     motivo:'⭐⭐⭐⭐⭐ + Resolução questões'},
+  'AFO':                 {prioridade:'media',   estrelas:4, pctAcerto:80.9, jornada:35, nivel:'Expert',   ferramenta:'TecConcursos',     motivo:'⭐⭐⭐⭐ + 80% abaixo média'},
+  'TI / Análise de Dados':{prioridade:'media',  estrelas:4, pctAcerto:null, jornada:15, nivel:'Aprendiz', ferramenta:'Gran Cursos',      motivo:'⭐⭐⭐⭐ + sem %'},
+  'Dir. Civil':          {prioridade:'leve',    estrelas:4, pctAcerto:88.1, jornada:29, nivel:'Expert',   ferramenta:'TecConcursos',     motivo:'⭐⭐⭐⭐ + 88% sólido'},
+  'Dir. Administrativo': {prioridade:'leve',    estrelas:4, pctAcerto:86.9, jornada:29, nivel:'Expert',   ferramenta:'TecConcursos',     motivo:'⭐⭐⭐⭐ + 86% sólido'},
+  'Dir. Constitucional': {prioridade:'cortar',  estrelas:3, pctAcerto:81.7, jornada:27, nivel:'Expert',   ferramenta:'TecConcursos',     motivo:'⭐⭐⭐ + próxima semana'},
+  'Dir. Penal':          {prioridade:'cortar',  estrelas:2, pctAcerto:86.5, jornada:0,  nivel:'Expert',   ferramenta:'TecConcursos',     motivo:'⭐⭐ + próxima semana'},
+  'Dir. Processual Civil':{prioridade:'cortar', estrelas:3, pctAcerto:89.5, jornada:0,  nivel:'Expert',   ferramenta:'TecConcursos',     motivo:'⭐⭐⭐ + próxima semana'},
+  'Controle Externo':    {prioridade:'media',   estrelas:4, pctAcerto:84.9, jornada:23, nivel:'Expert',   ferramenta:'TecConcursos',     motivo:'⭐⭐⭐⭐ + controle TCE-RJ'},
+};
+
+// Retorna classificação Meirelles de uma matéria
+function getPrioridadeMeirelles(mat){
+  return MATRIZ_MEIRELLES[mat]||{prioridade:'media',estrelas:3,ferramenta:'TecConcursos',motivo:''};
+}
+
+// Cor e label da prioridade Meirelles
+function corMeirelles(p){
+  return{urgente:'#f87171',alta:'#fb923c',media:'#fbbf24',leve:'#34d399',cortar:'#475569'}[p]||'#64748b';
+}
+function labelMeirelles(p){
+  return{urgente:'🔴 URGENTE',alta:'🟠 ALTA',media:'🟡 MÉDIA',leve:'🟢 LEVE',cortar:'⚫ CORTAR'}[p]||p;
+}
 
 // ── Tags dinâmicas — calculadas em runtime com base no historico real ──
 function calcTagDinamica(mat){
@@ -1500,169 +1540,202 @@ function MatBtn({value,onChange,placeholder}){
 
 const GURUJA_SEED={
   'Auditoria Governamental':{
-    importadoEm:'2026-04-01',
+    importadoEm:'2026-04-08',jornada:25,nivel:'Expert',ferramenta:'Guruja',
+    desempenhoHistorico:{acertos:160,questoes:206,pctAcerto:77.6,tempoMedio:'1h37m',reforcoPendente:'50min'},
     assuntos:[
-      {titulo:'Auditoria Financeira (NBASP 200)',              acerto:87.5, diffMedia:11.5,  relevancia:3, tempoCump:'1h',    questoes:8,  acertos:7},
-      {titulo:'Estrutura Conceitual para Trabalhos de Asseguração', acerto:92.5, diffMedia:8.4, relevancia:5, tempoCump:'2h',   questoes:27, acertos:25},
-      {titulo:'Resolução de questões favoritas',               acerto:82.1, diffMedia:4.2,  relevancia:4, tempoCump:'1h30m', questoes:28, acertos:23},
-      {titulo:'Documentação de Auditoria',                     acerto:80.7, diffMedia:-1.7, relevancia:5, tempoCump:'1h',    questoes:26, acertos:21},
-      {titulo:'Conceitos Iniciais. Evolução. Auditoria Interna e Externa', acerto:70.3, diffMedia:-4.3, relevancia:5, tempoCump:'2h', questoes:27, acertos:19},
-      {titulo:'Auditoria Operacional (NBASP 300 e 3000)',      acerto:73.9, diffMedia:-4.9, relevancia:3, tempoCump:'2h',    questoes:23, acertos:17},
-      {titulo:'Planejamento de Auditoria',                     acerto:72.7, diffMedia:-6.4, relevancia:4, tempoCump:'1h40m', questoes:22, acertos:16},
-      {titulo:'Execução da Auditoria. Testes de Auditoria. Técnicas e Procedimentos', acerto:71.4, diffMedia:-7.1, relevancia:5, tempoCump:'2h', questoes:28, acertos:20},
-      {titulo:'Auditoria de Conformidade (NBASP 400 e 4000)',  acerto:70.5, diffMedia:-8.3, relevancia:4, tempoCump:'1h30m', questoes:17, acertos:12},
-    ]
-  },
+      {titulo:'Auditoria Financeira (NBASP 200)',acerto:87.5,diffMedia:11.5,relevancia:3,tempoCump:'1h',questoes:8,acertos:7},
+      {titulo:'Estrutura Conceitual para Trabalhos de Asseguração',acerto:92.5,diffMedia:8.4,relevancia:5,tempoCump:'2h',questoes:27,acertos:25},
+      {titulo:'Resolução de questões favoritas',acerto:82.1,diffMedia:4.2,relevancia:4,tempoCump:'1h30m',questoes:28,acertos:23},
+      {titulo:'Documentação de Auditoria',acerto:80.7,diffMedia:-1.7,relevancia:5,tempoCump:'1h',questoes:26,acertos:21},
+      {titulo:'Conceitos Iniciais. Evolução. Auditoria Interna e Externa',acerto:70.3,diffMedia:-4.3,relevancia:5,tempoCump:'2h',questoes:27,acertos:19},
+      {titulo:'Auditoria Operacional (NBASP 300 e 3000)',acerto:73.9,diffMedia:-4.9,relevancia:3,tempoCump:'2h',questoes:23,acertos:17},
+      {titulo:'Planejamento de Auditoria',acerto:72.7,diffMedia:-6.4,relevancia:4,tempoCump:'1h40m',questoes:22,acertos:16},
+      {titulo:'Execução da Auditoria. Testes de Auditoria. Técnicas e Procedimentos',acerto:71.4,diffMedia:-7.1,relevancia:5,tempoCump:'2h',questoes:28,acertos:20},
+      {titulo:'Auditoria de Conformidade (NBASP 400 e 4000)',acerto:70.5,diffMedia:-8.3,relevancia:4,tempoCump:'1h30m',questoes:17,acertos:12},
+      {titulo:'Amostragem em Auditoria',acerto:71.0,diffMedia:-7.0,relevancia:5,tempoCump:'1h30m',questoes:20,acertos:14},
+    ]},
   'Dir. Civil':{
-    importadoEm:'2026-04-01',
+    importadoEm:'2026-04-08',jornada:29,nivel:'Expert',ferramenta:'TecConcursos',
+    desempenhoHistorico:{acertos:193,questoes:219,pctAcerto:88.1,tempoMedio:'1h18m',reforcoPendente:null},
     assuntos:[
-      {titulo:'Lei de Introdução às Normas do Direito Brasileiro', acerto:92.8, diffMedia:11.0, relevancia:4, tempoCump:'1h',    questoes:28, acertos:26},
-      {titulo:'Revisão das questões favoritas',                    acerto:92.5, diffMedia:10.3, relevancia:4, tempoCump:'1h',    questoes:27, acertos:25},
-      {titulo:'Bens',                                              acerto:92.3, diffMedia:4.6,  relevancia:5, tempoCump:'1h',    questoes:26, acertos:24},
-      {titulo:'Pessoas (naturais e jurídicas; domicílio)',          acerto:89.2, diffMedia:3.8,  relevancia:5, tempoCump:'1h',    questoes:28, acertos:25},
-      {titulo:'Fatos e Negócios Jurídicos — Parte 1',              acerto:89.2, diffMedia:14.9, relevancia:5, tempoCump:'1h',    questoes:28, acertos:25},
-      {titulo:'Fatos e Negócios Jurídicos — Parte 2',              acerto:89.2, diffMedia:11.0, relevancia:5, tempoCump:'1h30m', questoes:28, acertos:25},
-      {titulo:'Obrigações — Parte 1',                              acerto:70.3, diffMedia:-0.8, relevancia:4, tempoCump:'2h',    questoes:27, acertos:19},
-    ]
-  },
+      {titulo:'Lei de Introdução às Normas do Direito Brasileiro',acerto:92.8,diffMedia:11.0,relevancia:4,tempoCump:'1h',questoes:28,acertos:26},
+      {titulo:'Revisão das questões favoritas',acerto:92.5,diffMedia:10.3,relevancia:4,tempoCump:'1h',questoes:27,acertos:25},
+      {titulo:'Bens',acerto:92.3,diffMedia:4.6,relevancia:5,tempoCump:'1h',questoes:26,acertos:24},
+      {titulo:'Pessoas (naturais e jurídicas; domicílio)',acerto:89.2,diffMedia:3.8,relevancia:5,tempoCump:'1h',questoes:28,acertos:25},
+      {titulo:'Fatos e Negócios Jurídicos — Parte 1',acerto:89.2,diffMedia:14.9,relevancia:5,tempoCump:'1h',questoes:28,acertos:25},
+      {titulo:'Fatos e Negócios Jurídicos — Parte 2',acerto:89.2,diffMedia:11.0,relevancia:5,tempoCump:'1h30m',questoes:28,acertos:25},
+      {titulo:'Contratos em Geral',acerto:70.3,diffMedia:-0.8,relevancia:4,tempoCump:'2h',questoes:27,acertos:19},
+      {titulo:'Espécies de Contratos',acerto:72.0,diffMedia:-1.2,relevancia:4,tempoCump:'2h',questoes:25,acertos:18},
+    ]},
   'Controle Externo':{
-    importadoEm:'2026-04-01',
+    importadoEm:'2026-04-08',jornada:23,nivel:'Expert',ferramenta:'TecConcursos',
+    desempenhoHistorico:{acertos:158,questoes:186,pctAcerto:84.9,tempoMedio:'1h04m',reforcoPendente:'1h'},
     assuntos:[
-      {titulo:'Controle — Conceitos, tipos e sistemas',            acerto:82.1, diffMedia:-5.1, relevancia:5, tempoCump:'1h',    questoes:28, acertos:23},
-      {titulo:'Natureza Jurídica e Funções dos Tribunais de Contas', acerto:86.9, diffMedia:0.6, relevancia:5, tempoCump:'1h',   questoes:23, acertos:20},
-      {titulo:'Abrangência do Controle (Fiscalização)',             acerto:96.0, diffMedia:6.2,  relevancia:5, tempoCump:'1h',   questoes:25, acertos:24},
-      {titulo:'Declaração de Lima e Declaração do México',          acerto:74.0, diffMedia:-1.6, relevancia:4, tempoCump:'1h',   questoes:27, acertos:20},
-      {titulo:'Princípios de Transparência e Accountability',       acerto:85.7, diffMedia:-3.2, relevancia:4, tempoCump:'1h',   questoes:28, acertos:24},
-      {titulo:'Revisão das questões favoritas',                     acerto:85.7, diffMedia:1.1,  relevancia:5, tempoCump:'1h30m',questoes:28, acertos:24},
-    ]
-  },
+      {titulo:'Controle — Conceitos, tipos e sistemas',acerto:82.1,diffMedia:-5.1,relevancia:5,tempoCump:'1h',questoes:28,acertos:23},
+      {titulo:'Natureza Jurídica e Funções dos Tribunais de Contas',acerto:86.9,diffMedia:0.6,relevancia:5,tempoCump:'1h',questoes:23,acertos:20},
+      {titulo:'Abrangência do Controle (Fiscalização)',acerto:96.0,diffMedia:6.2,relevancia:5,tempoCump:'1h',questoes:25,acertos:24},
+      {titulo:'Declaração de Lima e Declaração do México',acerto:74.0,diffMedia:-1.6,relevancia:4,tempoCump:'1h',questoes:27,acertos:20},
+      {titulo:'Princípios de Transparência e Accountability',acerto:85.7,diffMedia:-3.2,relevancia:4,tempoCump:'1h',questoes:28,acertos:24},
+      {titulo:'Revisão das questões favoritas',acerto:85.7,diffMedia:1.1,relevancia:5,tempoCump:'1h30m',questoes:28,acertos:24},
+    ]},
   'Adm. Pública':{
-    importadoEm:'2026-04-01',
+    importadoEm:'2026-04-08',jornada:4,nivel:'Aprendiz',ferramenta:'Guruja',
+    desempenhoHistorico:{acertos:61,questoes:80,pctAcerto:76.2,tempoMedio:'1h08m',reforcoPendente:null},
     assuntos:[
-      {titulo:'Modelos teóricos: do modelo racional-legal à nova gestão pública', acerto:81.4, diffMedia:1.5,  relevancia:5, tempoCump:'1h',questoes:27, acertos:22},
-      {titulo:'Governabilidade e governança. Princípios e diretrizes', acerto:67.8, diffMedia:-7.3, relevancia:5, tempoCump:'1h', questoes:28, acertos:19},
-      {titulo:'Gestão da Qualidade. Excelência nos serviços públicos', acerto:80.0, diffMedia:-1.5, relevancia:4, tempoCump:'2h', questoes:25, acertos:20},
-    ]
-  },
+      {titulo:'Conceitos Gerais — Administração Pública',acerto:76.2,diffMedia:-5.0,relevancia:5,tempoCump:'1h',questoes:20,acertos:15},
+      {titulo:'Modelos teóricos: do modelo racional-legal à nova gestão pública',acerto:81.4,diffMedia:1.5,relevancia:5,tempoCump:'1h',questoes:27,acertos:22},
+      {titulo:'Governabilidade e governança. Princípios e diretrizes',acerto:67.8,diffMedia:-7.3,relevancia:5,tempoCump:'1h',questoes:28,acertos:19},
+      {titulo:'Gestão da Qualidade. Excelência nos serviços públicos',acerto:80.0,diffMedia:-1.5,relevancia:4,tempoCump:'2h',questoes:25,acertos:20},
+      {titulo:'Reformas Administrativas',acerto:72.0,diffMedia:-4.0,relevancia:4,tempoCump:'1h30m',questoes:20,acertos:14},
+    ]},
   'Português':{
-    importadoEm:'2026-04-01',
+    importadoEm:'2026-04-08',jornada:28,nivel:'Expert',ferramenta:'TecConcursos',
+    desempenhoHistorico:{acertos:null,questoes:null,pctAcerto:null,tempoMedio:null,reforcoPendente:null},
     assuntos:[
-      {titulo:'Interpretação Textual',                       acerto:63.6, diffMedia:-8.5, relevancia:5, tempoCump:'1h',    questoes:22, acertos:14},
-      {titulo:'Semântica, Tipos de discurso e Tipologia',    acerto:64.2, diffMedia:-8.9, relevancia:4, tempoCump:'2h',    questoes:28, acertos:18},
-      {titulo:'Verbo, Conjunção e Vozes Verbais',            acerto:70.3, diffMedia:-3.8, relevancia:5, tempoCump:'2h',    questoes:27, acertos:19},
-      {titulo:'Coesão e Coerência, Reescrita',               acerto:72.0, diffMedia:-0.9, relevancia:4, tempoCump:'1h',    questoes:25, acertos:18},
-      {titulo:'Resolução de prova',                          acerto:75.0, diffMedia:5.3,  relevancia:5, tempoCump:'2h',    questoes:20, acertos:15},
-      {titulo:'Resolução de questões favoritas',             acerto:76.9, diffMedia:2.0,  relevancia:2, tempoCump:'2h30m', questoes:26, acertos:20},
-      {titulo:'Regência, Crase e Concordância',              acerto:79.1, diffMedia:1.0,  relevancia:4, tempoCump:'2h',    questoes:24, acertos:19},
-      {titulo:'Sintaxe (Parte I: frase, oração e período)',  acerto:80.0, diffMedia:9.8,  relevancia:3, tempoCump:'1h30m', questoes:25, acertos:20},
-      {titulo:'Sintaxe (Parte II: orações coordenadas)',     acerto:80.0, diffMedia:6.5,  relevancia:3, tempoCump:'2h',    questoes:25, acertos:20},
-      {titulo:'Pontuação e Linguagem',                       acerto:85.1, diffMedia:8.4,  relevancia:4, tempoCump:'1h',    questoes:27, acertos:23},
-    ]
-  },
+      {titulo:'Interpretação Textual',acerto:63.6,diffMedia:-8.5,relevancia:5,tempoCump:'1h',questoes:22,acertos:14},
+      {titulo:'Semântica, Tipos de discurso e Tipologia',acerto:64.2,diffMedia:-8.9,relevancia:4,tempoCump:'2h',questoes:28,acertos:18},
+      {titulo:'Verbo, Conjunção e Vozes Verbais',acerto:70.3,diffMedia:-3.8,relevancia:5,tempoCump:'2h',questoes:27,acertos:19},
+      {titulo:'Coesão e Coerência, Reescrita',acerto:72.0,diffMedia:-0.9,relevancia:4,tempoCump:'1h',questoes:25,acertos:18},
+      {titulo:'Resolução de prova',acerto:75.0,diffMedia:5.3,relevancia:5,tempoCump:'2h',questoes:20,acertos:15},
+      {titulo:'Resolução de questões favoritas',acerto:76.9,diffMedia:2.0,relevancia:5,tempoCump:'2h30m',questoes:26,acertos:20},
+      {titulo:'Regência, Crase e Concordância',acerto:79.1,diffMedia:1.0,relevancia:4,tempoCump:'2h',questoes:24,acertos:19},
+      {titulo:'Sintaxe (Parte I)',acerto:80.0,diffMedia:9.8,relevancia:3,tempoCump:'1h30m',questoes:25,acertos:20},
+      {titulo:'Sintaxe (Parte II: orações coordenadas)',acerto:80.0,diffMedia:6.5,relevancia:3,tempoCump:'2h',questoes:25,acertos:20},
+      {titulo:'Pontuação e Linguagem',acerto:85.1,diffMedia:8.4,relevancia:4,tempoCump:'1h',questoes:27,acertos:23},
+    ]},
   'Dir. Tributário':{
-    importadoEm:'2026-04-01',
+    importadoEm:'2026-04-08',jornada:27,nivel:'Expert',ferramenta:'TecConcursos FGV',
+    desempenhoHistorico:{acertos:232,questoes:280,pctAcerto:82.8,tempoMedio:'1h27m',reforcoPendente:'37min'},
     assuntos:[
-      {titulo:'Conceito, Classificação, Natureza Jurídica do Tributo', acerto:75.0, diffMedia:-4.6, relevancia:4, tempoCump:'1h30m', questoes:28, acertos:21},
-      {titulo:'Limitações Constitucionais ao Poder de Tributar',       acerto:75.0, diffMedia:-3.1, relevancia:5, tempoCump:'1h',    questoes:28, acertos:21},
-      {titulo:'Legislação Tributária',                                  acerto:82.1, diffMedia:-1.7, relevancia:3, tempoCump:'1h30m', questoes:28, acertos:23},
-      {titulo:'Obrigação Tributária pt I',                              acerto:82.1, diffMedia:-1.3, relevancia:4, tempoCump:'1h',    questoes:28, acertos:23},
-      {titulo:'Competência Tributária',                                 acerto:85.7, diffMedia:0.4,  relevancia:3, tempoCump:'1h',    questoes:28, acertos:24},
-      {titulo:'Resolução de questões favoritas',                        acerto:82.1, diffMedia:3.3,  relevancia:4, tempoCump:'1h30m', questoes:28, acertos:23},
-      {titulo:'Crédito Tributário pt I',                                acerto:82.1, diffMedia:2.9,  relevancia:5, tempoCump:'1h30m', questoes:28, acertos:23},
-      {titulo:'Crédito Tributário pt II',                               acerto:85.7, diffMedia:4.2,  relevancia:4, tempoCump:'2h',    questoes:28, acertos:24},
-      {titulo:'Obrigação Tributária pt II',                             acerto:92.8, diffMedia:7.7,  relevancia:4, tempoCump:'1h30m', questoes:28, acertos:26},
-      {titulo:'Impostos Federais, Impostos Municipais',                 acerto:85.7, diffMedia:6.2,  relevancia:4, tempoCump:'2h',    questoes:28, acertos:24},
-    ]
-  },
+      {titulo:'Conceito, Classificação, Natureza Jurídica do Tributo',acerto:75.0,diffMedia:-4.6,relevancia:4,tempoCump:'1h30m',questoes:28,acertos:21},
+      {titulo:'Limitações Constitucionais ao Poder de Tributar',acerto:75.0,diffMedia:-3.1,relevancia:5,tempoCump:'1h',questoes:28,acertos:21},
+      {titulo:'Legislação Tributária',acerto:82.1,diffMedia:-1.7,relevancia:3,tempoCump:'1h30m',questoes:28,acertos:23},
+      {titulo:'Obrigação Tributária pt I',acerto:82.1,diffMedia:-1.3,relevancia:4,tempoCump:'1h',questoes:28,acertos:23},
+      {titulo:'Competência Tributária',acerto:85.7,diffMedia:0.4,relevancia:3,tempoCump:'1h',questoes:28,acertos:24},
+      {titulo:'Crédito Tributário pt I',acerto:82.1,diffMedia:2.9,relevancia:5,tempoCump:'1h30m',questoes:28,acertos:23},
+      {titulo:'Crédito Tributário pt II',acerto:85.7,diffMedia:4.2,relevancia:4,tempoCump:'2h',questoes:28,acertos:24},
+      {titulo:'Obrigação Tributária pt II',acerto:92.8,diffMedia:7.7,relevancia:4,tempoCump:'1h30m',questoes:28,acertos:26},
+      {titulo:'Impostos Estaduais — Repartição Constitucional',acerto:82.8,diffMedia:-2.0,relevancia:5,tempoCump:'2h',questoes:28,acertos:23},
+      {titulo:'Impostos Federais, Impostos Municipais',acerto:85.7,diffMedia:6.2,relevancia:4,tempoCump:'2h',questoes:28,acertos:24},
+    ]},
   'TI / Análise de Dados':{
-    importadoEm:'2026-04-01',
+    importadoEm:'2026-04-08',jornada:15,nivel:'Aprendiz',ferramenta:'Gran Cursos',
+    desempenhoHistorico:{acertos:null,questoes:null,pctAcerto:null,tempoMedio:null,reforcoPendente:null},
     assuntos:[
-      {titulo:'Bancos de Dados',                       acerto:69.5, diffMedia:-5.5, relevancia:4, tempoCump:'2h', questoes:23, acertos:16},
-      {titulo:'Representação de Dados e Formatos',     acerto:68.0, diffMedia:6.0,  relevancia:3, tempoCump:'1h', questoes:25, acertos:17},
-      {titulo:'Teste Aulas 00 e 01',                   acerto:74.0, diffMedia:7.7,  relevancia:4, tempoCump:'2h', questoes:27, acertos:20},
-      {titulo:'Análise de Informações',                acerto:81.4, diffMedia:-2.0, relevancia:4, tempoCump:'1h', questoes:27, acertos:22},
-    ]
-  },
+      {titulo:'Bancos de Dados',acerto:69.5,diffMedia:-5.5,relevancia:4,tempoCump:'2h',questoes:23,acertos:16},
+      {titulo:'Representação de Dados e Formatos',acerto:68.0,diffMedia:6.0,relevancia:3,tempoCump:'1h',questoes:25,acertos:17},
+      {titulo:'Modelagem Conceitual',acerto:65.0,diffMedia:-6.0,relevancia:4,tempoCump:'2h',questoes:20,acertos:13},
+      {titulo:'Análise de Informações',acerto:81.4,diffMedia:-2.0,relevancia:4,tempoCump:'1h',questoes:27,acertos:22},
+    ]},
   'Dir. Constitucional':{
-    importadoEm:'2026-04-01',
+    importadoEm:'2026-04-08',jornada:27,nivel:'Expert',ferramenta:'TecConcursos',
+    desempenhoHistorico:{acertos:220,questoes:269,pctAcerto:81.7,tempoMedio:'1h09m',reforcoPendente:null},
     assuntos:[
-      {titulo:'Organização do Estado (Parte III)',              acerto:69.2, diffMedia:-2.2, relevancia:3, tempoCump:'2h',    questoes:26, acertos:18},
-      {titulo:'Direitos Políticos e Partidos Políticos',        acerto:76.9, diffMedia:-4.7, relevancia:3, tempoCump:'1h',   questoes:26, acertos:20},
-      {titulo:'Direitos Sociais e Nacionalidade',               acerto:78.5, diffMedia:-0.4, relevancia:4, tempoCump:'1h',   questoes:28, acertos:22},
-      {titulo:'Direitos e Deveres Individuais e Coletivos',     acerto:79.3, diffMedia:0.2,  relevancia:5, tempoCump:'1h',   questoes:29, acertos:23},
-      {titulo:'Toda a ementa',                                  acerto:79.3, diffMedia:8.4,  relevancia:4, tempoCump:'1h',   questoes:29, acertos:23},
-      {titulo:'Organização do Estado (Parte II)',               acerto:81.4, diffMedia:5.9,  relevancia:4, tempoCump:'1h',   questoes:27, acertos:22},
-      {titulo:'Resolução de questões favoritas',                acerto:86.9, diffMedia:6.8,  relevancia:3, tempoCump:'1h',   questoes:23, acertos:20},
-      {titulo:'Organização do Estado (Parte I)',                acerto:85.1, diffMedia:12.5, relevancia:5, tempoCump:'1h30m',questoes:27, acertos:23},
-      {titulo:'Teoria Geral do Direito Constitucional',         acerto:88.8, diffMedia:12.8, relevancia:3, tempoCump:'1h',   questoes:27, acertos:24},
-      {titulo:'Princípios Fundamentais e Direitos e Deveres',   acerto:92.5, diffMedia:6.9,  relevancia:5, tempoCump:'1h',   questoes:27, acertos:25},
-    ]
-  },
+      {titulo:'Direitos Políticos e Partidos Políticos',acerto:76.8,diffMedia:-4.7,relevancia:4,tempoCump:'1h',questoes:28,acertos:22},
+      {titulo:'Organização do Estado (Parte III — Poder Executivo)',acerto:69.2,diffMedia:-2.2,relevancia:4,tempoCump:'1h',questoes:26,acertos:18},
+      {titulo:'Direitos Sociais e Nacionalidade',acerto:78.5,diffMedia:-0.4,relevancia:4,tempoCump:'1h',questoes:28,acertos:22},
+      {titulo:'Direitos e Deveres Individuais e Coletivos',acerto:79.3,diffMedia:0.2,relevancia:5,tempoCump:'1h',questoes:29,acertos:23},
+      {titulo:'Toda a ementa',acerto:79.3,diffMedia:8.4,relevancia:4,tempoCump:'1h',questoes:29,acertos:23},
+      {titulo:'Organização do Estado (Parte II)',acerto:81.4,diffMedia:5.9,relevancia:4,tempoCump:'1h',questoes:27,acertos:22},
+      {titulo:'Resolução de questões favoritas',acerto:86.9,diffMedia:6.8,relevancia:3,tempoCump:'1h',questoes:23,acertos:20},
+      {titulo:'Organização do Estado (Parte I)',acerto:85.1,diffMedia:12.5,relevancia:5,tempoCump:'1h30m',questoes:27,acertos:23},
+      {titulo:'Teoria Geral do Direito Constitucional',acerto:88.8,diffMedia:12.8,relevancia:3,tempoCump:'1h',questoes:27,acertos:24},
+      {titulo:'Princípios Fundamentais e Direitos e Deveres',acerto:92.5,diffMedia:6.9,relevancia:5,tempoCump:'1h',questoes:27,acertos:25},
+    ]},
   'AFO':{
-    importadoEm:'2026-04-01',
+    importadoEm:'2026-04-08',jornada:35,nivel:'Expert',ferramenta:'TecConcursos',
+    desempenhoHistorico:{acertos:285,questoes:352,pctAcerto:80.9,tempoMedio:'1h27m',reforcoPendente:'1h15min'},
     assuntos:[
-      {titulo:'Receita: Conceitos, classificações',              acerto:70.3, diffMedia:-7.2, relevancia:5, tempoCump:'2h',    questoes:27, acertos:19},
-      {titulo:'Leis orçamentárias (PPA, LDO, LOA)',              acerto:76.9, diffMedia:-7.1, relevancia:5, tempoCump:'1h',    questoes:26, acertos:20},
-      {titulo:'Despesa: Conceitos, classificações',              acerto:75.8, diffMedia:-0.9, relevancia:5, tempoCump:'2h',    questoes:29, acertos:22},
-      {titulo:'Todo o conteúdo da disciplina',                   acerto:76.0, diffMedia:-0.7, relevancia:5, tempoCump:'1h',    questoes:25, acertos:19},
-      {titulo:'Técnicas orçamentárias, funções do orçamento',    acerto:76.4, diffMedia:0.6,  relevancia:4, tempoCump:'1h',    questoes:17, acertos:13},
-      {titulo:'Estágios receita e despesa',                      acerto:85.7, diffMedia:-0.1, relevancia:4, tempoCump:'1h30m', questoes:28, acertos:24},
-      {titulo:'DEA, SF, RP, dívida ativa e flutuante',           acerto:82.1, diffMedia:5.3,  relevancia:3, tempoCump:'2h',    questoes:28, acertos:23},
-      {titulo:'Programação e Descentralização Orçamentária',     acerto:86.6, diffMedia:8.6,  relevancia:3, tempoCump:'2h',    questoes:30, acertos:26},
-      {titulo:'Resolução de questões favoritas (meta 2)',         acerto:88.8, diffMedia:9.8,  relevancia:3, tempoCump:'1h',    questoes:27, acertos:24},
-      {titulo:'Resolução de questões favoritas (meta 5)',         acerto:82.1, diffMedia:3.3,  relevancia:4, tempoCump:'1h',    questoes:28, acertos:23},
-      {titulo:'LRF — Arts 1º a 14',                              acerto:88.8, diffMedia:4.7,  relevancia:5, tempoCump:'1h30m', questoes:27, acertos:24},
-      {titulo:'Princípios, vedações orçamentárias',              acerto:86.6, diffMedia:1.9,  relevancia:5, tempoCump:'1h',    questoes:30, acertos:26},
-    ]
-  },
+      {titulo:'Receita: Conceitos, classificações',acerto:70.3,diffMedia:-7.2,relevancia:5,tempoCump:'2h',questoes:27,acertos:19},
+      {titulo:'Leis orçamentárias (PPA, LDO, LOA)',acerto:76.9,diffMedia:-7.1,relevancia:5,tempoCump:'1h',questoes:26,acertos:20},
+      {titulo:'Despesa: Conceitos, classificações',acerto:75.8,diffMedia:-0.9,relevancia:5,tempoCump:'2h',questoes:29,acertos:22},
+      {titulo:'Todo o conteúdo da disciplina',acerto:76.0,diffMedia:-0.7,relevancia:5,tempoCump:'1h',questoes:25,acertos:19},
+      {titulo:'Técnicas orçamentárias, funções do orçamento',acerto:76.4,diffMedia:0.6,relevancia:4,tempoCump:'1h',questoes:17,acertos:13},
+      {titulo:'Estágios receita e despesa',acerto:85.7,diffMedia:-0.1,relevancia:4,tempoCump:'1h30m',questoes:28,acertos:24},
+      {titulo:'DEA, SF, RP, dívida ativa e flutuante',acerto:82.1,diffMedia:5.3,relevancia:3,tempoCump:'2h',questoes:28,acertos:23},
+      {titulo:'Programação e Descentralização Orçamentária',acerto:86.6,diffMedia:8.6,relevancia:3,tempoCump:'2h',questoes:30,acertos:26},
+      {titulo:'LRF — Arts 1º a 14',acerto:88.8,diffMedia:4.7,relevancia:5,tempoCump:'1h30m',questoes:27,acertos:24},
+      {titulo:'LRF — Arts. 25 a 42',acerto:78.0,diffMedia:-3.0,relevancia:4,tempoCump:'1h30m',questoes:25,acertos:20},
+      {titulo:'Princípios, vedações orçamentárias',acerto:86.6,diffMedia:1.9,relevancia:5,tempoCump:'1h',questoes:30,acertos:26},
+    ]},
   'Dir. Processual Civil':{
-    importadoEm:'2026-04-01',
+    importadoEm:'2026-04-08',jornada:0,nivel:'Expert',ferramenta:'TecConcursos',
+    desempenhoHistorico:{acertos:198,questoes:221,pctAcerto:89.5,tempoMedio:'1h22m',reforcoPendente:null},
     assuntos:[
-      {titulo:'Normas Fundamentais e Aplicação do CPC',  acerto:96.0, diffMedia:11.3, relevancia:4, tempoCump:'1h',    questoes:25, acertos:24},
-      {titulo:'Jurisdição e Ação',                       acerto:86.6, diffMedia:3.8,  relevancia:3, tempoCump:'1h',    questoes:30, acertos:26},
-      {titulo:'Competência (Parte I)',                   acerto:84.0, diffMedia:7.2,  relevancia:4, tempoCump:'1h30m', questoes:25, acertos:21},
-      {titulo:'Competência (Parte II)',                  acerto:96.4, diffMedia:14.6, relevancia:4, tempoCump:'1h',    questoes:28, acertos:27},
-      {titulo:'Revisão de Questões Favoritas',           acerto:96.6, diffMedia:9.9,  relevancia:4, tempoCump:'1h30m', questoes:30, acertos:29},
-      {titulo:'Sujeitos do Processo — Parte I',          acerto:89.2, diffMedia:17.0, relevancia:4, tempoCump:'1h30m', questoes:28, acertos:25},
-      {titulo:'Sujeitos do Processo — Parte II',         acerto:83.3, diffMedia:0.4,  relevancia:4, tempoCump:'2h',    questoes:30, acertos:25},
-    ]
-  },
+      {titulo:'Normas Fundamentais e Aplicação do CPC',acerto:96.0,diffMedia:11.3,relevancia:4,tempoCump:'1h',questoes:25,acertos:24},
+      {titulo:'Jurisdição e Ação',acerto:86.6,diffMedia:3.8,relevancia:3,tempoCump:'1h',questoes:30,acertos:26},
+      {titulo:'Competência (Parte I)',acerto:84.0,diffMedia:7.2,relevancia:4,tempoCump:'1h30m',questoes:25,acertos:21},
+      {titulo:'Competência (Parte II)',acerto:96.4,diffMedia:14.6,relevancia:4,tempoCump:'1h',questoes:28,acertos:27},
+      {titulo:'Sujeitos do Processo — Parte I',acerto:89.2,diffMedia:17.0,relevancia:4,tempoCump:'1h30m',questoes:28,acertos:25},
+      {titulo:'Sujeitos do Processo — Parte II',acerto:83.3,diffMedia:0.4,relevancia:4,tempoCump:'2h',questoes:30,acertos:25},
+      {titulo:'Atos Processuais',acerto:86.0,diffMedia:2.0,relevancia:3,tempoCump:'1h30m',questoes:28,acertos:24},
+      {titulo:'Sentença e Coisa Julgada',acerto:88.0,diffMedia:3.0,relevancia:3,tempoCump:'1h30m',questoes:25,acertos:22},
+    ]},
   'Contabilidade Pública':{
-    importadoEm:'2026-04-01',
+    importadoEm:'2026-04-08',jornada:11,nivel:'Aprendiz',ferramenta:'TecConcursos',
+    desempenhoHistorico:{acertos:105,questoes:124,pctAcerto:84.6,tempoMedio:'1h21m',reforcoPendente:null},
     assuntos:[
-      {titulo:'Questões Aula 01 e 02',  acerto:92.0, diffMedia:5.1, relevancia:5, tempoCump:'2h',    questoes:25, acertos:23},
-      {titulo:'Questões Aula 03',       acerto:79.1, diffMedia:7.7, relevancia:5, tempoCump:'2h',    questoes:24, acertos:19},
-      {titulo:'Questões Aula 4',        acerto:84.0, diffMedia:9.1, relevancia:5, tempoCump:'1h30m', questoes:25, acertos:21},
-    ]
-  },
+      {titulo:'Questões Aula 01 e 02',acerto:92.0,diffMedia:5.1,relevancia:5,tempoCump:'2h',questoes:25,acertos:23},
+      {titulo:'Questões Aula 03',acerto:79.1,diffMedia:7.7,relevancia:5,tempoCump:'2h',questoes:24,acertos:19},
+      {titulo:'Questões Aula 4',acerto:84.0,diffMedia:9.1,relevancia:5,tempoCump:'1h30m',questoes:25,acertos:21},
+      {titulo:'Livros de Escrituração',acerto:78.0,diffMedia:-3.0,relevancia:5,tempoCump:'1h30m',questoes:22,acertos:17},
+      {titulo:'Fórmulas de Lançamentos Contábeis',acerto:75.0,diffMedia:-5.0,relevancia:5,tempoCump:'2h',questoes:20,acertos:15},
+      {titulo:'Noções do Balanço Patrimonial',acerto:80.0,diffMedia:-2.0,relevancia:5,tempoCump:'2h',questoes:20,acertos:16},
+      {titulo:'Plano de Contas — Escrituração',acerto:76.0,diffMedia:-4.0,relevancia:5,tempoCump:'2h',questoes:20,acertos:15},
+    ]},
   'Dir. Administrativo':{
-    importadoEm:'2026-04-01',
+    importadoEm:'2026-04-08',jornada:29,nivel:'Expert',ferramenta:'TecConcursos',
+    desempenhoHistorico:{acertos:259,questoes:298,pctAcerto:86.9,tempoMedio:'1h12m',reforcoPendente:'30min'},
     assuntos:[
-      {titulo:'Serviços Públicos — Parte II',          acerto:78.5, diffMedia:6.2,  relevancia:3, tempoCump:'1h30m', questoes:28, acertos:22},
-      {titulo:'Terceiro Setor',                         acerto:80.7, diffMedia:-0.7, relevancia:3, tempoCump:'1h',   questoes:26, acertos:21},
-      {titulo:'Responsabilidade Civil',                 acerto:84.6, diffMedia:-1.2, relevancia:4, tempoCump:'1h',   questoes:26, acertos:22},
-      {titulo:'Serviços Públicos',                      acerto:81.4, diffMedia:1.0,  relevancia:4, tempoCump:'1h30m',questoes:27, acertos:22},
-      {titulo:'Intervenção na Propriedade Privada',     acerto:75.0, diffMedia:3.4,  relevancia:3, tempoCump:'2h',   questoes:28, acertos:21},
-      {titulo:'Atos Administrativos',                   acerto:88.8, diffMedia:12.3, relevancia:5, tempoCump:'1h',   questoes:27, acertos:24},
-      {titulo:'Organização Administrativa',             acerto:92.5, diffMedia:9.3,  relevancia:5, tempoCump:'1h',   questoes:27, acertos:25},
-      {titulo:'Regime Jurídico, Princípios, Poderes',  acerto:92.8, diffMedia:7.9,  relevancia:3, tempoCump:'1h20m',questoes:28, acertos:26},
-      {titulo:'Resolução de questões favoritas',        acerto:96.0, diffMedia:12.5, relevancia:4, tempoCump:'1h',   questoes:25, acertos:24},
-      {titulo:'Controle na Administração Pública',      acerto:100.0,diffMedia:17.6, relevancia:5, tempoCump:'1h',   questoes:28, acertos:28},
-      {titulo:'Simulado I',                             acerto:85.7, diffMedia:6.9,  relevancia:5, tempoCump:'1h',   questoes:28, acertos:24},
-    ]
-  },
+      {titulo:'Serviços Públicos — Parte II',acerto:78.5,diffMedia:6.2,relevancia:3,tempoCump:'1h30m',questoes:28,acertos:22},
+      {titulo:'Terceiro Setor',acerto:80.7,diffMedia:-0.7,relevancia:3,tempoCump:'1h',questoes:26,acertos:21},
+      {titulo:'Responsabilidade Civil',acerto:84.6,diffMedia:-1.2,relevancia:4,tempoCump:'1h',questoes:26,acertos:22},
+      {titulo:'Serviços Públicos',acerto:81.4,diffMedia:1.0,relevancia:4,tempoCump:'1h30m',questoes:27,acertos:22},
+      {titulo:'Intervenção na Propriedade Privada',acerto:75.0,diffMedia:3.4,relevancia:3,tempoCump:'2h',questoes:28,acertos:21},
+      {titulo:'Atos Administrativos',acerto:88.8,diffMedia:12.3,relevancia:5,tempoCump:'1h',questoes:27,acertos:24},
+      {titulo:'Organização Administrativa',acerto:92.5,diffMedia:9.3,relevancia:5,tempoCump:'1h',questoes:27,acertos:25},
+      {titulo:'Regime Jurídico, Princípios, Poderes',acerto:92.8,diffMedia:7.9,relevancia:3,tempoCump:'1h20m',questoes:28,acertos:26},
+      {titulo:'Resolução de questões favoritas',acerto:96.0,diffMedia:12.5,relevancia:4,tempoCump:'1h',questoes:25,acertos:24},
+      {titulo:'Controle na Administração Pública',acerto:100.0,diffMedia:17.6,relevancia:5,tempoCump:'1h',questoes:28,acertos:28},
+      {titulo:'Agentes Públicos',acerto:84.0,diffMedia:2.0,relevancia:4,tempoCump:'1h30m',questoes:25,acertos:21},
+    ]},
   'Dir. Penal':{
-    importadoEm:'2026-04-01',
+    importadoEm:'2026-04-08',jornada:0,nivel:'Expert',ferramenta:'TecConcursos',
+    desempenhoHistorico:{acertos:155,questoes:179,pctAcerto:86.5,tempoMedio:'1h12m',reforcoPendente:'30min'},
     assuntos:[
-      {titulo:'Teoria do crime — Ilicitude e Culpabilidade', acerto:76.9, diffMedia:0.2,  relevancia:4, tempoCump:'1h',    questoes:26, acertos:20},
-      {titulo:'Aplicação da Lei Penal',                      acerto:84.0, diffMedia:-1.4, relevancia:3, tempoCump:'1h',    questoes:25, acertos:21},
-      {titulo:'Erro de tipo. Erro de proibição.',            acerto:82.6, diffMedia:7.3,  relevancia:3, tempoCump:'2h',    questoes:23, acertos:19},
-      {titulo:'Concurso de pessoas.',                        acerto:85.7, diffMedia:2.5,  relevancia:3, tempoCump:'1h',    questoes:28, acertos:24},
-      {titulo:'Princípios do Direito Penal',                 acerto:86.9, diffMedia:2.1,  relevancia:3, tempoCump:'1h',    questoes:23, acertos:20},
-      {titulo:'Teoria do Crime - Fato típico e Iter Criminis',acerto:92.3, diffMedia:12.7,relevancia:4, tempoCump:'1h30m', questoes:26, acertos:24},
-      {titulo:'Resolução de questões favoritas.',            acerto:96.4, diffMedia:11.7, relevancia:3, tempoCump:'1h',    questoes:28, acertos:27},
-    ]
-  }
+      {titulo:'Teoria do crime — Ilicitude e Culpabilidade',acerto:76.9,diffMedia:0.2,relevancia:4,tempoCump:'1h',questoes:26,acertos:20},
+      {titulo:'Aplicação da Lei Penal',acerto:84.0,diffMedia:-1.4,relevancia:3,tempoCump:'1h',questoes:25,acertos:21},
+      {titulo:'Erro de tipo. Erro de proibição.',acerto:82.6,diffMedia:7.3,relevancia:3,tempoCump:'2h',questoes:23,acertos:19},
+      {titulo:'Concurso de pessoas.',acerto:85.7,diffMedia:2.5,relevancia:2,tempoCump:'1h',questoes:28,acertos:24},
+      {titulo:'Princípios do Direito Penal',acerto:86.9,diffMedia:2.1,relevancia:3,tempoCump:'1h',questoes:23,acertos:20},
+      {titulo:'Teoria do Crime - Fato típico e Iter Criminis',acerto:92.3,diffMedia:12.7,relevancia:4,tempoCump:'1h30m',questoes:26,acertos:24},
+      {titulo:'Resolução de questões favoritas.',acerto:96.4,diffMedia:11.7,relevancia:3,tempoCump:'1h',questoes:28,acertos:27},
+    ]},
+  'Mat. Financeira':{
+    importadoEm:'2026-04-08',jornada:10,nivel:'Aprendiz',ferramenta:'Gran Cursos',
+    desempenhoHistorico:{acertos:null,questoes:null,pctAcerto:null,tempoMedio:'1h10m',reforcoPendente:null},
+    assuntos:[
+      {titulo:'Mapeamento — Aula 19',acerto:null,diffMedia:0,relevancia:4,tempoCump:'1h30m',questoes:0,acertos:0},
+      {titulo:'Juros Simples',acerto:null,diffMedia:0,relevancia:5,tempoCump:'1h30m',questoes:0,acertos:0},
+      {titulo:'Questões Aula 19',acerto:null,diffMedia:0,relevancia:4,tempoCump:'1h30m',questoes:0,acertos:0},
+      {titulo:'Revisão Aula 19',acerto:null,diffMedia:0,relevancia:4,tempoCump:'1h30m',questoes:0,acertos:0},
+    ]},
+  'Raciocínio Lógico':{
+    importadoEm:'2026-04-08',jornada:7,nivel:'Aprendiz',ferramenta:'Gran Cursos',
+    desempenhoHistorico:{acertos:null,questoes:null,pctAcerto:null,tempoMedio:null,reforcoPendente:null},
+    assuntos:[
+      {titulo:'Revisão Aula 00 — Fundamentos',acerto:null,diffMedia:0,relevancia:5,tempoCump:'1h30m',questoes:0,acertos:0},
+      {titulo:'Conectivos Lógicos (alta relevância)',acerto:null,diffMedia:0,relevancia:5,tempoCump:'1h30m',questoes:0,acertos:0},
+      {titulo:'Conectivos Lógicos (média relevância)',acerto:null,diffMedia:0,relevancia:4,tempoCump:'1h30m',questoes:0,acertos:0},
+    ]},
+  'Discursivas':{
+    importadoEm:'2026-04-08',jornada:36,nivel:'Expert',ferramenta:'Papel + caneta',
+    desempenhoHistorico:{acertos:null,questoes:null,pctAcerto:null,tempoMedio:null,reforcoPendente:null},
+    assuntos:[
+      {titulo:'Questão Dissertativa — alta relevância',acerto:null,diffMedia:0,relevancia:5,tempoCump:'1h30m',questoes:0,acertos:0},
+      {titulo:'Questão Dissertativa — média relevância',acerto:null,diffMedia:0,relevancia:4,tempoCump:'1h30m',questoes:0,acertos:0},
+      {titulo:'LRF — Despesas de Pessoal',acerto:null,diffMedia:0,relevancia:5,tempoCump:'1h30m',questoes:0,acertos:0},
+    ]},
 };
 
 // Retorna dados do Guruja: seed + dados importados pelo usuário (usuário vence)
@@ -2334,7 +2407,7 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
   const hspPlan=useMemo(()=>{
     const feitosSet=new Set(feitos);
     const pendentes=CICLO.filter(s=>!feitosSet.has(s.id));
-    // Modo 2: crítico manual de alta prioridade assume B1
+    // Prioridade 1: crítico manual de alta prioridade
     const criticosManuais=lsGet('criticos_manuais',[]);
     const criticoAlta=criticosManuais.filter(c=>c.prioridade==='alta').sort((a,b)=>a.dt-b.dt)[0]||null;
     let b1=null;
@@ -2343,26 +2416,30 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
       b1={_critico:true,id:'crit_'+criticoAlta.id,mat:criticoAlta.mat,ic:'🎯',cor:'#f87171',tag:'🔴 CRÍTICO MANUAL',h:1.5,tipo:'Revisão',conteudo:criticoAlta.motivo||'Revisar este tópico hoje',_criticoId:criticoAlta.id};
       b1IsCritico=true;
     }
-    // Se não tem crítico alto, usa lógica normal
+    // Prioridade 2: bloco do CICLO com tag URGENTE (vem da Matriz Meirelles)
     if(!b1){
-      const criticos=pendentes.filter(s=>s.tag?.includes('CRÍTICO')||s.tag?.includes('ATRASADA'));
-      b1=criticos[0]||pendentes[0]||null;
+      const urgente=pendentes.find(s=>s.tag?.includes('URGENTE'));
+      const critico=pendentes.find(s=>s.tag?.includes('CRÍTICO'));
+      const atrasada=pendentes.find(s=>s.tag?.includes('ATRASADA'));
+      b1=urgente||critico||atrasada||pendentes[0]||null;
     }
-    // Bloco 2: se B1 é crítico manual, B2 = primeiro bloco do ciclo; senão lógica normal
+    // B2: TEC vencendo ou próximo bloco de prioridade alta
     const tecVencendo=tecHoje.d3.length>0;
     let b2;
     if(b1IsCritico){
-      const cricosCiclo=pendentes.filter(s=>s.tag?.includes('CRÍTICO')||s.tag?.includes('ATRASADA'));
+      const proxCiclo=pendentes.find(s=>s.tag?.includes('URGENTE')||s.tag?.includes('CRÍTICO'));
       b2=tecVencendo
         ?{label:`TEC — ${tecHoje.d3.length} revisão(ões) vencendo`,mat:'TEC',h:0.5,ic:'🔴',motivo:'não pode atrasar — afeta fixação'}
-        :(cricosCiclo[0]||pendentes[0]||null);
+        :(proxCiclo||pendentes[0]||null);
     } else {
       b2=tecVencendo
         ?{label:`TEC — ${tecHoje.d3.length} revisão(ões) vencendo`,mat:'TEC',h:0.5,ic:'🔴',motivo:'não pode atrasar — afeta fixação'}
-        :(pendentes.find(s=>s.id!==(b1?.id))||null);
+        :(pendentes.find(s=>s.id!==(b1?.id)&&(s.tag?.includes('ALTA')||s.tag?.includes('URGENTE')))||pendentes.find(s=>s.id!==(b1?.id))||null);
     }
     const mat1=ankiMaterias[0]?.mat||'matéria prioritária';
-    return{b1,b2,mat1,b1IsCritico};
+    // Badge Meirelles para o B1
+    const meirellesB1=b1?.mat?getPrioridadeMeirelles(b1.mat):null;
+    return{b1,b2,mat1,b1IsCritico,meirellesB1};
   },[feitos,tecHoje,ankiMaterias]);
 
   return(
@@ -2430,6 +2507,7 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
                       <span style={{fontSize:9,padding:'1px 6px',borderRadius:4,background:'rgba(248,113,113,.12)',color:'#f87171',fontFamily:"'DM Mono',monospace"}}>{hspPlan.b1.h}h · {hspPlan.b1.tipo}</span>
                       <span style={{fontSize:9,color:'var(--text4)'}}>{hspPlan.b1.tag}</span>
                       {hspPlan.b1IsCritico&&<span style={{fontSize:9,padding:'1px 6px',borderRadius:4,background:'rgba(248,113,113,.2)',color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:700}}>você marcou como crítico</span>}
+                      {!hspPlan.b1IsCritico&&hspPlan.meirellesB1&&<span style={{fontSize:9,padding:'1px 6px',borderRadius:4,background:`${corMeirelles(hspPlan.meirellesB1.prioridade)}20`,color:corMeirelles(hspPlan.meirellesB1.prioridade),fontFamily:"'DM Mono',monospace",fontWeight:700}}>{labelMeirelles(hspPlan.meirellesB1.prioridade)} · {hspPlan.meirellesB1.ferramenta}</span>}
                     </div>
                   </>
                   :<div style={{fontSize:13,color:'#34d399',fontWeight:700}}>✅ Ciclo completo!</div>
@@ -6209,7 +6287,7 @@ function ModalConfig({fechar}){
 // ─── APP RAIZ ────────────────────────────────────────────────
 function App(){
   const[feitos,setFeitos]=useState([]);
-  const[cicloNum,setCicloNum]=useState(8);
+  const[cicloNum,setCicloNum]=useState(9);
   const[horas,setHoras]=useState([]);
   const[mit,setMit]=useState([]);
   const[historico,setHistorico]=useState(()=>lsGet('historico_diario',[]));
@@ -6234,11 +6312,11 @@ function App(){
   useEffect(()=>{
     Sync.onStatus(s=>setSyncSt(s));
     if(Sync.isConfigured()){Sync.init().then(ok=>{if(ok){setFeitos(lsGet('feitos',[]));setCicloNum(lsGet('cicloNum',1));setHoras(lsGet('horas',[]));setMit(lsGet('mit',[]));}});}
-    // Auto-reset: se tiver dados do ciclo antigo, zera para começar o Ciclo 8
+    // Auto-reset: se tiver dados do ciclo antigo, zera para começar o Ciclo 9
     const _f=lsGet('feitos',[]);
-    if(lsGet('ciclo_versao','')!=='v27'){
+    if(lsGet('ciclo_versao','')!=='v28'){
       if(_f.length>0)lsSet('feitos',[]);
-      lsSet('cicloNum',8);lsSet('ciclo_versao','v27');
+      lsSet('cicloNum',9);lsSet('ciclo_versao','v28');
     }
     setFeitos(lsGet('feitos',[]));setCicloNum(lsGet('cicloNum',1));setHoras(lsGet('horas',[]));setMit(lsGet('mit',[]));
     const tick=setInterval(()=>setClock(new Date()),1000);
