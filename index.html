@@ -234,7 +234,134 @@ const CICLO=[
 ];
 const N=CICLO.length;
 
-// ── MATRIZ MEIRELLES — lógica estrelas + desempenho + jornada ─
+// ── PAINEL ESTRATÉGICO — atualizado 09/04/2026 ───────────────
+
+const RESULTADOS_COMPROVADOS=[
+  {concurso:'TCE-MG',resultado:'Top 1%',detalhe:'16.000 inscritos · 73,8% geral · 7º discursivas',status:'heteroidentificação'},
+  {concurso:'TCE-MG discursiva',resultado:'✅ Aprovada após recurso',detalhe:'Recorreu e ganhou +1 ponto — superou o corte',status:'ok'},
+  {concurso:'TCE-MG heteroidentificação',resultado:'🎯 12/04/2026',detalhe:'BH — Praça Carlos Chagas, 35 · chegada antecipada',status:'agendado'},
+  {concurso:'Câmara Rio (FGV)',resultado:'87,8 pts objetiva',detalhe:'Excelente desempenho — acima da média',status:'ok'},
+  {concurso:'Câmara Rio (FGV)',resultado:'22,8/30 discursiva',detalhe:'Acima da média — sem problema estrutural',status:'ok'},
+  {concurso:'Bancas dominadas',resultado:'FGV · Cebraspe · Vunesp',detalhe:'Sem problema de adaptação de banca',status:'ok'},
+];
+
+const TCE_MG_STATUS={
+  posicao:58,
+  notaObjetiva:61.00,
+  notaDiscursiva:10.60,
+  total:71.60,
+  gapParaPos35:1.99, // pontos na discursiva
+  mediaDiscursivaTop20:15.86,
+  projecao:'Nomeação possível 2026 — monitorar ativamente',
+  vantagem:'Saiu do Rio de ônibus R$104,90 — única capital com essa opção viável',
+  dataHetero:'2026-04-12',
+  localHetero:'BH — Praça Carlos Chagas, 35',
+  diasDescanso:['2026-04-11'],
+};
+
+const CONCURSOS_ALVO=[
+  {
+    codigo:'TCE-MG',prioridade:'finalizado',status:'Heteroidentificação 12/04 — nomeação possível 2026',
+    banca:'Cebraspe',vagas:'aprovada',salario:null,edital:'finalizado',
+    alerta:'Descanso 11/04 · Hetero 12/04 BH · Ciclo retoma 13/04'
+  },
+  {
+    codigo:'TCE-RJ',prioridade:'principal',status:'Banca em definição (IBFC rescindido) · Edital jun/2026',
+    banca:'A definir',vagas:10,cargo:'Auditor de Controle Externo — Área Direito',salario:19793,edital:'jun/2026',
+    corteObjetiva:'9pts básicos + 24pts específicos + 33pts total',
+    discursiva:'Eliminatória e classificatória',sobreposicaoTCESP:0.92,
+    alerta:'Lei seca diária 30min no Anki a partir de agora'
+  },
+  {
+    codigo:'TCE-SP',prioridade:'principal',status:'Vunesp contratada 27/03 · Edital até jun/2026',
+    banca:'Vunesp',vagas:50,cargo:'Auditor de Controle Externo — DIPE',salario:20940.20,edital:'jun/2026',
+    estrutura:'80 questões: 20 gerais + 60 específicas',
+    corteMinimoGerais:'10/20',corteMinimoespecificas:'30/60',
+    discursiva:'2 estudos de caso (mesmo dia da objetiva)',
+    gerais:{portugues:15,matematica:10,ingles:5},
+    alerta:'⚠️ INGLÊS: 5 questões — iniciar slot quinzenal em mai/2026',
+    sobreposicaoTCERJ:0.92
+  },
+  {
+    codigo:'ISS-Niterói',prioridade:'estrategico',status:'Edital previsto 2º sem/2026',
+    banca:'Provável FGV',vagas:'~86 (último: 2015)',cargo:'Auditor Fiscal',salario:30468,edital:'2º sem/2026',
+    alerta:'Quando edital sair: 3-4 semanas para reforçar MATFI e RLOG — não deixar para véspera',
+    salarioObservacao:'Maior salário dos alvos'
+  },
+  {
+    codigo:'TCE-SC',prioridade:'descartado',status:'Decisão tomada 09/04/2026',
+    banca:'FGV',alerta:'Descartado — foco nos outros'
+  },
+];
+
+const LEGISLACAO_TCE_RJ=[
+  {codigo:'LC 63/1990',nome:'Lei Orgânica TCE-RJ',prioridade:1,anki:true,obs:'Base do concurso'},
+  {codigo:'Reg. Interno',nome:'Regimento Interno TCE-RJ',prioridade:1,anki:true,obs:'Procedimentos e competências'},
+  {codigo:'CF/88 arts.70-75',nome:'Constituição Federal — Controle Externo',prioridade:1,anki:true,obs:'Fundamento constitucional'},
+  {codigo:'Lei 4.320/64',nome:'Normas Gerais de Direito Financeiro',prioridade:2,anki:true,obs:'Orçamento público'},
+  {codigo:'LC 101/2000',nome:'LRF — Lei de Responsabilidade Fiscal',prioridade:2,anki:true,obs:'Já no ciclo — reforçar lei seca'},
+  {codigo:'Lei 8.443/92',nome:'Lei Orgânica TCU',prioridade:2,anki:true,obs:'Comparativo TCE/TCU'},
+  {codigo:'DL 201/67',nome:'Decreto-Lei 201/67 — Municípios',prioridade:3,anki:true,obs:'Crimes e infrações'},
+];
+
+const PROTOCOLO_DISCURSIVA={
+  diagnostico:'Sem problema estrutural. Padrão bom (TCE-MG aprovada + Câmara 22,8/30). Foco = manutenção e adaptação de formato por banca.',
+  treinos:[
+    {tipo:'Peça técnica TCE-RJ',frequencia:'1x/semana',formato:'Papel + caneta — acórdão, voto, parecer, relatório de auditoria',recurso:'tcerj.tc.br (gratuito)'},
+    {tipo:'Estudo de caso Vunesp',frequencia:'1x/mês a partir de mai/2026',formato:'2 estudos de caso — mesmo dia da objetiva (≠ Cebraspe)'},
+    {tipo:'Revisão com gabarito comentado',frequencia:'Após cada treino',formato:'Identificar padrão de perda de ponto'},
+  ]
+};
+
+const CRONOGRAMA_MACRO=[
+  {periodo:'ABR/2026',eventos:[
+    {data:'09/04',acao:'Ciclo 9 ativo (pos.1: ADPU ⭐⭐⭐⭐⭐)',tipo:'estudo'},
+    {data:'11/04',acao:'⛔ DESCANSO TOTAL — sem estudo',tipo:'descanso'},
+    {data:'12/04',acao:'🎯 HETEROIDENTIFICAÇÃO TCE-MG — BH · Praça Carlos Chagas 35',tipo:'prova'},
+    {data:'13/04',acao:'Ciclo retoma posição 1',tipo:'estudo'},
+  ]},
+  {periodo:'MAI/2026',eventos:[
+    {data:'01/05',acao:'Iniciar Inglês: 1 slot quinzenal (vocabulário fiscal Vunesp)',tipo:'novo'},
+    {data:'01/05',acao:'Estudo de caso Vunesp: 1x/mês',tipo:'novo'},
+    {data:'mai',acao:'Lei seca TCE-RJ: 30min/dia no Anki (legislação específica)',tipo:'estudo'},
+  ]},
+  {periodo:'JUN/2026',eventos:[
+    {data:'jun',acao:'📋 Edital TCE-SP → inscrição imediata (50 vagas · R$20.940)',tipo:'edital',alerta:'alto'},
+    {data:'jun',acao:'📋 Edital TCE-RJ → inscrição imediata (10 vagas · R$19.793)',tipo:'edital',alerta:'alto'},
+    {data:'jun',acao:'⚠️ Se editais coincidirem: definir prioridade de reta final',tipo:'alerta'},
+  ]},
+  {periodo:'JUL–SET/2026',eventos:[
+    {data:'jul-set',acao:'Reta final TCE-SP + TCE-RJ (92% sobreposição)',tipo:'estudo'},
+    {data:'jul-set',acao:'Simulados 2x/semana',tipo:'estudo'},
+  ]},
+  {periodo:'2º SEM/2026',eventos:[
+    {data:'2sem',acao:'Edital ISS Niterói → retomar MATFI + RLOG + tributário municipal',tipo:'edital'},
+    {data:'2sem',acao:'Reservar 3-4 semanas para reforço antes da prova ISS',tipo:'alerta'},
+  ]},
+];
+
+const REGRAS_INEGOCIAVEIS=[
+  {regra:'Anki 30min TODO DIA — sem negociação',categoria:'diario'},
+  {regra:'Nunca mesma disciplina em dias consecutivos',categoria:'ciclo'},
+  {regra:'Máximo 30h/semana sem edital publicado',categoria:'carga'},
+  {regra:'Discursiva 1x/semana — papel + caneta sempre',categoria:'discursiva'},
+  {regra:'Mínimo viável em crise: 11 metas/semana',categoria:'crise'},
+  {regra:'Inglês (TCE-SP): iniciar mai/2026 — 1 slot quinzenal',categoria:'novo'},
+  {regra:'Estudo de caso Vunesp: 1x/mês a partir de mai',categoria:'novo'},
+  {regra:'ISS Niterói: quando edital sair, 3-4 semanas para MATFI e RLOG',categoria:'futuro'},
+  {regra:'11/04: descanso total — 12/04: heteroidentificação TCE-MG',categoria:'imediato'},
+];
+
+// Função auxiliar: retorna alertas ativos baseados na data atual
+function getAlertasAtivos(){
+  const hoje=new Date().toISOString().split('T')[0];
+  const alertas=[];
+  if(hoje<='2026-04-11') alertas.push({tipo:'hetero',msg:'🎯 Heteroidentificação TCE-MG em '+(Math.ceil((new Date('2026-04-12')-new Date())/86400000))+' dia(s) — BH · Praça Carlos Chagas 35',cor:'#f87171'});
+  if(hoje==='2026-04-11') alertas.push({tipo:'descanso',msg:'⛔ HOJE = DESCANSO TOTAL — sem estudo, sem pressão',cor:'#34d399'});
+  if(hoje>='2026-05-01'&&hoje<='2026-05-31') alertas.push({tipo:'ingles',msg:'📌 Maio: iniciar Inglês quinzenal (TCE-SP · vocabulário fiscal Vunesp)',cor:'#60a5fa'});
+  if(hoje>='2026-06-01') alertas.push({tipo:'editais',msg:'📋 Junho: monitorar editais TCE-SP e TCE-RJ — inscrição imediata',cor:'#fbbf24'});
+  return alertas;
+}
 // Fonte: arquivo de planejamento 08/04/2026
 // estrelas = importância do tópico para a prova (por tópico, não por matéria)
 // prioridade = estrelas × déficit × jornada
@@ -980,9 +1107,31 @@ function TabIA({appCtx,onMIT}){
     const urgentes=lsGet('rev_urgentes',[]);
     const fila=lsGet('fila',[]).filter(f=>!f.feito&&f.quando==='Hoje');
     const planoSem=lsGet('plano_semanal',null);
-    return `Você é a Assessora IA pessoal da Ritchely — mentora de alto desempenho para o concurso TCE-RJ (Auditora de Controle Externo).
+    return `Você é a Assessora IA pessoal da Ritchely — mentora de alto desempenho para concursos fiscais.
 
-PERFIL: Ritchely, 38 anos, mãe solteira do Kauê (13a, Colégio Naval). Ciclo Meirelles Opção 3 (23 blocos). Meta: 35h+/semana. Acorda 04:30h. Cetogênica/low carb, meta -15kg.
+PERFIL: Ritchely, 38 anos, mãe solo do Kauê (13a, Colégio Naval). Acorda 04h30. Cetogênica/low carb. Corre 3x/semana. Trabalha Ter/Qui/Sex 13h-17h.
+
+SITUAÇÃO ATUAL — CRÍTICO:
+- TCE-MG: TOP 1% (16.000 inscritos) · posição 58ª · objetiva 61,00 · discursiva 10,60 (aprovada após recurso) · HETEROIDENTIFICAÇÃO 12/04 BH
+- Gap para nomeação: apenas 1,99 pts na discursiva para posição 35 · nomeação possível 2026
+- Diagnóstico: candidata em FINALIZAÇÃO de aprovações. Gargalo = legislação específica + gestão de energia, NÃO conteúdo.
+
+CONCURSOS-ALVO:
+1. TCE-RJ (principal) — 10 vagas · R$19.793 · edital jun/2026 · banca em definição
+2. TCE-SP DIPE (principal) — 50 vagas · R$20.940 · Vunesp · edital jun/2026 · ⚠️ TEM INGLÊS (5 questões)
+3. ISS Niterói (estratégico) — R$30.468 · FGV · 2º sem/2026
+4. TCE-SC: DESCARTADO
+
+RESULTADOS COMPROVADOS: TCE-MG top 1% · Câmara Rio 87,8pts objetiva e 22,8/30 discursiva · Domina FGV, Cebraspe e Vunesp
+
+ALERTAS ATIVOS: ${getAlertasAtivos().map(a=>a.msg).join(' | ')||'nenhum alerta crítico hoje'}
+
+LEGISLAÇÃO ESPECÍFICA TCE-RJ (30min/dia Anki):
+${LEGISLACAO_TCE_RJ.map(l=>`${l.codigo} — ${l.nome}`).join(' · ')}
+
+REGRAS INEGOCIÁVEIS: ${REGRAS_INEGOCIAVEIS.map(r=>r.regra).join(' | ')}
+
+MÉTODO: Ciclo Meirelles — ⭐ = importância para prova (NÃO dificuldade) · estrelas por tópico · nunca mesma disciplina em dias consecutivos · ciclo = fila sequencial
 
 DADOS DO APP AGORA:
 - ${NOMES_DIA[dw]}, ${fH(d)}
@@ -990,13 +1139,10 @@ DADOS DO APP AGORA:
 - Hoje: ${fmtMin(appCtx.minHoje)} | Semana: ${fmtMin(appCtx.minSemana)}
 - Próx. bloco: ${appCtx.pendentes[0]?.mat||'Ciclo completo!'} (${appCtx.pendentes[0]?.tag||''})
 - Treino hoje: ${treinos[dw]}
-- Trabalho hoje: ${trabalha?'SIM 13h-18h':'NÃO'}
-- Último registro: ${ultReg?`${ultReg.materia}, dif ${ultReg.dificuldade}★, ${ultReg.questoes||0}Q, travou: ${ultReg.travou||'nada'}`:'nenhum ainda'}
-- Aproveitamento (B+C): ${fmtRanking()}
-- Pior assunto: ${(()=>{const h=lsGet('historico_diario',[]);const por={};h.forEach(r=>{if(!r.assunto||!r.materia)return;const q=parseInt(r.questoes)||0;const a=parseInt(r.acertei)||0;if(!q)return;const k=r.materia+' — '+r.assunto;if(!por[k])por[k]={q:0,a:0};por[k].q+=q;por[k].a+=a;});const r=Object.entries(por).map(([k,v])=>({k,pct:Math.round(v.a/v.q*100)})).sort((a,b)=>a.pct-b.pct);return r.length?`${r[0].k} (${r[0].pct}%)`:'sem dados de assunto';})()}
-- Urgentes de revisão: ${urgentes.length}
-- MATÉRIAS URGENTES (registradas por você): ${lsGet('urgentes_ia',[]).map(u=>u.mat+(u.contexto?' ('+u.contexto+')':'')).join(', ')||'nenhuma'}
-- Fila urgente hoje: ${fila.length}
+- Trabalho hoje: ${trabalha?'SIM 13h-17h':'NÃO'}
+- Último registro: ${ultReg?`${ultReg.materia}, dif ${ultReg.dificuldade}★, ${ultReg.questoes||0}Q`:'nenhum ainda'}
+- Aproveitamento: ${fmtRanking()}
+- MATÉRIAS URGENTES (registradas): ${lsGet('urgentes_ia',[]).map(u=>u.mat+(u.contexto?' ('+u.contexto+')':'')).join(', ')||'nenhuma'}
 - Score Guruja: ${gurujaData?.alerta||'não analisado ainda'}
 - Erros no caderno: ${(()=>{const erros=lsGet('caderno_erros',[]);const agora=Date.now();const iv=[1,3,7,15,30];return erros.filter(e=>!e.dominado&&e.dt+iv[Math.min(e.revisoes||0,iv.length-1)]*86400000<=agora).length;})()} ativos
 - Plano semanal: ${planoSem?`aprovado — top matéria: ${planoSem.plano?.[0]?.mat||'?'} (${planoSem.plano?.[0]?.horasEditadas||planoSem.plano?.[0]?.horasSugeridas||'?'}h)`:'não definido ainda'}
@@ -2459,6 +2605,21 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
       {/* SAÚDE DA SEMANA */}
       <CardSaude/>
 
+      {/* ALERTAS MACRO — baseados na data atual */}
+      {(()=>{
+        const alertas=getAlertasAtivos();
+        if(!alertas.length)return null;
+        return(
+          <div style={{marginBottom:10}}>
+            {alertas.map((a,i)=>(
+              <div key={i} style={{padding:'9px 13px',borderRadius:10,background:`${a.cor}12`,border:`1px solid ${a.cor}40`,marginBottom:5,display:'flex',alignItems:'center',gap:8}}>
+                <div style={{fontSize:12,color:a.cor,fontWeight:800,flex:1}}>{a.msg}</div>
+              </div>
+            ))}
+          </div>
+        );
+      })()}
+
       {/* SUB-ABAS */}
       <div style={{display:'flex',gap:4,marginBottom:12,overflowX:'auto',scrollbarWidth:'none'}}>
         {[
@@ -3061,10 +3222,10 @@ function TabEstudo({feitos,cicloNum,horas,onConcluir,onIrPara,onDesmarcar,onAddH
   // Registro
   const hoje=getDK();
   const[historico,setHistorico]=useState(()=>lsGet('historico_diario',[]));
-  const regHoje=historico.find(r=>r.id===hoje)||null;
+  const regHoje=historico.filter(r=>r.dia===hoje||r.id===hoje).slice(-1)[0]||null;
   // Último bloco concluído — pré-preenche o Registro automaticamente
-  const[ultimoBlocoMat,setUltimoBlocoMat]=useState(null); // {mat, conteudo, tipo}
-  const[rForm,setRForm]=useState({materia:regHoje?.materia||ativo?.mat||'',assunto:regHoje?.assunto||'',tempo:regHoje?.tempo||'',questoes:regHoje?.questoes||'',acertei:regHoje?.acertei||'',dificuldade:regHoje?.dificuldade||0,obs:regHoje?.obs||''});
+  const[ultimoBlocoMat,setUltimoBlocoMat]=useState(null);
+  const[rForm,setRForm]=useState({materia:ativo?.mat||'',assunto:'',tempo:'',questoes:'',acertei:'',dificuldade:0,obs:'',pendente:''});
   const[rSalvo,setRSalvo]=useState(false);
   const[obsExpandida,setObsExpandida]=useState(false);
   const[modalPct,setModalPct]=useState(null);
@@ -3166,14 +3327,18 @@ APENAS JSON sem markdown: {"diagnostico":"2 frases","plano":[{"mat":"nome","hora
   // Ações
   const salvarRegistro=()=>{
     if(!rForm.materia||!rForm.dificuldade)return;
-    const novo={...rForm,id:hoje,dt:Date.now()};
-    const n=[...historico.filter(r=>r.id!==hoje),novo].sort((a,b)=>a.id.localeCompare(b.id));
+    const agora=Date.now();
+    // Usa timestamp como id único — permite múltiplos registros por dia
+    const novo={...rForm,id:hoje+'_'+agora,dia:hoje,dt:agora};
+    const n=[...historico,novo].sort((a,b)=>(a.dt||0)-(b.dt||0));
     setHistorico(n);lsSet('historico_diario',n);
-    if(rForm.tempo){onAddHoras({mat:rForm.materia,min:parseInt(rForm.tempo)||0,dt:Date.now()});}
+    if(rForm.tempo){onAddHoras({mat:rForm.materia,min:parseInt(rForm.tempo)||0,dt:agora});}
     // Se preencheu "ficou pendente", cria extra
     if(rForm.pendente?.trim()){
       criarExtra({mat:rForm.materia,ic:'📌',cor:'#fb923c',conteudo:rForm.pendente.trim()},50,rForm.pendente.trim());
     }
+    // Limpa formulário após salvar (exceto matéria)
+    setRForm(f=>({...f,assunto:'',tempo:'',questoes:'',acertei:'',obs:'',pendente:'',dificuldade:0}));
     setUltimoBlocoMat(null);
     setRSalvo(true);setTimeout(()=>setRSalvo(false),2500);if(onSyncHistorico)onSyncHistorico();
   };
@@ -3500,19 +3665,26 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
         </div>
         {/* Histórico recente */}
         <div style={{fontSize:9,letterSpacing:'2px',color:'#475569',fontFamily:"'DM Mono',monospace",marginBottom:8}}>HISTÓRICO RECENTE</div>
-        {[...historico].reverse().slice(0,6).map(r=>{
+        {[...historico].sort((a,b)=>(b.dt||0)-(a.dt||0)).slice(0,8).map(r=>{
           const cors=['#34d399','#a3e635','#fbbf24','#fb923c','#f87171'];
           const c=cors[(r.dificuldade||1)-1];
+          const dtStr=r.dt?new Date(r.dt).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):(r.dia||r.id||'');
+          const q=parseInt(r.questoes)||0; const ac=parseInt(r.acertei)||0;
+          const pct=q&&ac?Math.round(ac/q*100):null;
           return(
             <div key={r.id} style={{padding:'9px 12px',borderRadius:10,background:`${c}06`,border:`1px solid ${c}20`,marginBottom:5}}>
-              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-                <div>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
+                <div style={{flex:1,minWidth:0}}>
                   <div style={{fontSize:12,color:'#f1f5f9',fontWeight:700}}>{r.materia}</div>
-                  <div style={{fontSize:9,color:'#64748b'}}>{r.tempo?`${r.tempo}min · `:''}{r.assunto&&<span style={{color:'#60a5fa',marginRight:4}}>{r.assunto.slice(0,30)}</span>}Q:{r.questoes||0}{r.acertei?` ✅${r.acertei}(${Math.round(parseInt(r.acertei)/parseInt(r.questoes)*100)}%)`:''}{r.obs?<span style={{color:'#94a3b8',marginLeft:4}}>· {r.obs.slice(0,25)}</span>:''}</div>
+                  <div style={{fontSize:9,color:'#64748b',marginTop:2,lineHeight:1.5}}>
+                    {r.tempo?<span style={{color:'#60a5fa',marginRight:4}}>{r.tempo}min</span>:null}
+                    {r.assunto?<span style={{color:'#94a3b8',marginRight:4}}>· {r.assunto.slice(0,35)}</span>:null}
+                    {q>0?<span style={{marginRight:4}}>Q:{q}{pct!==null?<span style={{color:pct>=80?'#34d399':pct>=60?'#fbbf24':'#f87171'}}> ✅{ac}({pct}%)</span>:null}</span>:null}
+                  </div>
                 </div>
-                <div style={{textAlign:'right'}}>
+                <div style={{textAlign:'right',flexShrink:0,marginLeft:8}}>
                   <div style={{fontSize:10,color:c,fontFamily:"'DM Mono',monospace",fontWeight:700}}>{'⭐'.repeat(r.dificuldade||0)}</div>
-                  <div style={{fontSize:8,color:'#475569'}}>{r.id}</div>
+                  <div style={{fontSize:8,color:'#334155',marginTop:2}}>{dtStr}</div>
                 </div>
               </div>
             </div>
@@ -6268,18 +6440,652 @@ function ModalConfig({fechar}){
         )}
 
         {aba==='info'&&(
-          <div style={{display:'flex',flexDirection:'column',gap:8}}>
-            {[['RITY OS','v4.0 — reconstruído'],['Ciclo','Meirelles Opção 3 · 23 blocos'],['Meta semanal','35h+ de estudo'],['Dieta','Low carb · Cetogênico · Jejum IF'],['Kauê','13 anos · Preparatório Colégio Naval'],['Concurso','TCE-RJ — Auditora de Controle Externo']].map(([k,v])=>(
-              <div key={k} style={{display:'flex',justifyContent:'space-between',padding:'10px 12px',borderRadius:9,background:'rgba(148,163,184,.25)',border:'1px solid rgba(255,255,255,.06)'}}>
-                <span style={{fontSize:10,color:'#64748b',fontFamily:"'DM Mono',monospace",fontWeight:700}}>{k}</span>
-                <span style={{fontSize:11,color:'#94a3b8',textAlign:'right',maxWidth:'65%'}}>{v}</span>
+          <div style={{display:'flex',flexDirection:'column',gap:10}}>
+
+            {/* Alertas ativos */}
+            {getAlertasAtivos().map((a,i)=>(
+              <div key={i} style={{padding:'10px 13px',borderRadius:10,background:`${a.cor}15`,border:`1px solid ${a.cor}40`}}>
+                <div style={{fontSize:12,color:a.cor,fontWeight:800}}>{a.msg}</div>
               </div>
             ))}
+
+            {/* TCE-MG Status */}
+            <div style={{padding:'12px',borderRadius:11,background:'rgba(52,211,153,.06)',border:'1px solid rgba(52,211,153,.25)'}}>
+              <div style={{fontSize:9,color:'#34d399',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:8}}>🏆 TCE-MG — SITUAÇÃO ATUAL</div>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:5}}>
+                {[['Posição','58ª'],['Objetiva','61,00'],['Discursiva','10,60 ✅ recurso'],['Total','71,60'],['Gap pos.35','1,99pts discursiva'],['Hetero','12/04 · BH']].map(([k,v])=>(
+                  <div key={k} style={{padding:'6px 8px',borderRadius:7,background:'rgba(52,211,153,.08)'}}>
+                    <div style={{fontSize:8,color:'#64748b',fontFamily:"'DM Mono',monospace"}}>{k}</div>
+                    <div style={{fontSize:11,color:'#34d399',fontWeight:700}}>{v}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{marginTop:8,fontSize:10,color:'#94a3b8',lineHeight:1.5}}>Top 1% com 16.000 inscritos · Nomeação possível 2026 · Saiu do Rio por R$104,90</div>
+            </div>
+
+            {/* Concursos-alvo */}
+            <div style={{padding:'12px',borderRadius:11,background:'rgba(96,165,250,.06)',border:'1px solid rgba(96,165,250,.2)'}}>
+              <div style={{fontSize:9,color:'#60a5fa',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:8}}>🎯 CONCURSOS-ALVO</div>
+              {CONCURSOS_ALVO.filter(c=>c.prioridade!=='descartado').map(c=>{
+                const cor=c.prioridade==='finalizado'?'#34d399':c.prioridade==='principal'?'#f87171':'#fbbf24';
+                return(
+                  <div key={c.codigo} style={{padding:'8px 10px',borderRadius:9,background:`${cor}08`,border:`1px solid ${cor}25`,marginBottom:6}}>
+                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:2}}>
+                      <span style={{fontSize:12,fontWeight:800,color:cor}}>{c.codigo}</span>
+                      <span style={{fontSize:9,color:'#64748b',fontFamily:"'DM Mono',monospace"}}>{c.banca}</span>
+                    </div>
+                    <div style={{fontSize:10,color:'var(--text4)',marginBottom:3}}>{c.status}</div>
+                    {c.salario&&<div style={{fontSize:10,color:'#34d399',fontFamily:"'DM Mono',monospace"}}>{c.vagas} vagas · R${c.salario.toLocaleString('pt-BR')}</div>}
+                    {c.alerta&&<div style={{fontSize:9,color:'#fbbf24',marginTop:4}}>⚠️ {c.alerta}</div>}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Legislação específica TCE-RJ */}
+            <div style={{padding:'12px',borderRadius:11,background:'rgba(251,191,36,.06)',border:'1px solid rgba(251,191,36,.2)'}}>
+              <div style={{fontSize:9,color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:8}}>📖 LEGISLAÇÃO TCE-RJ — 30min/dia Anki</div>
+              {LEGISLACAO_TCE_RJ.map((l,i)=>(
+                <div key={i} style={{display:'flex',justifyContent:'space-between',padding:'5px 8px',borderRadius:6,background:'rgba(251,191,36,.06)',marginBottom:4}}>
+                  <div>
+                    <span style={{fontSize:10,color:'#fbbf24',fontWeight:700,fontFamily:"'DM Mono',monospace"}}>{l.codigo}</span>
+                    <span style={{fontSize:10,color:'var(--text4)',marginLeft:6}}>{l.nome}</span>
+                  </div>
+                  <span style={{fontSize:8,padding:'1px 5px',borderRadius:3,background:`${l.prioridade===1?'#f87171':l.prioridade===2?'#fbbf24':'#60a5fa'}20`,color:l.prioridade===1?'#f87171':l.prioridade===2?'#fbbf24':'#60a5fa',fontFamily:"'DM Mono',monospace",flexShrink:0}}>P{l.prioridade}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Cronograma macro */}
+            <div style={{padding:'12px',borderRadius:11,background:'rgba(167,139,250,.06)',border:'1px solid rgba(167,139,250,.2)'}}>
+              <div style={{fontSize:9,color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:8}}>📅 CRONOGRAMA MACRO</div>
+              {CRONOGRAMA_MACRO.map((p,i)=>(
+                <div key={i} style={{marginBottom:8}}>
+                  <div style={{fontSize:9,color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:4}}>{p.periodo}</div>
+                  {p.eventos.map((e,j)=>{
+                    const cor=e.tipo==='prova'?'#f87171':e.tipo==='descanso'?'#34d399':e.tipo==='edital'?'#fbbf24':e.tipo==='novo'?'#60a5fa':'#94a3b8';
+                    return(
+                      <div key={j} style={{display:'flex',gap:7,marginBottom:3,alignItems:'flex-start'}}>
+                        <span style={{fontSize:8,padding:'1px 5px',borderRadius:3,background:`${cor}20`,color:cor,fontFamily:"'DM Mono',monospace",flexShrink:0,marginTop:1}}>{e.data}</span>
+                        <span style={{fontSize:10,color:'var(--text3)',lineHeight:1.4}}>{e.acao}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+
+            {/* Regras inegociáveis */}
+            <div style={{padding:'12px',borderRadius:11,background:'rgba(248,113,113,.06)',border:'1px solid rgba(248,113,113,.2)'}}>
+              <div style={{fontSize:9,color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:8}}>🔒 REGRAS INEGOCIÁVEIS</div>
+              {REGRAS_INEGOCIAVEIS.map((r,i)=>(
+                <div key={i} style={{display:'flex',gap:6,padding:'5px 8px',borderRadius:6,background:'rgba(248,113,113,.05)',marginBottom:4}}>
+                  <span style={{fontSize:12,flexShrink:0}}>✅</span>
+                  <span style={{fontSize:10,color:'var(--text3)',lineHeight:1.4}}>{r.regra}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Protocolo discursiva */}
+            <div style={{padding:'12px',borderRadius:11,background:'rgba(251,146,60,.06)',border:'1px solid rgba(251,146,60,.2)'}}>
+              <div style={{fontSize:9,color:'#fb923c',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:6}}>✍️ PROTOCOLO DISCURSIVA</div>
+              <div style={{fontSize:10,color:'#34d399',marginBottom:8,lineHeight:1.5}}>{PROTOCOLO_DISCURSIVA.diagnostico}</div>
+              {PROTOCOLO_DISCURSIVA.treinos.map((t,i)=>(
+                <div key={i} style={{padding:'7px 9px',borderRadius:8,background:'rgba(251,146,60,.06)',border:'1px solid rgba(251,146,60,.18)',marginBottom:5}}>
+                  <div style={{fontSize:10,color:'#fb923c',fontWeight:700}}>{t.tipo}</div>
+                  <div style={{fontSize:9,color:'var(--text4)',marginTop:2}}>{t.frequencia} · {t.formato}</div>
+                  {t.recurso&&<div style={{fontSize:9,color:'#60a5fa',marginTop:2}}>🔗 {t.recurso}</div>}
+                </div>
+              ))}
+            </div>
+
+            {/* Info do app */}
+            <div style={{padding:'12px',borderRadius:11,background:'rgba(148,163,184,.06)',border:'1px solid rgba(148,163,184,.15)'}}>
+              <div style={{fontSize:9,color:'#64748b',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:8}}>⚙️ APP</div>
+              {[['Versão','RITY OS v5.0 — Meirelles Ponderado'],['Ciclo','9 · 21 blocos · 09/04→16/04'],['Meta semanal','26–30h (máx. 30h sem edital)'],['Método','Ciclo Meirelles + Anki + Estudo Reverso'],['Dieta','Low carb · Cetogênico'],['Kauê','13 anos · Preparatório Colégio Naval'],['Atualizado','09/04/2026']].map(([k,v])=>(
+                <div key={k} style={{display:'flex',justifyContent:'space-between',padding:'6px 8px',borderRadius:6,background:'rgba(148,163,184,.06)',marginBottom:3}}>
+                  <span style={{fontSize:9,color:'#64748b',fontFamily:"'DM Mono',monospace",fontWeight:700}}>{k}</span>
+                  <span style={{fontSize:10,color:'#94a3b8',textAlign:'right',maxWidth:'65%'}}>{v}</span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
         {msg&&<div style={{marginTop:14,padding:'11px 13px',borderRadius:9,background:'rgba(52,211,153,.1)',border:'1px solid rgba(52,211,153,.3)',fontSize:12,color:'#34d399',fontWeight:700,textAlign:'center'}}>{msg}</div>}
       </div>
+    </div>
+  );
+}
+
+// ─── TAB DADOS — Diário · Por Matéria · Visão Geral ─────────
+function TabDados({horas}){
+  const[sub,setSub]=useState('diario');
+  const[diaOffset,setDiaOffset]=useState(0); // 0=hoje, -1=ontem...
+  const[matSel,setMatSel]=useState('');
+  const[filtro,setFiltro]=useState('semana'); // dia|semana|mes
+
+  const hist=useMemo(()=>lsGet('historico_diario',[]),[]);
+  const hoje=new Date(); hoje.setHours(0,0,0,0);
+  const ts=d=>d.getTime();
+
+  // ── helpers de data ─────────────────────────────────────────
+  const diaAlvo=useMemo(()=>{
+    const d=new Date(hoje); d.setDate(d.getDate()+diaOffset); return d;
+  },[diaOffset]);
+  const fmtDia=d=>{const ns=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];return `${ns[d.getDay()]} ${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;};
+  const isMesmodia=(dt,d)=>{const r=new Date(dt);return r.getFullYear()===d.getFullYear()&&r.getMonth()===d.getMonth()&&r.getDate()===d.getDate();};
+
+  // ── limites de filtro ────────────────────────────────────────
+  const limites=useMemo(()=>{
+    const agora=Date.now();
+    const ini7=agora-7*86400000;
+    const ini30=agora-30*86400000;
+    const inicioMes=new Date(); inicioMes.setDate(1); inicioMes.setHours(0,0,0,0);
+    return{dia:ts(hoje),semana:ini7,mes:ts(inicioMes),todas:0};
+  },[]);
+
+  const limFiltro=filtro==='dia'?limites.dia:filtro==='semana'?limites.semana:limites.mes;
+
+  // ── cores por dificuldade ────────────────────────────────────
+  const corDif=d=>(['#34d399','#a3e635','#fbbf24','#fb923c','#f87171'])[d-1]||'#64748b';
+  const labelDif=d=>(['Fácil','Tranquilo','Médio','Difícil','Muito difícil'])[d-1]||'—';
+  const estrelasDif=d=>'⭐'.repeat(d||0)||'—';
+
+  // ── matérias disponíveis ─────────────────────────────────────
+  const matsDisp=useMemo(()=>{
+    const s=new Set(hist.map(r=>r.materia).filter(Boolean));
+    return [...s].sort();
+  },[hist]);
+
+  const matAtual=matSel||matsDisp[0]||'';
+
+  // ─────────────────────────────────────────────────────────────
+  // FORMA 1 — DIÁRIO
+  // ─────────────────────────────────────────────────────────────
+  function SubDiario(){
+    const sessoesDia=hist.filter(r=>isMesmodia(r.dt||Date.now(),diaAlvo));
+    const horasDia=horas.filter(e=>isMesmodia(e.dt,diaAlvo));
+    const totalMin=horasDia.reduce((s,e)=>s+e.min,0);
+    const totalQ=sessoesDia.reduce((s,r)=>s+(parseInt(r.questoes)||0),0);
+    const totalAc=sessoesDia.reduce((s,r)=>s+(parseInt(r.acertei)||0),0);
+    const pctGeral=totalQ>0?Math.round(totalAc/totalQ*100):null;
+    const difMedia=sessoesDia.filter(r=>r.dificuldade>0).length
+      ?Math.round(sessoesDia.filter(r=>r.dificuldade>0).reduce((s,r)=>s+r.dificuldade,0)/sessoesDia.filter(r=>r.dificuldade>0).length*10)/10
+      :null;
+
+    // Calendário dos últimos 28 dias
+    const calDias=Array.from({length:28},(_,i)=>{
+      const d=new Date(hoje); d.setDate(d.getDate()-27+i);
+      const minD=horas.filter(e=>isMesmodia(e.dt,d)).reduce((s,e)=>s+e.min,0);
+      const sessD=hist.filter(r=>isMesmodia(r.dt||Date.now(),d)).length;
+      return{d,min:minD,sess:sessD,isAlvo:isMesmodia(ts(d),diaAlvo)};
+    });
+    const maxMinCal=Math.max(...calDias.map(c=>c.min),1);
+
+    return(
+      <div>
+        {/* Navegação de dias */}
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12,padding:'10px 14px',borderRadius:12,background:'rgba(96,165,250,.06)',border:'1px solid rgba(96,165,250,.2)'}}>
+          <button onClick={()=>setDiaOffset(v=>v-1)} style={{padding:'6px 14px',borderRadius:8,border:'1px solid rgba(96,165,250,.3)',background:'rgba(96,165,250,.08)',color:'#60a5fa',fontSize:16,cursor:'pointer'}}>←</button>
+          <div style={{textAlign:'center'}}>
+            <div style={{fontSize:14,fontWeight:900,color:'#e8edf5'}}>{fmtDia(diaAlvo)}</div>
+            <div style={{fontSize:9,color:'#64748b',fontFamily:"'DM Mono',monospace"}}>{diaOffset===0?'HOJE':diaOffset===-1?'ONTEM':`há ${Math.abs(diaOffset)} dias`}</div>
+          </div>
+          <button onClick={()=>setDiaOffset(v=>Math.min(v+1,0))} disabled={diaOffset===0} style={{padding:'6px 14px',borderRadius:8,border:'1px solid rgba(96,165,250,.3)',background:diaOffset===0?'rgba(148,163,184,.08)':'rgba(96,165,250,.08)',color:diaOffset===0?'#334155':'#60a5fa',fontSize:16,cursor:diaOffset===0?'default':'pointer'}}>→</button>
+        </div>
+
+        {/* Cards de resumo do dia */}
+        <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:6,marginBottom:12}}>
+          {[
+            ['⏱',fmtMin(totalMin),'Tempo','#60a5fa'],
+            ['📝',totalQ||'—','Questões','#fbbf24'],
+            ['🎯',pctGeral!==null?pctGeral+'%':'—','Acerto','pctGeral!==null?(pctGeral>=80?"#34d399":pctGeral>=60?"#fbbf24":"#f87171"):"#64748b"'],
+            ['⭐',difMedia||'—','Dif média',difMedia?corDif(Math.round(difMedia)):'#64748b'],
+          ].map(([ic,v,l,c],i)=>{
+            const cor=i===2&&pctGeral!==null?(pctGeral>=80?'#34d399':pctGeral>=60?'#fbbf24':'#f87171'):i===3&&difMedia?corDif(Math.round(difMedia)):c;
+            return(
+              <div key={l} style={{padding:'10px 6px',borderRadius:10,background:`${cor}08`,border:`1px solid ${cor}20`,textAlign:'center'}}>
+                <div style={{fontSize:11}}>{ic}</div>
+                <div style={{fontSize:13,fontWeight:900,color:cor,fontFamily:"'DM Mono',monospace",lineHeight:1.1}}>{v}</div>
+                <div style={{fontSize:8,color:'#475569',marginTop:2}}>{l}</div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Calendário de calor 28 dias */}
+        <div style={{marginBottom:14}}>
+          <div style={{fontSize:9,color:'#64748b',fontFamily:"'DM Mono',monospace",letterSpacing:'1px',marginBottom:6}}>📅 ÚLTIMOS 28 DIAS</div>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:3}}>
+            {calDias.map((c,i)=>{
+              const intens=c.min===0?0:Math.min(1,c.min/maxMinCal);
+              const bg=c.min===0?'rgba(255,255,255,.03)':`rgba(96,165,250,${0.1+intens*0.7})`;
+              const bord=c.isAlvo?'#fbbf24':'transparent';
+              return(
+                <div key={i} onClick={()=>setDiaOffset(i-27)} title={`${fmtDia(c.d)} · ${fmtMin(c.min)}`}
+                  style={{aspectRatio:'1',borderRadius:4,background:bg,border:`2px solid ${bord}`,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                  {c.sess>0&&<span style={{fontSize:7,color:'#fff',fontWeight:800,opacity:.7}}>{c.sess}</span>}
+                </div>
+              );
+            })}
+          </div>
+          <div style={{display:'flex',gap:12,marginTop:5,justifyContent:'flex-end'}}>
+            <span style={{fontSize:8,color:'#475569'}}>■ = nº de sessões · cor = intensidade de horas</span>
+          </div>
+        </div>
+
+        {/* Sessões do dia */}
+        {sessoesDia.length===0
+          ?<div style={{textAlign:'center',padding:'24px',color:'#334155',fontSize:12,border:'1px dashed rgba(148,163,184,.2)',borderRadius:12}}>Nenhuma sessão registrada neste dia.</div>
+          :sessoesDia.map((r,i)=>{
+            const q=parseInt(r.questoes)||0; const ac=parseInt(r.acertei)||0;
+            const pct=q>0?Math.round(ac/q*100):null;
+            const dif=r.dificuldade||0;
+            const corP=pct===null?'#64748b':pct>=80?'#34d399':pct>=60?'#fbbf24':'#f87171';
+            const corD=dif>0?corDif(dif):'#64748b';
+            return(
+              <div key={i} style={{padding:'12px 14px',borderRadius:12,background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.07)',marginBottom:6}}>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:6}}>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:13,fontWeight:800,color:'#e8edf5'}}>{r.materia}</div>
+                    {r.assunto&&<div style={{fontSize:10,color:'#64748b',marginTop:1}}>{r.assunto}</div>}
+                  </div>
+                  {r.tempo&&<span style={{fontSize:10,color:'#60a5fa',fontFamily:"'DM Mono',monospace",fontWeight:700,flexShrink:0,marginLeft:8}}>⏱ {r.tempo}min</span>}
+                </div>
+                <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+                  {q>0&&<span style={{fontSize:9,padding:'2px 7px',borderRadius:5,background:`${corP}15`,color:corP,fontFamily:"'DM Mono',monospace",fontWeight:700}}>{ac}/{q}Q · {pct}%</span>}
+                  {dif>0&&<span style={{fontSize:9,padding:'2px 7px',borderRadius:5,background:`${corD}15`,color:corD}}>{estrelasDif(dif)} {labelDif(dif)}</span>}
+                  {r.obs&&<span style={{fontSize:9,color:'#475569',padding:'2px 7px',borderRadius:5,background:'rgba(148,163,184,.08)'}}>📎 obs</span>}
+                </div>
+                {r.obs&&<div style={{fontSize:9,color:'#64748b',marginTop:6,lineHeight:1.5,borderTop:'1px solid rgba(255,255,255,.04)',paddingTop:5}}>{r.obs}</div>}
+              </div>
+            );
+          })
+        }
+      </div>
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // FORMA 2 — POR MATÉRIA
+  // ─────────────────────────────────────────────────────────────
+  function SubPorMateria(){
+    const sessoesMat=hist.filter(r=>r.materia===matAtual);
+    const horasMat=horas.filter(e=>e.mat===matAtual);
+
+    // Tempo por período
+    const minTotal=horasMat.reduce((s,e)=>s+e.min,0);
+    const minSem=horasMat.filter(e=>e.dt>=Date.now()-7*86400000).reduce((s,e)=>s+e.min,0);
+    const minMes=horasMat.filter(e=>e.dt>=limites.mes).reduce((s,e)=>s+e.min,0);
+
+    // Acerto geral
+    const totalQ=sessoesMat.reduce((s,r)=>s+(parseInt(r.questoes)||0),0);
+    const totalAc=sessoesMat.reduce((s,r)=>s+(parseInt(r.acertei)||0),0);
+    const pctGeral=totalQ>0?Math.round(totalAc/totalQ*100):null;
+    const corAc=pctGeral===null?'#64748b':pctGeral>=85?'#34d399':pctGeral>=70?'#fbbf24':'#f87171';
+
+    // Distribuição de dificuldade
+    const difDist=[1,2,3,4,5].map(d=>({d,n:sessoesMat.filter(r=>r.dificuldade===d).length,cor:corDif(d),l:labelDif(d)}));
+    const difTotal=difDist.reduce((s,x)=>s+x.n,0);
+    const difMedia=difTotal>0?sessoesMat.filter(r=>r.dificuldade>0).reduce((s,r)=>s+r.dificuldade,0)/difTotal:null;
+
+    // Por assunto
+    const porAss={};
+    sessoesMat.forEach(r=>{
+      if(!r.assunto)return;
+      const q=parseInt(r.questoes)||0; const ac=parseInt(r.acertei)||0;
+      if(!porAss[r.assunto])porAss[r.assunto]={q:0,ac:0,difs:[],t:0};
+      porAss[r.assunto].q+=q; porAss[r.assunto].ac+=ac;
+      if(r.dificuldade)porAss[r.assunto].difs.push(r.dificuldade);
+      if(r.tempo)porAss[r.assunto].t+=parseInt(r.tempo)||0;
+    });
+
+    // Evolução semanal acerto%
+    const semanas4=Array.from({length:4},(_,i)=>{
+      const fim=new Date(hoje); fim.setDate(fim.getDate()-i*7);
+      const ini=new Date(fim); ini.setDate(ini.getDate()-6);
+      const ss=sessoesMat.filter(r=>{const dt=r.dt||Date.now();return dt>=ts(ini)&&dt<=ts(fim);});
+      const q=ss.reduce((s,r)=>s+(parseInt(r.questoes)||0),0);
+      const ac=ss.reduce((s,r)=>s+(parseInt(r.acertei)||0),0);
+      return{label:`S-${i}`,pct:q>0?Math.round(ac/q*100):null,q};
+    }).reverse();
+
+    // Meirelles
+    const meir=getPrioridadeMeirelles(matAtual);
+    const gseed=GURUJA_SEED[matAtual];
+
+    return(
+      <div>
+        {/* Seletor de matéria */}
+        <div style={{marginBottom:12}}>
+          <div style={{fontSize:9,color:'#64748b',fontFamily:"'DM Mono',monospace",letterSpacing:'1px',marginBottom:6}}>MATÉRIA</div>
+          <div style={{display:'flex',flexWrap:'wrap',gap:5}}>
+            {matsDisp.map(m=>(
+              <button key={m} onClick={()=>setMatSel(m)}
+                style={{padding:'5px 10px',borderRadius:8,border:`1px solid ${m===matAtual?corMeirelles(getPrioridadeMeirelles(m).prioridade):'rgba(148,163,184,.2)'}`,background:m===matAtual?`${corMeirelles(getPrioridadeMeirelles(m).prioridade)}18`:'transparent',color:m===matAtual?corMeirelles(getPrioridadeMeirelles(m).prioridade):'#64748b',fontSize:9,cursor:'pointer',fontWeight:m===matAtual?800:400}}>
+                {m.replace('Dir. ','').replace('Administrat','Adm').slice(0,14)}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Header da matéria */}
+        {matAtual&&(
+          <div style={{padding:'12px 14px',borderRadius:12,background:`${corMeirelles(meir.prioridade)}08`,border:`1px solid ${corMeirelles(meir.prioridade)}30`,marginBottom:12}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
+              <div>
+                <div style={{fontSize:15,fontWeight:900,color:'#e8edf5'}}>{matAtual}</div>
+                <div style={{fontSize:9,color:corMeirelles(meir.prioridade),marginTop:2,fontFamily:"'DM Mono',monospace"}}>{labelMeirelles(meir.prioridade)} · {meir.ferramenta}</div>
+              </div>
+              <div style={{textAlign:'right'}}>
+                {gseed&&<><div style={{fontSize:8,color:'#64748b'}}>Jornada Guruja</div><div style={{fontSize:14,fontWeight:900,color:'#60a5fa',fontFamily:"'DM Mono',monospace"}}>{gseed.jornada}%</div><div style={{fontSize:8,color:'#64748b'}}>{gseed.nivel}</div></>}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 4 blocos de métricas */}
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:12}}>
+          {/* Bloco Tempo */}
+          <div style={{padding:'12px',borderRadius:11,background:'rgba(96,165,250,.06)',border:'1px solid rgba(96,165,250,.2)',gridColumn:'1/-1'}}>
+            <div style={{fontSize:9,color:'#60a5fa',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:8}}>⏱ TEMPO DEDICADO</div>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8}}>
+              {[['Total',fmtMin(minTotal)],['Esta semana',fmtMin(minSem)],['Este mês',fmtMin(minMes)]].map(([l,v])=>(
+                <div key={l} style={{textAlign:'center'}}>
+                  <div style={{fontSize:16,fontWeight:900,color:'#60a5fa',fontFamily:"'DM Mono',monospace"}}>{v}</div>
+                  <div style={{fontSize:8,color:'#475569'}}>{l}</div>
+                </div>
+              ))}
+            </div>
+            {/* Comparativo semana atual vs anterior */}
+            {(()=>{
+              const semAnt=horasMat.filter(e=>e.dt>=Date.now()-14*86400000&&e.dt<Date.now()-7*86400000).reduce((s,e)=>s+e.min,0);
+              const delta=minSem-semAnt;
+              if(semAnt===0&&minSem===0)return null;
+              const cor=delta>=0?'#34d399':'#f87171';
+              return <div style={{marginTop:8,fontSize:9,color:cor,textAlign:'center'}}>{delta>=0?'▲':'▼'} {fmtMin(Math.abs(delta))} vs semana anterior</div>;
+            })()}
+          </div>
+
+          {/* Bloco Acerto */}
+          <div style={{padding:'12px',borderRadius:11,background:`${corAc}06`,border:`1px solid ${corAc}25`}}>
+            <div style={{fontSize:9,color:corAc,fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:8}}>🎯 ACERTO GERAL</div>
+            <div style={{fontSize:32,fontWeight:900,color:corAc,fontFamily:"'DM Mono',monospace",lineHeight:1}}>{pctGeral!==null?`${pctGeral}%`:'—'}</div>
+            <div style={{fontSize:9,color:'#475569',marginTop:4}}>{totalAc}/{totalQ} questões</div>
+            {/* Mini evolução */}
+            <div style={{display:'flex',gap:3,marginTop:8,alignItems:'flex-end',height:28}}>
+              {semanas4.map((s,i)=>{
+                const h=s.pct!==null?Math.max(4,(s.pct/100)*28):4;
+                const cor=s.pct===null?'rgba(148,163,184,.15)':s.pct>=80?'#34d399':s.pct>=60?'#fbbf24':'#f87171';
+                return <div key={i} style={{flex:1,height:h,borderRadius:3,background:cor,transition:'height .3s'}} title={s.pct!==null?`${s.label}: ${s.pct}%`:s.label}/>;
+              })}
+            </div>
+            <div style={{fontSize:7,color:'#334155',marginTop:2,textAlign:'center'}}>4 semanas</div>
+          </div>
+
+          {/* Bloco Dificuldade */}
+          <div style={{padding:'12px',borderRadius:11,background:'rgba(251,191,36,.06)',border:'1px solid rgba(251,191,36,.2)'}}>
+            <div style={{fontSize:9,color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:8}}>⭐ DIFICULDADE</div>
+            {difMedia!==null
+              ?<div style={{fontSize:28,fontWeight:900,color:corDif(Math.round(difMedia)),fontFamily:"'DM Mono',monospace",lineHeight:1}}>{difMedia.toFixed(1)}</div>
+              :<div style={{fontSize:28,fontWeight:900,color:'#334155',fontFamily:"'DM Mono',monospace",lineHeight:1}}>—</div>
+            }
+            <div style={{fontSize:9,color:'#475569',marginTop:4,marginBottom:8}}>{difMedia?labelDif(Math.round(difMedia)):''}</div>
+            {/* Barras de distribuição */}
+            {difDist.map(({d,n,cor,l})=>(
+              <div key={d} style={{display:'flex',alignItems:'center',gap:5,marginBottom:3}}>
+                <span style={{fontSize:8,color:cor,width:8}}>{d}</span>
+                <div style={{flex:1,height:5,borderRadius:3,background:'rgba(255,255,255,.04)',overflow:'hidden'}}>
+                  <div style={{width:`${difTotal>0?Math.round(n/difTotal*100):0}%`,height:'100%',background:cor,borderRadius:3}}/>
+                </div>
+                <span style={{fontSize:8,color:'#475569',width:14,textAlign:'right'}}>{n}</span>
+              </div>
+            ))}
+            {difMedia&&difMedia<=2.5&&<div style={{fontSize:8,color:'#34d399',marginTop:5}}>✅ conteúdo sendo absorvido</div>}
+            {difMedia&&difMedia>=4&&<div style={{fontSize:8,color:'#f87171',marginTop:5}}>⚠️ ainda pesado — continuar</div>}
+          </div>
+        </div>
+
+        {/* Por assunto */}
+        {Object.keys(porAss).length>0&&(
+          <div style={{marginBottom:12}}>
+            <div style={{fontSize:9,color:'#64748b',fontFamily:"'DM Mono',monospace",letterSpacing:'1px',marginBottom:8}}>📖 POR ASSUNTO</div>
+            {Object.entries(porAss).sort((a,b)=>{
+              const pa=a[1].q>0?Math.round(a[1].ac/a[1].q*100):100;
+              const pb=b[1].q>0?Math.round(b[1].ac/b[1].q*100):100;
+              return pa-pb;
+            }).map(([ass,v])=>{
+              const pct=v.q>0?Math.round(v.ac/v.q*100):null;
+              const corP=pct===null?'#64748b':pct>=80?'#34d399':pct>=60?'#fbbf24':'#f87171';
+              const difA=v.difs.length?Math.round(v.difs.reduce((s,x)=>s+x,0)/v.difs.length*10)/10:null;
+              return(
+                <div key={ass} style={{padding:'9px 12px',borderRadius:10,background:`${corP}06`,border:`1px solid ${corP}20`,marginBottom:5}}>
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:4}}>
+                    <div style={{fontSize:11,color:'#e8edf5',fontWeight:700,flex:1,marginRight:8,lineHeight:1.3}}>{ass}</div>
+                    <div style={{flexShrink:0,textAlign:'right'}}>
+                      <div style={{fontSize:14,fontWeight:900,color:corP,fontFamily:"'DM Mono',monospace"}}>{pct!==null?`${pct}%`:'—'}</div>
+                      {v.t>0&&<div style={{fontSize:8,color:'#475569'}}>{fmtMin(v.t)}</div>}
+                    </div>
+                  </div>
+                  <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+                    {v.q>0&&<span style={{fontSize:8,color:'#64748b'}}>{v.ac}/{v.q}Q</span>}
+                    {difA&&<span style={{fontSize:8,color:corDif(Math.round(difA))}}>{estrelasDif(Math.round(difA))} dif {difA}</span>}
+                    {pct!==null&&<BarProg done={v.ac} total={v.q} cor={corP} h={3}/>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Sessões recentes desta matéria */}
+        <div>
+          <div style={{fontSize:9,color:'#64748b',fontFamily:"'DM Mono',monospace",letterSpacing:'1px',marginBottom:8}}>🕐 SESSÕES RECENTES</div>
+          {sessoesMat.length===0
+            ?<div style={{textAlign:'center',padding:'16px',color:'#334155',fontSize:11,border:'1px dashed rgba(148,163,184,.15)',borderRadius:10}}>Nenhuma sessão registrada para esta matéria.</div>
+            :[...sessoesMat].sort((a,b)=>(b.dt||0)-(a.dt||0)).slice(0,6).map((r,i)=>{
+              const q=parseInt(r.questoes)||0; const ac=parseInt(r.acertei)||0;
+              const pct=q>0?Math.round(ac/q*100):null;
+              const corP=pct===null?'#64748b':pct>=80?'#34d399':pct>=60?'#fbbf24':'#f87171';
+              const dif=r.dificuldade||0;
+              const dtStr=r.dt?new Date(r.dt).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}):r.id||'—';
+              return(
+                <div key={i} style={{padding:'9px 12px',borderRadius:10,background:'rgba(255,255,255,.02)',border:'1px solid rgba(255,255,255,.06)',marginBottom:5,display:'flex',gap:10,alignItems:'flex-start'}}>
+                  <span style={{fontSize:9,color:'#475569',fontFamily:"'DM Mono',monospace",flexShrink:0,marginTop:2}}>{dtStr}</span>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontSize:10,color:'#94a3b8',marginBottom:3}}>{r.assunto||'(sem assunto)'}</div>
+                    <div style={{display:'flex',gap:5,flexWrap:'wrap'}}>
+                      {r.tempo&&<span style={{fontSize:8,color:'#60a5fa',fontFamily:"'DM Mono',monospace"}}>⏱{r.tempo}m</span>}
+                      {q>0&&<span style={{fontSize:8,color:corP,fontFamily:"'DM Mono',monospace"}}>{pct}% ({ac}/{q})</span>}
+                      {dif>0&&<span style={{fontSize:8,color:corDif(dif)}}>{estrelasDif(dif)}</span>}
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          }
+        </div>
+      </div>
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // FORMA 3 — VISÃO GERAL com filtro Dia/Semana/Mês
+  // ─────────────────────────────────────────────────────────────
+  function SubVisaoGeral(){
+    const histFilt=hist.filter(r=>(r.dt||Date.now())>=limFiltro);
+    const horasFilt=horas.filter(e=>e.dt>=limFiltro);
+
+    const totalMin=horasFilt.reduce((s,e)=>s+e.min,0);
+    const totalQ=histFilt.reduce((s,r)=>s+(parseInt(r.questoes)||0),0);
+    const totalAc=histFilt.reduce((s,r)=>s+(parseInt(r.acertei)||0),0);
+    const pctGeral=totalQ>0?Math.round(totalAc/totalQ*100):null;
+    const corAc=pctGeral===null?'#64748b':pctGeral>=80?'#34d399':pctGeral>=60?'#fbbf24':'#f87171';
+    const diasEstudados=new Set(histFilt.map(r=>r.id||new Date(r.dt||Date.now()).toISOString().split('T')[0])).size;
+
+    // Por matéria: tempo + acerto + dificuldade
+    const porMat={};
+    histFilt.forEach(r=>{
+      const m=r.materia||'Geral';
+      if(!porMat[m])porMat[m]={min:0,q:0,ac:0,difs:[],sess:0};
+      porMat[m].q+=parseInt(r.questoes)||0;
+      porMat[m].ac+=parseInt(r.acertei)||0;
+      if(r.dificuldade)porMat[m].difs.push(r.dificuldade);
+      if(r.tempo)porMat[m].min+=parseInt(r.tempo)||0;
+      porMat[m].sess++;
+    });
+    horasFilt.forEach(e=>{
+      const m=e.mat||'Geral';
+      if(!porMat[m])porMat[m]={min:0,q:0,ac:0,difs:[],sess:0};
+      porMat[m].min=Math.max(porMat[m].min,e.min); // evita duplicar
+    });
+    const maxMin=Math.max(...Object.values(porMat).map(v=>v.min),1);
+
+    // Distribuição geral de dificuldade
+    const difGeral=[1,2,3,4,5].map(d=>({d,n:histFilt.filter(r=>r.dificuldade===d).length,cor:corDif(d)}));
+    const difTotal=difGeral.reduce((s,x)=>s+x.n,0);
+    const difMediaGeral=difTotal>0?histFilt.filter(r=>r.dificuldade>0).reduce((s,r)=>s+r.dificuldade,0)/difTotal:null;
+
+    // Negligência: matérias do edital sem estudo no período
+    const matsEdital=Object.keys(EDITAL);
+    const negligentes=matsEdital.filter(m=>!porMat[m]||porMat[m].min===0);
+
+    return(
+      <div>
+        {/* Filtro período */}
+        <div style={{display:'flex',gap:6,marginBottom:14}}>
+          {[['dia','Hoje'],['semana','7 dias'],['mes','Este mês']].map(([k,l])=>(
+            <button key={k} onClick={()=>setFiltro(k)}
+              style={{flex:1,padding:'9px 4px',borderRadius:10,border:`2px solid ${filtro===k?'#fbbf24':'rgba(148,163,184,.2)'}`,background:filtro===k?'rgba(251,191,36,.1)':'transparent',color:filtro===k?'#fbbf24':'#64748b',fontSize:11,fontWeight:filtro===k?900:400,cursor:'pointer',fontFamily:"'DM Mono',monospace"}}>
+              {l}
+            </button>
+          ))}
+        </div>
+
+        {/* Cards totais */}
+        <div style={{display:'grid',gridTemplateColumns:'repeat(2,1fr)',gap:6,marginBottom:14}}>
+          {[
+            ['⏱',fmtMin(totalMin),'Tempo total','#60a5fa'],
+            ['📅',diasEstudados,'Dias estudados','#a78bfa'],
+            ['📝',totalQ||'—','Questões','#fbbf24'],
+            ['🎯',pctGeral!==null?pctGeral+'%':'—','Acerto geral',pctGeral===null?'#64748b':corAc],
+          ].map(([ic,v,l,c])=>(
+            <div key={l} style={{padding:'12px',borderRadius:11,background:`${c}08`,border:`1px solid ${c}20`,textAlign:'center'}}>
+              <div style={{fontSize:11,marginBottom:2}}>{ic}</div>
+              <div style={{fontSize:20,fontWeight:900,color:c,fontFamily:"'DM Mono',monospace",lineHeight:1}}>{v}</div>
+              <div style={{fontSize:8,color:'#475569',marginTop:3}}>{l}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Dificuldade geral */}
+        {difTotal>0&&(
+          <div style={{padding:'12px',borderRadius:11,background:'rgba(251,191,36,.05)',border:'1px solid rgba(251,191,36,.18)',marginBottom:14}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+              <span style={{fontSize:9,color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:800}}>⭐ DIFICULDADE GERAL DO PERÍODO</span>
+              {difMediaGeral&&<span style={{fontSize:12,color:corDif(Math.round(difMediaGeral)),fontWeight:900,fontFamily:"'DM Mono',monospace"}}>{difMediaGeral.toFixed(1)} · {labelDif(Math.round(difMediaGeral))}</span>}
+            </div>
+            <div style={{display:'flex',gap:4,height:36,alignItems:'flex-end'}}>
+              {difGeral.map(({d,n,cor})=>{
+                const h=difTotal>0?Math.max(4,(n/difTotal)*36):4;
+                return(
+                  <div key={d} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:2}}>
+                    <div style={{width:'100%',height:h,background:cor,borderRadius:4,opacity:.85}}/>
+                    <span style={{fontSize:7,color:cor}}>{n}</span>
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{display:'flex',justifyContent:'space-between',marginTop:3}}>
+              {['Fácil','','Médio','','Difícil'].map((l,i)=><span key={i} style={{fontSize:7,color:'#475569'}}>{l}</span>)}
+            </div>
+          </div>
+        )}
+
+        {/* Por matéria — tempo + acerto + dificuldade */}
+        <div style={{marginBottom:12}}>
+          <div style={{fontSize:9,color:'#64748b',fontFamily:"'DM Mono',monospace",letterSpacing:'1px',marginBottom:8}}>📊 POR MATÉRIA</div>
+          {Object.entries(porMat).length===0
+            ?<div style={{textAlign:'center',padding:'20px',color:'#334155',fontSize:11,border:'1px dashed rgba(148,163,184,.15)',borderRadius:10}}>Nenhuma sessão no período selecionado.</div>
+            :Object.entries(porMat).sort((a,b)=>b[1].min-a[1].min).map(([mat,v])=>{
+              const pct=v.q>0?Math.round(v.ac/v.q*100):null;
+              const corP=pct===null?'#64748b':pct>=80?'#34d399':pct>=60?'#fbbf24':'#f87171';
+              const difM=v.difs.length?v.difs.reduce((s,x)=>s+x,0)/v.difs.length:null;
+              const meir=getPrioridadeMeirelles(mat);
+              const corM=corMeirelles(meir.prioridade);
+              return(
+                <div key={mat} style={{padding:'10px 12px',borderRadius:11,background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.07)',marginBottom:6}}>
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:6}}>
+                    <div style={{flex:1}}>
+                      <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:2}}>
+                        <span style={{fontSize:12,fontWeight:800,color:'#e8edf5'}}>{mat}</span>
+                        <span style={{fontSize:8,padding:'1px 5px',borderRadius:3,background:`${corM}18`,color:corM,fontFamily:"'DM Mono',monospace"}}>{labelMeirelles(meir.prioridade)}</span>
+                      </div>
+                      <span style={{fontSize:9,color:'#475569'}}>{v.sess} sessão(ões)</span>
+                    </div>
+                    <span style={{fontSize:13,fontWeight:900,color:'#60a5fa',fontFamily:"'DM Mono',monospace",flexShrink:0}}>{fmtMin(v.min)}</span>
+                  </div>
+                  {/* Barra de tempo */}
+                  <div style={{height:5,borderRadius:3,background:'rgba(255,255,255,.05)',overflow:'hidden',marginBottom:5}}>
+                    <div style={{width:`${Math.round(v.min/maxMin*100)}%`,height:'100%',background:'#60a5fa',borderRadius:3}}/>
+                  </div>
+                  {/* Métricas adicionais */}
+                  <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+                    {pct!==null&&(
+                      <div style={{display:'flex',alignItems:'center',gap:4}}>
+                        <span style={{fontSize:9,color:corP,fontFamily:"'DM Mono',monospace",fontWeight:700}}>🎯 {pct}%</span>
+                        <div style={{width:40,height:3,borderRadius:2,background:'rgba(255,255,255,.05)',overflow:'hidden'}}>
+                          <div style={{width:`${pct}%`,height:'100%',background:corP}}/>
+                        </div>
+                      </div>
+                    )}
+                    {difM&&<span style={{fontSize:9,color:corDif(Math.round(difM))}}>{estrelasDif(Math.round(difM))} {difM.toFixed(1)}</span>}
+                    {v.q>0&&<span style={{fontSize:8,color:'#475569'}}>{v.ac}/{v.q}Q</span>}
+                  </div>
+                </div>
+              );
+            })
+          }
+        </div>
+
+        {/* Alerta de matérias negligenciadas */}
+        {negligentes.length>0&&(
+          <div style={{padding:'10px 13px',borderRadius:11,background:'rgba(248,113,113,.06)',border:'1px solid rgba(248,113,113,.2)',marginBottom:12}}>
+            <div style={{fontSize:9,color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:6}}>⚠️ SEM ESTUDO NO PERÍODO</div>
+            <div style={{display:'flex',flexWrap:'wrap',gap:5}}>
+              {negligentes.slice(0,8).map(m=>{
+                const meir=getPrioridadeMeirelles(m);
+                const corM=corMeirelles(meir.prioridade);
+                return <span key={m} style={{fontSize:9,padding:'2px 7px',borderRadius:5,background:`${corM}15`,color:corM,fontFamily:"'DM Mono',monospace"}}>{m.replace('Dir. ','').slice(0,16)}</span>;
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // RENDER PRINCIPAL
+  // ─────────────────────────────────────────────────────────────
+  return(
+    <div style={{maxWidth:680,margin:'0 auto'}}>
+      <div style={{fontSize:9,letterSpacing:'3px',color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:12}}>📓 DADOS DE ESTUDO</div>
+
+      {/* Sub-abas */}
+      <div style={{display:'flex',gap:0,marginBottom:16,borderRadius:11,overflow:'hidden',border:'1px solid rgba(148,163,184,.15)'}}>
+        {[['diario','📅 Diário'],['materia','📈 Por Matéria'],['geral','📊 Visão Geral']].map(([id,l])=>(
+          <button key={id} onClick={()=>setSub(id)}
+            style={{flex:1,padding:'10px 4px',border:'none',borderRight:'1px solid rgba(148,163,184,.1)',background:sub===id?'rgba(251,191,36,.1)':'rgba(255,255,255,.02)',color:sub===id?'#fbbf24':'#475569',fontSize:10,fontWeight:sub===id?900:400,cursor:'pointer',fontFamily:"'DM Mono',monospace",transition:'all .15s'}}>
+            {l}
+          </button>
+        ))}
+      </div>
+
+      {sub==='diario'  &&<SubDiario/>}
+      {sub==='materia' &&<SubPorMateria/>}
+      {sub==='geral'   &&<SubVisaoGeral/>}
     </div>
   );
 }
@@ -6362,6 +7168,7 @@ function App(){
     {id:'estudo',e:'📚',l:'Estudo'},
     {id:'hoje',e:'📅',l:'Hoje'},
     {id:'revisao',e:'🧠',l:'Revisão'},
+    {id:'dados',e:'📓',l:'Dados'},
     {id:'mapa',e:'📊',l:'Mapa'},
   ];
 
@@ -6401,6 +7208,7 @@ function App(){
         {tab==='estudo' &&<TabEstudo feitos={feitos} cicloNum={cicloNum} horas={horas} onConcluir={concluir} onIrPara={irPara} onDesmarcar={desmarcar} onAddHoras={addHoras} onSyncHistorico={syncHistorico} mit={mit} planoSemana={planoSemana} onSavePlano={savePlano}/>}
         {tab==='hoje'   &&<TabHoje feitos={feitos} onAddHoras={addHoras}/>}
         {tab==='revisao'&&<TabRevisao totalBlocos={feitos.length} tmSugestao={tmSugestao} tmIA={tmIA} onSyncHistorico={syncHistorico} onAddHoras={addHoras} ankiSugestoes={calcMotorCanais(feitos,horas,historico).anki.materias||[]} nlmSugestao={calcMotorCanais(feitos,horas,historico).nlm.top||null}/>}
+        {tab==='dados'  &&<TabDados horas={horas}/>}
         {tab==='mapa'   &&<TabMapa/>}
         {tab==='agenda' &&<TabAgenda planoSemana={planoSemana} onSetTab={setTab}/>}
         <div style={{height:80}}/>
