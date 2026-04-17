@@ -362,6 +362,59 @@ function getAlertasAtivos(){
   if(hoje>='2026-06-01') alertas.push({tipo:'editais',msg:'📋 Junho: monitorar editais TCE-SP e TCE-RJ — inscrição imediata',cor:'#fbbf24'});
   return alertas;
 }
+
+// ── PROTOCOLO ANTI-BURNOUT — baseado em diagnóstico 14/04/2026 ─
+const PROTOCOLO_ANTIBURNOUT={
+  diagnostico:'Crash adrenal pós-viagem TCE-MG + esforço cognitivo brutal (8 metas/2 dias) + sono irregular. Taquicardia = SNS sobrecarregado. Quando o corpo grita, a mente não absorve.',
+  sinaisAlerta:['taquicardia','confusão mental','fadiga de decisão','não consegue começar','estuda mas não retém'],
+  cura:['Luz solar matinal antes de abrir o livro','Corrida no Aterro do Flamengo','Contato com a natureza — baixa cortisol e eleva dopamina'],
+  blocos:[
+    {nome:'Lei da Oxigenação',horario:'Antes das 09:00',regra:'Estudo denso SÓ após movimentar o corpo e ver luz solar. Você se paga primeiro com saúde.',cor:'#34d399'},
+    {nome:'Bloco Principal',horario:'09:15–11:30',regra:'Horário nobre. Pesados aqui: Mat. Financeira, Raciocínio Lógico, TI, questões complexas. Cérebro banhado de dopamina pelo treino.',cor:'#60a5fa'},
+    {nome:'Meta Passiva',horario:'18:30–20:00',regra:'Cérebro noturno ≠ cérebro matinal. Apenas: videoaulas, lei seca, revisão leve de caderno, matérias fáceis (Português, Dir. Administrativo).',cor:'#fbbf24'},
+    {nome:'Teto Inquebrável',horario:'20:00',regra:'FECHAMENTO RÍGIDO. Não importa se faltam 10 questões. SNP precisa assumir para dormir bem e acordar às 05h sem sofrimento.',cor:'#f87171'},
+  ],
+  dmv:{
+    nome:'Dia Mínimo Viável',
+    regra:'Em dias de energia 1-2: corte metas pela metade. Comece pela matéria MAIS FÁCIL para gerar vitória. Manter o hábito > volume.',
+    friccaoZero:'Ambiente preparado na noite anterior: caderno na mesa, Anki engatilhado. Se tiver que pensar no que estudar às 05h30, a fadiga de decisão te manda de volta para a cama.',
+  }
+};
+// Lógica: a cada 7 ciclos concluídos no Foco, a matéria da vez
+// entra como bloco extra de 2h. Após registrar, vai para o fim
+// da fila automaticamente. Anki + tempo morto cobrem o restante.
+const FILA_REVISAO_PROFUNDA=[
+  {mat:'TI / Análise de Dados', ic:'💻', cor:'#38bdf8', jornada:15, motivo:'Jornada mais baixa das técnicas — base frágil',     ferramenta:'Gran Cursos'},
+  {mat:'Mat. Financeira',       ic:'🧮', cor:'#a78bfa', jornada:10, motivo:'Sem % de acerto registrado — conteúdo novo',         ferramenta:'Gran Cursos'},
+  {mat:'Adm. Pública',          ic:'🏛️',  cor:'#fb923c', jornada:4,  motivo:'4% da jornada — menor de todas as matérias',        ferramenta:'Guruja'},
+  {mat:'Contabilidade Pública', ic:'📊', cor:'#34d399', jornada:11, motivo:'11% jornada — lançamentos ainda travando',           ferramenta:'TecConcursos'},
+  {mat:'Português',             ic:'📝', cor:'#f472b6', jornada:28, motivo:'Interpretação abaixo da média — cai muito na FGV',   ferramenta:'TecConcursos'},
+  {mat:'Auditoria Governamental',ic:'🔍',cor:'#60a5fa', jornada:25, motivo:'77,6% acerto — abaixo da média histórica',          ferramenta:'Guruja'},
+  {mat:'Raciocínio Lógico',     ic:'🔢', cor:'#f87171', jornada:7,  motivo:'7% jornada — conectivos e proposições instáveis',   ferramenta:'Gran Cursos'},
+  {mat:'AFO',                   ic:'📈', cor:'#fbbf24', jornada:35, motivo:'80,9% — abaixo da média, LRF ainda frágil',         ferramenta:'TecConcursos'},
+];
+
+// Retorna o estado atual da fila (posição + histórico de revisões)
+function getFilaRevProfunda(){
+  const hist=lsGet('rev_profunda_hist',[]);
+  // Descobre qual é a próxima na fila: a que foi revisada há mais tempo
+  // Na ausência de histórico, usa a ordem original
+  const posicoes=FILA_REVISAO_PROFUNDA.map((m,i)=>{
+    const ultRev=hist.filter(h=>h.mat===m.mat).sort((a,b)=>b.cicloRef-a.cicloRef)[0]||null;
+    return{...m,posOriginal:i,ultRevCiclo:ultRev?.cicloRef||0,ultRevData:ultRev?.data||null,totalRevisoes:hist.filter(h=>h.mat===m.mat).length};
+  });
+  // Ordena: quem foi revisada há mais ciclos fica na frente
+  posicoes.sort((a,b)=>a.ultRevCiclo-b.ultRevCiclo||a.posOriginal-b.posOriginal);
+  return posicoes;
+}
+
+// Verifica se é hora de fazer revisão profunda (a cada 7 ciclos do Foco)
+function deveRevisaoProfunda(totalBlocosFoco){
+  const hist=lsGet('rev_profunda_hist',[]);
+  const ultimaRev=hist.length>0?hist.sort((a,b)=>b.cicloRef-a.cicloRef)[0]:null;
+  const ultimoCicloRev=ultimaRev?.cicloRef||0;
+  return totalBlocosFoco>0&&(totalBlocosFoco-ultimoCicloRev)>=7;
+}
 // Fonte: arquivo de planejamento 08/04/2026
 // estrelas = importância do tópico para a prova (por tópico, não por matéria)
 // prioridade = estrelas × déficit × jornada
@@ -501,7 +554,7 @@ const Sync={
       });
       // Após pull, empurra chaves locais que não estão na nuvem
       const cloudKeys=new Set((data||[]).map(r=>r.key));
-      const syncKeys=['feitos','cicloNum','horas','historico_diario','rev_anki','rev_nlm','rev_caderno','rev_1h30','rev_topicos','anki_meta','dif_base_materias','criticos_manuais','edital_status','guruja_data','plano_semanal','urgentes_ia','ia_hist','theme_mode','ciclo_versao','ciclo_extras'];
+      const syncKeys=['feitos','cicloNum','horas','historico_diario','rev_anki','rev_nlm','rev_caderno','rev_1h30','rev_topicos','anki_meta','dif_base_materias','criticos_manuais','edital_status','guruja_data','plano_semanal','urgentes_ia','ia_hist','theme_mode','ciclo_versao','ciclo_extras','rev_profunda_hist'];
       for(const k of syncKeys){
         if(!cloudKeys.has(k)){
           const v=localStorage.getItem(k);
@@ -1109,29 +1162,39 @@ function TabIA({appCtx,onMIT}){
     const planoSem=lsGet('plano_semanal',null);
     return `Você é a Assessora IA pessoal da Ritchely — mentora de alto desempenho para concursos fiscais.
 
-PERFIL: Ritchely, 38 anos, mãe solo do Kauê (13a, Colégio Naval). Acorda 04h30. Cetogênica/low carb. Corre 3x/semana. Trabalha Ter/Qui/Sex 13h-17h.
+PERFIL: Ritchely, 38 anos, mãe solo do Kauê (13a, Colégio Naval). Acorda 05h00. Cetogênica/low carb. Corre 3x/semana no Aterro do Flamengo. Trabalha Ter/Qui/Sex 13h-17h.
 
-SITUAÇÃO ATUAL — CRÍTICO:
-- TCE-MG: TOP 1% (16.000 inscritos) · posição 58ª · objetiva 61,00 · discursiva 10,60 (aprovada após recurso) · HETEROIDENTIFICAÇÃO 12/04 BH
+DIAGNÓSTICO ATUAL — ANTI-BURNOUT:
+${PROTOCOLO_ANTIBURNOUT.diagnostico}
+Sinais de alerta: ${PROTOCOLO_ANTIBURNOUT.sinaisAlerta.join(' · ')}
+Cura natural: ${PROTOCOLO_ANTIBURNOUT.cura.join(' · ')}
+
+NOVA GRADE DE BLOCOS (4 leis inegociáveis):
+${PROTOCOLO_ANTIBURNOUT.blocos.map(b=>`[${b.horario}] ${b.nome}: ${b.regra}`).join('\n')}
+
+DIA MÍNIMO VIÁVEL: ${PROTOCOLO_ANTIBURNOUT.dmv.regra}
+Fricção zero: ${PROTOCOLO_ANTIBURNOUT.dmv.friccaoZero}
+
+SITUAÇÃO ATUAL — CONCURSOS:
+- TCE-MG: TOP 1% (16.000 inscritos) · posição 58ª · objetiva 61,00 · discursiva 10,60 (aprovada após recurso)
 - Gap para nomeação: apenas 1,99 pts na discursiva para posição 35 · nomeação possível 2026
-- Diagnóstico: candidata em FINALIZAÇÃO de aprovações. Gargalo = legislação específica + gestão de energia, NÃO conteúdo.
+- Diagnóstico: candidata em FINALIZAÇÃO. Gargalo = legislação específica + gestão de energia, NÃO conteúdo.
 
 CONCURSOS-ALVO:
-1. TCE-RJ (principal) — 10 vagas · R$19.793 · edital jun/2026 · banca em definição
-2. TCE-SP DIPE (principal) — 50 vagas · R$20.940 · Vunesp · edital jun/2026 · ⚠️ TEM INGLÊS (5 questões)
+1. TCE-RJ (principal) — 10 vagas · R$19.793 · edital jun/2026
+2. TCE-SP DIPE (principal) — 50 vagas · R$20.940 · Vunesp · jun/2026 · ⚠️ TEM INGLÊS (5 questões)
 3. ISS Niterói (estratégico) — R$30.468 · FGV · 2º sem/2026
-4. TCE-SC: DESCARTADO
-
-RESULTADOS COMPROVADOS: TCE-MG top 1% · Câmara Rio 87,8pts objetiva e 22,8/30 discursiva · Domina FGV, Cebraspe e Vunesp
 
 ALERTAS ATIVOS: ${getAlertasAtivos().map(a=>a.msg).join(' | ')||'nenhum alerta crítico hoje'}
 
-LEGISLAÇÃO ESPECÍFICA TCE-RJ (30min/dia Anki):
-${LEGISLACAO_TCE_RJ.map(l=>`${l.codigo} — ${l.nome}`).join(' · ')}
+LEGISLAÇÃO TCE-RJ (30min/dia Anki): ${LEGISLACAO_TCE_RJ.map(l=>l.codigo).join(' · ')}
 
 REGRAS INEGOCIÁVEIS: ${REGRAS_INEGOCIAVEIS.map(r=>r.regra).join(' | ')}
 
-MÉTODO: Ciclo Meirelles — ⭐ = importância para prova (NÃO dificuldade) · estrelas por tópico · nunca mesma disciplina em dias consecutivos · ciclo = fila sequencial
+FILA REVISÃO PROFUNDA (a cada 7 blocos do Foco — 2h cada):
+${FILA_REVISAO_PROFUNDA.map((m,i)=>`${i+1}. ${m.mat} (${m.jornada}% jornada · ${m.ferramenta})`).join(' → ')}
+
+MÉTODO: Ciclo Meirelles — ⭐ = importância para prova · estrelas por tópico · nunca mesma disciplina em dias consecutivos
 
 DADOS DO APP AGORA:
 - ${NOMES_DIA[dw]}, ${fH(d)}
@@ -1144,43 +1207,28 @@ DADOS DO APP AGORA:
 - Aproveitamento: ${fmtRanking()}
 - MATÉRIAS URGENTES (registradas): ${lsGet('urgentes_ia',[]).map(u=>u.mat+(u.contexto?' ('+u.contexto+')':'')).join(', ')||'nenhuma'}
 - Score Guruja: ${gurujaData?.alerta||'não analisado ainda'}
-- Erros no caderno: ${(()=>{const erros=lsGet('caderno_erros',[]);const agora=Date.now();const iv=[1,3,7,15,30];return erros.filter(e=>!e.dominado&&e.dt+iv[Math.min(e.revisoes||0,iv.length-1)]*86400000<=agora).length;})()} ativos
-- Plano semanal: ${planoSem?`aprovado — top matéria: ${planoSem.plano?.[0]?.mat||'?'} (${planoSem.plano?.[0]?.horasEditadas||planoSem.plano?.[0]?.horasSugeridas||'?'}h)`:'não definido ainda'}
+- Revisão Profunda: ${deveRevisaoProfunda(appCtx.feitosN)?`🚨 HORA DE REVISAR — ${getFilaRevProfunda()[0]?.mat}`:'ok'}
 
-ESCALA DE APROVEITAMENTO (use SEMPRE para interpretar dados):
-≥85% = SÓLIDO — não precisa foco urgente
-70-84% = ATENÇÃO — revisar na próxima semana
-<70% = CRÍTICO — foco imediato
-dif base 4-5⭐ sem questões = CRÍTICO por dificuldade
-dif base 1-2⭐ sem questões = monitorar
+ESCALA DE APROVEITAMENTO:
+≥85% = SÓLIDO · 70-84% = ATENÇÃO · <70% = CRÍTICO
 NUNCA chame de ruim algo ≥85%. NUNCA chame de bom algo <70%.
 
-TÓPICOS MAIS COBRADOS TCE-RJ (cruze com aproveitamento para sugerir o que estudar):
-Português: Interpretação de Textos 32%, Reescrita 14%, Clareza 9%
-Dir.Constitucional: Art.5º 11%, Competências União 8%, Arts.37/38 6%
-Dir.Administrativo: Improbidade Lei 8.429 8%, Resp.Civil Estado 5%, Poder de Polícia 4%
-Dir.Tributário: Princípios 11%, ICMS 7%, Responsabilidade Tributária 5%
-AFO: Classificação Despesa 7%, Natureza Receita 5%, Créditos Adicionais 5%
-Auditoria: Testes Específicos 22%, Procedimentos 13%, Relatórios Auditor 8%
-Contabilidade: Princípios Contábeis 6%, DRE 5%, DFC 5%, Balanço 5%
-Dir.Civil: Personalidade/Capacidade 14%, Bens Públicos 9%, Usucapião 9%
-Dir.Penal: Dolo/Culpa 11%, Peculato 10%, Concussão 8%
-Raciocínio Lógico: Associação 20%, Equivalências 16%, Tabela Verdade 16%
-TI: ITIL 6%, Auditoria Sistemas 5%, COBIT 5 4%
-Quando aproveitamento <70% em uma matéria, citar o tópico mais pesado que ela deve atacar.
+TÓPICOS MAIS COBRADOS TCE-RJ:
+Português: Interpretação 32%, Reescrita 14% · Dir.Const: Art.5º 11%, Comp.União 8%
+Dir.Adm: Improbidade 8%, Resp.Civil 5% · Dir.Trib: Princípios 11%, ICMS 7%
+AFO: Class.Despesa 7%, Nat.Receita 5% · Auditoria: Testes 22%, Proc.13%
+Contab: Princípios 6%, DRE 5% · RLOG: Associação 20%, Equivalências 16%
 
-SISTEMA DE REVISÃO (3 MÉTODOS — use SEMPRE para orientar):
-TEC = caderno de erros, questões erradas, revisão rápida 30min/dia, todo dia
-ANKI = conceitos para solidificar, meta 75 cards/dia, 30min/dia, todo dia
-NLM = teoria profunda 1h30, SÓ em janela de ciclo (bloco 12-13 ou 20-21) OU padrão crônico detectado
-REGRA: mesma matéria no TEC 3+ dias = lacuna teórica = sugerir NLM, não mais TEC
-NUNCA sugira NLM para matéria que só precisa de questão
-NUNCA sugira TEC para matéria que precisa reconstruir teoria
+SISTEMA DE REVISÃO:
+TEC = erros, questões erradas, 30min/dia · ANKI = conceitos, 75 cards/dia
+NLM = teoria profunda 1h30, janela bloco 12-13 ou 20-21
+REGRA: mesma matéria no TEC 3+ dias = lacuna teórica = sugerir NLM
 
-- Não fez ontem: ${(()=>{const d=new Date();d.setDate(d.getDate()-1);const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;const nf=lsGet('nao_fiz_'+k,{});const items=Object.entries(nf).map(([m,v])=>`${m}(${v.motivo||'sem motivo'})`);return items.length?items.join(', '):'tudo feito';})()} 
-- TEC pendente hoje: ${(()=>{const hoje=getDK();const fila=lsGet('tec_fila',[]);const todayMs=new Date().setHours(0,0,0,0);const pend=fila.filter(t=>!t.feito&&new Date(t.prazo).setHours(0,0,0,0)<=todayMs);return pend.length>0?pend.map(t=>`${t.mat}(${t.pct!==null?t.pct+'%':'sem%'})`).join(', '):'nenhum vencendo hoje';})()} 
-- Anki hoje: ${(()=>{const hoje=getDK();const f=lsGet('anki_feito_'+hoje,null);const meta=(lsGet('anki_meta',{meta:75})).meta||75;return f?`✅ feito (${f.cards} cards)`:`pendente — meta ${meta}`;})()}
-- Status edital: ${(()=>{const st=lsGet('edital_status',{});const mats=Object.keys(EDITAL);const res=mats.map(m=>{const tops=EDITAL[m].top;const dom=tops.filter(t=>st[m+':'+t.t]==='domino').length;const est=tops.filter(t=>st[m+':'+t.t]==='estudei').length;if(dom===0&&est===0)return null;return `${m}:${dom}✅${est}🟡/${tops.length}`;}).filter(Boolean);return res.length?res.join(' | '):'nenhum tópico marcado ainda';})()}
+ANTI-BURNOUT — COMO AGIR:
+- Se energia 1-2: DMV, começa pela mais fácil, não force o pesado
+- Se taquicardia/confusão: parar. Luz solar + caminhada. Voltar depois.
+- Nunca estudar após 20h. Nunca pular a lei da oxigenação.
+- Bloco noturno (18h30-20h) = PASSIVO apenas. Pesado pela manhã.
 
 ESTILO: Direta, calorosa, sem frases vazias. Máx 120 palavras. Uma ação concreta sempre.
 Se mencionar MITs, inclua: MIT:["t1","t2","t3"]`;
@@ -1192,42 +1240,60 @@ Se mencionar MITs, inclua: MIT:["t1","t2","t3"]`;
     const trabalha=[1,2,5].includes(dw);
     const fimSem=[0,6].includes(dw);
     const historico=lsGet('historico_diario',[]);
-    const ultReg=historico.slice(-1)[0];
-    const urgentes=lsGet('rev_urgentes',[]);
+    const ultReg=[...historico].sort((a,b)=>(b.dt||0)-(a.dt||0))[0];
     const gurujaData=lsGet('guruja_data',null);
     const piorMat=gurujaData?.prioridades?.find(p=>p.status==='critica')?.mat||null;
     const planoSem2=lsGet('plano_semanal',null);
-    const errosCad=lsGet('caderno_erros',[]).filter(e=>!e.dominado).length;
+    const errosCad=lsGet('rev_caderno',[]).filter(e=>!e.dominado&&!e.feito).length;
     const urgIA2=lsGet('urgentes_ia',[]);
+    const deveRP=deveRevisaoProfunda(appCtx.feitosN);
+    const proximaRP=getFilaRevProfunda()[0];
+    const ankiHoje=lsGet('anki_feito_'+getDK(),null);
 
     const perguntas5=[
-      `1. **Qual é o seu PESADO de hoje?**\n   Próximo bloco: ${appCtx.pendentes[0]?.mat||'?'} (${appCtx.pendentes[0]?.tag||''}). Qual tópico específico dentro dessa matéria você vai atacar?`,
-      `2. **O que pode te travar hoje?**\n   ${trabalha?'Você tem trabalho às 13h.':fimSem?'Fim de semana — risco de dispersão.':'Dia livre.'} ${urgentes.length>0?`Tem ${urgentes.length} urgente(s) pendente(s).`:''} O que pode roubar seu foco agora?`,
-      `3. **Qual o plano B se o bloco principal cair?**\n   Se não conseguir sentar para o estudo principal, qual o mínimo que não pode ficar sem fazer hoje?`,
-      `4. **O que ficou pendente de ontem?**\n   ${ultReg?`Ontem: ${ultReg.materia}, dif ${ultReg.dificuldade}★.${ultReg.audioFeito?'':' Áudio NLM não feito.'}`:'Sem registro de ontem.'} ${piorMat?`Score crítico no Guruja: ${piorMat}.`:''} O que arrastou?`,
-      `5. **Uma coisa diferente de ontem?**\n   Qual ajuste de método, ferramenta ou postura você faz hoje?`
+      `1. **ENERGIA E CORPO**\n   Nível de energia (1 a 5): ___ · Dormi bem? S/N · Taquicardia ou tensão? S/N\n   Se energia ≤ 2 → DMV: começa pela matéria mais fácil, metas pela metade.\n   Se taquicardia → luz solar + caminhada ANTES de abrir qualquer livro.`,
+
+      `2. **LEI DA OXIGENAÇÃO (antes das 09h)**\n   Treino feito? ${['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'][dw]} → treino: ${['CORRIDA LONGA 60min','CORRIDA LEVE 35min','CORRIDA PESADA 50min','CORRIDA LEVE 35min','CORRIDA PESADA 50min','CORRIDA LEVE 35min','descanso'][dw]}\n   Luz solar antes do livro? S/N · Ambiente preparado (caderno + Anki engatilhado)? S/N`,
+
+      `3. **BLOCO PRINCIPAL (09h15–11h30) — pesado aqui**\n   Próx. bloco do ciclo: ${appCtx.pendentes[0]?.mat||'?'} (${appCtx.pendentes[0]?.tag||''})\n   ${deveRP?`🔄 REVISÃO PROFUNDA: ${proximaRP?.mat} — 2h. Adicionar ao Foco hoje?`:'Bloco pesado normal.'}\n   Qual tópico específico vai atacar?`,
+
+      `4. **META PASSIVA (18h30–20h) — leve apenas**\n   ${trabalha?'Você tem trabalho às 13h-17h. Bloco noturno disponível.':'Dia sem trabalho — foco total no matinal.'}\n   Para hoje à noite (SE for estudar): videoaula, lei seca ou ${piorMat?`revisão de ${piorMat}`:'matéria fácil'}\n   PROIBIDO: pesado, questões complexas, matéria nova após 18h30.`,
+
+      `5. **FECHAMENTO RÍGIDO**\n   ${ultReg?`Ontem: ${ultReg.materia}, dif ${ultReg.dificuldade}★, ${ultReg.questoes||0}Q.`:'Sem registro de ontem.'}\n   Anki hoje: ${ankiHoje?`✅ feito (${ankiHoje.cards} cards)`:'⚠️ pendente — meta 75 cards'}\n   O que não pode faltar hoje mesmo que tudo dê errado?\n   Deu 20h → PARA. Sem negociação.`
     ];
 
     const diag=[
-      `\n⚡ **MEU ESTADO AGORA**\n• Energia (1 a 5):\n• Dormi bem? Sim / Não\n• Anki feito? ✅ / ❌\n• Em uma palavra, como estou:`,
-      `\n📚 **MEU ESTUDO DE HOJE**\n• Matéria do Deep Work 1:\n• Foco do Deep Work 2: Questões / Revisão de erros / Prova antiga / Deixa a IA decidir\n• Algo me travando ou evitando no estudo:`,
-      `\n🗂️ **MINHA VIDA HOJE**\n• Algo mudou na agenda de hoje?\n• Mercado ou cozinha hoje? Sim / Não\n• Urgência ou imprevisto que surgiu:`,
-      `\n👦 **KAUÊ**\n• Kauê precisa de algo específico hoje?\n• Tem compromisso do Kauê que impacta meu horário?`,
-    ];
+      `\n⚡ **MEU ESTADO AGORA**\n• Energia (1-5):\n• Dormi bem?\n• Taquicardia / tensão física?\n• Em uma palavra, como estou:`,
 
-    diag.push(`\n📅 **PLANO DA SEMANA**\n${planoSem2?`Aprovado: ${planoSem2.plano?.slice(0,3).map((p,i)=>`${i+1}. ${p.mat} — ${p.horasEditadas||p.horasSugeridas}h`).join(', ')||'sem detalhes'}\nDiagnóstico: ${planoSem2.diagnostico||''}`:' Sem plano aprovado — use Estudo → Planejamento no domingo.'}${errosCad>0?`\nCaderno de erros: ${errosCad} erros ativos para revisar.`:''}`);
-    if(!fimSem) diag.push(`\n🏁 **FECHAMENTO DA SEMANA** (${appCtx.minSemana<35*60?`faltam ${fmtMin(35*60-appCtx.minSemana)} para a meta`:'meta batida! ✅'})\n• O que ficou pendente essa semana?\n• Tem algo arrastando há mais de 3 dias?\n• O que não vou deixar entrar no fim de semana:`);
+      `\n🌅 **LEI DA OXIGENAÇÃO**\n• Treino feito ou planejado para quando:\n• Luz solar antes do estudo?\n• Ambiente preparado na noite anterior?`,
+
+      `\n📚 **BLOCO PRINCIPAL 09h15–11h30**\n• Matéria pesada de hoje (Mat. Financeira / RLOG / TI / questões):\n• Tópico específico:\n• Algo me travando para começar:`,
+
+      `\n🌆 **META PASSIVA 18h30–20h**\n• O que vou fazer nesse bloco (LEVE): videoaula / lei seca / revisão / nada\n• ${trabalha?'Trabalho das 13h–17h. Energia restante estimada:':'Dia livre. Prioridade no matinal.'}`,
+
+      `\n👦 **KAUÊ**\n• Kauê precisa de algo hoje?\n• Compromisso que impacta o horário:`,
+    ];
 
     const ranking2=calcRankingAproveitamento();
     const criticos=[
-      ...ranking2.comDado.filter(r=>r.pct<70).map(r=>`${r.mat} ${r.pct}% (${r.q}Q) — CRÍTICO por aproveitamento`),
-      ...ranking2.semDado.filter(r=>r.pct<=30).map(r=>`${r.mat} dif${r.difBase}⭐ — CRÍTICO por dificuldade base`),
+      ...ranking2.comDado.filter(r=>r.pct<70).map(r=>`${r.mat} ${r.pct}% — CRÍTICO`),
+      ...ranking2.semDado.filter(r=>r.pct<=30).map(r=>`${r.mat} dif${r.difBase}⭐ — CRÍTICO base`),
       ...urgIA2.map(u=>`${u.mat}${u.contexto?' — '+u.contexto:''}`)
     ];
-    diag.push(`\n🚨 **MATÉRIAS CRÍTICAS**\n${criticos.length>0?criticos.map((c2,i)=>`${i+1}. ${c2}`).join('\n'):'Nenhuma matéria crítica detectada.'}\n\n📊 **APROVEITAMENTO COMPLETO**\n${fmtRanking()}`);
-    diag.push(`\n🏆 **REFLEXÃO**\n• Maior vitória de ontem:\n• O que eu evitaria fazer hoje se pudesse:\n• Minha meta mínima de hoje (se tudo der errado, isso não pode ficar sem fazer):`);
 
-    return`✦ BOM DIA, RITCHELY!\n\n${NOMES_DIA[d.getDay()]} · ${fH(d)} · Ciclo ${appCtx.cicloNum} · ${fmtMin(appCtx.minSemana)} essa semana\n\n${'─'.repeat(40)}\n🎯 PERGUNTAS DE IGNIÇÃO\n${'─'.repeat(40)}\n\n${perguntas5.join('\n\n')}\n\n${'─'.repeat(40)}\n📋 DIAGNÓSTICO DO DIA\n${'─'.repeat(40)}\n${diag.join('\n')}\n\n${'─'.repeat(40)}\n\n📝 *Responda no campo abaixo o que quiser, como quiser. Pode responder tudo, só parte, ou falar outra coisa que surgiu. A IA cruza com seus dados e monta o plano.*`;
+    diag.push(`\n🚨 **MATÉRIAS CRÍTICAS**\n${criticos.length>0?criticos.map((c,i)=>`${i+1}. ${c}`).join('\n'):'Nenhuma crítica detectada.'}\n\n📊 **APROVEITAMENTO**\n${fmtRanking()}`);
+
+    if(deveRP) diag.push(`\n🔄 **REVISÃO PROFUNDA — HORA!**\nMatéria da vez: ${proximaRP?.mat||'?'} (${proximaRP?.jornada}% jornada · ${proximaRP?.ferramenta})\nAdicione ao Foco na aba Revisão → Rev. Prof.`);
+
+    if(planoSem2) diag.push(`\n📅 **PLANO DA SEMANA**\n${planoSem2.plano?.slice(0,3).map((p,i)=>`${i+1}. ${p.mat} — ${p.horasEditadas||p.horasSugeridas}h`).join('\n')||'sem detalhes'}`);
+
+    if(errosCad>0) diag.push(`\n📕 **CADERNO DE ERROS**\n${errosCad} erro(s) para revisar hoje no TEC.`);
+
+    diag.push(`\n🏆 **REFLEXÃO**\n• Maior vitória de ontem:\n• Meta mínima hoje (se tudo der errado, isso não pode faltar):\n• O que preparo hoje à noite para amanhã (fricção zero):`);
+
+    const semStatus=appCtx.minSemana<26*60?`faltam ${fmtMin(26*60-appCtx.minSemana)} para a meta mínima (26h)`:appCtx.minSemana<30*60?`no caminho (${fmtMin(appCtx.minSemana)} de 30h)`:'meta batida! ✅';
+
+    return`✦ BOM DIA, RITCHELY!\n\n${['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'][dw]} · ${fH(d)} · Ciclo ${appCtx.cicloNum} · Semana: ${fmtMin(appCtx.minSemana)} · ${semStatus}\n\n${'─'.repeat(40)}\n🎯 5 PERGUNTAS DE IGNIÇÃO\n${'─'.repeat(40)}\n\n${perguntas5.join('\n\n')}\n\n${'─'.repeat(40)}\n📋 DIAGNÓSTICO DO DIA\n${'─'.repeat(40)}\n${diag.join('\n')}\n\n${'─'.repeat(40)}\n\n📝 *Responda o que quiser. A IA cruza com seus dados, checa sua energia e monta o plano respeitando os blocos da nova grade.*`;
   }
 
   async function enviar(texto){
@@ -2708,6 +2774,30 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
 
           {/* Revisão mínima */}
           <div style={{padding:'14px',borderRadius:13,background:hspFeito.min?'rgba(52,211,153,.07)':'rgba(167,139,250,.06)',border:`2px solid ${hspFeito.min?'rgba(52,211,153,.4)':'rgba(167,139,250,.3)'}`,marginBottom:8}}>
+            {/* Revisão Profunda — aparece quando é hora (a cada 7 blocos) */}
+            {(()=>{
+              const deveRP=deveRevisaoProfunda(feitos.length);
+              const filaRP=getFilaRevProfunda();
+              const proxRP=filaRP[0];
+              if(!deveRP||!proxRP)return null;
+              return(
+                <div style={{marginBottom:10,padding:'11px 13px',borderRadius:10,background:`${proxRP.cor}10`,border:`2px solid ${proxRP.cor}50`}}>
+                  <div style={{fontSize:9,color:proxRP.cor,fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:6}}>🔄 REVISÃO PROFUNDA — 2h HOJE</div>
+                  <div style={{fontSize:14,fontWeight:900,color:'#e8edf5',marginBottom:3}}>{proxRP.ic} {proxRP.mat}</div>
+                  <div style={{fontSize:10,color:'#64748b',marginBottom:8}}>{proxRP.motivo}</div>
+                  <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:8}}>
+                    <span style={{fontSize:9,padding:'2px 7px',borderRadius:5,background:`${proxRP.cor}15`,color:proxRP.cor,fontFamily:"'DM Mono',monospace"}}>{proxRP.ferramenta}</span>
+                    <span style={{fontSize:9,padding:'2px 7px',borderRadius:5,background:'rgba(167,139,250,.12)',color:'#a78bfa',fontFamily:"'DM Mono',monospace"}}>{proxRP.jornada}% jornada</span>
+                  </div>
+                  <button onClick={()=>{
+                    const extra={id:'extra_'+Date.now(),mat:proxRP.mat,ic:proxRP.ic,cor:proxRP.cor,tag:'🔄 REVISÃO PROFUNDA',conteudo:proxRP.motivo,pctAnterior:0,h:2,tipo:'Revisão Profunda',criadoEm:getDK(),feito:false};
+                    const n=[...lsGet('ciclo_extras',[]),extra];lsSet('ciclo_extras',n);
+                  }} style={{width:'100%',padding:'9px',borderRadius:8,border:'none',background:proxRP.cor,color:'#050a14',fontSize:11,fontWeight:800,cursor:'pointer'}}>
+                    ▶ Adicionar ao Foco
+                  </button>
+                </div>
+              );
+            })()}
             <div style={{marginBottom:8}}>
               <div style={{fontSize:9,color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:4}}>🟢 REVISÃO MÍNIMA — o mínimo do mínimo</div>
               <div style={{fontSize:14,fontWeight:900,color:'var(--text)'}}>🃏 Anki — 25 cards</div>
@@ -4440,7 +4530,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
     {id:'edital',l:'📋 Edital'},
     {id:'anki',l:'🃏 Anki'},
     {id:'nlm',l:'🎧 NLM'},
-    {id:'rev1h30',l:`🔄 1h30${deve1h30?' 🚨':''}`},
+    {id:'rev1h30',l:`🔄 Rev. Prof.${deveRevisaoProfunda(totalBlocos)?' 🚨':''}`},
     {id:'caderno',l:'📕 Cad. Erros'},
     {id:'topicos',l:'📌 Revisitar'},
   ];
@@ -4956,65 +5046,214 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
         );
       })()}
 
-      {/* REVISÃO 1H30 */}
-      {aba==='rev1h30'&&<div>
-        <div style={{background:deve1h30?'linear-gradient(135deg,rgba(251,191,36,.1),rgba(15,23,42,.98))':'rgba(251,191,36,.03)',border:`${deve1h30?'2px':'1px'} solid ${deve1h30?'rgba(251,191,36,.5)':'rgba(251,191,36,.18)'}`,borderRadius:13,padding:'14px',marginBottom:12}}>
-          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
-            <div style={{fontSize:9,letterSpacing:'3px',color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:800}}>🔄 REVISÃO 1H30</div>
-            <span style={{padding:'3px 8px',borderRadius:5,background:'rgba(251,191,36,.15)',color:'#fbbf24',fontSize:9,fontFamily:"'DM Mono',monospace",fontWeight:700}}>{totalBlocos} blocos</span>
-          </div>
-          {!deve1h30&&<div>
-            <div style={{fontSize:11,color:'#94a3b8',marginBottom:8}}>A cada 5 blocos concluídos. Faltam <strong style={{color:'#fbbf24'}}>{faltam1h30}</strong> bloco{faltam1h30!==1?'s':''}.</div>
-            <BarProg done={5-faltam1h30} total={5} cor='#fbbf24' h={7}/>
-            {ultimaRev&&<div style={{fontSize:9,color:'#334155',marginTop:6,fontFamily:"'DM Mono',monospace"}}>Última: bloco {ultimoBlocoRev} · {ultimaRev.dia}</div>}
-          </div>}
-          {deve1h30&&<div>
-            <div style={{padding:'9px 11px',borderRadius:9,background:'rgba(251,191,36,.12)',border:'1px solid rgba(251,191,36,.3)',marginBottom:12}}>
-              <div style={{fontSize:13,fontWeight:800,color:'#fbbf24'}}>🚨 HORA DA REVISÃO GRANDE!</div>
-              <div style={{fontSize:10,color:'rgba(251,191,36,.7)',marginTop:2}}>{blocosDesde} blocos desde a última. Registre as matérias.</div>
+      {/* REVISÃO PROFUNDA — substitui 1h30 */}
+      {aba==='rev1h30'&&(()=>{
+        const fila=getFilaRevProfunda();
+        const proxima=fila[0];
+        const deveAgora=deveRevisaoProfunda(totalBlocos);
+        const hist=lsGet('rev_profunda_hist',[]);
+        const ultRev=hist.length>0?[...hist].sort((a,b)=>b.cicloRef-a.cicloRef)[0]:null;
+        const ultimoCicloRev=ultRev?.cicloRef||0;
+        const blocosFaltam=Math.max(0,7-(totalBlocos-ultimoCicloRev));
+
+        // Form de registro
+        const[rpForm,setRpForm]=useState({oque:[],tempo:'120',assunto:'',dif:0});
+        const[rpSalvo,setRpSalvo]=useState(false);
+
+        const OQUE_OPTS=[
+          {l:'📖 Leitura/teoria',v:'Leitura'},
+          {l:'❓ Questões',v:'Questões'},
+          {l:'🎧 Videoaula',v:'Videoaula'},
+          {l:'🃏 Anki',v:'Anki'},
+          {l:'🗺️ Mapa mental',v:'Mapa mental'},
+          {l:'✍️ Resumo escrito',v:'Resumo'},
+        ];
+
+        const salvarRevProfunda=()=>{
+          if(!rpForm.dif||rpForm.oque.length===0)return;
+          const novo={
+            id:'rp_'+Date.now(),
+            mat:proxima.mat,
+            ic:proxima.ic,
+            cicloRef:totalBlocos,
+            data:getDK(),
+            tempo:parseInt(rpForm.tempo)||120,
+            assunto:rpForm.assunto,
+            oque:rpForm.oque,
+            dif:rpForm.dif,
+            dt:Date.now(),
+          };
+          const n=[...hist,novo];
+          lsSet('rev_profunda_hist',n);
+          setRpSalvo(true);
+          setTimeout(()=>setRpSalvo(false),3000);
+          setRpForm({oque:[],tempo:'120',assunto:'',dif:0});
+        };
+
+        const iniciarComoExtra=()=>{
+          const extra={
+            id:'extra_'+Date.now(),
+            mat:proxima.mat,ic:proxima.ic,cor:proxima.cor,
+            tag:'🔄 REVISÃO PROFUNDA',
+            conteudo:proxima.motivo,
+            pctAnterior:0,h:2,tipo:'Revisão Profunda',
+            criadoEm:getDK(),feito:false
+          };
+          const n=[...lsGet('ciclo_extras',[]),extra];
+          lsSet('ciclo_extras',n);
+          window.dispatchEvent(new Event('storage'));
+        };
+
+        return(
+          <div>
+            {/* Header com status */}
+            <div style={{padding:'14px',borderRadius:13,background:deveAgora?'linear-gradient(135deg,rgba(167,139,250,.12),rgba(5,10,20,.98))':'rgba(167,139,250,.04)',border:`${deveAgora?'2px':'1px'} solid ${deveAgora?'rgba(167,139,250,.6)':'rgba(167,139,250,.2)'}`,marginBottom:12}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+                <div style={{fontSize:9,color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'2px'}}>🔄 REVISÃO PROFUNDA — 2h</div>
+                <span style={{fontSize:9,padding:'2px 8px',borderRadius:5,background:'rgba(167,139,250,.15)',color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:700}}>{totalBlocos} blocos</span>
+              </div>
+              <div style={{fontSize:10,color:'#64748b',marginBottom:8}}>A cada <strong style={{color:'#a78bfa'}}>7 blocos</strong> do Foco. {deveAgora?<strong style={{color:'#f87171'}}>HORA DE REVISAR!</strong>:<>Faltam <strong style={{color:'#a78bfa'}}>{blocosFaltam}</strong> blocos.</>}</div>
+              {/* Barra de progresso */}
+              <div style={{height:6,borderRadius:3,background:'rgba(255,255,255,.06)',overflow:'hidden',marginBottom:deveAgora?0:6}}>
+                <div style={{width:`${Math.min(100,Math.round((7-blocosFaltam)/7*100))}%`,height:'100%',background:deveAgora?'#f87171':'#a78bfa',borderRadius:3,transition:'width .5s'}}/>
+              </div>
+              {ultRev&&<div style={{fontSize:8,color:'#334155',marginTop:6,fontFamily:"'DM Mono',monospace"}}>Última: {ultRev.mat} · ciclo {ultRev.cicloRef} · {ultRev.data}</div>}
             </div>
-            {slots.map((s,i)=>(
-              <div key={i} style={{padding:'12px',borderRadius:12,background:s.salvo?'rgba(52,211,153,.06)':'rgba(251,191,36,.04)',border:`1px solid ${s.salvo?'rgba(52,211,153,.3)':'rgba(251,191,36,.18)'}`,marginBottom:10}}>
-                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
-                  <div style={{fontSize:9,color:s.salvo?'#34d399':'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:800}}>MATÉRIA {i+1}{i===0?' — MAIS DIFÍCIL':''}</div>
-                  {s.salvo&&<span style={{fontSize:9,color:'#34d399',fontWeight:700}}>✅ Salvo</span>}
+
+            {/* Próxima da fila em destaque */}
+            <div style={{padding:'14px',borderRadius:13,background:`${proxima.cor}10`,border:`2px solid ${proxima.cor}40`,marginBottom:12}}>
+              <div style={{fontSize:9,color:proxima.cor,fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:8}}>
+                {deveAgora?'🚨 MATÉRIA DA VEZ — ESTUDAR AGORA':'⏭️ PRÓXIMA DA FILA'}
+              </div>
+              <div style={{display:'flex',alignItems:'flex-start',gap:12,marginBottom:10}}>
+                <span style={{fontSize:28,flexShrink:0}}>{proxima.ic}</span>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:18,fontWeight:900,color:'#e8edf5',fontFamily:"'DM Serif Display',serif"}}>{proxima.mat}</div>
+                  <div style={{fontSize:10,color:'#64748b',marginTop:3}}>{proxima.motivo}</div>
+                  <div style={{display:'flex',gap:6,marginTop:6,flexWrap:'wrap'}}>
+                    <span style={{fontSize:9,padding:'2px 7px',borderRadius:5,background:`${proxima.cor}18`,color:proxima.cor,fontFamily:"'DM Mono',monospace"}}>🎯 {proxima.ferramenta}</span>
+                    <span style={{fontSize:9,padding:'2px 7px',borderRadius:5,background:'rgba(167,139,250,.1)',color:'#a78bfa',fontFamily:"'DM Mono',monospace"}}>⏱ 2h</span>
+                    <span style={{fontSize:9,padding:'2px 7px',borderRadius:5,background:'rgba(96,165,250,.1)',color:'#60a5fa',fontFamily:"'DM Mono',monospace"}}>{proxima.jornada}% jornada Guruja</span>
+                    {proxima.totalRevisoes>0&&<span style={{fontSize:9,padding:'2px 7px',borderRadius:5,background:'rgba(52,211,153,.1)',color:'#34d399',fontFamily:"'DM Mono',monospace"}}>{proxima.totalRevisoes}ª revisão</span>}
+                  </div>
                 </div>
-                <MatBtn value={s.mat} onChange={v=>setSlots(a=>a.map((x,j)=>j===i?{...x,mat:v,salvo:false}:x))}/>
+              </div>
+              <button onClick={iniciarComoExtra}
+                style={{width:'100%',padding:'11px',borderRadius:10,border:'none',background:proxima.cor,color:'#050a14',fontSize:12,fontWeight:800,cursor:'pointer',letterSpacing:'1px'}}>
+                ▶ Adicionar ao Foco como bloco de 2h
+              </button>
+            </div>
+
+            {/* Formulário de registro após estudar */}
+            {deveAgora&&(
+              <div style={{padding:'14px',borderRadius:13,background:'rgba(167,139,250,.05)',border:'1px solid rgba(167,139,250,.25)',marginBottom:12}}>
+                <div style={{fontSize:9,color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:10}}>📝 REGISTRAR — {proxima.mat}</div>
+
                 {/* O que fez */}
-                <div style={{marginTop:8,marginBottom:8}}>
-                  <div style={{fontSize:8,color:'#64748b',marginBottom:5}}>O QUE FEZ</div>
-                  <div style={{display:'flex',flexWrap:'wrap',gap:4}}>
-                    {['Anki','NLM','Questões','Guruja','Leitura','Revisão livre'].map(op=>{
-                      const sel=(s.oque||[]).includes(op);
-                      const cor=op==='Anki'?'#a78bfa':op==='NLM'?'#34d399':op==='Questões'?'#fbbf24':op==='Guruja'?'#fb923c':'#60a5fa';
-                      return(<button key={op} onClick={()=>setSlots(a=>a.map((x,j)=>{if(j!==i)return x;const oq=x.oque||[];return{...x,oque:oq.includes(op)?oq.filter(v=>v!==op):[...oq,op],salvo:false};}))} style={{padding:'4px 9px',borderRadius:6,border:`1px solid ${sel?cor:'rgba(255,255,255,.12)'}`,background:sel?`${cor}20`:'transparent',color:sel?cor:'#475569',fontSize:9,cursor:'pointer'}}>{op}</button>);
+                <div style={{marginBottom:10}}>
+                  <div style={{fontSize:8,color:'#64748b',marginBottom:6}}>O QUE FEZ <span style={{color:'#f87171'}}>*</span></div>
+                  <div style={{display:'flex',flexWrap:'wrap',gap:5}}>
+                    {OQUE_OPTS.map(({l,v})=>{
+                      const sel=rpForm.oque.includes(v);
+                      return(
+                        <button key={v} onClick={()=>setRpForm(f=>({...f,oque:sel?f.oque.filter(x=>x!==v):[...f.oque,v]}))}
+                          style={{padding:'5px 10px',borderRadius:7,border:`1px solid ${sel?'#a78bfa':'rgba(148,163,184,.2)'}`,background:sel?'rgba(167,139,250,.2)':'transparent',color:sel?'#a78bfa':'#64748b',fontSize:10,cursor:'pointer',fontWeight:sel?700:400}}>
+                          {l}
+                        </button>
+                      );
                     })}
                   </div>
                 </div>
-                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:6,marginBottom:8}}>
-                  <div><div style={{fontSize:8,color:'#64748b',marginBottom:3}}>⏱ TEMPO (min)</div>
-                    <input type="number" value={s.tempo||''} onChange={e=>setSlots(a=>a.map((x,j)=>j===i?{...x,tempo:e.target.value,salvo:false}:x))} placeholder="0" style={{width:'100%',padding:'8px',borderRadius:7,border:'1px solid rgba(96,165,250,.2)',background:'rgba(96,165,250,.04)',color:'#60a5fa',fontSize:14,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
+
+                {/* Assunto estudado */}
+                <div style={{marginBottom:10}}>
+                  <div style={{fontSize:8,color:'#64748b',marginBottom:4}}>📖 ASSUNTO (opcional — o mais específico possível)</div>
+                  <input value={rpForm.assunto} onChange={e=>setRpForm(f=>({...f,assunto:e.target.value}))}
+                    placeholder={`ex: Amostragem estatística, Juros compostos, Conectivos...`}
+                    style={{width:'100%',padding:'9px 11px',borderRadius:8,border:'1px solid rgba(167,139,250,.25)',background:'rgba(167,139,250,.04)',color:'#f1f5f9',fontSize:12,outline:'none',boxSizing:'border-box'}}/>
+                </div>
+
+                {/* Tempo + dificuldade */}
+                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:12}}>
+                  <div>
+                    <div style={{fontSize:8,color:'#64748b',marginBottom:4}}>⏱ TEMPO (min)</div>
+                    <input type="number" value={rpForm.tempo} onChange={e=>setRpForm(f=>({...f,tempo:e.target.value}))}
+                      style={{width:'100%',padding:'10px',borderRadius:8,border:'1px solid rgba(167,139,250,.25)',background:'rgba(167,139,250,.06)',color:'#a78bfa',fontSize:20,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
                   </div>
-                  <div><div style={{fontSize:8,color:'#64748b',marginBottom:3}}>📝 QUESTÕES</div>
-                    <input type="number" value={s.questoes||''} onChange={e=>setSlots(a=>a.map((x,j)=>j===i?{...x,questoes:e.target.value,salvo:false}:x))} placeholder="0" style={{width:'100%',padding:'8px',borderRadius:7,border:'1px solid rgba(251,191,36,.2)',background:'rgba(251,191,36,.04)',color:'#fbbf24',fontSize:14,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
-                  </div>
-                  <div><div style={{fontSize:8,color:'#64748b',marginBottom:3}}>DIFICULDADE</div>
-                    <Estrelas val={s.dif} onChange={v=>setSlots(a=>a.map((x,j)=>j===i?{...x,dif:v,salvo:false}:x))}/>
+                  <div>
+                    <div style={{fontSize:8,color:'#64748b',marginBottom:4}}>DIFICULDADE <span style={{color:'#f87171'}}>*</span></div>
+                    <div style={{display:'flex',gap:3,marginTop:4}}>
+                      {[1,2,3,4,5].map(n=>{
+                        const cors=['#34d399','#a3e635','#fbbf24','#fb923c','#f87171'];
+                        const c=rpForm.dif>=n?cors[n-1]:'rgba(148,163,184,.2)';
+                        return <button key={n} onClick={()=>setRpForm(f=>({...f,dif:n}))}
+                          style={{flex:1,padding:'8px 2px',borderRadius:6,border:`2px solid ${c}`,background:rpForm.dif>=n?`${cors[n-1]}22`:'transparent',fontSize:14,cursor:'pointer'}}>⭐</button>;
+                      })}
+                    </div>
                   </div>
                 </div>
-                <button onClick={()=>salvarSlotIndividual(i)} disabled={!s.mat||s.salvo} style={{width:'100%',padding:'9px',borderRadius:9,border:'none',background:s.mat&&!s.salvo?'rgba(251,191,36,.7)':'rgba(148,163,184,.15)',color:s.mat&&!s.salvo?'#0f172a':'#334155',fontSize:11,fontWeight:800,cursor:'pointer'}}>{s.salvo?'✅ Salvo':'💾 Salvar esta matéria'}</button>
+
+                <button onClick={salvarRevProfunda} disabled={!rpForm.dif||rpForm.oque.length===0}
+                  style={{width:'100%',padding:'13px',borderRadius:10,border:'none',background:(rpForm.dif&&rpForm.oque.length>0)?'#a78bfa':'rgba(148,163,184,.2)',color:(rpForm.dif&&rpForm.oque.length>0)?'#050a14':'#334155',fontSize:13,fontWeight:900,cursor:'pointer',letterSpacing:'1px'}}>
+                  {rpSalvo?'✅ REGISTRADO — fila atualizada!':'💾 REGISTRAR E AVANÇAR NA FILA'}
+                </button>
+                {rpSalvo&&<div style={{textAlign:'center',fontSize:11,color:'#a78bfa',marginTop:6}}>
+                  {proxima.mat} vai para o fim da fila. Próxima: {fila[1]?.mat||'TI / Análise de Dados'}
+                </div>}
               </div>
-            ))}
-            <button onClick={salvar1h30} disabled={!slots.some(s=>s.mat&&s.dif>0)} style={{width:'100%',padding:'12px',borderRadius:10,border:'none',background:slots.some(s=>s.mat&&s.dif>0)?'#fbbf24':'rgba(148,163,184,.2)',color:slots.some(s=>s.mat&&s.dif>0)?'#0f172a':'#334155',fontSize:12,fontWeight:800,cursor:'pointer'}}>{slotSalvo?'✅ TUDO SALVO!':'💾 Salvar todas de uma vez'}</button>
-          </div>}
-        </div>
-        {[...rev1h30Regs].reverse().slice(0,3).map((r,i)=>(
-          <div key={i} style={{padding:'8px 11px',borderRadius:9,background:'rgba(251,191,36,.05)',border:'1px solid rgba(251,191,36,.15)',marginBottom:4}}>
-            <div style={{fontSize:9,color:'#fbbf24',fontFamily:"'DM Mono',monospace"}}>Bloco {r.blocoRef} · {r.dia}</div>
-            <div style={{fontSize:10,color:'#94a3b8',marginTop:2}}>{r.slots?.filter(s=>s.mat).map(s=>s.mat).join(', ')}</div>
+            )}
+
+            {/* Fila completa */}
+            <div style={{marginBottom:12}}>
+              <div style={{fontSize:9,color:'#64748b',fontFamily:"'DM Mono',monospace",letterSpacing:'1px',marginBottom:8}}>📋 FILA COMPLETA</div>
+              {fila.map((m,i)=>(
+                <div key={m.mat} style={{display:'flex',alignItems:'center',gap:10,padding:'9px 12px',borderRadius:10,background:i===0?`${m.cor}08`:'rgba(255,255,255,.02)',border:`1px solid ${i===0?m.cor+'30':'rgba(255,255,255,.06)'}`,marginBottom:5}}>
+                  <span style={{fontSize:9,fontWeight:900,color:i===0?m.cor:'#334155',width:16,flexShrink:0,fontFamily:"'DM Mono',monospace"}}>{i===0?'▶':i+1}</span>
+                  <span style={{fontSize:11,flexShrink:0}}>{m.ic}</span>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontSize:11,color:i===0?'#e8edf5':'#64748b',fontWeight:i===0?700:400}}>{m.mat}</div>
+                    <div style={{fontSize:8,color:'#334155'}}>{m.jornada}% jornada · {m.ferramenta}</div>
+                  </div>
+                  <div style={{textAlign:'right',flexShrink:0}}>
+                    {m.ultRevData
+                      ?<div style={{fontSize:8,color:'#334155',fontFamily:"'DM Mono',monospace"}}>{m.ultRevData}</div>
+                      :<div style={{fontSize:8,color:'#f87171',fontFamily:"'DM Mono',monospace"}}>nunca revisada</div>
+                    }
+                    {m.totalRevisoes>0&&<div style={{fontSize:8,color:'#475569'}}>{m.totalRevisoes}x feita</div>}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Histórico recente */}
+            {hist.length>0&&(
+              <div>
+                <div style={{fontSize:9,color:'#64748b',fontFamily:"'DM Mono',monospace",letterSpacing:'1px',marginBottom:8}}>🕐 HISTÓRICO</div>
+                {[...hist].sort((a,b)=>b.dt-a.dt).slice(0,5).map((r,i)=>{
+                  const m=FILA_REVISAO_PROFUNDA.find(f=>f.mat===r.mat)||{cor:'#64748b',ic:'📌'};
+                  return(
+                    <div key={r.id||i} style={{padding:'8px 11px',borderRadius:9,background:`${m.cor}06`,border:`1px solid ${m.cor}20`,marginBottom:4}}>
+                      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                        <div>
+                          <span style={{fontSize:10,fontWeight:700,color:'#e8edf5'}}>{m.ic} {r.mat}</span>
+                          {r.assunto&&<span style={{fontSize:9,color:'#64748b',marginLeft:6}}>{r.assunto.slice(0,30)}</span>}
+                        </div>
+                        <span style={{fontSize:8,color:'#334155',fontFamily:"'DM Mono',monospace"}}>{r.data}</span>
+                      </div>
+                      <div style={{display:'flex',gap:5,marginTop:4,flexWrap:'wrap'}}>
+                        <span style={{fontSize:8,color:'#60a5fa'}}>⏱{r.tempo}min</span>
+                        {r.oque?.map(o=><span key={o} style={{fontSize:8,color:'#64748b',padding:'1px 5px',borderRadius:3,background:'rgba(148,163,184,.08)'}}>{o}</span>)}
+                        <span style={{fontSize:8,color:['#34d399','#a3e635','#fbbf24','#fb923c','#f87171'][(r.dif||1)-1]}}>{'⭐'.repeat(r.dif||0)}</span>
+                        <span style={{fontSize:8,color:'#334155',fontFamily:"'DM Mono',monospace"}}>ciclo {r.cicloRef}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
-        ))}
-      </div>}
+        );
+      })()}
 
       {/* CADERNO DE ERROS — REGISTRO */}
       {aba==='caderno'&&(()=>{
