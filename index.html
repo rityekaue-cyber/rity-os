@@ -4345,6 +4345,193 @@ function CardGurujaImport(){
   );
 }
 
+// ─── REVISÃO PROFUNDA — componente próprio (hooks válidos) ───
+function TabRevProfunda({totalBlocos}){
+  const fila=getFilaRevProfunda();
+  const proxima=fila[0];
+  const deveAgora=deveRevisaoProfunda(totalBlocos);
+  const[hist,setHist]=useState(()=>lsGet('rev_profunda_hist',[]));
+  const ultRev=hist.length>0?[...hist].sort((a,b)=>b.cicloRef-a.cicloRef)[0]:null;
+  const ultimoCicloRev=ultRev?.cicloRef||0;
+  const blocosFaltam=Math.max(0,7-(totalBlocos-ultimoCicloRev));
+
+  const[rpForm,setRpForm]=useState({oque:[],tempo:'120',assunto:'',dif:0});
+  const[rpSalvo,setRpSalvo]=useState(false);
+
+  const OQUE_OPTS=[
+    {l:'📖 Leitura/teoria',v:'Leitura'},
+    {l:'❓ Questões',v:'Questões'},
+    {l:'🎧 Videoaula',v:'Videoaula'},
+    {l:'🃏 Anki',v:'Anki'},
+    {l:'🗺️ Mapa mental',v:'Mapa mental'},
+    {l:'✍️ Resumo escrito',v:'Resumo'},
+  ];
+
+  const salvarRevProfunda=()=>{
+    if(!rpForm.dif||rpForm.oque.length===0||!proxima)return;
+    const novo={
+      id:'rp_'+Date.now(),
+      mat:proxima.mat,ic:proxima.ic,
+      cicloRef:totalBlocos,data:getDK(),
+      tempo:parseInt(rpForm.tempo)||120,
+      assunto:rpForm.assunto,oque:rpForm.oque,dif:rpForm.dif,dt:Date.now(),
+    };
+    const n=[...hist,novo];
+    lsSet('rev_profunda_hist',n);setHist(n);
+    setRpSalvo(true);
+    setTimeout(()=>setRpSalvo(false),3000);
+    setRpForm({oque:[],tempo:'120',assunto:'',dif:0});
+  };
+
+  const iniciarComoExtra=()=>{
+    if(!proxima)return;
+    const extra={
+      id:'extra_'+Date.now(),
+      mat:proxima.mat,ic:proxima.ic,cor:proxima.cor,
+      tag:'🔄 REVISÃO PROFUNDA',conteudo:proxima.motivo,
+      pctAnterior:0,h:2,tipo:'Revisão Profunda',criadoEm:getDK(),feito:false
+    };
+    const n=[...lsGet('ciclo_extras',[]),extra];
+    lsSet('ciclo_extras',n);
+  };
+
+  if(!proxima)return <div style={{textAlign:'center',padding:'30px',color:'#334155'}}>Nenhuma matéria na fila.</div>;
+
+  return(
+    <div>
+      {/* Header status */}
+      <div style={{padding:'14px',borderRadius:13,background:deveAgora?'linear-gradient(135deg,rgba(167,139,250,.12),rgba(5,10,20,.98))':'rgba(167,139,250,.04)',border:`${deveAgora?'2px':'1px'} solid ${deveAgora?'rgba(167,139,250,.6)':'rgba(167,139,250,.2)'}`,marginBottom:12}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+          <div style={{fontSize:9,color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'2px'}}>🔄 REVISÃO PROFUNDA — 2h</div>
+          <span style={{fontSize:9,padding:'2px 8px',borderRadius:5,background:'rgba(167,139,250,.15)',color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:700}}>{totalBlocos} blocos</span>
+        </div>
+        <div style={{fontSize:10,color:'#64748b',marginBottom:8}}>A cada <strong style={{color:'#a78bfa'}}>7 blocos</strong> do Foco. {deveAgora?<strong style={{color:'#f87171'}}>HORA DE REVISAR!</strong>:<>Faltam <strong style={{color:'#a78bfa'}}>{blocosFaltam}</strong> blocos.</>}</div>
+        <div style={{height:6,borderRadius:3,background:'rgba(255,255,255,.06)',overflow:'hidden',marginBottom:deveAgora?0:6}}>
+          <div style={{width:`${Math.min(100,Math.round((7-blocosFaltam)/7*100))}%`,height:'100%',background:deveAgora?'#f87171':'#a78bfa',borderRadius:3,transition:'width .5s'}}/>
+        </div>
+        {ultRev&&<div style={{fontSize:8,color:'#334155',marginTop:6,fontFamily:"'DM Mono',monospace"}}>Última: {ultRev.mat} · ciclo {ultRev.cicloRef} · {ultRev.data}</div>}
+      </div>
+
+      {/* Próxima da fila */}
+      <div style={{padding:'14px',borderRadius:13,background:`${proxima.cor}10`,border:`2px solid ${proxima.cor}40`,marginBottom:12}}>
+        <div style={{fontSize:9,color:proxima.cor,fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:8}}>
+          {deveAgora?'🚨 MATÉRIA DA VEZ — ESTUDAR AGORA':'⏭️ PRÓXIMA DA FILA'}
+        </div>
+        <div style={{display:'flex',alignItems:'flex-start',gap:12,marginBottom:10}}>
+          <span style={{fontSize:28,flexShrink:0}}>{proxima.ic}</span>
+          <div style={{flex:1}}>
+            <div style={{fontSize:18,fontWeight:900,color:'#e8edf5',fontFamily:"'DM Serif Display',serif"}}>{proxima.mat}</div>
+            <div style={{fontSize:10,color:'#64748b',marginTop:3}}>{proxima.motivo}</div>
+            <div style={{display:'flex',gap:6,marginTop:6,flexWrap:'wrap'}}>
+              <span style={{fontSize:9,padding:'2px 7px',borderRadius:5,background:`${proxima.cor}18`,color:proxima.cor,fontFamily:"'DM Mono',monospace"}}>🎯 {proxima.ferramenta}</span>
+              <span style={{fontSize:9,padding:'2px 7px',borderRadius:5,background:'rgba(167,139,250,.1)',color:'#a78bfa',fontFamily:"'DM Mono',monospace"}}>⏱ 2h</span>
+              <span style={{fontSize:9,padding:'2px 7px',borderRadius:5,background:'rgba(96,165,250,.1)',color:'#60a5fa',fontFamily:"'DM Mono',monospace"}}>{proxima.jornada}% jornada</span>
+              {proxima.totalRevisoes>0&&<span style={{fontSize:9,padding:'2px 7px',borderRadius:5,background:'rgba(52,211,153,.1)',color:'#34d399',fontFamily:"'DM Mono',monospace"}}>{proxima.totalRevisoes}ª revisão</span>}
+            </div>
+          </div>
+        </div>
+        <button onClick={iniciarComoExtra} style={{width:'100%',padding:'11px',borderRadius:10,border:'none',background:proxima.cor,color:'#050a14',fontSize:12,fontWeight:800,cursor:'pointer',letterSpacing:'1px'}}>
+          ▶ Adicionar ao Foco como bloco de 2h
+        </button>
+      </div>
+
+      {/* Formulário de registro */}
+      {deveAgora&&(
+        <div style={{padding:'14px',borderRadius:13,background:'rgba(167,139,250,.05)',border:'1px solid rgba(167,139,250,.25)',marginBottom:12}}>
+          <div style={{fontSize:9,color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:10}}>📝 REGISTRAR — {proxima.mat}</div>
+          <div style={{marginBottom:10}}>
+            <div style={{fontSize:8,color:'#64748b',marginBottom:6}}>O QUE FEZ <span style={{color:'#f87171'}}>*</span></div>
+            <div style={{display:'flex',flexWrap:'wrap',gap:5}}>
+              {OQUE_OPTS.map(({l,v})=>{
+                const sel=rpForm.oque.includes(v);
+                return(<button key={v} onClick={()=>setRpForm(f=>({...f,oque:sel?f.oque.filter(x=>x!==v):[...f.oque,v]}))}
+                  style={{padding:'5px 10px',borderRadius:7,border:`1px solid ${sel?'#a78bfa':'rgba(148,163,184,.2)'}`,background:sel?'rgba(167,139,250,.2)':'transparent',color:sel?'#a78bfa':'#64748b',fontSize:10,cursor:'pointer',fontWeight:sel?700:400}}>{l}</button>);
+              })}
+            </div>
+          </div>
+          <div style={{marginBottom:10}}>
+            <div style={{fontSize:8,color:'#64748b',marginBottom:4}}>📖 ASSUNTO (opcional)</div>
+            <input value={rpForm.assunto} onChange={e=>setRpForm(f=>({...f,assunto:e.target.value}))}
+              placeholder="ex: Amostragem, Juros compostos, Conectivos..."
+              style={{width:'100%',padding:'9px 11px',borderRadius:8,border:'1px solid rgba(167,139,250,.25)',background:'rgba(167,139,250,.04)',color:'#f1f5f9',fontSize:12,outline:'none',boxSizing:'border-box'}}/>
+          </div>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:12}}>
+            <div>
+              <div style={{fontSize:8,color:'#64748b',marginBottom:4}}>⏱ TEMPO (min)</div>
+              <input type="number" value={rpForm.tempo} onChange={e=>setRpForm(f=>({...f,tempo:e.target.value}))}
+                style={{width:'100%',padding:'10px',borderRadius:8,border:'1px solid rgba(167,139,250,.25)',background:'rgba(167,139,250,.06)',color:'#a78bfa',fontSize:20,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
+            </div>
+            <div>
+              <div style={{fontSize:8,color:'#64748b',marginBottom:4}}>DIFICULDADE <span style={{color:'#f87171'}}>*</span></div>
+              <div style={{display:'flex',gap:3,marginTop:4}}>
+                {[1,2,3,4,5].map(n=>{
+                  const cors=['#34d399','#a3e635','#fbbf24','#fb923c','#f87171'];
+                  const c=rpForm.dif>=n?cors[n-1]:'rgba(148,163,184,.2)';
+                  return <button key={n} onClick={()=>setRpForm(f=>({...f,dif:n}))}
+                    style={{flex:1,padding:'8px 2px',borderRadius:6,border:`2px solid ${c}`,background:rpForm.dif>=n?`${cors[n-1]}22`:'transparent',fontSize:14,cursor:'pointer'}}>⭐</button>;
+                })}
+              </div>
+            </div>
+          </div>
+          <button onClick={salvarRevProfunda} disabled={!rpForm.dif||rpForm.oque.length===0}
+            style={{width:'100%',padding:'13px',borderRadius:10,border:'none',background:(rpForm.dif&&rpForm.oque.length>0)?'#a78bfa':'rgba(148,163,184,.2)',color:(rpForm.dif&&rpForm.oque.length>0)?'#050a14':'#334155',fontSize:13,fontWeight:900,cursor:'pointer',letterSpacing:'1px'}}>
+            {rpSalvo?'✅ REGISTRADO — fila atualizada!':'💾 REGISTRAR E AVANÇAR NA FILA'}
+          </button>
+          {rpSalvo&&<div style={{textAlign:'center',fontSize:11,color:'#a78bfa',marginTop:6}}>
+            {proxima.mat} foi para o fim da fila. Próxima: {fila[1]?.mat||'TI / Análise de Dados'}
+          </div>}
+        </div>
+      )}
+
+      {/* Fila completa */}
+      <div style={{marginBottom:12}}>
+        <div style={{fontSize:9,color:'#64748b',fontFamily:"'DM Mono',monospace",letterSpacing:'1px',marginBottom:8}}>📋 FILA COMPLETA</div>
+        {fila.map((m,i)=>(
+          <div key={m.mat} style={{display:'flex',alignItems:'center',gap:10,padding:'9px 12px',borderRadius:10,background:i===0?`${m.cor}08`:'rgba(255,255,255,.02)',border:`1px solid ${i===0?m.cor+'30':'rgba(255,255,255,.06)'}`,marginBottom:5}}>
+            <span style={{fontSize:9,fontWeight:900,color:i===0?m.cor:'#334155',width:16,flexShrink:0,fontFamily:"'DM Mono',monospace"}}>{i===0?'▶':i+1}</span>
+            <span style={{fontSize:11,flexShrink:0}}>{m.ic}</span>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontSize:11,color:i===0?'#e8edf5':'#64748b',fontWeight:i===0?700:400}}>{m.mat}</div>
+              <div style={{fontSize:8,color:'#334155'}}>{m.jornada}% jornada · {m.ferramenta}</div>
+            </div>
+            <div style={{textAlign:'right',flexShrink:0}}>
+              {m.ultRevData?<div style={{fontSize:8,color:'#334155',fontFamily:"'DM Mono',monospace"}}>{m.ultRevData}</div>:<div style={{fontSize:8,color:'#f87171'}}>nunca revisada</div>}
+              {m.totalRevisoes>0&&<div style={{fontSize:8,color:'#475569'}}>{m.totalRevisoes}x feita</div>}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Histórico */}
+      {hist.length>0&&(
+        <div>
+          <div style={{fontSize:9,color:'#64748b',fontFamily:"'DM Mono',monospace",letterSpacing:'1px',marginBottom:8}}>🕐 HISTÓRICO</div>
+          {[...hist].sort((a,b)=>b.dt-a.dt).slice(0,5).map((r,i)=>{
+            const m=FILA_REVISAO_PROFUNDA.find(f=>f.mat===r.mat)||{cor:'#64748b',ic:'📌'};
+            return(
+              <div key={r.id||i} style={{padding:'8px 11px',borderRadius:9,background:`${m.cor}06`,border:`1px solid ${m.cor}20`,marginBottom:4}}>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                  <div>
+                    <span style={{fontSize:10,fontWeight:700,color:'#e8edf5'}}>{m.ic} {r.mat}</span>
+                    {r.assunto&&<span style={{fontSize:9,color:'#64748b',marginLeft:6}}>{r.assunto.slice(0,30)}</span>}
+                  </div>
+                  <span style={{fontSize:8,color:'#334155',fontFamily:"'DM Mono',monospace"}}>{r.data}</span>
+                </div>
+                <div style={{display:'flex',gap:5,marginTop:4,flexWrap:'wrap'}}>
+                  <span style={{fontSize:8,color:'#60a5fa'}}>⏱{r.tempo}min</span>
+                  {r.oque?.map(o=><span key={o} style={{fontSize:8,color:'#64748b',padding:'1px 5px',borderRadius:3,background:'rgba(148,163,184,.08)'}}>{o}</span>)}
+                  <span style={{fontSize:8,color:['#34d399','#a3e635','#fbbf24','#fb923c','#f87171'][(r.dif||1)-1]}}>{'⭐'.repeat(r.dif||0)}</span>
+                  <span style={{fontSize:8,color:'#334155',fontFamily:"'DM Mono',monospace"}}>ciclo {r.cicloRef}</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,ankiSugestoes=[],nlmSugestao=null}){
   const hoje=getDK();
   const[aba,setAba]=useState('morto');
@@ -5047,213 +5234,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
       })()}
 
       {/* REVISÃO PROFUNDA — substitui 1h30 */}
-      {aba==='rev1h30'&&(()=>{
-        const fila=getFilaRevProfunda();
-        const proxima=fila[0];
-        const deveAgora=deveRevisaoProfunda(totalBlocos);
-        const hist=lsGet('rev_profunda_hist',[]);
-        const ultRev=hist.length>0?[...hist].sort((a,b)=>b.cicloRef-a.cicloRef)[0]:null;
-        const ultimoCicloRev=ultRev?.cicloRef||0;
-        const blocosFaltam=Math.max(0,7-(totalBlocos-ultimoCicloRev));
-
-        // Form de registro
-        const[rpForm,setRpForm]=useState({oque:[],tempo:'120',assunto:'',dif:0});
-        const[rpSalvo,setRpSalvo]=useState(false);
-
-        const OQUE_OPTS=[
-          {l:'📖 Leitura/teoria',v:'Leitura'},
-          {l:'❓ Questões',v:'Questões'},
-          {l:'🎧 Videoaula',v:'Videoaula'},
-          {l:'🃏 Anki',v:'Anki'},
-          {l:'🗺️ Mapa mental',v:'Mapa mental'},
-          {l:'✍️ Resumo escrito',v:'Resumo'},
-        ];
-
-        const salvarRevProfunda=()=>{
-          if(!rpForm.dif||rpForm.oque.length===0)return;
-          const novo={
-            id:'rp_'+Date.now(),
-            mat:proxima.mat,
-            ic:proxima.ic,
-            cicloRef:totalBlocos,
-            data:getDK(),
-            tempo:parseInt(rpForm.tempo)||120,
-            assunto:rpForm.assunto,
-            oque:rpForm.oque,
-            dif:rpForm.dif,
-            dt:Date.now(),
-          };
-          const n=[...hist,novo];
-          lsSet('rev_profunda_hist',n);
-          setRpSalvo(true);
-          setTimeout(()=>setRpSalvo(false),3000);
-          setRpForm({oque:[],tempo:'120',assunto:'',dif:0});
-        };
-
-        const iniciarComoExtra=()=>{
-          const extra={
-            id:'extra_'+Date.now(),
-            mat:proxima.mat,ic:proxima.ic,cor:proxima.cor,
-            tag:'🔄 REVISÃO PROFUNDA',
-            conteudo:proxima.motivo,
-            pctAnterior:0,h:2,tipo:'Revisão Profunda',
-            criadoEm:getDK(),feito:false
-          };
-          const n=[...lsGet('ciclo_extras',[]),extra];
-          lsSet('ciclo_extras',n);
-          window.dispatchEvent(new Event('storage'));
-        };
-
-        return(
-          <div>
-            {/* Header com status */}
-            <div style={{padding:'14px',borderRadius:13,background:deveAgora?'linear-gradient(135deg,rgba(167,139,250,.12),rgba(5,10,20,.98))':'rgba(167,139,250,.04)',border:`${deveAgora?'2px':'1px'} solid ${deveAgora?'rgba(167,139,250,.6)':'rgba(167,139,250,.2)'}`,marginBottom:12}}>
-              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
-                <div style={{fontSize:9,color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'2px'}}>🔄 REVISÃO PROFUNDA — 2h</div>
-                <span style={{fontSize:9,padding:'2px 8px',borderRadius:5,background:'rgba(167,139,250,.15)',color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:700}}>{totalBlocos} blocos</span>
-              </div>
-              <div style={{fontSize:10,color:'#64748b',marginBottom:8}}>A cada <strong style={{color:'#a78bfa'}}>7 blocos</strong> do Foco. {deveAgora?<strong style={{color:'#f87171'}}>HORA DE REVISAR!</strong>:<>Faltam <strong style={{color:'#a78bfa'}}>{blocosFaltam}</strong> blocos.</>}</div>
-              {/* Barra de progresso */}
-              <div style={{height:6,borderRadius:3,background:'rgba(255,255,255,.06)',overflow:'hidden',marginBottom:deveAgora?0:6}}>
-                <div style={{width:`${Math.min(100,Math.round((7-blocosFaltam)/7*100))}%`,height:'100%',background:deveAgora?'#f87171':'#a78bfa',borderRadius:3,transition:'width .5s'}}/>
-              </div>
-              {ultRev&&<div style={{fontSize:8,color:'#334155',marginTop:6,fontFamily:"'DM Mono',monospace"}}>Última: {ultRev.mat} · ciclo {ultRev.cicloRef} · {ultRev.data}</div>}
-            </div>
-
-            {/* Próxima da fila em destaque */}
-            <div style={{padding:'14px',borderRadius:13,background:`${proxima.cor}10`,border:`2px solid ${proxima.cor}40`,marginBottom:12}}>
-              <div style={{fontSize:9,color:proxima.cor,fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:8}}>
-                {deveAgora?'🚨 MATÉRIA DA VEZ — ESTUDAR AGORA':'⏭️ PRÓXIMA DA FILA'}
-              </div>
-              <div style={{display:'flex',alignItems:'flex-start',gap:12,marginBottom:10}}>
-                <span style={{fontSize:28,flexShrink:0}}>{proxima.ic}</span>
-                <div style={{flex:1}}>
-                  <div style={{fontSize:18,fontWeight:900,color:'#e8edf5',fontFamily:"'DM Serif Display',serif"}}>{proxima.mat}</div>
-                  <div style={{fontSize:10,color:'#64748b',marginTop:3}}>{proxima.motivo}</div>
-                  <div style={{display:'flex',gap:6,marginTop:6,flexWrap:'wrap'}}>
-                    <span style={{fontSize:9,padding:'2px 7px',borderRadius:5,background:`${proxima.cor}18`,color:proxima.cor,fontFamily:"'DM Mono',monospace"}}>🎯 {proxima.ferramenta}</span>
-                    <span style={{fontSize:9,padding:'2px 7px',borderRadius:5,background:'rgba(167,139,250,.1)',color:'#a78bfa',fontFamily:"'DM Mono',monospace"}}>⏱ 2h</span>
-                    <span style={{fontSize:9,padding:'2px 7px',borderRadius:5,background:'rgba(96,165,250,.1)',color:'#60a5fa',fontFamily:"'DM Mono',monospace"}}>{proxima.jornada}% jornada Guruja</span>
-                    {proxima.totalRevisoes>0&&<span style={{fontSize:9,padding:'2px 7px',borderRadius:5,background:'rgba(52,211,153,.1)',color:'#34d399',fontFamily:"'DM Mono',monospace"}}>{proxima.totalRevisoes}ª revisão</span>}
-                  </div>
-                </div>
-              </div>
-              <button onClick={iniciarComoExtra}
-                style={{width:'100%',padding:'11px',borderRadius:10,border:'none',background:proxima.cor,color:'#050a14',fontSize:12,fontWeight:800,cursor:'pointer',letterSpacing:'1px'}}>
-                ▶ Adicionar ao Foco como bloco de 2h
-              </button>
-            </div>
-
-            {/* Formulário de registro após estudar */}
-            {deveAgora&&(
-              <div style={{padding:'14px',borderRadius:13,background:'rgba(167,139,250,.05)',border:'1px solid rgba(167,139,250,.25)',marginBottom:12}}>
-                <div style={{fontSize:9,color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:10}}>📝 REGISTRAR — {proxima.mat}</div>
-
-                {/* O que fez */}
-                <div style={{marginBottom:10}}>
-                  <div style={{fontSize:8,color:'#64748b',marginBottom:6}}>O QUE FEZ <span style={{color:'#f87171'}}>*</span></div>
-                  <div style={{display:'flex',flexWrap:'wrap',gap:5}}>
-                    {OQUE_OPTS.map(({l,v})=>{
-                      const sel=rpForm.oque.includes(v);
-                      return(
-                        <button key={v} onClick={()=>setRpForm(f=>({...f,oque:sel?f.oque.filter(x=>x!==v):[...f.oque,v]}))}
-                          style={{padding:'5px 10px',borderRadius:7,border:`1px solid ${sel?'#a78bfa':'rgba(148,163,184,.2)'}`,background:sel?'rgba(167,139,250,.2)':'transparent',color:sel?'#a78bfa':'#64748b',fontSize:10,cursor:'pointer',fontWeight:sel?700:400}}>
-                          {l}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Assunto estudado */}
-                <div style={{marginBottom:10}}>
-                  <div style={{fontSize:8,color:'#64748b',marginBottom:4}}>📖 ASSUNTO (opcional — o mais específico possível)</div>
-                  <input value={rpForm.assunto} onChange={e=>setRpForm(f=>({...f,assunto:e.target.value}))}
-                    placeholder={`ex: Amostragem estatística, Juros compostos, Conectivos...`}
-                    style={{width:'100%',padding:'9px 11px',borderRadius:8,border:'1px solid rgba(167,139,250,.25)',background:'rgba(167,139,250,.04)',color:'#f1f5f9',fontSize:12,outline:'none',boxSizing:'border-box'}}/>
-                </div>
-
-                {/* Tempo + dificuldade */}
-                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:12}}>
-                  <div>
-                    <div style={{fontSize:8,color:'#64748b',marginBottom:4}}>⏱ TEMPO (min)</div>
-                    <input type="number" value={rpForm.tempo} onChange={e=>setRpForm(f=>({...f,tempo:e.target.value}))}
-                      style={{width:'100%',padding:'10px',borderRadius:8,border:'1px solid rgba(167,139,250,.25)',background:'rgba(167,139,250,.06)',color:'#a78bfa',fontSize:20,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
-                  </div>
-                  <div>
-                    <div style={{fontSize:8,color:'#64748b',marginBottom:4}}>DIFICULDADE <span style={{color:'#f87171'}}>*</span></div>
-                    <div style={{display:'flex',gap:3,marginTop:4}}>
-                      {[1,2,3,4,5].map(n=>{
-                        const cors=['#34d399','#a3e635','#fbbf24','#fb923c','#f87171'];
-                        const c=rpForm.dif>=n?cors[n-1]:'rgba(148,163,184,.2)';
-                        return <button key={n} onClick={()=>setRpForm(f=>({...f,dif:n}))}
-                          style={{flex:1,padding:'8px 2px',borderRadius:6,border:`2px solid ${c}`,background:rpForm.dif>=n?`${cors[n-1]}22`:'transparent',fontSize:14,cursor:'pointer'}}>⭐</button>;
-                      })}
-                    </div>
-                  </div>
-                </div>
-
-                <button onClick={salvarRevProfunda} disabled={!rpForm.dif||rpForm.oque.length===0}
-                  style={{width:'100%',padding:'13px',borderRadius:10,border:'none',background:(rpForm.dif&&rpForm.oque.length>0)?'#a78bfa':'rgba(148,163,184,.2)',color:(rpForm.dif&&rpForm.oque.length>0)?'#050a14':'#334155',fontSize:13,fontWeight:900,cursor:'pointer',letterSpacing:'1px'}}>
-                  {rpSalvo?'✅ REGISTRADO — fila atualizada!':'💾 REGISTRAR E AVANÇAR NA FILA'}
-                </button>
-                {rpSalvo&&<div style={{textAlign:'center',fontSize:11,color:'#a78bfa',marginTop:6}}>
-                  {proxima.mat} vai para o fim da fila. Próxima: {fila[1]?.mat||'TI / Análise de Dados'}
-                </div>}
-              </div>
-            )}
-
-            {/* Fila completa */}
-            <div style={{marginBottom:12}}>
-              <div style={{fontSize:9,color:'#64748b',fontFamily:"'DM Mono',monospace",letterSpacing:'1px',marginBottom:8}}>📋 FILA COMPLETA</div>
-              {fila.map((m,i)=>(
-                <div key={m.mat} style={{display:'flex',alignItems:'center',gap:10,padding:'9px 12px',borderRadius:10,background:i===0?`${m.cor}08`:'rgba(255,255,255,.02)',border:`1px solid ${i===0?m.cor+'30':'rgba(255,255,255,.06)'}`,marginBottom:5}}>
-                  <span style={{fontSize:9,fontWeight:900,color:i===0?m.cor:'#334155',width:16,flexShrink:0,fontFamily:"'DM Mono',monospace"}}>{i===0?'▶':i+1}</span>
-                  <span style={{fontSize:11,flexShrink:0}}>{m.ic}</span>
-                  <div style={{flex:1,minWidth:0}}>
-                    <div style={{fontSize:11,color:i===0?'#e8edf5':'#64748b',fontWeight:i===0?700:400}}>{m.mat}</div>
-                    <div style={{fontSize:8,color:'#334155'}}>{m.jornada}% jornada · {m.ferramenta}</div>
-                  </div>
-                  <div style={{textAlign:'right',flexShrink:0}}>
-                    {m.ultRevData
-                      ?<div style={{fontSize:8,color:'#334155',fontFamily:"'DM Mono',monospace"}}>{m.ultRevData}</div>
-                      :<div style={{fontSize:8,color:'#f87171',fontFamily:"'DM Mono',monospace"}}>nunca revisada</div>
-                    }
-                    {m.totalRevisoes>0&&<div style={{fontSize:8,color:'#475569'}}>{m.totalRevisoes}x feita</div>}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Histórico recente */}
-            {hist.length>0&&(
-              <div>
-                <div style={{fontSize:9,color:'#64748b',fontFamily:"'DM Mono',monospace",letterSpacing:'1px',marginBottom:8}}>🕐 HISTÓRICO</div>
-                {[...hist].sort((a,b)=>b.dt-a.dt).slice(0,5).map((r,i)=>{
-                  const m=FILA_REVISAO_PROFUNDA.find(f=>f.mat===r.mat)||{cor:'#64748b',ic:'📌'};
-                  return(
-                    <div key={r.id||i} style={{padding:'8px 11px',borderRadius:9,background:`${m.cor}06`,border:`1px solid ${m.cor}20`,marginBottom:4}}>
-                      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-                        <div>
-                          <span style={{fontSize:10,fontWeight:700,color:'#e8edf5'}}>{m.ic} {r.mat}</span>
-                          {r.assunto&&<span style={{fontSize:9,color:'#64748b',marginLeft:6}}>{r.assunto.slice(0,30)}</span>}
-                        </div>
-                        <span style={{fontSize:8,color:'#334155',fontFamily:"'DM Mono',monospace"}}>{r.data}</span>
-                      </div>
-                      <div style={{display:'flex',gap:5,marginTop:4,flexWrap:'wrap'}}>
-                        <span style={{fontSize:8,color:'#60a5fa'}}>⏱{r.tempo}min</span>
-                        {r.oque?.map(o=><span key={o} style={{fontSize:8,color:'#64748b',padding:'1px 5px',borderRadius:3,background:'rgba(148,163,184,.08)'}}>{o}</span>)}
-                        <span style={{fontSize:8,color:['#34d399','#a3e635','#fbbf24','#fb923c','#f87171'][(r.dif||1)-1]}}>{'⭐'.repeat(r.dif||0)}</span>
-                        <span style={{fontSize:8,color:'#334155',fontFamily:"'DM Mono',monospace"}}>ciclo {r.cicloRef}</span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        );
-      })()}
+      {aba==='rev1h30'&&<TabRevProfunda totalBlocos={totalBlocos}/>}
 
       {/* CADERNO DE ERROS — REGISTRO */}
       {aba==='caderno'&&(()=>{
