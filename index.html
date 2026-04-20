@@ -3818,7 +3818,7 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
           <span style={{fontSize:11,color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:700,flexShrink:0}}>{feitos.length}/{N}</span>
         </div>
         <div style={{display:'flex',gap:6,marginBottom:14}}>
-          {[[N,'blocos'],['35h','meta semanal'],['7 dias','duração'],[`#${cicloNum}`,'atual']].map(([v,l],i)=>(
+          {[[N,'blocos · 45min'],[`36h`,'total ciclo'],['20→26/04','período'],[`#${cicloNum}`,'ciclo atual']].map(([v,l],i)=>(
             <div key={i} style={{flex:1,padding:'8px 4px',borderRadius:9,textAlign:'center',background:'rgba(251,191,36,.04)',border:'1px solid rgba(251,191,36,.1)'}}>
               <div style={{fontSize:12,fontWeight:900,color:'#fbbf24',fontFamily:"'DM Mono',monospace",lineHeight:1}}>{v}</div>
               <div style={{fontSize:8,color:'#475569',marginTop:2}}>{l}</div>
@@ -3826,18 +3826,23 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
           ))}
         </div>
         {/* Blocos agrupados por dia */}
-        {Array.from({length:7},(_,dIdx)=>dIdx+1).map(dia=>{
+        {(()=>{
+          const DIAS_CICLO10={1:'Seg 20/04 · trabalho',2:'Ter 21/04 · livre',3:'Qua 22/04 · livre',4:'Qui 23/04 · livre',5:'Sex 24/04 · livre',6:'Sáb 25/04 · livre',7:'Dom 26/04 · semi-descanso'};
+          return Array.from({length:7},(_,dIdx)=>dIdx+1).map(dia=>{
           const blocosDia=CICLO.filter(s=>s.dia===dia);
           if(!blocosDia.length)return null;
           const todoDone=blocosDia.every(s=>feitosSet.has(s.id));
           const temAtivo=blocosDia.some(s=>s===ativo);
+          const feitos_dia=blocosDia.filter(s=>feitosSet.has(s.id)).length;
           return(
             <div key={dia} style={{marginBottom:8,borderRadius:12,overflow:'hidden',border:`1px solid ${temAtivo?'rgba(251,191,36,.3)':todoDone?'rgba(52,211,153,.2)':'rgba(148,163,184,.25)'}`}}>
               {/* Header do dia */}
               <div style={{padding:'7px 12px',background:temAtivo?'rgba(251,191,36,.07)':todoDone?'rgba(52,211,153,.05)':'rgba(255,255,255,.02)',display:'flex',alignItems:'center',gap:8}}>
                 <span style={{fontSize:10,fontWeight:800,fontFamily:"'DM Mono',monospace",color:temAtivo?'#fbbf24':todoDone?'#34d399':'#334155'}}>
-                  {todoDone?'✓ ':temAtivo?'▶ ':''}DIA {dia}
+                  {todoDone?'✓ ':temAtivo?'▶ ':''}{DIAS_CICLO10[dia]||`DIA ${dia}`}
                 </span>
+                <span style={{fontSize:8,color:'#475569',marginLeft:'auto',fontFamily:"'DM Mono',monospace"}}>{feitos_dia}/{blocosDia.length} slots</span>
+              </div>
                 <div style={{flex:1,height:1,background:'rgba(148,163,184,.28)'}}/>
                 <span style={{fontSize:9,color:'#475569',fontFamily:"'DM Mono',monospace"}}>{blocosDia.length} blocos</span>
               </div>
@@ -3900,12 +3905,13 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
               })}
             </div>
           );
-        })}
+        });
+        })()}
       </div>}
 
       {aba==='stats'&&<div>
         <div style={{display:'flex',gap:8,marginBottom:14}}>
-          {[['Hoje',fmtMin(minHoje),'#60a5fa'],['Semana',fmtMin(minSem),'#fbbf24'],['Meta','35h','#34d399']].map(([l,v,c])=>(
+          {[['Hoje',fmtMin(minHoje),'#60a5fa'],['Semana',fmtMin(minSem),'#fbbf24'],['Meta ciclo','36h','#34d399']].map(([l,v,c])=>(
             <div key={l} style={{flex:1,padding:'14px 8px',borderRadius:12,background:`${c}08`,border:`1px solid ${c}20`,textAlign:'center'}}>
               <div style={{fontSize:16,fontWeight:900,color:c,fontFamily:"'DM Mono',monospace"}}>{v}</div>
               <div style={{fontSize:9,color:'#64748b',marginTop:4}}>{l}</div>
@@ -6788,7 +6794,7 @@ function ModalConfig({fechar}){
             {/* Info do app */}
             <div style={{padding:'12px',borderRadius:11,background:'rgba(148,163,184,.06)',border:'1px solid rgba(148,163,184,.15)'}}>
               <div style={{fontSize:9,color:'#64748b',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:8}}>⚙️ APP</div>
-              {[['Versão','RITY OS v5.0 — Meirelles Ponderado'],['Ciclo','9 · 21 blocos · 09/04→16/04'],['Meta semanal','26–30h (máx. 30h sem edital)'],['Método','Ciclo Meirelles + Anki + Estudo Reverso'],['Dieta','Low carb · Cetogênico'],['Kauê','13 anos · Preparatório Colégio Naval'],['Atualizado','09/04/2026']].map(([k,v])=>(
+              {[['Versão','RITY OS v5.0 — Ciclo 10'],['Ciclo','10 · 48 slots · 45min cada · 36h total'],['Período','20/04 → 26/04/2026'],['Meta semanal','26–30h (máx. 30h sem edital)'],['Formato','Pt1 = teoria 45min · Pt2 = questões 45min'],['Método','Ciclo Meirelles + Anki + Estudo Reverso'],['Dieta','Low carb · Cetogênico'],['Kauê','13 anos · Preparatório Colégio Naval'],['Atualizado','20/04/2026']].map(([k,v])=>(
                 <div key={k} style={{display:'flex',justifyContent:'space-between',padding:'6px 8px',borderRadius:6,background:'rgba(148,163,184,.06)',marginBottom:3}}>
                   <span style={{fontSize:9,color:'#64748b',fontFamily:"'DM Mono',monospace",fontWeight:700}}>{k}</span>
                   <span style={{fontSize:10,color:'#94a3b8',textAlign:'right',maxWidth:'65%'}}>{v}</span>
