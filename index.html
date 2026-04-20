@@ -3843,9 +3843,6 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
                 </span>
                 <span style={{fontSize:8,color:'#475569',marginLeft:'auto',fontFamily:"'DM Mono',monospace"}}>{feitos_dia}/{blocosDia.length} slots</span>
               </div>
-                <div style={{flex:1,height:1,background:'rgba(148,163,184,.28)'}}/>
-                <span style={{fontSize:9,color:'#475569',fontFamily:"'DM Mono',monospace"}}>{blocosDia.length} blocos</span>
-              </div>
               {/* Blocos do dia */}
               {blocosDia.map((s,si)=>{
                 const done=feitosSet.has(s.id);
