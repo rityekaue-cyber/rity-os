@@ -4800,9 +4800,10 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
     const caderno=[...lsGet('rev_caderno',[]),novo];
     lsSet('rev_caderno',caderno);
     setCadRegs(caderno.filter(t=>!t.prazoLabel&&!t.fase));
-    const mins=60;
-    if(mins>0&&onAddHoras)onAddHoras({mat:`Caderno — ${cadForm.mat}`,min:mins,dt:Date.now()});
-    setCadForm({mat:'',assunto:'',questoes:'',acertei:'',dificuldade:0,prazo:'D+3',obs:''});
+    const mins=parseInt(cadForm.tempo)||0;
+    if(mins>0&&onAddHoras)onAddHoras({mat:cadForm.mat,min:mins,dt:Date.now()});
+    else if(mins>0){const h=lsGet('horas',[]);lsSet('horas',[...h,{mat:cadForm.mat,min:mins,dt:Date.now()}]);}
+    setCadForm({mat:'',assunto:'',questoes:'',acertei:'',dificuldade:0,prazo:'D+3',obs:'',tempo:''});
     setCadSalvo(true);setTimeout(()=>setCadSalvo(false),2000);
   };
   const salvarSlotIndividual=(i)=>{
@@ -5242,10 +5243,27 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
                 <MatBtn value={pendentes.some(s=>s.mat===ankiForm.mat)?'':ankiForm.mat} onChange={v=>setAnkiForm(f=>({...f,mat:v}))}/>
               </div>
 
-              {/* Cards + Dificuldade */}
+              {/* Cards + Tempo + Dificuldade */}
               <div style={{marginBottom:8}}>
                 <div style={{fontSize:9,color:'#64748b',marginBottom:4}}>🃏 CARDS FEITOS</div>
                 <input type="number" value={ankiForm.cards||''} onChange={e=>setAnkiForm(f=>({...f,cards:e.target.value}))} placeholder="ex: 35" style={{width:'100%',padding:'13px',borderRadius:8,border:'1px solid rgba(167,139,250,.3)',background:'rgba(167,139,250,.06)',color:'#a78bfa',fontSize:20,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
+              </div>
+              <div style={{marginBottom:8}}>
+                <div style={{fontSize:9,color:'#60a5fa',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:5}}>⏱ TEMPO ESTUDADO (min)</div>
+                <div style={{display:'flex',gap:6}}>
+                  <input type="number" value={ankiForm.tempo||''} onChange={e=>setAnkiForm(f=>({...f,tempo:e.target.value}))} placeholder="ex: 30"
+                    style={{flex:1,padding:'10px',borderRadius:8,border:'1px solid rgba(96,165,250,.3)',background:'rgba(96,165,250,.06)',color:'#60a5fa',fontSize:20,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
+                  <div style={{display:'flex',flexDirection:'column',gap:4}}>
+                    {[20,30,45].map(m=>(
+                      <button key={m} onClick={()=>setAnkiForm(f=>({...f,tempo:String(m)}))}
+                        style={{padding:'4px 10px',borderRadius:6,border:`1px solid ${ankiForm.tempo===String(m)?'#60a5fa':'rgba(96,165,250,.2)'}`,background:ankiForm.tempo===String(m)?'rgba(96,165,250,.2)':'transparent',color:ankiForm.tempo===String(m)?'#60a5fa':'#475569',fontSize:9,cursor:'pointer',fontFamily:"'DM Mono',monospace",fontWeight:700}}>
+                        {m}min
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {!ankiForm.tempo&&ankiForm.cards&&<div style={{fontSize:8,color:'#475569',marginTop:3}}>Sem tempo → estimativa automática ({Math.round((parseInt(ankiForm.cards)||0)*0.4)}min por cards)</div>}
+                {ankiForm.tempo&&<div style={{fontSize:9,color:'#60a5fa',marginTop:4}}>✓ {ankiForm.tempo} min serão registrados nas suas horas</div>}
               </div>
               <div style={{marginBottom:12}}>
                 <div style={{fontSize:9,color:'#64748b',marginBottom:6}}>DIFICULDADE</div>
@@ -5840,6 +5858,24 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
                   );})}
                 </div>
                 {cadForm.dificuldade>0&&<div style={{textAlign:'center',fontSize:9,color:['#34d399','#a3e635','#fbbf24','#fb923c','#f87171'][cadForm.dificuldade-1],marginTop:3,fontFamily:"'DM Mono',monospace",fontWeight:700}}>{['FÁCIL','TRANQUILO','MÉDIO','DIFÍCIL','MUITO DIFÍCIL'][cadForm.dificuldade-1]}</div>}
+              </div>
+
+              {/* Tempo estudado */}
+              <div style={{marginBottom:10}}>
+                <div style={{fontSize:9,color:'#60a5fa',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:5}}>⏱ TEMPO ESTUDADO (min)</div>
+                <div style={{display:'flex',gap:6}}>
+                  <input type="number" value={cadForm.tempo||''} onChange={e=>setCadForm(f=>({...f,tempo:e.target.value}))} placeholder="ex: 40"
+                    style={{flex:1,padding:'10px',borderRadius:8,border:'1px solid rgba(96,165,250,.3)',background:'rgba(96,165,250,.06)',color:'#60a5fa',fontSize:20,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
+                  <div style={{display:'flex',flexDirection:'column',gap:4}}>
+                    {[30,45,60].map(m=>(
+                      <button key={m} onClick={()=>setCadForm(f=>({...f,tempo:String(m)}))}
+                        style={{padding:'4px 10px',borderRadius:6,border:`1px solid ${cadForm.tempo===String(m)?'#60a5fa':'rgba(96,165,250,.2)'}`,background:cadForm.tempo===String(m)?'rgba(96,165,250,.2)':'transparent',color:cadForm.tempo===String(m)?'#60a5fa':'#475569',fontSize:9,cursor:'pointer',fontFamily:"'DM Mono',monospace",fontWeight:700}}>
+                        {m}min
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {cadForm.tempo&&<div style={{fontSize:9,color:'#60a5fa',marginTop:4}}>✓ {cadForm.tempo} min serão registrados nas suas horas de estudo</div>}
               </div>
 
               {/* Fase inicial — D+3 / D+15 / D+45 */}
@@ -8010,6 +8046,18 @@ function App(){
   useEffect(()=>{
     Sync.onStatus(s=>setSyncSt(s));
     if(Sync.isConfigured()){Sync.init().then(ok=>{if(ok){setFeitos(lsGet('feitos',[]));setCicloNum(lsGet('cicloNum',1));setHoras(lsGet('horas',[]));setMit(lsGet('mit',[]));}});}
+    // ── Registro único: 40min Contabilidade TEC hoje ─────────
+    (()=>{
+      const KEY='rity_reg_40min_ctbg_20260424';
+      if(!localStorage.getItem(KEY)){
+        try{
+          const h=JSON.parse(localStorage.getItem('horas')||'[]');
+          h.push({mat:'Contabilidade Pública',min:40,dt:Date.now(),origem:'caderno_tec'});
+          localStorage.setItem('horas',JSON.stringify(h));
+          localStorage.setItem(KEY,'done');
+        }catch(e){}
+      }
+    })();
     // Auto-reset: se tiver dados do ciclo antigo, zera para começar o Ciclo 9
     const _f=lsGet('feitos',[]);
     if(lsGet('ciclo_versao','')!=='v29'){
