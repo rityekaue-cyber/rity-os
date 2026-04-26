@@ -211,12 +211,12 @@ const CICLO=[
   {id:6,  dia:1, mat:'Dir. Constitucional',    ic:'📜', cor:'#94a3b8', tag:'⚫ MANUTENÇÃO', h:0.75, tipo:'Questões',  ferramenta:'TecConcursos',     conteudo:'Resolução de questões favoritas — ATRASADA · Pt2'},
   // ── Ter 21/04 — livre — 7 slots ───────────────────────────
   {id:7,  dia:2, mat:'Mat. Financeira',        ic:'🧮', cor:'#f87171', tag:'🔴 URGENTE',    h:0.75, tipo:'Questões',  ferramenta:'Gran Cursos',      conteudo:'Juros Simples Pt2 — questões'},
-  {id:8,  dia:2, mat:'Discursivas',            ic:'✍️',  cor:'#a78bfa', tag:'🔴 URGENTE',    h:0.75, tipo:'Teoria',    ferramenta:'Papel + caneta',   conteudo:'Questão — Banco de Dados e Data Warehouse — ATRASADA · Pt1'},
+  {id:8,  dia:2, mat:'Dir. Penal',              ic:'⚖️',  cor:'#94a3b8', tag:'⚫ MANUTENÇÃO', h:0.75, tipo:'Teoria',    ferramenta:'TecConcursos',     conteudo:'Causas de extinção da punibilidade · Pt1 — teoria'},
   {id:9,  dia:2, mat:'Dir. Tributário',        ic:'💰', cor:'#fbbf24', tag:'🔴 URGENTE',    h:0.75, tipo:'Questões',  ferramenta:'TecConcursos FGV', conteudo:'Impostos Estaduais Pt2 — questões'},
   {id:10, dia:2, mat:'Raciocínio Lógico',      ic:'🔢', cor:'#f87171', tag:'🔴 URGENTE',    h:0.75, tipo:'Teoria',    ferramenta:'Gran Cursos',      conteudo:'Conversão proposicional — Ordem de precedência · Pt1'},
   {id:11, dia:2, mat:'Dir. Civil',             ic:'⚖️',  cor:'#a78bfa', tag:'🟢 LEVE',       h:0.75, tipo:'Questões',  ferramenta:'TecConcursos',     conteudo:'Espécies de Contratos Pt.1 Pt2 — questões — ATRASADA'},
   {id:12, dia:2, mat:'Contabilidade Pública',  ic:'📊', cor:'#34d399', tag:'🟠 ALTA',        h:0.75, tipo:'Questões',  ferramenta:'TecConcursos',     conteudo:'Questões Aulas 6 e 7 · Pt1'},
-  {id:13, dia:2, mat:'Discursivas',            ic:'✍️',  cor:'#a78bfa', tag:'🔴 URGENTE',    h:0.75, tipo:'Teoria',    ferramenta:'Papel + caneta',   conteudo:'BD/Data Warehouse Pt2 — redação completa'},
+  {id:13, dia:2, mat:'Dir. Penal',             ic:'⚖️',  cor:'#94a3b8', tag:'⚫ MANUTENÇÃO', h:0.75, tipo:'Questões',  ferramenta:'TecConcursos',     conteudo:'Causas de extinção da punibilidade · Pt2 — questões'},
   // ── Qua 22/04 — livre — 7 slots ───────────────────────────
   {id:14, dia:3, mat:'Raciocínio Lógico',      ic:'🔢', cor:'#f87171', tag:'🔴 URGENTE',    h:0.75, tipo:'Questões',  ferramenta:'Gran Cursos',      conteudo:'Conversão proposicional Pt2 — questões'},
   {id:15, dia:3, mat:'Adm. Pública',           ic:'🏛️',  cor:'#fb923c', tag:'🔴 URGENTE',    h:0.75, tipo:'Mapeamento',ferramenta:'Guruja',           conteudo:'Mapeamento Aula 01 · Pt1'},
@@ -2712,30 +2712,71 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
         );
       })()}
 
-      {/* SUB-ABAS */}
+      {/* SUB-ABAS — ordenadas pelas 5 Formas de Dificuldade */}
       <div style={{display:'flex',gap:4,marginBottom:12,overflowX:'auto',scrollbarWidth:'none'}}>
         {[
-          {id:'hoje',l:'🧭 Hoje sem pensar'},
+          {id:'hoje',l:'🧭 Missão'},
+          {id:'tec',l:`F1 · TEC${tecHoje.d3.length>0?` (${tecHoje.d3.length})`:''}`,badge:tecHoje.d3.length},
+          {id:'anki',l:'F3 · Anki'},
+          {id:'radar',l:'F4 · Radar'},
           {id:'blocos',l:'📅 Blocos'},
-          {id:'tec',l:`🔴 TEC${tecHoje.d3.length>0?` (${tecHoje.d3.length})`:''}` },
-          {id:'radar',l:'🎯 Radar'},
         ].map(s=>{
           const at=subAba===s.id;
           return(
-            <button key={s.id} onClick={()=>setSubAba(s.id)} style={{flexShrink:0,padding:'8px 12px',borderRadius:9,border:`1px solid ${at?'var(--tab-active-border)':'var(--border)'}`,background:at?'var(--tab-active-bg)':'transparent',color:at?'var(--tab-active-color)':'var(--tab-inactive-color)',fontSize:11,fontWeight:700,fontFamily:"'DM Mono',monospace",cursor:'pointer',whiteSpace:'nowrap'}}>
+            <button key={s.id} onClick={()=>setSubAba(s.id)} style={{flexShrink:0,padding:'8px 12px',borderRadius:9,border:`1px solid ${at?'var(--tab-active-border)':s.badge?'rgba(248,113,113,.4)':'var(--border)'}`,background:at?'var(--tab-active-bg)':s.badge?'rgba(248,113,113,.07)':'transparent',color:at?'var(--tab-active-color)':s.badge?'#f87171':'var(--tab-inactive-color)',fontSize:11,fontWeight:700,fontFamily:"'DM Mono',monospace",cursor:'pointer',whiteSpace:'nowrap'}}>
               {s.l}
             </button>
           );
         })}
       </div>
 
-      {/* ── SUB-ABA: HOJE SEM PENSAR ── */}
+      {/* ── SUB-ABA: MISSÃO (Hoje sem pensar) ── */}
       {subAba==='hoje'&&(
         <div>
-          <div style={{padding:'10px 13px',borderRadius:11,background:'rgba(96,165,250,.06)',border:'1px solid rgba(96,165,250,.2)',marginBottom:14}}>
-            <div style={{fontSize:9,color:'#60a5fa',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:2}}>🧭 HOJE SEM PENSAR — itens inegociáveis</div>
-            <div style={{fontSize:10,color:'var(--text4)'}}>Calculado automaticamente · sem IA · sem espera · marque ao fazer</div>
-          </div>
+          {/* PIRÂMIDE DE DIFICULDADE — Forma 2 + Forma 4 integradas */}
+          {(()=>{
+            const criticosManuais=lsGet('criticos_manuais',[]);
+            const caderno=lsGet('rev_caderno',[]);
+            const hist=lsGet('historico_diario',[]);
+            const todayStr=new Date().toISOString().split('T')[0];
+            // Top 5 riscos: combina críticos manuais + TEC vencendo + assuntos Guruja críticos
+            const riscos=[];
+            criticosManuais.filter(c=>c.prioridade==='alta').slice(0,2).forEach(c=>{
+              riscos.push({label:c.mat,detalhe:c.motivo||'crítico manual',cor:'#f87171',icon:'🎯',fonte:'F2'});
+            });
+            caderno.filter(t=>!t.feito&&!t.dominado&&t.prazo<=todayStr&&(t.tentativas||1)>=2).slice(0,2).forEach(t=>{
+              riscos.push({label:t.mat,detalhe:`${t.assunto||''} · ${t.tentativas}x errou`,cor:'#fb923c',icon:'📕',fonte:'F1'});
+            });
+            // Assuntos Guruja críticos seedados
+            const seedCriticos=[
+              {label:'Português',detalhe:'Interpretação 63.6% · Semântica 64.2%',cor:'#f87171',icon:'⚠️',fonte:'F4'},
+              {label:'Auditoria Gov.',detalhe:'Amostragem 71% · Execução 71.4%',cor:'#fb923c',icon:'⚠️',fonte:'F4'},
+              {label:'AFO',detalhe:'Receita 70.3% · Leis orçamentárias 76.9%',cor:'#fbbf24',icon:'⚠️',fonte:'F4'},
+            ];
+            // só adiciona os seed se ainda não tiver crítico manual daquela matéria
+            const matsJa=new Set(riscos.map(r=>r.label));
+            seedCriticos.forEach(s=>{if(!matsJa.has(s.label))riscos.push(s);});
+            if(!riscos.length)return null;
+            return(
+              <div style={{marginBottom:12,padding:'12px 13px',borderRadius:12,background:'rgba(248,113,113,.05)',border:'1px solid rgba(248,113,113,.2)'}}>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+                  <div style={{fontSize:9,color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px'}}>🔺 PIRÂMIDE DE DIFICULDADE — pontos críticos hoje</div>
+                  <span style={{fontSize:8,color:'#475569',fontFamily:"'DM Mono',monospace"}}>Formas 1+2+4</span>
+                </div>
+                {riscos.slice(0,5).map((r,i)=>(
+                  <div key={i} style={{display:'flex',alignItems:'center',gap:8,padding:'6px 9px',borderRadius:8,background:`${r.cor}08`,border:`1px solid ${r.cor}22`,marginBottom:4}}>
+                    <span style={{fontSize:11,flexShrink:0}}>{r.icon}</span>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontSize:12,fontWeight:700,color:'var(--text)'}}>{r.label}</div>
+                      <div style={{fontSize:9,color:'var(--text4)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{r.detalhe}</div>
+                    </div>
+                    <span style={{fontSize:8,padding:'1px 5px',borderRadius:3,background:`${r.cor}18`,color:r.cor,fontFamily:"'DM Mono',monospace",flexShrink:0}}>{r.fonte}</span>
+                  </div>
+                ))}
+                <div style={{fontSize:9,color:'#475569',marginTop:6}}>💡 Pontos Críticos Alta → vão automaticamente para o Bloco 1 abaixo</div>
+              </div>
+            );
+          })()}
 
           {hspTodos&&(
             <div style={{padding:'16px',borderRadius:13,background:'rgba(52,211,153,.08)',border:'2px solid rgba(52,211,153,.4)',marginBottom:14,textAlign:'center'}}>
@@ -2852,6 +2893,75 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
               :<div style={{textAlign:'center',fontSize:12,color:'#34d399',fontWeight:700}}>✅ Registrado</div>
             }
           </div>
+        </div>
+      )}
+
+      {/* ── SUB-ABA: ANKI (Forma 3 — Pirâmide Invertida) ── */}
+      {subAba==='anki'&&(
+        <div>
+          <div style={{padding:'10px 13px',borderRadius:11,background:'rgba(167,139,250,.06)',border:'1px solid rgba(167,139,250,.25)',marginBottom:12}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:4}}>
+              <div style={{fontSize:9,color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px'}}>🃏 FORMA 3 — PIRÂMIDE INVERTIDA DE DIFICULDADE</div>
+              <span style={{fontSize:8,color:'#475569',fontFamily:"'DM Mono',monospace"}}>75 cards/dia</span>
+            </div>
+            <div style={{fontSize:10,color:'var(--text4)'}}>Slot 1 = pior acerto · Slot 2 = maior dificuldade declarada · Slot 3 = rotação sólidas</div>
+          </div>
+
+          {/* Pirâmide visual */}
+          <div style={{marginBottom:12}}>
+            {[
+              {slot:'SLOT 1',cards:35,cor:'#f87171',label:'Pior acerto',descr:'matéria com menor % de acerto real que não fez Anki nos últimos 3 dias',mat:ankiMaterias[0]?.mat,motivo:ankiMaterias[0]?.motivo},
+              {slot:'SLOT 2',cards:20,cor:'#fb923c',label:'Maior dificuldade',descr:'matéria com dificuldade ⭐ mais alta registrada nas sessões',mat:ankiMaterias[1]?.mat,motivo:ankiMaterias[1]?.motivo},
+              {slot:'SLOT 3',cards:20,cor:'#34d399',label:'Rotação sólidas',descr:'matéria sólida há mais tempo sem aparecer no Anki — manutenção anti-oxidação',mat:ankiMaterias[2]?.mat,motivo:ankiMaterias[2]?.motivo},
+            ].map((s,i)=>(
+              <div key={i} style={{display:'flex',gap:10,padding:'12px',borderRadius:11,background:`${s.cor}07`,border:`1px solid ${s.cor}22`,marginBottom:7,alignItems:'flex-start'}}>
+                <div style={{textAlign:'center',flexShrink:0}}>
+                  <div style={{fontSize:8,color:s.cor,fontFamily:"'DM Mono',monospace",fontWeight:800}}>{s.slot}</div>
+                  <div style={{fontSize:22,fontWeight:900,color:s.cor,fontFamily:"'DM Mono',monospace",lineHeight:1.1}}>{s.cards}</div>
+                  <div style={{fontSize:8,color:s.cor}}>cards</div>
+                </div>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:11,fontWeight:700,color:s.cor,marginBottom:2}}>{s.label}</div>
+                  {s.mat
+                    ?<><div style={{fontSize:13,fontWeight:900,color:'var(--text)',marginBottom:2}}>{s.mat}</div>
+                      <div style={{fontSize:9,color:'var(--text4)'}}>{s.motivo}</div></>
+                    :<div style={{fontSize:11,color:'var(--text4)'}}>Registre questões para o motor calcular</div>
+                  }
+                  <div style={{fontSize:9,color:'#334155',marginTop:4,lineHeight:1.5}}>{s.descr}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Como registrar dificuldade */}
+          <div style={{padding:'10px 12px',borderRadius:10,background:'rgba(251,191,36,.06)',border:'1px solid rgba(251,191,36,.2)',marginBottom:12}}>
+            <div style={{fontSize:9,color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:6}}>⭐ COMO ALIMENTAR O SLOT 2</div>
+            <div style={{fontSize:11,color:'var(--text4)',lineHeight:1.7}}>
+              Vá em <strong style={{color:'var(--text)'}}>Revisão → Anki</strong>, registre a sessão e marque as estrelas corretamente:<br/>
+              Português/Interpretação → ⭐⭐⭐⭐⭐ · Auditoria/Amostragem → ⭐⭐⭐⭐⭐<br/>
+              AFO/Receita → ⭐⭐⭐⭐⭐ · Mat.Financeira → ⭐⭐⭐⭐⭐ (ponto cego)
+            </div>
+          </div>
+
+          {/* Hoje: status do Anki */}
+          {ankiFeito
+            ?<div style={{padding:'11px 13px',borderRadius:11,background:'rgba(52,211,153,.08)',border:'1px solid rgba(52,211,153,.3)'}}>
+              <div style={{fontSize:12,fontWeight:700,color:'#34d399'}}>✅ Anki feito hoje — {ankiFeito.cards||0} cards</div>
+              {ankiMaterias.map(m=><div key={m.mat} style={{fontSize:10,color:'var(--text4)',marginTop:2}}>• {m.mat} ({ankiFeito.porMat?.[m.mat]||m.cards} cards)</div>)}
+            </div>
+            :<div style={{padding:'11px 13px',borderRadius:11,background:'rgba(167,139,250,.06)',border:'1px solid rgba(167,139,250,.2)'}}>
+              <div style={{fontSize:12,fontWeight:700,color:'#a78bfa',marginBottom:6}}>⏳ Anki pendente hoje</div>
+              <div style={{fontSize:10,color:'var(--text4)',marginBottom:8}}>Distribuição calculada pela pirâmide:</div>
+              {ankiMaterias.map((m,i)=>(
+                <div key={m.mat} style={{display:'flex',justifyContent:'space-between',padding:'5px 8px',borderRadius:7,background:'rgba(167,139,250,.06)',marginBottom:4}}>
+                  <span style={{fontSize:11,color:'var(--text)'}}>{m.mat}</span>
+                  <span style={{fontSize:11,fontWeight:700,color:'#a78bfa',fontFamily:"'DM Mono',monospace"}}>{m.cards} cards</span>
+                </div>
+              ))}
+              <button onClick={()=>{const t={feito:true,cards:75,porMat:Object.fromEntries(ankiMaterias.map(m=>[m.mat,m.cards])),mats:ankiMaterias,dt:Date.now()};lsSet(`anki_feito_${hoje}`,t);setAnkiFeito(t);if(onAddHoras)onAddHoras({mat:'Anki',min:30,dt:Date.now()});}}
+                style={{width:'100%',marginTop:8,padding:'10px',borderRadius:9,border:'none',background:'#a78bfa',color:'#0f172a',fontSize:12,fontWeight:800,cursor:'pointer'}}>✅ Marcar Anki como feito</button>
+            </div>
+          }
         </div>
       )}
 
@@ -3037,8 +3147,15 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
         const tecItens=todosItens.filter(t=>t.prazo&&!t.feito&&!t.dominado);
         const todayStr=new Date().toISOString().split('T')[0];
         const proxStr=new Date(Date.now()+7*86400000).toISOString().split('T')[0];
-        const vencendo=tecItens.filter(t=>t.prazo<=todayStr).sort((a,b)=>a.prazo.localeCompare(b.prazo));
-        const proximos=tecItens.filter(t=>t.prazo>todayStr&&t.prazo<=proxStr).sort((a,b)=>a.prazo.localeCompare(b.prazo));
+        // Forma 1: ordena por score de urgência (dificuldade × tentativas × atraso)
+        const calcScore=t=>{
+          const diasAtr=t.prazo<todayStr?Math.ceil((new Date(todayStr)-new Date(t.prazo))/86400000):0;
+          const dif=t.dificuldade||1;
+          const tent=t.tentativas||1;
+          return dif*3+diasAtr*2+tent*1.5+(t.fase===1?2:0);
+        };
+        const vencendo=tecItens.filter(t=>t.prazo<=todayStr).map(t=>({...t,_score:calcScore(t)})).sort((a,b)=>b._score-a._score);
+        const proximos=tecItens.filter(t=>t.prazo>todayStr&&t.prazo<=proxStr).map(t=>({...t,_score:calcScore(t)})).sort((a,b)=>b._score-a._score);
         const futuros=tecItens.filter(t=>t.prazo>proxStr).sort((a,b)=>a.prazo.localeCompare(b.prazo));
         const faseCor={1:'#60a5fa',2:'#fbbf24',3:'#34d399'};
         const dominados=todosItens.filter(t=>t.dominado).length;
@@ -3110,6 +3227,14 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
 
         return(
           <div>
+            {/* FORMA 1 — Header */}
+            <div style={{padding:'9px 12px',borderRadius:10,background:'rgba(248,113,113,.06)',border:'1px solid rgba(248,113,113,.2)',marginBottom:10}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                <div style={{fontSize:9,color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800}}>F1 · TEC — ordenado por dificuldade ⭐ × tentativas × atraso</div>
+                <span style={{fontSize:8,color:'#475569',fontFamily:"'DM Mono',monospace"}}>score automático</span>
+              </div>
+              <div style={{fontSize:10,color:'var(--text4)',marginTop:2}}>Preencha ⭐ ao registrar para o score ficar mais preciso. Mais estrelas = sobe no ranking.</div>
+            </div>
             {/* Contadores */}
             <div style={{display:'flex',gap:6,marginBottom:12,flexWrap:'wrap'}}>
               {[
@@ -3126,7 +3251,7 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
 
             {/* Vencendo hoje */}
             {vencendo.length>0&&<>
-              <div style={{fontSize:10,color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:8}}>📅 REVISAR HOJE</div>
+              <div style={{fontSize:10,color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:8}}>📅 REVISAR HOJE — ordem: mais urgente primeiro</div>
               {vencendo.map(t=><ItemTEC key={t.id} t={t} destacado={true}/>)}
             </>}
 
@@ -4431,10 +4556,11 @@ function TabRevProfunda({totalBlocos}){
       {/* Header status */}
       <div style={{padding:'14px',borderRadius:13,background:deveAgora?'linear-gradient(135deg,rgba(167,139,250,.12),rgba(5,10,20,.98))':'rgba(167,139,250,.04)',border:`${deveAgora?'2px':'1px'} solid ${deveAgora?'rgba(167,139,250,.6)':'rgba(167,139,250,.2)'}`,marginBottom:12}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
-          <div style={{fontSize:9,color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'2px'}}>🔄 REVISÃO PROFUNDA — 2h</div>
+          <div style={{fontSize:9,color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'2px'}}>F5 · REVISÃO PROFUNDA — protocolo semanal de remediação (2h)</div>
           <span style={{fontSize:9,padding:'2px 8px',borderRadius:5,background:'rgba(167,139,250,.15)',color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:700}}>{totalBlocos} blocos</span>
         </div>
-        <div style={{fontSize:10,color:'#64748b',marginBottom:8}}>A cada <strong style={{color:'#a78bfa'}}>7 blocos</strong> do Foco. {deveAgora?<strong style={{color:'#f87171'}}>HORA DE REVISAR!</strong>:<>Faltam <strong style={{color:'#a78bfa'}}>{blocosFaltam}</strong> blocos.</>}</div>
+        <div style={{fontSize:10,color:'#64748b',marginBottom:4}}>A cada <strong style={{color:'#a78bfa'}}>7 blocos</strong> do Foco. {deveAgora?<strong style={{color:'#f87171'}}>HORA DE REVISAR!</strong>:<>Faltam <strong style={{color:'#a78bfa'}}>{blocosFaltam}</strong> blocos.</>}</div>
+        <div style={{fontSize:9,color:'#475569',marginBottom:8}}>Fila priorizada: Português → Auditoria → MatFi → RLOG → AFO → demais</div>
         <div style={{height:6,borderRadius:3,background:'rgba(255,255,255,.06)',overflow:'hidden',marginBottom:deveAgora?0:6}}>
           <div style={{width:`${Math.min(100,Math.round((7-blocosFaltam)/7*100))}%`,height:'100%',background:deveAgora?'#f87171':'#a78bfa',borderRadius:3,transition:'width .5s'}}/>
         </div>
@@ -4843,13 +4969,13 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
 
 
   const ABAS_REV=[
-    {id:'morto',l:'⏳ Tempo Morto'},
-    {id:'criticos',l:'🎯 Pontos Críticos'},
-    {id:'edital',l:'📋 Edital'},
-    {id:'anki',l:'🃏 Anki'},
+    {id:'criticos',l:'F2 · Críticos'},
+    {id:'caderno',l:`F1 · TEC${lsGet('rev_caderno',[]).filter(t=>!t.feito&&!t.dominado&&t.prazo&&t.prazo<=new Date().toISOString().split('T')[0]).length>0?' 🔴':''}`},
+    {id:'anki',l:'F3 · Anki'},
+    {id:'edital',l:'F4 · Edital'},
+    {id:'rev1h30',l:`F5 · Rev.Prof${deveRevisaoProfunda(totalBlocos)?' 🚨':''}`},
+    {id:'morto',l:'⏳ Morto'},
     {id:'nlm',l:'🎧 NLM'},
-    {id:'rev1h30',l:`🔄 Rev. Prof.${deveRevisaoProfunda(totalBlocos)?' 🚨':''}`},
-    {id:'caderno',l:'📕 Cad. Erros'},
     {id:'topicos',l:'📌 Revisitar'},
   ];
 
@@ -4907,6 +5033,57 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
 
       {/* PONTOS CRÍTICOS */}
       {aba==='criticos'&&<div>
+        {/* F2 — Header e seed automático dos dados da análise */}
+        <div style={{padding:'10px 13px',borderRadius:11,background:'rgba(248,113,113,.06)',border:'1px solid rgba(248,113,113,.25)',marginBottom:10}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:4}}>
+            <div style={{fontSize:9,color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px'}}>F2 · FILA DE DIFICULDADE → alimenta Bloco 1 do Hoje</div>
+            <span style={{fontSize:8,color:'#475569',fontFamily:"'DM Mono',monospace"}}>Alta = Bloco 1 automático</span>
+          </div>
+          <div style={{fontSize:10,color:'var(--text4)'}}>Tudo marcado como Alta aparece no topo do "Hoje sem pensar" como Bloco 1. Sem precisar decidir toda manhã.</div>
+        </div>
+
+        {/* Seed dos dados da análise — aparece só se ainda não tiver críticos */}
+        {(()=>{
+          const criticos=lsGet('criticos_manuais',[]);
+          if(criticos.length>0)return null;
+          const seeds=[
+            {mat:'Português',motivo:'Interpretação 63.6% e Semântica 64.2% — piores acertos do sistema',prioridade:'alta'},
+            {mat:'Auditoria Governamental',motivo:'Amostragem 71% · Execução 71.4% · Conformidade 70.5% — ★★★★★ todos abaixo da média',prioridade:'alta'},
+            {mat:'Mat. Financeira',motivo:'Ponto cego: 0 questões registradas, nível Aprendiz, ★★★★★',prioridade:'alta'},
+            {mat:'AFO',motivo:'Receita 70.3% e Leis Orçamentárias 76.9% — 35% de jornada sem converter',prioridade:'media'},
+            {mat:'Dir. Civil',motivo:'Contratos em Geral 70.3% e Espécies 72.0% — dois assuntos isolados numa matéria sólida',prioridade:'media'},
+          ];
+          return(
+            <div style={{padding:'11px 13px',borderRadius:11,background:'rgba(251,191,36,.06)',border:'1px solid rgba(251,191,36,.25)',marginBottom:10}}>
+              <div style={{fontSize:9,color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:8}}>⚡ PONTO DE PARTIDA — baseado na análise dos seus dados</div>
+              {seeds.map((s,i)=>(
+                <div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'6px 8px',borderRadius:8,background:s.prioridade==='alta'?'rgba(248,113,113,.07)':'rgba(251,191,36,.06)',border:`1px solid ${s.prioridade==='alta'?'rgba(248,113,113,.25)':'rgba(251,191,36,.2)'}`,marginBottom:5}}>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:11,fontWeight:700,color:'var(--text)'}}>{s.mat}</div>
+                    <div style={{fontSize:9,color:'var(--text4)',lineHeight:1.4}}>{s.motivo}</div>
+                  </div>
+                  <button onClick={()=>{const n=[...lsGet('criticos_manuais',[]),{...s,id:Date.now()+i,dt:Date.now()}];lsSet('criticos_manuais',n);setCriticosManuais(n);}}
+                    style={{padding:'5px 10px',borderRadius:7,border:'none',background:s.prioridade==='alta'?'#f87171':'#fbbf24',color:'#0f172a',fontSize:10,fontWeight:800,cursor:'pointer',flexShrink:0,marginLeft:8}}>
+                    + Adicionar
+                  </button>
+                </div>
+              ))}
+              <button onClick={()=>{
+                const seeds2=[
+                  {mat:'Português',motivo:'Interpretação 63.6% e Semântica 64.2% — piores acertos do sistema',prioridade:'alta'},
+                  {mat:'Auditoria Governamental',motivo:'Amostragem 71% · Execução 71.4% · Conformidade 70.5% — ★★★★★',prioridade:'alta'},
+                  {mat:'Mat. Financeira',motivo:'Ponto cego: 0 questões, nível Aprendiz, ★★★★★',prioridade:'alta'},
+                  {mat:'AFO',motivo:'Receita 70.3% e Leis Orçamentárias 76.9% — 35% jornada sem converter',prioridade:'media'},
+                  {mat:'Dir. Civil',motivo:'Contratos 70.3% e Espécies 72.0% — gargalo numa matéria sólida',prioridade:'media'},
+                ];
+                const todos=seeds2.map((s,i)=>({...s,id:Date.now()+i,dt:Date.now()}));
+                lsSet('criticos_manuais',todos);setCriticosManuais(todos);
+              }} style={{width:'100%',marginTop:6,padding:'9px',borderRadius:9,border:'none',background:'rgba(248,113,113,.15)',color:'#f87171',fontSize:11,fontWeight:800,cursor:'pointer'}}>
+                ⚡ Importar todos os 5 de uma vez
+              </button>
+            </div>
+          );
+        })()}
         {/* Dificuldade Base — matérias sem questões */}
         <div style={{background:'rgba(96,165,250,.05)',border:'1px solid rgba(96,165,250,.2)',borderRadius:13,padding:'13px',marginBottom:12}}>
           <div style={{fontSize:9,letterSpacing:'2px',color:'#60a5fa',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:8}}>⭐ DIFICULDADE BASE — matérias sem questões ainda</div>
@@ -5041,7 +5218,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
         return(
           <div>
             <div style={{padding:'10px 12px',borderRadius:10,background:'rgba(251,191,36,.06)',border:'1px solid rgba(251,191,36,.2)',marginBottom:12}}>
-              <div style={{fontSize:9,color:'#fbbf24',fontFamily:"'DM Mono',monospace",marginBottom:2}}>📋 RADAR DO EDITAL — peso × seu desempenho real</div>
+              <div style={{fontSize:9,color:'#fbbf24',fontFamily:"'DM Mono',monospace",marginBottom:2}}>F4 · RADAR DO EDITAL — peso × seu desempenho real (bússola de dificuldade)</div>
               <div style={{fontSize:10,color:'var(--text4)'}}>Toque para marcar: ⬜ → 🟡 → ✅ · Acerto real calculado do histórico</div>
             </div>
 
@@ -7552,7 +7729,20 @@ function App(){
         }catch(e){}
       }
     })();
-    // Auto-reset: se tiver dados do ciclo antigo, zera para começar o Ciclo 9
+    // ── Seed único: dificuldade base das matérias sem questões ──
+    (()=>{
+      const KEY='rity_seed_difbase_v1';
+      if(!localStorage.getItem(KEY)){
+        try{
+          const cur=JSON.parse(localStorage.getItem('dif_base_materias')||'{}');
+          if(!cur['Mat. Financeira'])cur['Mat. Financeira']=5;
+          if(!cur['Raciocínio Lógico'])cur['Raciocínio Lógico']=5;
+          if(!cur['Português'])cur['Português']=4;
+          localStorage.setItem('dif_base_materias',JSON.stringify(cur));
+          localStorage.setItem(KEY,'done');
+        }catch(e){}
+      }
+    })();
     const _f=lsGet('feitos',[]);
     if(lsGet('ciclo_versao','')!=='v29'){
       if(_f.length>0)lsSet('feitos',[]);
