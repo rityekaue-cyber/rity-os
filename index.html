@@ -538,7 +538,7 @@ const NAVAL_ITEMS=["✅ Material escolar separado","📚 Lição de casa feita",
 const pad=n=>String(n).padStart(2,'0');
 const fH=d=>`${pad(d.getHours())}:${pad(d.getMinutes())}`;
 const fmtMin=m=>m<=0?'0min':m>=60?`${Math.floor(m/60)}h${m%60?m%60+'min':''}`:`${m}min`;
-const getDK=()=>{const d=new Date();return`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;};
+const getDK=()=>{const d=new Date();return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
 // ─── CLOUD DB (localStorage + Supabase sync) ─────────────────
 const SUPA_URL_LS='__supa_url__';
 const SUPA_KEY_LS='__supa_key__';
