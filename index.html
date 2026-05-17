@@ -1187,6 +1187,10 @@ function TabIA({appCtx,onMIT}){
     const urgentes=lsGet('rev_urgentes',[]);
     const fila=lsGet('fila',[]).filter(f=>!f.feito&&f.quando==='Hoje');
     const planoSem=lsGet('plano_semanal',null);
+    const ausencias=lsGet('historico_ausencias',[]);
+    const padraoAusencia=ausencias.length>=2
+      ?`Padrão detectado: ${ausencias.length} episódios, média ${Math.round(ausencias.reduce((s,h)=>s+h.dias,0)/ausencias.length)}d fora. Último: ${ausencias.slice(-1)[0]?.dias}d (${ausencias.slice(-1)[0]?.motivo}).`
+      :'Sem padrão de ausência detectado ainda.';
     return `Você é a Assessora IA pessoal da Ritchely — mentora de alto desempenho para concursos fiscais.
 
 PERFIL: Ritchely, 38 anos, mãe solo do Kauê (13a, Colégio Naval). Acorda 05h00. Cetogênica/low carb. Corre 3x/semana no Aterro do Flamengo. Trabalha Ter/Qui/Sex 13h-17h.
@@ -1213,6 +1217,8 @@ CONCURSOS-ALVO:
 3. ISS Niterói (estratégico) — R$30.468 · FGV · 2º sem/2026
 
 ALERTAS ATIVOS: ${getAlertasAtivos().map(a=>a.msg).join(' | ')||'nenhum alerta crítico hoje'}
+
+PADRÃO DE AUSÊNCIA: ${padraoAusencia}
 
 LEGISLAÇÃO TCE-RJ (30min/dia Anki): ${LEGISLACAO_TCE_RJ.map(l=>l.codigo).join(' · ')}
 
@@ -7769,6 +7775,30 @@ function App(){
   const[trofeu,setTrofeu]=useState(false);
   const[syncSt,setSyncSt]=useState('idle');
 
+  // ── SISTEMA DE VOLTA — detecta ausência e simplifica retorno ──
+  const[telaVolta,setTelaVolta]=useState(false);
+  const[voltaMotivo,setVoltaMotivo]=useState('');
+  const[voltaModoMinimo,setVoltaModoMinimo]=useState(false);
+
+  // Calcula dias desde o último acesso registrado
+  const diasAusente=useMemo(()=>{
+    const ultimo=lsGet('ultimo_acesso',null);
+    if(!ultimo)return 0;
+    return Math.floor((Date.now()-ultimo)/86400000);
+  },[]);
+
+  // Registra o acesso atual e decide se mostra tela de volta
+  useEffect(()=>{
+    const ultimo=lsGet('ultimo_acesso',null);
+    const agora=Date.now();
+    if(ultimo){
+      const dias=Math.floor((agora-ultimo)/86400000);
+      if(dias>=2)setTelaVolta(true);
+      if(dias>=3)setVoltaModoMinimo(true); // 3+ dias → modo mínimo por padrão
+    }
+    lsSet('ultimo_acesso',agora);
+  },[]);
+
   useEffect(()=>{
     Sync.onStatus(s=>setSyncSt(s));
     if(Sync.isConfigured()){Sync.init().then(ok=>{if(ok){setFeitos(lsGet('feitos',[]));setCicloNum(lsGet('cicloNum',1));setHoras(lsGet('horas',[]));setMit(lsGet('mit',[]));}});}
@@ -7818,6 +7848,22 @@ function App(){
   const metaHoras=lsGet('meta_horas_sem',35);
   const appCtx={cicloNum,feitosN:feitos.length,N,pendentes,minHoje,minSemana};
 
+  const registrarVolta=(motivo)=>{
+    // Camada 3 — salva histórico de ausências para padrão IA
+    const hist=lsGet('historico_ausencias',[]);
+    if(diasAusente>=2){
+      hist.push({
+        dias:diasAusente,
+        motivo,
+        blocos:feitos.length,
+        dt:Date.now(),
+        semana:getDK(),
+      });
+      lsSet('historico_ausencias',hist.slice(-20)); // guarda últimas 20
+    }
+    setTelaVolta(false);
+  };
+
   const concluir=id=>{if(feitos.includes(id))return;const n=[...feitos,id];if(n.length>=N){lsSet('feitos',[]);lsSet('cicloNum',cicloNum+1);setFeitos([]);setCicloNum(c=>c+1);setTrofeu(true);setTimeout(()=>setTrofeu(false),4000);}else{lsSet('feitos',n);setFeitos(n);}};
   const desmarcar=n=>{lsSet('feitos',n);setFeitos(n);};
   const irPara=id=>{
@@ -7853,6 +7899,91 @@ function App(){
 
   return(
     <div style={{minHeight:'100dvh',background:'var(--bg)',display:'flex',flexDirection:'column'}}>
+
+      {/* ── TELA DE VOLTA — aparece quando ficou 2+ dias fora ── */}
+      {telaVolta&&(
+        <div style={{position:'fixed',inset:0,background:'var(--bg)',zIndex:500,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:24}}>
+          <div style={{maxWidth:360,width:'100%'}}>
+            {/* Ícone e saudação */}
+            <div style={{textAlign:'center',marginBottom:28}}>
+              <div style={{fontSize:48,marginBottom:12}}>
+                {diasAusente>=7?'🌱':diasAusente>=3?'☕':'👋'}
+              </div>
+              <div style={{fontFamily:"'DM Serif Display',serif",fontSize:22,color:'var(--text)',marginBottom:8}}>
+                {diasAusente>=7
+                  ?'Você voltou.'
+                  :diasAusente>=3
+                  ?'Bem-vinda de volta.'
+                  :'Olá, Ritchely.'
+                }
+              </div>
+              <div style={{fontSize:13,color:'var(--text4)',lineHeight:1.7}}>
+                {diasAusente>=7
+                  ?`Ficou ${diasAusente} dias fora. Tudo bem. O importante é que você voltou.`
+                  :diasAusente>=3
+                  ?`${diasAusente} dias fora. Não precisa recuperar tudo hoje.`
+                  :`${diasAusente} dias fora. Vamos retomar.`
+                }
+              </div>
+            </div>
+
+            {/* O que aconteceu */}
+            <div style={{marginBottom:20}}>
+              <div style={{fontSize:11,color:'var(--text4)',fontFamily:"'DM Mono',monospace",marginBottom:10,textAlign:'center'}}>O QUE ACONTECEU?</div>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
+                {[
+                  {v:'sobrecarregada',l:'Estava sobrecarregada'},
+                  {v:'imprevisto',l:'Tive um imprevisto'},
+                  {v:'desmotivada',l:'Perdi a motivação'},
+                  {v:'pausa',l:'Precisava de uma pausa'},
+                ].map(({v,l})=>(
+                  <button key={v} onClick={()=>setVoltaMotivo(v)}
+                    style={{padding:'12px 8px',borderRadius:10,border:`2px solid ${voltaMotivo===v?'#fbbf24':'var(--border)'}`,background:voltaMotivo===v?'rgba(251,191,36,.1)':'transparent',color:voltaMotivo===v?'#fbbf24':'var(--text4)',fontSize:12,cursor:'pointer',lineHeight:1.4,transition:'all .15s'}}>
+                    {l}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Modo mínimo — destaque */}
+            <div style={{padding:'16px',borderRadius:14,background:'rgba(167,139,250,.08)',border:'2px solid rgba(167,139,250,.3)',marginBottom:16}}>
+              <div style={{fontSize:10,color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:6,letterSpacing:'1px'}}>🃏 MODO MÍNIMO — começo mais fácil</div>
+              <div style={{fontSize:13,color:'var(--text)',fontWeight:700,marginBottom:4}}>Só Anki — 25 cards</div>
+              <div style={{fontSize:11,color:'var(--text4)',lineHeight:1.6,marginBottom:12}}>
+                Isso já conta. Isso já é suficiente para hoje. O volume acumulado não precisa ser recuperado agora.
+              </div>
+              <button onClick={()=>{registrarVolta(voltaMotivo||'pausa');setTab('hoje');}}
+                style={{width:'100%',padding:'13px',borderRadius:10,border:'none',background:'#a78bfa',color:'#0f172a',fontSize:13,fontWeight:900,cursor:'pointer',letterSpacing:'1px'}}>
+                🃏 Só Anki hoje — vamos lá
+              </button>
+            </div>
+
+            {/* Ver tudo — secundário */}
+            <button onClick={()=>registrarVolta(voltaMotivo||'pausa')}
+              style={{width:'100%',padding:'11px',borderRadius:10,border:'1px solid var(--border)',background:'transparent',color:'var(--text4)',fontSize:12,cursor:'pointer'}}>
+              Ver tudo normalmente →
+            </button>
+
+            {/* Padrão identificado — só aparece se tiver histórico */}
+            {(()=>{
+              const hist=lsGet('historico_ausencias',[]);
+              if(hist.length<3)return null;
+              const mediaD=Math.round(hist.reduce((s,h)=>s+h.dias,0)/hist.length);
+              const motivoFreq=hist.reduce((acc,h)=>{acc[h.motivo]=(acc[h.motivo]||0)+1;return acc;},{});
+              const motivoPrincipal=Object.entries(motivoFreq).sort((a,b)=>b[1]-a[1])[0]?.[0];
+              const labels={sobrecarregada:'sobrecarga',imprevisto:'imprevistos',desmotivada:'desmotivação',pausa:'pausas necessárias'};
+              return(
+                <div style={{marginTop:14,padding:'10px 12px',borderRadius:10,background:'rgba(96,165,250,.06)',border:'1px solid rgba(96,165,250,.2)'}}>
+                  <div style={{fontSize:9,color:'#60a5fa',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:4}}>📊 SEU PADRÃO — {hist.length} episódios registrados</div>
+                  <div style={{fontSize:11,color:'var(--text4)',lineHeight:1.6}}>
+                    Você costuma ficar em média <strong style={{color:'var(--text)'}}>{mediaD} dias</strong> fora, geralmente por <strong style={{color:'var(--text)'}}>{labels[motivoPrincipal]||motivoPrincipal}</strong>. Isso é informação, não julgamento.
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+      )}
       <div style={{padding:'10px 14px 8px',background:'var(--header-bg)',borderBottom:'1px solid var(--header-border)',flexShrink:0}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:6}}>
           <div style={{display:'flex',alignItems:'center',gap:7,flexWrap:'wrap'}}>
