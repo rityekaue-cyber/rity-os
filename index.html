@@ -7372,13 +7372,7 @@ ${cobrar ? `Não fez ontem: ${cobrar}.` : ''}`;
         fontWeight: 700,
         color: matFeita ? '#34d399' : 'var(--text)'
       }
-    }, matFeita ? '✅ ' : '', m.mat), React.createElement("div", {
-      style: {
-        fontSize: 10,
-        color: 'var(--text4)',
-        marginTop: 1
-      }
-    }, m.motivo)), React.createElement("div", {
+    }, matFeita ? '✅ ' : '', m.mat)), React.createElement("div", {
       style: {
         textAlign: 'right',
         flexShrink: 0
@@ -7412,57 +7406,7 @@ ${cobrar ? `Não fez ontem: ${cobrar}.` : ''}`;
         fontFamily: "'DM Mono',monospace",
         marginTop: 3
       }
-    }))), !matFeita && (() => {
-      const criticos = getAssuntosCriticos(m.mat, 2);
-      if (!criticos.length) return null;
-      return React.createElement("div", {
-        style: {
-          padding: '7px 9px',
-          borderRadius: 7,
-          background: 'rgba(248,113,113,.07)',
-          border: '1px solid rgba(248,113,113,.2)',
-          marginBottom: 7
-        }
-      }, React.createElement("div", {
-        style: {
-          fontSize: 10,
-          color: '#f87171',
-          fontFamily: "'DM Mono',monospace",
-          fontWeight: 700,
-          marginBottom: 4,
-          letterSpacing: '1px'
-        }
-      }, "\uD83C\uDFAF FOCO GURUJA \u2014 assuntos cr\xEDticos"), criticos.map((a, j) => React.createElement("div", {
-        key: j,
-        style: {
-          display: 'flex',
-          alignItems: 'center',
-          gap: 6,
-          marginBottom: j < criticos.length - 1 ? 3 : 0
-        }
-      }, React.createElement("span", {
-        style: {
-          fontSize: 10,
-          color: 'var(--text)',
-          flex: 1,
-          lineHeight: 1.3
-        }
-      }, a.titulo.length > 40 ? a.titulo.slice(0, 38) + '…' : a.titulo), React.createElement("span", {
-        style: {
-          fontSize: 11,
-          color: a.acerto < 70 ? '#f87171' : '#fbbf24',
-          fontFamily: "'DM Mono',monospace",
-          fontWeight: 700,
-          flexShrink: 0
-        }
-      }, a.acerto, "%"), a.diffMedia < 0 && React.createElement("span", {
-        style: {
-          fontSize: 11,
-          color: '#f87171',
-          flexShrink: 0
-        }
-      }, "\u2B07\uFE0F", Math.abs(a.diffMedia).toFixed(1), "%"))));
-    })(), !matFeita && React.createElement("div", {
+    }))), !matFeita && React.createElement("div", {
       style: {
         display: 'flex',
         gap: 6
@@ -7682,6 +7626,7 @@ ${cobrar ? `Não fez ontem: ${cobrar}.` : ''}`;
       t,
       comBotoes
     }) => {
+      const [expandido, setExpandido] = React.useState(false);
       const pct = t.feitas > 0 ? Math.round((t.acertei || 0) / t.feitas * 100) : null;
       const pctCor = pct === null ? '#64748b' : pct >= 80 ? '#34d399' : pct >= 60 ? '#fbbf24' : '#f87171';
       const difCors = ['', '#34d399', '#a3e635', '#fbbf24', '#fb923c', '#f87171'];
@@ -7743,7 +7688,19 @@ ${cobrar ? `Não fez ontem: ${cobrar}.` : ''}`;
           textOverflow: 'ellipsis',
           whiteSpace: 'nowrap'
         }
-      }, t.assunto), React.createElement("div", {
+      }, t.assunto), React.createElement("button", {
+        onClick: () => setExpandido(v => !v),
+        style: {
+          fontSize: 11,
+          color: 'var(--text4)',
+          background: 'none',
+          border: 'none',
+          padding: '3px 0',
+          cursor: 'pointer',
+          marginTop: 3,
+          opacity: .7
+        }
+      }, "ver detalhes ", expandido ? '▲' : '▼'), expandido && React.createElement("div", {
         style: {
           display: 'flex',
           gap: 5,
@@ -7751,7 +7708,25 @@ ${cobrar ? `Não fez ontem: ${cobrar}.` : ''}`;
           flexWrap: 'wrap',
           alignItems: 'center'
         }
-      }, t.dificuldade > 0 && React.createElement("span", {
+      }, React.createElement("span", {
+        style: {
+          fontSize: 11,
+          color: 'var(--text4)',
+          fontFamily: "'DM Mono',monospace"
+        }
+      }, "fase ", t.fase || 1, "/3"), React.createElement("span", {
+        style: {
+          fontSize: 11,
+          color: atrasado ? '#f87171' : 'var(--text4)',
+          fontFamily: "'DM Mono',monospace"
+        }
+      }, "prazo ", t.prazo), (t.tentativas || 1) > 1 && React.createElement("span", {
+        style: {
+          fontSize: 11,
+          color: '#a78bfa',
+          fontFamily: "'DM Mono',monospace"
+        }
+      }, "\u21BB ", t.tentativas, "x"), t.dificuldade > 0 && React.createElement("span", {
         style: {
           fontSize: 11,
           padding: '1px 6px',
@@ -7761,19 +7736,7 @@ ${cobrar ? `Não fez ontem: ${cobrar}.` : ''}`;
           fontFamily: "'DM Mono',monospace",
           fontWeight: 700
         }
-      }, difLabels[t.dificuldade]), (t.tentativas || 1) > 1 && React.createElement("span", {
-        style: {
-          fontSize: 11,
-          color: '#a78bfa',
-          fontFamily: "'DM Mono',monospace"
-        }
-      }, "\u21BB ", t.tentativas, "x"), atrasado && React.createElement("span", {
-        style: {
-          fontSize: 11,
-          color: '#f87171',
-          fontWeight: 700
-        }
-      }, "atrasado")))), comBotoes && React.createElement("div", {
+      }, difLabels[t.dificuldade])))), comBotoes && React.createElement("div", {
         style: {
           display: 'grid',
           gridTemplateColumns: '1fr 1fr',
@@ -12831,6 +12794,7 @@ function TabRevisao({
   const [tmFeitoAnki, setTmFeitoAnki] = useState(() => lsGet(`tm_anki_${hoje}`, false));
   const [tmFeitoNlm, setTmFeitoNlm] = useState(() => lsGet(`tm_nlm_${hoje}`, false));
   const [cadExpandidos, setCadExpandidos] = useState(() => new Set());
+  const [mostrarMaisAbas, setMostrarMaisAbas] = useState(false);
   const MATS = CICLO.map(c => c.mat).filter((v, i, a) => a.indexOf(v) === i);
   const CORS_DIF = ['#34d399', '#a3e635', '#fbbf24', '#fb923c', '#f87171'];
   const LABELS_DIF = ['FÁCIL', 'TRANQUILO', 'MÉDIO', 'DIFÍCIL', 'MUITO DIFÍCIL'];
@@ -13245,20 +13209,27 @@ function TabRevisao({
     id: 'topicos',
     l: '📌 Revisitar'
   }];
+  const ABAS_PRIMARIAS = ABAS_REV.slice(0, 3);
+  const ABAS_EXTRAS = ABAS_REV.slice(3);
+  const abaExtraAtiva = ABAS_EXTRAS.some(a => a.id === aba);
+  const mostrarExtras = mostrarMaisAbas || abaExtraAtiva;
   return React.createElement("div", null, React.createElement("div", {
     style: {
       display: 'flex',
       gap: 3,
-      marginBottom: 14,
+      marginBottom: mostrarExtras ? 4 : 14,
       overflowX: 'auto',
       scrollbarWidth: 'none',
       paddingBottom: 2
     }
-  }, ABAS_REV.map(a => {
+  }, ABAS_PRIMARIAS.map(a => {
     const at = aba === a.id;
     return React.createElement("button", {
       key: a.id,
-      onClick: () => setAba(a.id),
+      onClick: () => {
+        setAba(a.id);
+        setMostrarMaisAbas(false);
+      },
       style: {
         flexShrink: 0,
         padding: '9px 12px',
@@ -13267,6 +13238,47 @@ function TabRevisao({
         background: at ? 'var(--tab-active-bg)' : 'transparent',
         color: at ? 'var(--tab-active-color)' : 'var(--tab-inactive-color)',
         fontSize: 11,
+        fontWeight: 700,
+        fontFamily: "'DM Mono',monospace",
+        cursor: 'pointer'
+      }
+    }, a.l);
+  }), React.createElement("button", {
+    onClick: () => setMostrarMaisAbas(v => !v),
+    style: {
+      flexShrink: 0,
+      padding: '9px 12px',
+      borderRadius: 9,
+      border: `1px solid ${abaExtraAtiva ? 'var(--tab-active-border)' : 'var(--border)'}`,
+      background: abaExtraAtiva ? 'var(--tab-active-bg)' : mostrarMaisAbas ? 'rgba(148,163,184,.1)' : 'transparent',
+      color: abaExtraAtiva ? 'var(--tab-active-color)' : 'var(--tab-inactive-color)',
+      fontSize: 11,
+      fontWeight: 700,
+      fontFamily: "'DM Mono',monospace",
+      cursor: 'pointer'
+    }
+  }, "+")), mostrarExtras && React.createElement("div", {
+    style: {
+      display: 'flex',
+      gap: 3,
+      marginBottom: 14,
+      overflowX: 'auto',
+      scrollbarWidth: 'none',
+      paddingBottom: 2
+    }
+  }, ABAS_EXTRAS.map(a => {
+    const at = aba === a.id;
+    return React.createElement("button", {
+      key: a.id,
+      onClick: () => setAba(a.id),
+      style: {
+        flexShrink: 0,
+        padding: '7px 10px',
+        borderRadius: 9,
+        border: `1px solid ${at ? 'var(--tab-active-border)' : 'var(--border)'}`,
+        background: at ? 'var(--tab-active-bg)' : 'transparent',
+        color: at ? 'var(--tab-active-color)' : 'var(--tab-inactive-color)',
+        fontSize: 10,
         fontWeight: 700,
         fontFamily: "'DM Mono',monospace",
         cursor: 'pointer'
