@@ -1026,10 +1026,10 @@ function calcSaude(){
   const f1=pctMeta>=0.8?2:pctMeta>=0.5?1:0;
   const f1label=pctMeta>=0.8?'✅':pctMeta>=0.5?'⚠️':'🔴';
 
-  // Fator 2: Revisão TEC em dia (itens atrasados)
+  // Fator 2: Revisão TEC em dia (itens difíceis acumulados sem resolver)
   const caderno=lsGet('rev_caderno',[]);
   const todayStr=new Date().toISOString().split('T')[0];
-  const atrasados=caderno.filter(t=>!t.feito&&!t.dominado&&t.prazo&&t.prazo<todayStr).length;
+  const atrasados=caderno.filter(t=>!t.dominado&&(t.dificuldade||3)>=4).length;
   const f2=atrasados===0?2:atrasados<=2?1:0;
   const f2label=atrasados===0?'✅':atrasados<=2?'⚠️':'🔴';
 
@@ -2243,17 +2243,10 @@ function calcRevisaoHoje(feitos){
   // Usa o novo motor de canais
   const motor=calcMotorCanais(feitos,lsGet('horas',[]),historico);
 
-  // TEC — usa rev_caderno unificado
-  const tecHoje=caderno.filter(t=>{
-    if(t.feito||t.dominado||!t.prazo)return false;
-    return new Date(t.prazo).setHours(0,0,0,0)<=todayMs;
-  });
-  const tecProximo=caderno.filter(t=>{
-    if(t.feito||t.dominado||!t.prazo)return false;
-    const p=new Date(t.prazo).setHours(0,0,0,0);
-    return p>todayMs&&p<=todayMs+7*86400000;
-  });
-  const tecCronico=caderno.filter(t=>!t.feito&&!t.dominado&&(t.tentativas||1)>=3);
+  // TEC — usa rev_caderno unificado — Forma 1: por dificuldade, sem datas
+  const tecHoje=caderno.filter(t=>!t.dominado&&(t.dificuldade||3)>=4);
+  const tecProximo=caderno.filter(t=>!t.dominado&&(t.dificuldade||3)===3);
+  const tecCronico=caderno.filter(t=>!t.dominado&&(t.tentativas||1)>=3);
 
   const nlmFeito=lsGet(`nlm_feito_${hoje}`,false);
   const blocoAtual=feitos?feitos.length:0;
@@ -2360,7 +2353,7 @@ function TabHoje({feitos,onAddHoras}){
   // ── Estados de dados ─────────────────────────────────────────
   const[ankiFeito,setAnkiFeito]=useState(()=>lsGet(`anki_feito_${hoje}`,null));
   const[tecModal,setTecModal]=useState(false);
-  const[tecForm,setTecForm]=useState({mat:'',assunto:'',feitas:'',acertei:'',prazo:'D+3',obs:''});
+  const[tecForm,setTecForm]=useState({mat:'',assunto:'',feitas:'',acertei:'',dificuldade:3,obs:''});
   const[tecSalvo,setTecSalvo]=useState(false);
   const[despacho,setDespacho]=useState(()=>lsGet(`despacho_ia_${hoje}`,null));
   const[despachoLoad,setDespachoLoad]=useState(false);
@@ -2474,16 +2467,12 @@ function TabHoje({feitos,onAddHoras}){
   // ── Motor TEC: usa rev_caderno unificado ──────────────────────
   const tecHoje=useMemo(()=>{
     const caderno=lsGet('rev_caderno',[]);
-    const todayMs=new Date().setHours(0,0,0,0);
-    const d3=[],d15=[],d30=[];
-    caderno.filter(t=>!t.feito&&!t.dominado&&t.prazo).forEach(t=>{
-      const prazoMs=new Date(t.prazo).setHours(0,0,0,0);
-      const diff=Math.round((prazoMs-todayMs)/86400000);
-      if(diff<=0)d3.push({...t,atrasado:diff<0});
-      else if(diff<=7)d15.push(t);
-      else d30.push(t);
-    });
-    return{d3,d15,d30,total:caderno.filter(t=>!t.feito&&!t.dominado).length};
+    // Forma 1: sem datas — d3=difíceis(4-5⭐), d15=médio(3⭐), d30=leve(1-2⭐)
+    const ativos=caderno.filter(t=>!t.dominado);
+    const d3=ativos.filter(t=>(t.dificuldade||3)>=4);
+    const d15=ativos.filter(t=>(t.dificuldade||3)===3);
+    const d30=ativos.filter(t=>(t.dificuldade||3)<=2);
+    return{d3,d15,d30,total:ativos.length};
   },[hoje]);
 
   // ── Motor NLM: ≥80% acerto, mais dias sem aparecer ─────────
@@ -2531,43 +2520,47 @@ function TabHoje({feitos,onAddHoras}){
 
   const salvarTec=()=>{
     if(!tecForm.mat)return;
-    const prazoDias={'D+3':3,'D+15':15,'D+45':45}[tecForm.prazo]||3;
-    const prazoDate=new Date();prazoDate.setDate(prazoDate.getDate()+prazoDias);
-    const prazoStr=prazoDate.toISOString().split('T')[0];
     const pct=tecForm.feitas&&tecForm.acertei?Math.round(parseInt(tecForm.acertei)/parseInt(tecForm.feitas)*100):null;
-    const novo={id:Date.now(),mat:tecForm.mat,assunto:tecForm.assunto,feitas:parseInt(tecForm.feitas)||0,acertei:parseInt(tecForm.acertei)||0,pct,prazo:prazoStr,prazoLabel:tecForm.prazo,fase:1,tentativas:1,feito:false,dominado:false,dia:hoje,obs:tecForm.obs,origem:'hoje',historico:[{data:hoje,acao:'criado',fasePara:'D+3'}]};
+    const dif=tecForm.dificuldade||3;
+    const novo={id:Date.now(),mat:tecForm.mat,assunto:tecForm.assunto,feitas:parseInt(tecForm.feitas)||0,acertei:parseInt(tecForm.acertei)||0,pct,dificuldade:dif,tentativas:1,dominado:false,dia:hoje,obs:tecForm.obs,origem:'hoje',historico:[{data:hoje,questoes:parseInt(tecForm.feitas)||0,acertos:parseInt(tecForm.acertei)||0,dificuldade:dif}]};
     const caderno=[...lsGet('rev_caderno',[]),novo];
     lsSet('rev_caderno',caderno);
-    setTecForm({mat:'',assunto:'',feitas:'',acertei:'',prazo:'D+3',obs:''});
+    setTecForm({mat:'',assunto:'',feitas:'',acertei:'',dificuldade:3,obs:''});
     setTecSalvo(true);setTimeout(()=>{setTecSalvo(false);setTecModal(false);},1500);
   };
 
-  const marcarTecItem=(id,acertou)=>{
+  // ── NOVA LÓGICA TEC — Forma 1: só dificuldade, sem datas ──
+  // Registra uma sessão de revisão: quantas questões, quantos acertos, dificuldade sentida
+  const registrarRevisaoTec=(id,novasQuestoes,novosAcertos,difSentida)=>{
     const caderno=lsGet('rev_caderno',[]).map(t=>{
       if(t.id!==id)return t;
-      const faseDe=t.prazoLabel||'D+3';
-      if(acertou){
-        const fase=t.fase||1;
-        if(fase>=3){
-          const entrada={data:getDK(),acao:'acertou',faseDe,fasePara:'dominado'};
-          return{...t,feito:true,dominado:true,historico:[...(t.historico||[]),entrada]};
-        }
-        const proxFase=fase+1;
-        const proxDias=proxFase===2?15:30;
-        const novo=new Date();novo.setDate(novo.getDate()+proxDias);
-        const novaLabel=proxFase===2?'D+15':'D+45';
-        const entrada={data:getDK(),acao:'acertou',faseDe,fasePara:novaLabel};
-        return{...t,prazo:novo.toISOString().split('T')[0],prazoLabel:novaLabel,fase:proxFase,historico:[...(t.historico||[]),entrada]};
-      }
-      const fase=t.fase||1;
-      const voltaDias=fase===3?15:3;
-      const voltaFase=fase===3?2:1;
-      const novaLabel=voltaFase===1?'D+3':'D+15';
-      const novo=new Date();novo.setDate(novo.getDate()+voltaDias);
-      const entrada={data:getDK(),acao:'errou',faseDe,fasePara:novaLabel};
-      return{...t,prazo:novo.toISOString().split('T')[0],prazoLabel:novaLabel,fase:voltaFase,tentativas:(t.tentativas||1)+1,historico:[...(t.historico||[]),entrada]};
+      const totalFeitas=(t.feitas||0)+novasQuestoes;
+      const totalAcertos=(t.acertei||0)+novosAcertos;
+      const entrada={data:getDK(),questoes:novasQuestoes,acertos:novosAcertos,dificuldade:difSentida};
+      return{
+        ...t,
+        feitas:totalFeitas,
+        acertei:totalAcertos,
+        pct:totalFeitas>0?Math.round(totalAcertos/totalFeitas*100):null,
+        dificuldade:difSentida, // sempre atualiza para a percepção mais recente
+        tentativas:(t.tentativas||0)+1,
+        historico:[...(t.historico||[]),entrada],
+      };
     });
     lsSet('rev_caderno',caderno);
+  };
+  // Marca item como dominado — sai da lista ativa
+  const marcarDominado=(id)=>{
+    const caderno=lsGet('rev_caderno',[]).map(t=>{
+      if(t.id!==id)return t;
+      const entrada={data:getDK(),acao:'dominado'};
+      return{...t,dominado:true,historico:[...(t.historico||[]),entrada]};
+    });
+    lsSet('rev_caderno',caderno);
+  };
+  // Mantido por compatibilidade com chamadas antigas — redireciona para a nova lógica
+  const marcarTecItem=(id,acertou)=>{
+    registrarRevisaoTec(id,1,acertou?1:0,3);
   };
 
   const gerarDespacho=async()=>{
@@ -2702,7 +2695,7 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
       {(()=>{
         const todayStr=new Date().toISOString().split('T')[0];
         const caderno=lsGet('rev_caderno',[]);
-        const totalPendentes=caderno.filter(t=>!t.feito&&!t.dominado&&t.prazo&&t.prazo<=todayStr).length;
+        const totalPendentes=caderno.filter(t=>!t.dominado).length;
         const verde=totalPendentes<20;
         const cor=verde?'#34d399':'#f87171';
         const feitosSet=new Set(feitos);
@@ -2766,12 +2759,12 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
       {/* SUB-ABAS — 3 abas limpas */}
       <div style={{display:'flex',gap:4,marginBottom:12,overflowX:'auto',scrollbarWidth:'none'}}>
         {[
-          {id:'tec',l:`📕 TEC (${(()=>{const t=new Date().toISOString().split('T')[0];return lsGet('rev_caderno',[]).filter(x=>!x.feito&&!x.dominado&&x.prazo&&x.prazo<=t).length;})()})`,badge:true},
+          {id:'tec',l:`📕 TEC (${lsGet('rev_caderno',[]).filter(x=>!x.dominado).length})`,badge:true},
           {id:'blocos',l:'📚 Blocos'},
           {id:'radar',l:'🎯 Radar'},
         ].map(s=>{
           const at=subAba===s.id;
-          const temBadge=s.badge&&(()=>{const t=new Date().toISOString().split('T')[0];return lsGet('rev_caderno',[]).filter(x=>!x.feito&&!x.dominado&&x.prazo&&x.prazo<=t).length>0;})();
+          const temBadge=s.badge&&lsGet('rev_caderno',[]).filter(x=>!x.dominado).length>0;
           return(
             <button key={s.id} onClick={()=>setSubAba(s.id)} style={{flexShrink:0,padding:'9px 14px',borderRadius:9,border:`1px solid ${at?'var(--tab-active-border)':temBadge?'rgba(248,113,113,.4)':'var(--border)'}`,background:at?'var(--tab-active-bg)':temBadge?'rgba(248,113,113,.07)':'transparent',color:at?'var(--tab-active-color)':temBadge?'#f87171':'var(--tab-inactive-color)',fontSize:12,fontWeight:700,fontFamily:"'DM Mono',monospace",cursor:'pointer',whiteSpace:'nowrap'}}>
               {s.l}
@@ -2794,7 +2787,7 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
             criticosManuais.filter(c=>c.prioridade==='alta').slice(0,2).forEach(c=>{
               riscos.push({label:c.mat,detalhe:c.motivo||'crítico manual',cor:'#f87171',icon:'🎯',fonte:'F2'});
             });
-            caderno.filter(t=>!t.feito&&!t.dominado&&t.prazo<=todayStr&&(t.tentativas||1)>=2).slice(0,2).forEach(t=>{
+            caderno.filter(t=>!t.dominado&&(t.dificuldade||3)>=4).slice(0,2).forEach(t=>{
               riscos.push({label:t.mat,detalhe:`${t.assunto||''} · ${t.tentativas}x errou`,cor:'#fb923c',icon:'📕',fonte:'F1'});
             });
             // Assuntos Guruja críticos seedados
@@ -3194,58 +3187,95 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
       {/* ── SUB-ABA: TEC — cards simplificados Modelo 1 ── */}
       {subAba==='tec'&&(()=>{
         const todosItens=lsGet('rev_caderno',[]);
-        const tecItens=todosItens.filter(t=>t.prazo&&!t.feito&&!t.dominado);
-        const todayStr=new Date().toISOString().split('T')[0];
-        const proxStr=new Date(Date.now()+7*86400000).toISOString().split('T')[0];
-        const calcScore=t=>{
-          const diasAtr=t.prazo<todayStr?Math.ceil((new Date(todayStr)-new Date(t.prazo))/86400000):0;
-          const dif=t.dificuldade||1;
-          const tent=t.tentativas||1;
-          return dif*3+diasAtr*2+tent*1.5+(t.fase===1?2:0);
-        };
-        const vencendo=tecItens.filter(t=>t.prazo<=todayStr).map(t=>({...t,_score:calcScore(t)})).sort((a,b)=>b._score-a._score);
-        const proximos=tecItens.filter(t=>t.prazo>todayStr&&t.prazo<=proxStr).map(t=>({...t,_score:calcScore(t)})).sort((a,b)=>b._score-a._score);
-        const futuros=tecItens.filter(t=>t.prazo>proxStr).sort((a,b)=>a.prazo.localeCompare(b.prazo));
-        const dominados=todosItens.filter(t=>t.dominado).length;
+        const ativos=todosItens.filter(t=>!t.dominado);
+        const dominados=todosItens.filter(t=>t.dominado);
+        // Ordena só por dificuldade (desc) depois % acerto (asc) — sem datas
+        const ordenados=[...ativos].sort((a,b)=>{
+          const difA=a.dificuldade||3,difB=b.dificuldade||3;
+          if(difB!==difA)return difB-difA;
+          const pctA=a.pct??50,pctB=b.pct??50;
+          return pctA-pctB;
+        });
+        // Resumo da semana — quantas questões revisadas nos últimos 7 dias
+        const seteAtras=new Date();seteAtras.setDate(seteAtras.getDate()-7);
+        const seteAtrasStr=seteAtras.toISOString().split('T')[0];
+        let questoesSemana=0;
+        todosItens.forEach(t=>{(t.historico||[]).forEach(h=>{if(h.data>=seteAtrasStr&&h.questoes)questoesSemana+=h.questoes;});});
 
-        // Card simplificado — só o essencial
-        const CardTEC=({t,comBotoes})=>{
-          const pct=t.feitas>0?Math.round((t.acertei||0)/t.feitas*100):null;
-          const pctCor=pct===null?'#64748b':pct>=80?'#34d399':pct>=60?'#fbbf24':'#f87171';
+        // Card com registro inline de revisão — Forma 1 completa
+        const CardTEC=({t})=>{
+          const[expandido,setExpandido]=useState(false);
+          const[novasQ,setNovasQ]=useState('');
+          const[novosA,setNovosA]=useState('');
+          const[novaDif,setNovaDif]=useState(t.dificuldade||3);
+          const pctCor=t.pct===null||t.pct===undefined?'#64748b':t.pct>=80?'#34d399':t.pct>=60?'#fbbf24':'#f87171';
           const difCors=['','#34d399','#a3e635','#fbbf24','#fb923c','#f87171'];
-          const difLabels=['','FÁCIL','OK','MÉDIO','DIFÍCIL','MTO DIFÍCIL'];
-          const atrasado=t.prazo<todayStr;
-          const proxAcertou=(t.fase||1)>=3?'→ DOMINA':(t.fase||1)===1?'→ D+15':'→ D+45';
-          const proxErrou=(t.fase||1)===3?'↩ D+15':'↩ D+3';
+          const difLabels=['','Muito fácil','Fácil','Médio','Difícil','Muito difícil'];
+          const dif=t.dificuldade||3;
+          const salvar=()=>{
+            const q=parseInt(novasQ)||0;
+            const a=parseInt(novosA)||0;
+            if(q===0)return;
+            registrarRevisaoTec(t.id,q,a,novaDif);
+            setNovasQ('');setNovosA('');setExpandido(false);
+          };
           return(
-            <div style={{borderRadius:12,background:'rgba(255,255,255,.02)',border:`1px solid ${atrasado?'rgba(248,113,113,.4)':'var(--border)'}`,marginBottom:8,overflow:'hidden'}}>
+            <div style={{borderRadius:12,background:'rgba(255,255,255,.02)',border:`1px solid ${difCors[dif]}30`,marginBottom:8,overflow:'hidden'}}>
               {/* Linha principal */}
-              <div style={{display:'flex',alignItems:'center',gap:10,padding:'12px 14px'}}>
-                {/* Acerto em destaque */}
+              <div onClick={()=>setExpandido(e=>!e)} style={{display:'flex',alignItems:'center',gap:10,padding:'12px 14px',cursor:'pointer'}}>
                 <div style={{textAlign:'center',flexShrink:0,width:44}}>
-                  <div style={{fontSize:18,fontWeight:900,color:pctCor,fontFamily:"'DM Mono',monospace",lineHeight:1}}>{pct!==null?pct+'%':'—'}</div>
+                  <div style={{fontSize:18,fontWeight:900,color:pctCor,fontFamily:"'DM Mono',monospace",lineHeight:1}}>{t.pct!==null&&t.pct!==undefined?t.pct+'%':'—'}</div>
                   {t.feitas>0&&<div style={{fontSize:8,color:'var(--text4)'}}>{t.feitas}Q</div>}
                 </div>
-                {/* Info */}
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{fontSize:13,fontWeight:800,color:'var(--text)'}}>{t.mat}</div>
                   {t.assunto&&<div style={{fontSize:10,color:'var(--text4)',marginTop:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{t.assunto}</div>}
                   <div style={{display:'flex',gap:5,marginTop:4,flexWrap:'wrap',alignItems:'center'}}>
-                    {t.dificuldade>0&&<span style={{fontSize:9,padding:'1px 6px',borderRadius:4,background:`${difCors[t.dificuldade]}18`,color:difCors[t.dificuldade],fontFamily:"'DM Mono',monospace",fontWeight:700}}>{difLabels[t.dificuldade]}</span>}
-                    {(t.tentativas||1)>1&&<span style={{fontSize:9,color:'#a78bfa',fontFamily:"'DM Mono',monospace"}}>↻ {t.tentativas}x</span>}
-                    {atrasado&&<span style={{fontSize:9,color:'#f87171',fontWeight:700}}>atrasado</span>}
+                    <span style={{fontSize:9,padding:'1px 6px',borderRadius:4,background:`${difCors[dif]}18`,color:difCors[dif],fontFamily:"'DM Mono',monospace",fontWeight:700}}>{'⭐'.repeat(dif)} {difLabels[dif]}</span>
+                    {(t.tentativas||0)>0&&<span style={{fontSize:9,color:'#a78bfa',fontFamily:"'DM Mono',monospace"}}>↻ {t.tentativas}x revisado</span>}
                   </div>
                 </div>
+                <span style={{fontSize:11,color:'var(--text4)',flexShrink:0}}>{expandido?'▲':'▼'}</span>
               </div>
-              {/* Botões — só nos que devem ser revisados hoje */}
-              {comBotoes&&(
-                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:0,borderTop:'1px solid var(--border)'}}>
-                  <button onClick={()=>marcarTecItem(t.id,true)} style={{padding:'11px',border:'none',borderRight:'1px solid var(--border)',background:'rgba(52,211,153,.08)',color:'#34d399',fontSize:12,fontWeight:800,cursor:'pointer'}}>
-                    ✅ Acertei <span style={{fontSize:9,opacity:.7}}>{proxAcertou}</span>
-                  </button>
-                  <button onClick={()=>marcarTecItem(t.id,false)} style={{padding:'11px',border:'none',background:'rgba(248,113,113,.08)',color:'#f87171',fontSize:12,fontWeight:800,cursor:'pointer'}}>
-                    ❌ Errei <span style={{fontSize:9,opacity:.7}}>{proxErrou}</span>
-                  </button>
+
+              {/* Painel de registro — expande ao tocar */}
+              {expandido&&(
+                <div style={{borderTop:'1px solid var(--border)',padding:'12px 14px'}}>
+                  {/* Linha do tempo, se tiver histórico */}
+                  {(t.historico||[]).length>0&&(
+                    <div style={{marginBottom:10,padding:'8px 10px',borderRadius:8,background:'rgba(255,255,255,.02)'}}>
+                      <div style={{fontSize:8,color:'var(--text4)',fontFamily:"'DM Mono',monospace",marginBottom:4}}>HISTÓRICO</div>
+                      {[...(t.historico||[])].slice(-4).reverse().map((h,i)=>(
+                        <div key={i} style={{fontSize:10,color:'var(--text4)',marginBottom:2}}>
+                          {h.data} — {h.questoes!==undefined?`${h.questoes}Q, ${h.acertos}✓ · `:''}{h.dificuldade?`${'⭐'.repeat(h.dificuldade)}`:h.acao||''}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <div style={{fontSize:9,color:'var(--text4)',marginBottom:6,fontFamily:"'DM Mono',monospace"}}>REGISTRAR NOVA REVISÃO</div>
+                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:8}}>
+                    <div>
+                      <div style={{fontSize:9,color:'var(--text4)',marginBottom:3}}>QUESTÕES</div>
+                      <input type="number" value={novasQ} onChange={e=>setNovasQ(e.target.value)} placeholder="ex: 10"
+                        style={{width:'100%',padding:'9px',borderRadius:8,border:'1px solid var(--border)',background:'rgba(255,255,255,.03)',color:'var(--text)',fontSize:14,fontWeight:700,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
+                    </div>
+                    <div>
+                      <div style={{fontSize:9,color:'var(--text4)',marginBottom:3}}>ACERTOS</div>
+                      <input type="number" value={novosA} onChange={e=>setNovosA(e.target.value)} placeholder="ex: 7"
+                        style={{width:'100%',padding:'9px',borderRadius:8,border:'1px solid rgba(52,211,153,.25)',background:'rgba(52,211,153,.04)',color:'#34d399',fontSize:14,fontWeight:700,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
+                    </div>
+                  </div>
+                  <div style={{fontSize:9,color:'var(--text4)',marginBottom:4}}>QUÃO DIFÍCIL FOI DESSA VEZ?</div>
+                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1fr 1fr',gap:4,marginBottom:10}}>
+                    {[1,2,3,4,5].map(v=>(
+                      <button key={v} onClick={()=>setNovaDif(v)}
+                        style={{padding:'7px 2px',borderRadius:7,border:`2px solid ${novaDif===v?difCors[v]:'var(--border)'}`,background:novaDif===v?`${difCors[v]}18`:'transparent',fontSize:11,cursor:'pointer'}}>⭐</button>
+                    ))}
+                  </div>
+                  <div style={{display:'flex',gap:6}}>
+                    <button onClick={salvar} disabled={!novasQ} style={{flex:1,padding:'10px',borderRadius:9,border:'none',background:novasQ?'#60a5fa':'var(--border)',color:novasQ?'#0f172a':'var(--text4)',fontSize:12,fontWeight:800,cursor:'pointer'}}>💾 Salvar revisão</button>
+                    <button onClick={()=>marcarDominado(t.id)} style={{padding:'10px 12px',borderRadius:9,border:'1px solid rgba(52,211,153,.35)',background:'rgba(52,211,153,.08)',color:'#34d399',fontSize:12,fontWeight:800,cursor:'pointer',whiteSpace:'nowrap'}}>✅ Dominei</button>
+                  </div>
                 </div>
               )}
             </div>
@@ -3254,57 +3284,64 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
 
         return(
           <div>
-            {/* Contadores simples */}
-            <div style={{display:'flex',gap:6,marginBottom:14}}>
-              {[
-                {l:'Hoje',n:vencendo.length,c:'#f87171'},
-                {l:'7 dias',n:proximos.length,c:'#fbbf24'},
-                {l:'Futuros',n:futuros.length,c:'#60a5fa'},
-                {l:'Dominados',n:dominados,c:'#34d399'},
-              ].map(({l,n,c})=>(
-                <div key={l} style={{flex:1,textAlign:'center',padding:'8px 4px',borderRadius:10,background:`${c}0a`,border:`1px solid ${c}20`}}>
-                  <div style={{fontSize:18,fontWeight:900,color:c,fontFamily:"'DM Mono',monospace",lineHeight:1}}>{n}</div>
-                  <div style={{fontSize:9,color:'var(--text4)',marginTop:2}}>{l}</div>
+            {/* Resumo fixo no topo */}
+            <div style={{padding:'12px 14px',borderRadius:12,background:'rgba(96,165,250,.06)',border:'1px solid rgba(96,165,250,.2)',marginBottom:14}}>
+              <div style={{display:'flex',gap:16}}>
+                <div>
+                  <div style={{fontSize:20,fontWeight:900,color:'#60a5fa',fontFamily:"'DM Mono',monospace",lineHeight:1}}>{questoesSemana}</div>
+                  <div style={{fontSize:9,color:'var(--text4)',marginTop:2}}>questões essa semana</div>
                 </div>
-              ))}
+                <div>
+                  <div style={{fontSize:20,fontWeight:900,color:'#34d399',fontFamily:"'DM Mono',monospace",lineHeight:1}}>{dominados.length}</div>
+                  <div style={{fontSize:9,color:'var(--text4)',marginTop:2}}>dominadas no total</div>
+                </div>
+                <div>
+                  <div style={{fontSize:20,fontWeight:900,color:'#f87171',fontFamily:"'DM Mono',monospace",lineHeight:1}}>{ativos.filter(t=>(t.dificuldade||3)>=4).length}</div>
+                  <div style={{fontSize:9,color:'var(--text4)',marginTop:2}}>difíceis ativas</div>
+                </div>
+              </div>
             </div>
 
-            {/* Hoje */}
-            {vencendo.length>0&&<>
-              <div style={{fontSize:10,color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:8,letterSpacing:'1px'}}>REVISAR HOJE — mais urgente primeiro</div>
-              {vencendo.map(t=><CardTEC key={t.id} t={t} comBotoes={true}/>)}
-            </>}
-
-            {/* Próximos — colapsável */}
-            {proximos.length>0&&(
-              <details style={{marginTop:10}}>
-                <summary style={{fontSize:10,color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:700,cursor:'pointer',padding:'8px 10px',borderRadius:8,background:'rgba(251,191,36,.05)',border:'1px solid rgba(251,191,36,.2)',listStyle:'none',display:'flex',justifyContent:'space-between'}}>
-                  <span>7 DIAS ({proximos.length})</span><span style={{opacity:.5}}>▼</span>
-                </summary>
-                <div style={{marginTop:6}}>{proximos.map(t=><CardTEC key={t.id} t={t} comBotoes={false}/>)}</div>
-              </details>
-            )}
-
-            {/* Futuros — colapsável */}
-            {futuros.length>0&&(
-              <details style={{marginTop:8}}>
-                <summary style={{fontSize:10,color:'#60a5fa',fontFamily:"'DM Mono',monospace",fontWeight:700,cursor:'pointer',padding:'8px 10px',borderRadius:8,background:'rgba(96,165,250,.05)',border:'1px solid rgba(96,165,250,.18)',listStyle:'none',display:'flex',justifyContent:'space-between'}}>
-                  <span>PROGRAMADOS ({futuros.length})</span><span style={{opacity:.5}}>▼</span>
-                </summary>
-                <div style={{marginTop:6}}>{futuros.map(t=><CardTEC key={t.id} t={t} comBotoes={false}/>)}</div>
-              </details>
-            )}
-
-            {vencendo.length===0&&proximos.length===0&&futuros.length===0&&(
+            {/* Lista ordenada por dificuldade */}
+            {ordenados.length>0?<>
+              <div style={{fontSize:10,color:'var(--text4)',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:8,letterSpacing:'1px'}}>MAIS DIFÍCIL PRIMEIRO — toque para registrar</div>
+              {ordenados.map(t=><CardTEC key={t.id} t={t}/>)}
+            </>:(
               <div style={{textAlign:'center',padding:'32px 20px',color:'var(--text4)'}}>
                 <div style={{fontSize:28,marginBottom:8}}>✅</div>
-                <div style={{fontSize:13,fontWeight:700,color:'#34d399'}}>Nenhuma revisão pendente</div>
-                <div style={{fontSize:11,marginTop:4}}>Registre um erro na aba Revisão para começar o ciclo.</div>
+                <div style={{fontSize:13,fontWeight:700,color:'#34d399'}}>Nenhum item ativo</div>
+                <div style={{fontSize:11,marginTop:4}}>Registre um erro para começar.</div>
               </div>
+            )}
+
+            {/* Dominadas — colapsável */}
+            {dominados.length>0&&(
+              <details style={{marginTop:14}}>
+                <summary style={{fontSize:10,color:'#34d399',fontFamily:"'DM Mono',monospace",fontWeight:700,cursor:'pointer',padding:'8px 10px',borderRadius:8,background:'rgba(52,211,153,.05)',border:'1px solid rgba(52,211,153,.2)',listStyle:'none',display:'flex',justifyContent:'space-between'}}>
+                  <span>✅ DOMINADAS ({dominados.length})</span><span style={{opacity:.5}}>▼</span>
+                </summary>
+                <div style={{marginTop:6}}>
+                  {[...dominados].sort((a,b)=>{
+                    const da=(a.historico||[]).slice(-1)[0]?.data||'';
+                    const db=(b.historico||[]).slice(-1)[0]?.data||'';
+                    return db.localeCompare(da);
+                  }).map(t=>{
+                    const ultimaData=(t.historico||[]).slice(-1)[0]?.data||t.dia;
+                    return(
+                      <div key={t.id} style={{display:'flex',alignItems:'center',gap:10,padding:'9px 12px',borderRadius:9,background:'rgba(52,211,153,.04)',border:'1px solid rgba(52,211,153,.15)',marginBottom:5}}>
+                        <span style={{fontSize:14,color:'#34d399'}}>✓</span>
+                        <div style={{flex:1}}>
+                          <div style={{fontSize:11,fontWeight:700,color:'var(--text)'}}>{t.mat}{t.assunto?` — ${t.assunto}`:''}</div>
+                          <div style={{fontSize:9,color:'var(--text4)'}}>dominado em {ultimaData} · {t.tentativas||1}x revisado</div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </details>
             )}
           </div>
         );
-      })()}
       })()}
 
       {/* ── SUB-ABA: RADAR DO EDITAL ── */}
@@ -3367,7 +3404,7 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
         <div style={{position:'fixed',inset:0,background:'var(--bg)',zIndex:300,display:'flex',flexDirection:'column'}}>
           {/* Header fixo */}
           <div style={{padding:'12px 16px',background:'var(--header-bg)',borderBottom:'1px solid rgba(248,113,113,.3)',display:'flex',alignItems:'center',gap:12,flexShrink:0}}>
-            <button onClick={()=>{setTecModal(false);setTecForm({mat:'',assunto:'',feitas:'',acertei:'',prazo:'D+3',obs:''}); setTecSalvo(false);}} style={{padding:'8px 14px',borderRadius:9,border:'1px solid rgba(248,113,113,.35)',background:'rgba(248,113,113,.1)',color:'#f87171',fontSize:13,fontWeight:800,cursor:'pointer',display:'flex',alignItems:'center',gap:5}}>
+            <button onClick={()=>{setTecModal(false);setTecForm({mat:'',assunto:'',feitas:'',acertei:'',dificuldade:3,obs:''}); setTecSalvo(false);}} style={{padding:'8px 14px',borderRadius:9,border:'1px solid rgba(248,113,113,.35)',background:'rgba(248,113,113,.1)',color:'#f87171',fontSize:13,fontWeight:800,cursor:'pointer',display:'flex',alignItems:'center',gap:5}}>
               ← Voltar
             </button>
             <div style={{flex:1,textAlign:'center'}}>
@@ -3422,22 +3459,25 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
               </div>
             </div>
 
-            {/* Próxima revisão */}
+            {/* Quão difícil foi */}
             <div style={{marginBottom:16}}>
-              <div style={{fontSize:11,color:'var(--text4)',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:8,letterSpacing:'1px'}}>PRÓXIMA REVISÃO</div>
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:10}}>
+              <div style={{fontSize:11,color:'var(--text4)',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:8,letterSpacing:'1px'}}>QUÃO DIFÍCIL FOI?</div>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1fr 1fr',gap:6}}>
                 {[
-                  {p:'D+3', desc:'3 dias', cor:'#f87171'},
-                  {p:'D+15', desc:'15 dias', cor:'#fbbf24'},
-                  {p:'D+45', desc:'45 dias', cor:'#34d399'},
-                ].map(({p,desc,cor})=>(
-                  <button key={p} onClick={()=>setTecForm(f=>({...f,prazo:p}))}
-                    style={{padding:'12px 8px',borderRadius:10,border:`2px solid ${tecForm.prazo===p?cor:'var(--border)'}`,background:tecForm.prazo===p?`${cor}18`:'transparent',cursor:'pointer',textAlign:'center'}}>
-                    <div style={{fontSize:15,fontWeight:900,color:tecForm.prazo===p?cor:'var(--text4)',fontFamily:"'DM Mono',monospace"}}>{p}</div>
-                    <div style={{fontSize:10,color:'var(--text4)',marginTop:2}}>{desc}</div>
+                  {v:1,l:'Muito fácil',cor:'#34d399'},
+                  {v:2,l:'Fácil',cor:'#a3e635'},
+                  {v:3,l:'Médio',cor:'#fbbf24'},
+                  {v:4,l:'Difícil',cor:'#fb923c'},
+                  {v:5,l:'Mto difícil',cor:'#f87171'},
+                ].map(({v,l,cor})=>(
+                  <button key={v} onClick={()=>setTecForm(f=>({...f,dificuldade:v}))}
+                    style={{padding:'10px 4px',borderRadius:10,border:`2px solid ${tecForm.dificuldade===v?cor:'var(--border)'}`,background:tecForm.dificuldade===v?`${cor}18`:'transparent',cursor:'pointer',textAlign:'center'}}>
+                    <div style={{fontSize:14}}>{'⭐'.repeat(v)}</div>
+                    <div style={{fontSize:8,color:tecForm.dificuldade===v?cor:'var(--text4)',marginTop:3,lineHeight:1.2}}>{l}</div>
                   </button>
                 ))}
               </div>
+              <div style={{fontSize:9,color:'var(--text4)',marginTop:6}}>Fica sempre visível na lista até você marcar como dominado. Sem datas — só dificuldade real.</div>
             </div>
 
             {/* Observação */}
@@ -4735,106 +4775,6 @@ function TabRevProfunda({totalBlocos}){
   );
 }
 
-function CardCaderno({t,todayStr,faseCor,cadExpandidos,setCadExpandidos,setCadRegs}){
-  const[qInline,setQInline]=useState('');
-  const[pctInline,setPctInline]=useState('');
-  const urg=calcUrgencia(t);
-  const diasAtr=urg.diasAtraso||0;
-  const semCor=diasAtr>5?'#dc2626':diasAtr>0?'#f87171':'#fb923c';
-  const fc=(faseCor||{1:'#60a5fa',2:'#fbbf24',3:'#34d399'})[t.fase||1]||'#60a5fa';
-  const hist=t.historico||[];
-  const expandido=cadExpandidos.has(t.id);
-  const toggleExpand=()=>setCadExpandidos(prev=>{const n=new Set(prev);expandido?n.delete(t.id):n.add(t.id);return n;});
-
-  const salvarInline=()=>{
-    if(!qInline)return;
-    const q=parseInt(qInline)||0;
-    const pct=parseInt(pctInline)||0;
-    const acertei=pct?Math.round(q*pct/100):0;
-    const todos=lsGet('rev_caderno',[]);
-    const item=todos.find(x=>x.id===t.id);
-    if(!item)return;
-    const faseDe=item.prazoLabel||'D+3';
-    const acertou=pct>=60;
-    let updated;
-    if(acertou){
-      if(item.fase===1){const d=new Date();d.setDate(d.getDate()+15);updated={...item,feitas:q,acertei,fase:2,prazoLabel:'D+15',prazo:d.toISOString().split('T')[0],historico:[...hist,{data:getDK(),acao:'acertou',faseDe,fasePara:'D+15'}]};}
-      else if(item.fase===2){const d=new Date();d.setDate(d.getDate()+45);updated={...item,feitas:q,acertei,fase:3,prazoLabel:'D+45',prazo:d.toISOString().split('T')[0],historico:[...hist,{data:getDK(),acao:'acertou',faseDe,fasePara:'D+45'}]};}
-      else{updated={...item,feitas:q,acertei,dominado:true,feito:true,historico:[...hist,{data:getDK(),acao:'acertou',faseDe,fasePara:'dominado'}]};}
-    }else{
-      const d=new Date();d.setDate(d.getDate()+3);
-      updated={...item,feitas:q,acertei,fase:1,prazoLabel:'D+3',prazo:d.toISOString().split('T')[0],tentativas:(item.tentativas||1)+1,historico:[...hist,{data:getDK(),acao:'errou',faseDe,fasePara:'D+3'}]};
-    }
-    const novos=todos.map(x=>x.id===t.id?updated:x);
-    lsSet('rev_caderno',novos);
-    setCadRegs(novos.filter(x=>!x.prazoLabel&&!x.fase));
-    setQInline('');setPctInline('');
-  };
-
-  return(
-    <div style={{display:'flex',marginBottom:8,borderRadius:12,overflow:'hidden',border:`1px solid ${semCor}35`,background:'rgba(255,255,255,.02)'}}>
-      <div style={{width:5,background:semCor,flexShrink:0}}/>
-      <div style={{flex:1,padding:'10px 12px'}}>
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:3}}>
-          <div>
-            <span style={{fontSize:13,fontWeight:800,color:'var(--text)'}}>{t.mat}</span>
-            {urg.reincidente&&<span style={{fontSize:8,padding:'1px 5px',borderRadius:3,background:'rgba(251,191,36,.2)',color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:800,marginLeft:6}}>↻ REINCIDENTE</span>}
-          </div>
-          <span style={{fontSize:9,padding:'1px 7px',borderRadius:4,background:`${fc}20`,color:fc,fontWeight:700,fontFamily:"'DM Mono',monospace",flexShrink:0,marginLeft:6}}>{t.prazoLabel||'D+3'} · {t.fase||1}/3</span>
-        </div>
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
-          {t.assunto?<span style={{fontSize:10,color:'var(--text4)'}}>{t.assunto}</span>:<span style={{fontSize:10,color:'#334155'}}>—</span>}
-          {diasAtr>0&&<span style={{fontSize:9,color:semCor,fontFamily:"'DM Mono',monospace",fontWeight:700,flexShrink:0,marginLeft:6}}>⚠️ {diasAtr}d atrasado</span>}
-        </div>
-        <div style={{display:'flex',gap:6,alignItems:'center'}}>
-          <div style={{flex:1}}>
-            <div style={{fontSize:7,color:'#475569',fontFamily:"'DM Mono',monospace",marginBottom:3}}>QUESTÕES FEITAS</div>
-            <input type="number" value={qInline} onChange={e=>setQInline(e.target.value)} placeholder="ex: 10"
-              style={{width:'100%',padding:'7px 8px',borderRadius:7,border:'1px solid rgba(251,191,36,.25)',background:'rgba(251,191,36,.05)',color:'#fbbf24',fontSize:14,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
-          </div>
-          <div style={{flex:1}}>
-            <div style={{fontSize:7,color:'#475569',fontFamily:"'DM Mono',monospace",marginBottom:3}}>% ACERTO</div>
-            <input type="number" value={pctInline} onChange={e=>setPctInline(e.target.value)} placeholder="ex: 70"
-              style={{width:'100%',padding:'7px 8px',borderRadius:7,border:'1px solid rgba(52,211,153,.25)',background:'rgba(52,211,153,.05)',color:'#34d399',fontSize:14,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
-          </div>
-          <div style={{flexShrink:0,paddingTop:16}}>
-            <button onClick={salvarInline} disabled={!qInline}
-              style={{padding:'8px 12px',borderRadius:8,border:'none',background:qInline?'#60a5fa':'rgba(148,163,184,.15)',color:qInline?'#050a14':'#334155',fontSize:11,fontWeight:800,cursor:qInline?'pointer':'default'}}>
-              💾
-            </button>
-          </div>
-        </div>
-        {hist.length>0&&(
-          <>
-            <button onClick={toggleExpand} style={{width:'100%',padding:'4px',borderRadius:5,border:'1px solid var(--border)',background:'transparent',color:'var(--text4)',fontSize:8,cursor:'pointer',fontFamily:"'DM Mono',monospace",marginTop:8}}>
-              {expandido?'▲ ocultar histórico':`▼ histórico (${hist.length} evento${hist.length>1?'s':''})`}
-            </button>
-            {expandido&&(
-              <div style={{borderTop:'1px solid var(--border)',paddingTop:8,marginTop:6}}>
-                {hist.map((ev,i)=>{
-                  const isAc=ev.acao==='acertou',isEr=ev.acao==='errou';
-                  const cor=isAc?'#34d399':isEr?'#f87171':'#60a5fa';
-                  const icon=isAc?'✅':isEr?'❌':'📌';
-                  const desc=ev.acao==='criado'?`Criado → ${ev.fasePara}`:isAc?`Acertou ${ev.faseDe} → ${ev.fasePara==='dominado'?'✅ Dominado':ev.fasePara}`:`Errou ${ev.faseDe} → voltou ${ev.fasePara}`;
-                  return(
-                    <div key={i} style={{display:'flex',alignItems:'center',gap:7,marginBottom:i<hist.length-1?6:0}}>
-                      <div style={{width:18,height:18,borderRadius:'50%',background:`${cor}22`,border:`1.5px solid ${cor}`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:8,flexShrink:0}}>{icon}</div>
-                      <div>
-                        <div style={{fontSize:9,color:cor,fontWeight:700}}>{desc}</div>
-                        <div style={{fontSize:8,color:'var(--text4)',fontFamily:"'DM Mono',monospace"}}>{ev.data}</div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </>
-        )}
-      </div>
-    </div>
-  );
-}
-
 function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,ankiSugestoes=[],nlmSugestao=null}){
   const hoje=getDK();
   const[aba,setAba]=useState('morto');
@@ -4854,7 +4794,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
   const[ankiSalvo,setAnkiSalvo]=useState(false);
   const[nlmForm,setNlmForm]=useState({mat:'',oque:'',tempo:'',questoes:'',dif:0});
   const[nlmSalvo,setNlmSalvo]=useState(false);
-  const[cadForm,setCadForm]=useState({mat:'',assunto:'',questoes:'',acertei:'',dificuldade:0,prazo:'D+3',obs:''});
+  const[cadForm,setCadForm]=useState({mat:'',assunto:'',questoes:'',acertei:'',dificuldade:3,obs:''});
   const[cadSalvo,setCadSalvo]=useState(false);
   const[slots,setSlots]=useState([{mat:'',oque:[],tempo:'',questoes:'',dif:0,salvo:false},{mat:'',oque:[],tempo:'',questoes:'',dif:0,salvo:false},{mat:'',oque:[],tempo:'',questoes:'',dif:0,salvo:false}]);
   const[slotSalvo,setSlotSalvo]=useState(false);
@@ -4956,28 +4896,44 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
   };
   const salvarCaderno=()=>{
     if(!cadForm.mat)return;
-    const prazoDias={'D+3':3,'D+15':15,'D+45':45}[cadForm.prazo||'D+3']||3;
-    const prazoDate=new Date();prazoDate.setDate(prazoDate.getDate()+prazoDias);
-    const prazoStr=prazoDate.toISOString().split('T')[0];
     const q=parseInt(cadForm.questoes)||0;
     const a=parseInt(cadForm.acertei)||0;
     const pct=q>0?Math.round(a/q*100):null;
-    const faseInicial={'D+3':1,'D+15':2,'D+45':3}[cadForm.prazo||'D+3']||1;
+    const dif=cadForm.dificuldade||3;
     const novo={
       id:Date.now(),mat:cadForm.mat,assunto:cadForm.assunto||cadForm.obs||'',
-      feitas:q,acertei:a,pct,dificuldade:cadForm.dificuldade||0,
-      prazo:prazoStr,prazoLabel:cadForm.prazo||'D+3',fase:faseInicial,
-      tentativas:1,feito:false,dominado:false,dia:hoje,obs:cadForm.obs||'',origem:'caderno',
-      historico:[{data:getDK(),acao:'criado',fasePara:cadForm.prazo||'D+3'}]
+      feitas:q,acertei:a,pct,dificuldade:dif,
+      tentativas:1,dominado:false,dia:hoje,obs:cadForm.obs||'',origem:'caderno',
+      historico:[{data:getDK(),questoes:q,acertos:a,dificuldade:dif}]
     };
     const caderno=[...lsGet('rev_caderno',[]),novo];
     lsSet('rev_caderno',caderno);
-    setCadRegs(caderno.filter(t=>!t.prazoLabel&&!t.fase));
+    setCadRegs(caderno);
     const mins=parseInt(cadForm.tempo)||0;
     if(mins>0&&onAddHoras)onAddHoras({mat:cadForm.mat,min:mins,dt:Date.now()});
     else if(mins>0){const h=lsGet('horas',[]);lsSet('horas',[...h,{mat:cadForm.mat,min:mins,dt:Date.now()}]);}
     setCadForm({mat:'',assunto:'',questoes:'',acertei:'',dificuldade:0,prazo:'D+3',obs:'',tempo:''});
     setCadSalvo(true);setTimeout(()=>setCadSalvo(false),2000);
+  };
+  // ── Forma 1: registrar revisão sem datas, só dificuldade ──
+  const registrarRevisaoCaderno=(id,novasQ,novosA,difSentida)=>{
+    const caderno=lsGet('rev_caderno',[]).map(t=>{
+      if(t.id!==id)return t;
+      const totalFeitas=(t.feitas||0)+novasQ;
+      const totalAcertos=(t.acertei||0)+novosA;
+      const entrada={data:getDK(),questoes:novasQ,acertos:novosA,dificuldade:difSentida};
+      return{...t,feitas:totalFeitas,acertei:totalAcertos,pct:totalFeitas>0?Math.round(totalAcertos/totalFeitas*100):null,dificuldade:difSentida,tentativas:(t.tentativas||0)+1,historico:[...(t.historico||[]),entrada]};
+    });
+    lsSet('rev_caderno',caderno);
+    setCadRegs(caderno);
+  };
+  const marcarDominadoCaderno=(id)=>{
+    const caderno=lsGet('rev_caderno',[]).map(t=>{
+      if(t.id!==id)return t;
+      return{...t,dominado:true,historico:[...(t.historico||[]),{data:getDK(),acao:'dominado'}]};
+    });
+    lsSet('rev_caderno',caderno);
+    setCadRegs(caderno);
   };
   const salvarSlotIndividual=(i)=>{
     const s=slots[i];
@@ -5016,15 +4972,15 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
 
 
   const ABAS_REV=[
-    {id:'caderno',l:`📕 TEC${(()=>{const t=new Date().toISOString().split('T')[0];const n=lsGet('rev_caderno',[]).filter(x=>!x.feito&&!x.dominado&&x.prazo&&x.prazo<=t).length;return n>0?` (${n})`:'';})()}`},
-    {id:'anki',   l:'🃏 Anki'},
-    {id:'rev1h30',l:`🔄 1h30${deveRevisaoProfunda(totalBlocos)?' 🚨':''}`},
-    {id:'criticos',l:'🎯 Críticos'},
-    {id:'edital',  l:'📋 Edital'},
-    {id:'morto',   l:'⏳ Morto'},
-    {id:'nlm',     l:'🎧 NLM'},
-    {id:'topicos', l:'📌 Revisitar'},
+    {id:'caderno',l:`📕 Questões${(()=>{const n=lsGet('rev_caderno',[]).filter(x=>!x.dominado).length;return n>0?` (${n})`:'';})()}`},
+    {id:'anki',   l:'🃏 Memorização'},
+    {id:'passiva',l:'🎧 Passiva'},
+    {id:'rev1h30',l:`🔄 Profunda${deveRevisaoProfunda(totalBlocos)?' 🚨':''}`},
+    {id:'estrategia',l:`🎯 Estratégia${criticosManuais.length>0?` (${criticosManuais.length})`:''}`},
   ];
+  // Sub-navegação fina dentro de Passiva e Estratégia
+  const[subPassiva,setSubPassiva]=useState('motor');
+  const[subEstrategia,setSubEstrategia]=useState('criticos');
 
   return(
     <div>
@@ -5034,8 +4990,26 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
         );})}
       </div>
 
-      {/* TEMPO MORTO */}
-      {aba==='morto'&&(()=>{
+      {/* Sub-nav: PASSIVA (NLM + Tempo Morto) */}
+      {aba==='passiva'&&(
+        <div style={{display:'flex',gap:6,marginBottom:14}}>
+          {[{id:'motor',l:'⏳ Sugestão do dia'},{id:'nlm',l:'🎧 Registrar/Histórico'}].map(s=>(
+            <button key={s.id} onClick={()=>setSubPassiva(s.id)} style={{flex:1,padding:'9px',borderRadius:9,border:`1px solid ${subPassiva===s.id?'rgba(52,211,153,.45)':'var(--border)'}`,background:subPassiva===s.id?'rgba(52,211,153,.12)':'transparent',color:subPassiva===s.id?'#34d399':'var(--text4)',fontSize:11,fontWeight:700,cursor:'pointer'}}>{s.l}</button>
+          ))}
+        </div>
+      )}
+
+      {/* Sub-nav: ESTRATÉGIA (Críticos + Edital + Revisitar) */}
+      {aba==='estrategia'&&(
+        <div style={{display:'flex',gap:6,marginBottom:14}}>
+          {[{id:'criticos',l:'🎯 Críticos'},{id:'edital',l:'📋 Edital'},{id:'revisitar',l:'📌 Revisitar'}].map(s=>(
+            <button key={s.id} onClick={()=>setSubEstrategia(s.id)} style={{flex:1,padding:'9px 6px',borderRadius:9,border:`1px solid ${subEstrategia===s.id?'rgba(167,139,250,.45)':'var(--border)'}`,background:subEstrategia===s.id?'rgba(167,139,250,.12)':'transparent',color:subEstrategia===s.id?'#a78bfa':'var(--text4)',fontSize:11,fontWeight:700,cursor:'pointer'}}>{s.l}</button>
+          ))}
+        </div>
+      )}
+
+      {/* TEMPO MORTO — agora dentro de Passiva > Sugestão do dia */}
+      {aba==='passiva'&&subPassiva==='motor'&&(()=>{
         const hist=lsGet('historico_diario',[]);
         const motor=calcMotorCanais([],lsGet('horas',[]),hist);
         const hoje2=getDK();
@@ -5078,8 +5052,8 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
       })()}
 
 
-      {/* PONTOS CRÍTICOS */}
-      {aba==='criticos'&&<div>
+      {/* PONTOS CRÍTICOS — agora dentro de Estratégia > Críticos */}
+      {aba==='estrategia'&&subEstrategia==='criticos'&&<div>
         {/* F2 — Header e seed automático dos dados da análise */}
         <div style={{padding:'10px 13px',borderRadius:11,background:'rgba(248,113,113,.06)',border:'1px solid rgba(248,113,113,.25)',marginBottom:10}}>
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:4}}>
@@ -5255,8 +5229,8 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
         })()}
       </div>}
 
-      {/* EDITAL */}
-      {aba==='edital'&&(()=>{
+      {/* EDITAL — agora dentro de Estratégia > Edital */}
+      {aba==='estrategia'&&subEstrategia==='edital'&&(()=>{
         const porAssunto=calcAcertoPorAssunto();
         const tops=EDITAL[editalMatSel]?.top||[];
         const domino=tops.filter(t=>editalStatus[editalMatSel+':'+t.t]==='domino').length;
@@ -5517,7 +5491,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
       })()}
 
       {/* NLM */}
-      {aba==='nlm'&&(()=>{
+      {aba==='passiva'&&subPassiva==='nlm'&&(()=>{
         const regHojeNlm=nlmRegs.filter(r=>r.dia===hoje);
         const matsHojeNlm=new Set(regHojeNlm.map(r=>r.mat));
         const matSugerida=nlmSugestao?.mat||null;
@@ -5609,150 +5583,93 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
       {aba==='rev1h30'&&<TabRevProfunda totalBlocos={totalBlocos}/>}
 
       {/* CADERNO DE ERROS — REGISTRO */}
+      {/* CADERNO DE ERROS — REGISTRO — Forma 1: só dificuldade, sem datas */}
       {aba==='caderno'&&(()=>{
-        // Lê todos os itens do rev_caderno e separa TEC x sessões
         const todosItens=lsGet('rev_caderno',[]);
-        const tecItens=todosItens.filter(t=>t.prazoLabel||t.fase);
-        const sessoes=todosItens.filter(t=>!t.prazoLabel&&!t.fase);
-        const todayMs=new Date().setHours(0,0,0,0);
-        const todayStr=new Date().toISOString().split('T')[0];
-
-        // Itens vencendo hoje ou atrasados
-        const vencendoHoje=tecItens.filter(t=>{
-          if(t.feito||t.dominado)return false;
-          return t.prazo<=todayStr;
+        const ativos=todosItens.filter(t=>!t.dominado);
+        const dominados=todosItens.filter(t=>t.dominado);
+        const ordenados=[...ativos].sort((a,b)=>{
+          const difA=a.dificuldade||3,difB=b.dificuldade||3;
+          if(difB!==difA)return difB-difA;
+          const pctA=a.pct??50,pctB=b.pct??50;
+          return pctA-pctB;
         });
-        // Itens próximos 7 dias (mas não hoje)
-        const proxStr=new Date(todayMs+7*86400000).toISOString().split('T')[0];
-        const proximos=tecItens.filter(t=>{
-          if(t.feito||t.dominado)return false;
-          return t.prazo>todayStr&&t.prazo<=proxStr;
-        });
+        const seteAtras=new Date();seteAtras.setDate(seteAtras.getDate()-7);
+        const seteAtrasStr=seteAtras.toISOString().split('T')[0];
+        let questoesSemana=0;
+        todosItens.forEach(t=>{(t.historico||[]).forEach(h=>{if(h.data>=seteAtrasStr&&h.questoes)questoesSemana+=h.questoes;});});
 
-        const marcarItemCaderno=(id,acertou)=>{
-          const todos=lsGet('rev_caderno',[]);
-          const item=todos.find(t=>t.id===id);
-          if(!item)return;
-          const faseDe=item.prazoLabel||'D+3';
-          let updated;
-          if(acertou){
-            if(item.fase===1){
-              const d=new Date();d.setDate(d.getDate()+15);
-              const entrada={data:getDK(),acao:'acertou',faseDe,fasePara:'D+15'};
-              updated={...item,fase:2,prazoLabel:'D+15',prazo:d.toISOString().split('T')[0],feito:false,historico:[...(item.historico||[]),entrada]};
-            }else if(item.fase===2){
-              const d=new Date();d.setDate(d.getDate()+45);
-              const entrada={data:getDK(),acao:'acertou',faseDe,fasePara:'D+45'};
-              updated={...item,fase:3,prazoLabel:'D+45',prazo:d.toISOString().split('T')[0],feito:false,historico:[...(item.historico||[]),entrada]};
-            }else{
-              const entrada={data:getDK(),acao:'acertou',faseDe,fasePara:'dominado'};
-              updated={...item,dominado:true,feito:true,historico:[...(item.historico||[]),entrada]};
-            }
-          }else{
-            let dias=3;
-            if(item.fase===2)dias=3;
-            if(item.fase===3)dias=15;
-            const d=new Date();d.setDate(d.getDate()+dias);
-            const novaFase=item.fase===3?2:1;
-            const novaLabel=novaFase===1?'D+3':'D+15';
-            const entrada={data:getDK(),acao:'errou',faseDe,fasePara:novaLabel};
-            updated={...item,fase:novaFase,prazoLabel:novaLabel,prazo:d.toISOString().split('T')[0],feito:false,tentativas:(item.tentativas||1)+1,historico:[...(item.historico||[]),entrada]};
-          }
-          const novos=todos.map(t=>t.id===id?updated:t);
-          lsSet('rev_caderno',novos);
-          setCadRegs(novos.filter(t=>!t.prazoLabel&&!t.fase));
-        };
+        const difCors=['','#34d399','#a3e635','#fbbf24','#fb923c','#f87171'];
+        const difLabels=['','Muito fácil','Fácil','Médio','Difícil','Muito difícil'];
 
-        const faseCor={1:'#60a5fa',2:'#fbbf24',3:'#34d399'};
-
-        // ── Modo 5: ordenar por urgência ──
-        const ativos=tecItens.filter(t=>!t.feito&&!t.dominado)
-          .map(t=>({...t,_urg:calcUrgencia(t)}))
-          .sort((a,b)=>b._urg.score-a._urg.score);
-        const vencendoHoje2=ativos.filter(t=>t.prazo<=todayStr);
-        const proximos2=ativos.filter(t=>t.prazo>todayStr&&t.prazo<=proxStr);
-        const futuros2=ativos.filter(t=>t.prazo>proxStr);
-        const dominados=tecItens.filter(t=>t.dominado);
-        const urgCor={urgente:'#f87171',atencao:'#fbbf24',normal:'#34d399'};
-        const urgLabel={urgente:'🔴 URGENTE',atencao:'🟡 ATENÇÃO',normal:'🟢 NORMAL'};
-
-        // ── Modo 3: card com timeline ──
-        const ItemCaderno=({t,comBotoes})=>{
-          const urg=t._urg||calcUrgencia(t);
-          const fc=faseCor[t.fase||1]||'#60a5fa';
-          const atrasado=t.prazo<todayStr;
+        const ItemCaderno=({t})=>{
           const expandido=cadExpandidos.has(t.id);
           const toggleExpand=()=>setCadExpandidos(prev=>{const n=new Set(prev);expandido?n.delete(t.id):n.add(t.id);return n;});
+          const[novasQ,setNovasQ]=useState('');
+          const[novosA,setNovosA]=useState('');
+          const[novaDif,setNovaDif]=useState(t.dificuldade||3);
+          const pctCor=t.pct===null||t.pct===undefined?'#64748b':t.pct>=80?'#34d399':t.pct>=60?'#fbbf24':'#f87171';
+          const dif=t.dificuldade||3;
           const hist=t.historico||[];
+          const salvar=()=>{
+            const q=parseInt(novasQ)||0;const a=parseInt(novosA)||0;
+            if(q===0)return;
+            registrarRevisaoCaderno(t.id,q,a,novaDif);
+            setNovasQ('');setNovosA('');setCadExpandidos(prev=>{const n=new Set(prev);n.delete(t.id);return n;});
+          };
           return(
-            <div style={{borderRadius:12,background:urg.nivel==='urgente'?'rgba(248,113,113,.06)':urg.nivel==='atencao'?'rgba(251,191,36,.04)':'rgba(255,255,255,.02)',border:`1px solid ${atrasado?'rgba(248,113,113,.5)':urg.nivel==='urgente'?'rgba(248,113,113,.3)':urg.nivel==='atencao'?'rgba(251,191,36,.25)':'var(--border)'}`,marginBottom:8,overflow:'hidden'}}>
-              <div style={{padding:'11px 13px'}}>
-                <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:5}}>
-                  <div style={{flex:1,minWidth:0}}>
-                    <div style={{display:'flex',alignItems:'center',gap:5,flexWrap:'wrap',marginBottom:3}}>
-                      <span style={{fontSize:13,fontWeight:800,color:'var(--text)'}}>{t.mat}</span>
-                      <span style={{fontSize:8,padding:'1px 6px',borderRadius:4,background:`${urgCor[urg.nivel]}20`,color:urgCor[urg.nivel],fontFamily:"'DM Mono',monospace",fontWeight:700}}>{urgLabel[urg.nivel]}</span>
-                      {urg.reincidente&&<span style={{fontSize:8,padding:'1px 6px',borderRadius:4,background:'rgba(251,191,36,.2)',color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:800}}>⚠️ REINCIDENTE</span>}
-                    </div>
-                    {t.assunto&&<div style={{fontSize:11,color:'var(--text4)',marginBottom:4}}>{t.assunto}</div>}
-                    <div style={{display:'flex',gap:5,flexWrap:'wrap'}}>
-                      <span style={{fontSize:9,padding:'1px 7px',borderRadius:4,background:`${fc}20`,color:fc,fontWeight:700,fontFamily:"'DM Mono',monospace"}}>{t.prazoLabel||'D+3'} · fase {t.fase||1}/3</span>
-                      <span style={{fontSize:9,color:'var(--text4)',fontFamily:"'DM Mono',monospace"}}>📅 {t.prazo}</span>
-                      {(t.tentativas||1)>1&&<span style={{fontSize:9,padding:'1px 6px',borderRadius:4,background:'rgba(167,139,250,.15)',color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:700}}>↻ {t.tentativas}x</span>}
-                      {atrasado&&<span style={{fontSize:9,color:'#f87171',fontWeight:700}}>⚠️ {urg.diasAtraso}d atrasado</span>}
-                    </div>
-                    {/* Métricas: questões, acerto, dificuldade */}
-                    {(t.feitas>0||t.dificuldade>0)&&(
-                      <div style={{display:'flex',gap:5,marginTop:5,flexWrap:'wrap'}}>
-                        {t.feitas>0&&<span style={{fontSize:9,padding:'2px 7px',borderRadius:5,background:'rgba(251,191,36,.1)',color:'#fbbf24',fontFamily:"'DM Mono',monospace"}}>📝 {t.feitas}Q</span>}
-                        {t.acertei>0&&<span style={{fontSize:9,padding:'2px 7px',borderRadius:5,background:'rgba(52,211,153,.1)',color:'#34d399',fontFamily:"'DM Mono',monospace"}}>✅ {t.acertei} · {t.feitas>0?Math.round(t.acertei/t.feitas*100)+'%':''}</span>}
-                        {t.dificuldade>0&&<span style={{fontSize:9,padding:'2px 7px',borderRadius:5,background:`${['','#34d399','#a3e635','#fbbf24','#fb923c','#f87171'][t.dificuldade]||'#64748b'}18`,color:['','#34d399','#a3e635','#fbbf24','#fb923c','#f87171'][t.dificuldade]||'#64748b',fontFamily:"'DM Mono',monospace"}}>⭐ {['','FÁCIL','TRANQUILO','MÉDIO','DIFÍCIL','MTO DIFÍCIL'][t.dificuldade]}</span>}
-                      </div>
-                    )}
-                  </div>
-                  <div style={{textAlign:'right',flexShrink:0,marginLeft:8}}>
-                    <div style={{fontSize:17,fontWeight:900,color:urgCor[urg.nivel],fontFamily:"'DM Mono',monospace",lineHeight:1}}>{urg.score}</div>
-                    <div style={{fontSize:7,color:'var(--text4)',marginTop:1}}>urgência</div>
+            <div style={{borderRadius:12,background:'rgba(255,255,255,.02)',border:`1px solid ${difCors[dif]}30`,marginBottom:8,overflow:'hidden'}}>
+              <div onClick={toggleExpand} style={{display:'flex',alignItems:'center',gap:10,padding:'12px 14px',cursor:'pointer'}}>
+                <div style={{textAlign:'center',flexShrink:0,width:44}}>
+                  <div style={{fontSize:18,fontWeight:900,color:pctCor,fontFamily:"'DM Mono',monospace",lineHeight:1}}>{t.pct!==null&&t.pct!==undefined?t.pct+'%':'—'}</div>
+                  {t.feitas>0&&<div style={{fontSize:8,color:'var(--text4)'}}>{t.feitas}Q</div>}
+                </div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:13,fontWeight:800,color:'var(--text)'}}>{t.mat}</div>
+                  {t.assunto&&<div style={{fontSize:10,color:'var(--text4)',marginTop:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{t.assunto}</div>}
+                  <div style={{display:'flex',gap:5,marginTop:4,flexWrap:'wrap',alignItems:'center'}}>
+                    <span style={{fontSize:9,padding:'1px 6px',borderRadius:4,background:`${difCors[dif]}18`,color:difCors[dif],fontFamily:"'DM Mono',monospace",fontWeight:700}}>{'⭐'.repeat(dif)} {difLabels[dif]}</span>
+                    {(t.tentativas||0)>0&&<span style={{fontSize:9,color:'#a78bfa',fontFamily:"'DM Mono',monospace"}}>↻ {t.tentativas}x</span>}
                   </div>
                 </div>
-                {comBotoes&&(()=>{
-                  const fase=t.fase||1;
-                  const proxAcertou=fase>=3?'✅ DOMINA':fase===1?'→ D+15':'→ D+45';
-                  const proxErrou=fase===3?'↩ volta D+15':'↩ reinicia D+3';
-                  return(
-                    <div style={{display:'flex',gap:6,marginBottom:hist.length>0?6:0}}>
-                      <button onClick={()=>marcarItemCaderno(t.id,true)} style={{flex:1,padding:'9px',borderRadius:8,border:'none',background:'rgba(52,211,153,.15)',color:'#34d399',fontSize:11,fontWeight:800,cursor:'pointer'}}>✅ Acertei <span style={{fontSize:9,opacity:.8}}>{proxAcertou}</span></button>
-                      <button onClick={()=>marcarItemCaderno(t.id,false)} style={{flex:1,padding:'9px',borderRadius:8,border:'none',background:'rgba(248,113,113,.15)',color:'#f87171',fontSize:11,fontWeight:800,cursor:'pointer'}}>❌ Errei <span style={{fontSize:9,opacity:.8}}>{proxErrou}</span></button>
-                    </div>
-                  );
-                })()}
-                {hist.length>0&&(
-                  <button onClick={toggleExpand} style={{width:'100%',padding:'5px',borderRadius:6,border:'1px solid var(--border)',background:'transparent',color:'var(--text4)',fontSize:9,cursor:'pointer',fontFamily:"'DM Mono',monospace",marginTop:comBotoes?4:0}}>
-                    {expandido?'▲ ocultar histórico':'▼ histórico ('+hist.length+' eventos)'}
-                  </button>
-                )}
+                <span style={{fontSize:11,color:'var(--text4)',flexShrink:0}}>{expandido?'▲':'▼'}</span>
               </div>
-              {expandido&&hist.length>0&&(
-                <div style={{borderTop:'1px solid var(--border)',padding:'10px 13px',background:'rgba(0,0,0,.1)'}}>
-                  <div style={{fontSize:8,color:'var(--text4)',fontFamily:"'DM Mono',monospace",letterSpacing:'1px',marginBottom:8}}>LINHA DO TEMPO</div>
-                  {hist.map((ev,i)=>{
-                    const isAcertou=ev.acao==='acertou',isErrou=ev.acao==='errou';
-                    const cor=isAcertou?'#34d399':isErrou?'#f87171':'#60a5fa';
-                    const icon=isAcertou?'✅':isErrou?'❌':'📌';
-                    const desc=ev.acao==='criado'?`Criado → ${ev.fasePara}`:isAcertou?`Acertou ${ev.faseDe} → ${ev.fasePara==='dominado'?'✅ Dominado':ev.fasePara}`:`Errou ${ev.faseDe} → voltou ${ev.fasePara}`;
-                    return(
-                      <div key={i} style={{display:'flex',alignItems:'center',gap:8,marginBottom:i<hist.length-1?7:0}}>
-                        <div style={{display:'flex',flexDirection:'column',alignItems:'center',flexShrink:0}}>
-                          <div style={{width:20,height:20,borderRadius:'50%',background:`${cor}22`,border:`1.5px solid ${cor}`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:9}}>{icon}</div>
-                          {i<hist.length-1&&<div style={{width:1,height:10,background:'var(--border)',margin:'2px 0'}}/>}
+              {expandido&&(
+                <div style={{borderTop:'1px solid var(--border)',padding:'12px 14px'}}>
+                  {hist.length>0&&(
+                    <div style={{marginBottom:10,padding:'8px 10px',borderRadius:8,background:'rgba(255,255,255,.02)'}}>
+                      <div style={{fontSize:8,color:'var(--text4)',fontFamily:"'DM Mono',monospace",marginBottom:4}}>HISTÓRICO</div>
+                      {[...hist].slice(-4).reverse().map((h,i)=>(
+                        <div key={i} style={{fontSize:10,color:'var(--text4)',marginBottom:2}}>
+                          {h.data} — {h.questoes!==undefined?`${h.questoes}Q, ${h.acertos}✓ · `:''}{h.dificuldade?`${'⭐'.repeat(h.dificuldade)}`:h.acao||''}
                         </div>
-                        <div>
-                          <div style={{fontSize:10,color:cor,fontWeight:700}}>{desc}</div>
-                          <div style={{fontSize:9,color:'var(--text4)',fontFamily:"'DM Mono',monospace"}}>{ev.data}</div>
-                        </div>
-                      </div>
-                    );
-                  })}
+                      ))}
+                    </div>
+                  )}
+                  <div style={{fontSize:9,color:'var(--text4)',marginBottom:6,fontFamily:"'DM Mono',monospace"}}>REGISTRAR NOVA REVISÃO</div>
+                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:8}}>
+                    <div>
+                      <div style={{fontSize:9,color:'var(--text4)',marginBottom:3}}>QUESTÕES</div>
+                      <input type="number" value={novasQ} onChange={e=>setNovasQ(e.target.value)} placeholder="ex: 10"
+                        style={{width:'100%',padding:'9px',borderRadius:8,border:'1px solid var(--border)',background:'rgba(255,255,255,.03)',color:'var(--text)',fontSize:14,fontWeight:700,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
+                    </div>
+                    <div>
+                      <div style={{fontSize:9,color:'var(--text4)',marginBottom:3}}>ACERTOS</div>
+                      <input type="number" value={novosA} onChange={e=>setNovosA(e.target.value)} placeholder="ex: 7"
+                        style={{width:'100%',padding:'9px',borderRadius:8,border:'1px solid rgba(52,211,153,.25)',background:'rgba(52,211,153,.04)',color:'#34d399',fontSize:14,fontWeight:700,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
+                    </div>
+                  </div>
+                  <div style={{fontSize:9,color:'var(--text4)',marginBottom:4}}>QUÃO DIFÍCIL FOI DESSA VEZ?</div>
+                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1fr 1fr',gap:4,marginBottom:10}}>
+                    {[1,2,3,4,5].map(v=>(
+                      <button key={v} onClick={()=>setNovaDif(v)}
+                        style={{padding:'7px 2px',borderRadius:7,border:`2px solid ${novaDif===v?difCors[v]:'var(--border)'}`,background:novaDif===v?`${difCors[v]}18`:'transparent',fontSize:11,cursor:'pointer'}}>⭐</button>
+                    ))}
+                  </div>
+                  <div style={{display:'flex',gap:6}}>
+                    <button onClick={salvar} disabled={!novasQ} style={{flex:1,padding:'10px',borderRadius:9,border:'none',background:novasQ?'#60a5fa':'var(--border)',color:novasQ?'#0f172a':'var(--text4)',fontSize:12,fontWeight:800,cursor:'pointer'}}>💾 Salvar revisão</button>
+                    <button onClick={()=>marcarDominadoCaderno(t.id)} style={{padding:'10px 12px',borderRadius:9,border:'1px solid rgba(52,211,153,.35)',background:'rgba(52,211,153,.08)',color:'#34d399',fontSize:12,fontWeight:800,cursor:'pointer',whiteSpace:'nowrap'}}>✅ Dominei</button>
+                  </div>
                 </div>
               )}
             </div>
@@ -5761,191 +5678,93 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
 
         return(
           <div>
-            {/* ── TOPO: Grade 4 blocos + Grade semanal ── */}
-            <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:6,marginBottom:10}}>
-              {[
-                {n:vencendoHoje2.length,l:'HOJE',c:'#f87171',destaque:vencendoHoje2.length>0},
-                {n:proximos2.length,l:'7 DIAS',c:'#fbbf24',destaque:false},
-                {n:futuros2.length,l:'FUTUROS',c:'#60a5fa',destaque:false},
-                {n:dominados.length,l:'DOMINADOS',c:'#34d399',destaque:false},
-              ].map(({n,l,c,destaque})=>(
-                <div key={l} style={{padding:'10px 6px',borderRadius:10,background:`${c}${destaque?'15':'08'}`,border:`1px solid ${c}${destaque?'50':'20'}`,textAlign:'center'}}>
-                  <div style={{fontSize:20,fontWeight:900,color:c,fontFamily:"'DM Mono',monospace",lineHeight:1}}>{n}</div>
-                  <div style={{fontSize:8,color:destaque?c:'var(--text4)',fontWeight:destaque?800:400,marginTop:3,letterSpacing:'1px'}}>{l}</div>
+            {/* Resumo fixo no topo */}
+            <div style={{padding:'12px 14px',borderRadius:12,background:'rgba(96,165,250,.06)',border:'1px solid rgba(96,165,250,.2)',marginBottom:14}}>
+              <div style={{display:'flex',gap:16}}>
+                <div>
+                  <div style={{fontSize:20,fontWeight:900,color:'#60a5fa',fontFamily:"'DM Mono',monospace",lineHeight:1}}>{questoesSemana}</div>
+                  <div style={{fontSize:9,color:'var(--text4)',marginTop:2}}>questões essa semana</div>
                 </div>
-              ))}
+                <div>
+                  <div style={{fontSize:20,fontWeight:900,color:'#34d399',fontFamily:"'DM Mono',monospace",lineHeight:1}}>{dominados.length}</div>
+                  <div style={{fontSize:9,color:'var(--text4)',marginTop:2}}>dominadas no total</div>
+                </div>
+                <div>
+                  <div style={{fontSize:20,fontWeight:900,color:'#f87171',fontFamily:"'DM Mono',monospace",lineHeight:1}}>{ativos.filter(t=>(t.dificuldade||3)>=4).length}</div>
+                  <div style={{fontSize:9,color:'var(--text4)',marginTop:2}}>difíceis ativas</div>
+                </div>
+              </div>
             </div>
 
-            {/* Grade semanal 7 dias */}
-            {(()=>{
-              const diasSemana=['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
-              const hoje_d=new Date();hoje_d.setHours(0,0,0,0);
-              return(
-                <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:4,marginBottom:14}}>
-                  {Array.from({length:7},(_,i)=>{
-                    const d=new Date(hoje_d);d.setDate(d.getDate()+i);
-                    const dStr=d.toISOString().split('T')[0];
-                    const nDia=ativos.filter(t=>t.prazo===dStr).length;
-                    const temAtrasado=ativos.filter(t=>t.prazo<dStr&&i===0).length>0;
-                    const cor=i===0&&(vencendoHoje2.length>0||temAtrasado)?'#f87171':nDia>0?'#fbbf24':'#334155';
-                    const isHoje=i===0;
-                    return(
-                      <div key={i} style={{padding:'7px 3px',borderRadius:8,background:isHoje?`${cor}15`:'rgba(255,255,255,.02)',border:`1px solid ${isHoje?cor+'50':'rgba(255,255,255,.05)'}`,textAlign:'center'}}>
-                        <div style={{fontSize:8,color:isHoje?cor:'#475569',fontFamily:"'DM Mono',monospace",fontWeight:isHoje?800:400,marginBottom:2}}>{diasSemana[(d.getDay()+6)%7]}</div>
-                        <div style={{fontSize:13,fontWeight:900,color:nDia>0||isHoje?cor:'#334155',fontFamily:"'DM Mono',monospace"}}>{i===0?(vencendoHoje2.length||0):nDia||'·'}</div>
-                      </div>
-                    );
-                  })}
-                </div>
-              );
-            })()}
-
-            {/* Alerta reincidentes */}
-            {ativos.filter(t=>t._urg.reincidente).length>0&&(
-              <div style={{padding:'9px 12px',borderRadius:10,background:'rgba(251,191,36,.08)',border:'1px solid rgba(251,191,36,.35)',marginBottom:12}}>
-                <div style={{fontSize:9,color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:4}}>⚠️ REINCIDENTES — errou 3+ vezes</div>
-                <div style={{display:'flex',flexWrap:'wrap',gap:4}}>
-                  {ativos.filter(t=>t._urg.reincidente).map(t=>(
-                    <span key={t.id} style={{fontSize:9,padding:'2px 8px',borderRadius:5,background:'rgba(251,191,36,.15)',color:'#fbbf24',fontWeight:700}}>{t.mat}{t.assunto?` · ${t.assunto.slice(0,18)}`:''}</span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* ── HOJE — cards com semáforo lateral ── */}
-            {vencendoHoje2.length>0&&(
-              <div style={{marginBottom:16}}>
-                <div style={{fontSize:9,color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'2px',marginBottom:8}}>📅 REVISAR HOJE — {vencendoHoje2.length} item(ns) · ordem de urgência</div>
-                {vencendoHoje2.map(t=>(
-                  <CardCaderno key={t.id} t={t} todayStr={todayStr} faseCor={faseCor} cadExpandidos={cadExpandidos} setCadExpandidos={setCadExpandidos} setCadRegs={setCadRegs} getDK={getDK} lsGet={lsGet} lsSet={lsSet}/>
-                ))}
-              </div>
-            )}
-
-            {/* ── PRÓXIMOS 7 DIAS — colapsável ── */}
-            {proximos2.length>0&&(
-              <details style={{marginBottom:10}}>
-                <summary style={{fontSize:10,color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:700,cursor:'pointer',padding:'8px 10px',borderRadius:8,background:'rgba(251,191,36,.06)',border:'1px solid rgba(251,191,36,.2)',listStyle:'none',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-                  <span>📆 PRÓXIMOS 7 DIAS ({proximos2.length})</span>
-                  <span style={{fontSize:9,opacity:.6}}>▼ expandir</span>
-                </summary>
-                <div style={{marginTop:8}}>
-                  {proximos2.map(t=>{
-                    const fc=faseCor[t.fase||1]||'#60a5fa';
-                    const hist=t.historico||[];
-                    const expandido=cadExpandidos.has(t.id);
-                    const toggleExpand=()=>setCadExpandidos(prev=>{const n=new Set(prev);expandido?n.delete(t.id):n.add(t.id);return n;});
-                    const diasP=Math.ceil((new Date(t.prazo)-new Date(todayStr))/(86400000));
-                    return(
-                      <div key={t.id} style={{display:'flex',marginBottom:6,borderRadius:10,overflow:'hidden',border:'1px solid rgba(251,191,36,.2)',background:'rgba(255,255,255,.02)'}}>
-                        <div style={{width:4,background:'#fbbf24',flexShrink:0}}/>
-                        <div style={{flex:1,padding:'9px 12px'}}>
-                          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:2}}>
-                            <span style={{fontSize:12,fontWeight:700,color:'var(--text)'}}>{t.mat}</span>
-                            <span style={{fontSize:9,color:'#fbbf24',fontFamily:"'DM Mono',monospace"}}>em {diasP}d · {t.prazoLabel} · {t.fase}/3</span>
-                          </div>
-                          {t.assunto&&<div style={{fontSize:10,color:'var(--text4)',marginBottom:6}}>{t.assunto}</div>}
-                          {hist.length>0&&(
-                            <>
-                              <button onClick={toggleExpand} style={{padding:'3px 8px',borderRadius:5,border:'1px solid var(--border)',background:'transparent',color:'var(--text4)',fontSize:8,cursor:'pointer',fontFamily:"'DM Mono',monospace"}}>
-                                {expandido?'▲ ocultar':`▼ histórico (${hist.length})`}
-                              </button>
-                              {expandido&&(
-                                <div style={{paddingTop:6,marginTop:4,borderTop:'1px solid var(--border)'}}>
-                                  {hist.map((ev,i)=>{
-                                    const isAc=ev.acao==='acertou',isEr=ev.acao==='errou';
-                                    const cor=isAc?'#34d399':isEr?'#f87171':'#60a5fa';
-                                    const desc=ev.acao==='criado'?`Criado → ${ev.fasePara}`:isAc?`Acertou → ${ev.fasePara==='dominado'?'Dominado':ev.fasePara}`:`Errou → ${ev.fasePara}`;
-                                    return <div key={i} style={{fontSize:9,color:cor,marginBottom:3}}>{isAc?'✅':isEr?'❌':'📌'} {desc} · {ev.data}</div>;
-                                  })}
-                                </div>
-                              )}
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </details>
-            )}
-
-            {/* ── FUTUROS — colapsável ── */}
-            {futuros2.length>0&&(
-              <details style={{marginBottom:10}}>
-                <summary style={{fontSize:10,color:'#60a5fa',fontFamily:"'DM Mono',monospace",fontWeight:700,cursor:'pointer',padding:'8px 10px',borderRadius:8,background:'rgba(96,165,250,.05)',border:'1px solid rgba(96,165,250,.18)',listStyle:'none',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-                  <span>🗓️ PROGRAMADOS ({futuros2.length})</span>
-                  <span style={{fontSize:9,opacity:.6}}>▼ expandir</span>
-                </summary>
-                <div style={{marginTop:8}}>
-                  {futuros2.map(t=>{
-                    const fc=faseCor[t.fase||1]||'#60a5fa';
-                    return(
-                      <div key={t.id} style={{display:'flex',marginBottom:5,borderRadius:9,overflow:'hidden',border:'1px solid rgba(96,165,250,.15)',background:'rgba(255,255,255,.01)'}}>
-                        <div style={{width:3,background:'#60a5fa',flexShrink:0}}/>
-                        <div style={{flex:1,padding:'8px 11px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-                          <div>
-                            <div style={{fontSize:11,fontWeight:700,color:'var(--text)'}}>{t.mat}</div>
-                            {t.assunto&&<div style={{fontSize:9,color:'var(--text4)'}}>{t.assunto}</div>}
-                          </div>
-                          <div style={{textAlign:'right',flexShrink:0,marginLeft:8}}>
-                            <div style={{fontSize:9,color:fc,fontFamily:"'DM Mono',monospace",fontWeight:700}}>{t.prazoLabel} · {t.fase}/3</div>
-                            <div style={{fontSize:8,color:'var(--text4)',fontFamily:"'DM Mono',monospace"}}>{t.prazo}</div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </details>
-            )}
-
-            {vencendoHoje2.length===0&&proximos2.length===0&&futuros2.length===0&&(
+            {/* Lista ordenada por dificuldade */}
+            {ordenados.length>0?<>
+              <div style={{fontSize:10,color:'var(--text4)',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:8,letterSpacing:'1px'}}>MAIS DIFÍCIL PRIMEIRO — toque para registrar</div>
+              {ordenados.map(t=><ItemCaderno key={t.id} t={t}/>)}
+            </>:(
               <div style={{padding:'24px',borderRadius:12,background:'rgba(52,211,153,.06)',border:'1px solid rgba(52,211,153,.2)',marginBottom:12,textAlign:'center'}}>
                 <div style={{fontSize:22,marginBottom:6}}>✅</div>
-                <div style={{fontSize:13,color:'#34d399',fontWeight:700}}>Nenhuma revisão pendente</div>
-                <div style={{fontSize:10,color:'var(--text4)',marginTop:3}}>Registre um novo erro abaixo para iniciar o ciclo D+3/D+15/D+45</div>
+                <div style={{fontSize:13,color:'#34d399',fontWeight:700}}>Nenhum item ativo</div>
+                <div style={{fontSize:10,color:'var(--text4)',marginTop:3}}>Registre um novo erro abaixo.</div>
               </div>
             )}
 
-            {/* SUGESTÕES DO GURUJA — assuntos críticos para o TEC */}
+            {/* Dominadas — colapsável */}
+            {dominados.length>0&&(
+              <details style={{marginTop:10,marginBottom:14}}>
+                <summary style={{fontSize:10,color:'#34d399',fontFamily:"'DM Mono',monospace",fontWeight:700,cursor:'pointer',padding:'8px 10px',borderRadius:8,background:'rgba(52,211,153,.05)',border:'1px solid rgba(52,211,153,.2)',listStyle:'none',display:'flex',justifyContent:'space-between'}}>
+                  <span>✅ DOMINADAS ({dominados.length})</span><span style={{opacity:.5}}>▼</span>
+                </summary>
+                <div style={{marginTop:6}}>
+                  {[...dominados].sort((a,b)=>{
+                    const da=(a.historico||[]).slice(-1)[0]?.data||'';
+                    const db=(b.historico||[]).slice(-1)[0]?.data||'';
+                    return db.localeCompare(da);
+                  }).map(t=>{
+                    const ultimaData=(t.historico||[]).slice(-1)[0]?.data||t.dia;
+                    return(
+                      <div key={t.id} style={{display:'flex',alignItems:'center',gap:10,padding:'9px 12px',borderRadius:9,background:'rgba(52,211,153,.04)',border:'1px solid rgba(52,211,153,.15)',marginBottom:5}}>
+                        <span style={{fontSize:14,color:'#34d399'}}>✓</span>
+                        <div style={{flex:1}}>
+                          <div style={{fontSize:11,fontWeight:700,color:'var(--text)'}}>{t.mat}{t.assunto?` — ${t.assunto}`:''}</div>
+                          <div style={{fontSize:9,color:'var(--text4)'}}>dominado em {ultimaData} · {t.tentativas||1}x revisado</div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </details>
+            )}
+
+            {/* SUGESTÕES DO GURUJA */}
             {(()=>{
               const dados=getGurujaAssuntos();
               const todasSugestoes=[];
               Object.entries(dados).forEach(([mat,d])=>{
                 if(!d.assuntos)return;
-                d.assuntos
-                  .filter(a=>a.acerto<75||a.diffMedia<-3)
-                  .forEach(a=>todasSugestoes.push({...a,mat,score:calcScoreAssunto(a)}));
+                d.assuntos.filter(a=>a.acerto<75||a.diffMedia<-3).forEach(a=>todasSugestoes.push({...a,mat,score:calcScoreAssunto(a)}));
               });
               todasSugestoes.sort((a,b)=>b.score-a.score);
               if(!todasSugestoes.length)return null;
-              const caderno=lsGet('rev_caderno',[]);
-              // Filtra os que já estão no TEC ativos
-              const jaNoTec=new Set(caderno.filter(t=>!t.dominado).map(t=>`${t.mat}||${t.assunto}`));
+              const jaNoTec=new Set(todosItens.filter(t=>!t.dominado).map(t=>`${t.mat}||${t.assunto}`));
               const sugestoesFiltradas=todasSugestoes.filter(s=>!jaNoTec.has(`${s.mat}||${s.titulo}`)).slice(0,5);
               if(!sugestoesFiltradas.length)return null;
-
               const addGurujaAoTec=(s)=>{
-                const prazoDate=new Date();prazoDate.setDate(prazoDate.getDate()+3);
+                const difEstim=s.acerto<65?5:s.acerto<75?4:3;
                 const novo={
-                  id:Date.now()+Math.random(),
-                  mat:s.mat,assunto:s.titulo,
-                  feitas:s.questoes||0,acertei:s.acertos||0,
-                  pct:s.acerto,prazo:prazoDate.toISOString().split('T')[0],
-                  prazoLabel:'D+3',fase:1,tentativas:1,feito:false,dominado:false,
-                  dia:getDK(),obs:`Guruja: ${s.acerto}% · ⬇️${Math.abs(s.diffMedia)}% da média`,
-                  origem:'guruja',historico:[{data:getDK(),acao:'criado',fasePara:'D+3'}]
+                  id:Date.now()+Math.random(),mat:s.mat,assunto:s.titulo,
+                  feitas:s.questoes||0,acertei:s.acertos||0,pct:s.acerto,dificuldade:difEstim,
+                  tentativas:1,dominado:false,dia:getDK(),
+                  obs:`Guruja: ${s.acerto}% · ⬇️${Math.abs(s.diffMedia||0)}% da média`,
+                  origem:'guruja',historico:[{data:getDK(),questoes:s.questoes||0,acertos:s.acertos||0,dificuldade:difEstim}]
                 };
                 const novoCaderno=[...lsGet('rev_caderno',[]),novo];
                 lsSet('rev_caderno',novoCaderno);
-                setCadRegs(novoCaderno.filter(t=>!t.prazoLabel&&!t.fase));
+                setCadRegs(novoCaderno);
               };
-
               return(
                 <div style={{background:'rgba(251,191,36,.04)',border:'1px solid rgba(251,191,36,.25)',borderRadius:13,padding:'13px',marginBottom:12}}>
                   <div style={{fontSize:9,color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:3,letterSpacing:'1px'}}>📥 SUGESTÕES GURUJA — assuntos críticos</div>
-                  <div style={{fontSize:10,color:'var(--text4)',marginBottom:10}}>Toque em + para criar D+3 no TEC. Ordenados por urgência (acerto + diferença da média).</div>
+                  <div style={{fontSize:10,color:'var(--text4)',marginBottom:10}}>Toque em + para adicionar ao TEC. Dificuldade estimada pelo % de acerto.</div>
                   {sugestoesFiltradas.map((s,i)=>(
                     <div key={i} style={{display:'flex',alignItems:'center',gap:8,padding:'8px 10px',borderRadius:9,background:s.diffMedia<-5?'rgba(248,113,113,.07)':'rgba(251,191,36,.05)',border:`1px solid ${s.diffMedia<-5?'rgba(248,113,113,.25)':'rgba(251,191,36,.2)'}`,marginBottom:6}}>
                       <div style={{flex:1,minWidth:0}}>
@@ -5954,10 +5773,9 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
                           <span style={{fontSize:9,color:'var(--text4)'}}>{s.mat}</span>
                           <span style={{fontSize:9,color:s.acerto<70?'#f87171':'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:700}}>{s.acerto}%</span>
                           {s.diffMedia<0&&<span style={{fontSize:9,color:'#f87171',fontWeight:700}}>⬇️{Math.abs(s.diffMedia).toFixed(1)}% da média</span>}
-                          {'⭐'.repeat(s.relevancia)&&<span style={{fontSize:8,color:'var(--text4)'}}>{'★'.repeat(s.relevancia)}</span>}
                         </div>
                       </div>
-                      <button onClick={()=>addGurujaAoTec(s)} style={{padding:'7px 12px',borderRadius:8,border:'none',background:'#fbbf24',color:'#0f172a',fontSize:11,fontWeight:900,cursor:'pointer',flexShrink:0}}>+ D+3</button>
+                      <button onClick={()=>addGurujaAoTec(s)} style={{padding:'7px 12px',borderRadius:8,border:'none',background:'#fbbf24',color:'#0f172a',fontSize:11,fontWeight:900,cursor:'pointer',flexShrink:0}}>+ Add</button>
                     </div>
                   ))}
                 </div>
@@ -5968,17 +5786,14 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
             <div style={{background:'rgba(248,113,113,.04)',border:'1px solid rgba(248,113,113,.18)',borderRadius:13,padding:'14px',marginBottom:12}}>
               <div style={{fontSize:9,color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:12}}>➕ NOVO REGISTRO</div>
 
-              {/* Matéria — campo livre + sugestões inteligentes */}
               <div style={{marginBottom:10}}>
                 <div style={{fontSize:9,color:'var(--text4)',marginBottom:6,fontFamily:"'DM Mono',monospace",fontWeight:700}}>MATÉRIA</div>
-                {/* Campo livre — sempre no topo */}
                 <input
                   value={cadForm.mat}
                   onChange={e=>setCadForm(f=>({...f,mat:e.target.value}))}
                   placeholder="🔍 Digite a matéria que estudou..."
                   style={{width:'100%',padding:'10px 12px',borderRadius:9,border:`1px solid ${cadForm.mat?'#f87171':'rgba(248,113,113,.2)'}`,background:'rgba(248,113,113,.04)',color:'var(--text)',fontSize:13,outline:'none',boxSizing:'border-box',marginBottom:10}}
                 />
-                {/* Sugestão 1: estudou recentemente (historico_diario últimos 7 dias) */}
                 {(()=>{
                   const hist7=lsGet('historico_diario',[]).filter(r=>r.dt&&Date.now()-r.dt<7*86400000&&r.materia);
                   const recentes=[...new Set(hist7.sort((a,b)=>(b.dt||0)-(a.dt||0)).map(r=>r.materia))].slice(0,5);
@@ -5997,16 +5812,15 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
                     </div>
                   );
                 })()}
-                {/* Sugestão 2: no ciclo atual */}
                 {(()=>{
                   const matsCiclo=[...new Set(CICLO.map(s=>s.mat))];
                   return(
                     <div style={{marginBottom:8}}>
-                      <div style={{fontSize:8,color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:5}}>📅 NO CICLO DESTA SEMANA</div>
+                      <div style={{fontSize:8,color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:5}}>🔄 NO CICLO ATUAL</div>
                       <div style={{display:'flex',flexWrap:'wrap',gap:5}}>
                         {matsCiclo.map(m=>(
                           <button key={m} onClick={()=>setCadForm(f=>({...f,mat:m}))}
-                            style={{padding:'5px 10px',borderRadius:7,border:`1px solid ${cadForm.mat===m?'#fbbf24':'rgba(251,191,36,.2)'}`,background:cadForm.mat===m?'rgba(251,191,36,.18)':'rgba(251,191,36,.04)',color:cadForm.mat===m?'#fbbf24':'var(--text3)',fontSize:11,fontWeight:cadForm.mat===m?800:400,cursor:'pointer'}}>
+                            style={{padding:'5px 10px',borderRadius:7,border:`1px solid ${cadForm.mat===m?'#fbbf24':'rgba(251,191,36,.2)'}`,background:cadForm.mat===m?'rgba(251,191,36,.2)':'rgba(251,191,36,.05)',color:cadForm.mat===m?'#fbbf24':'var(--text3)',fontSize:11,fontWeight:cadForm.mat===m?800:400,cursor:'pointer'}}>
                             {m}
                           </button>
                         ))}
@@ -6014,134 +5828,89 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
                     </div>
                   );
                 })()}
-                {/* Sugestão 3: acerto baixo no Guruja */}
-                {(()=>{
-                  const criticas=Object.entries(GURUJA_SEED)
-                    .filter(([,d])=>d.desempenhoHistorico?.pctAcerto!==null&&d.desempenhoHistorico?.pctAcerto<77)
-                    .sort((a,b)=>(a[1].desempenhoHistorico?.pctAcerto||100)-(b[1].desempenhoHistorico?.pctAcerto||100))
-                    .slice(0,4)
-                    .map(([mat,d])=>({mat,pct:d.desempenhoHistorico?.pctAcerto}));
-                  if(!criticas.length)return null;
-                  return(
-                    <div>
-                      <div style={{fontSize:8,color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:5}}>⚠️ ACERTO BAIXO NO GURUJA</div>
-                      <div style={{display:'flex',flexWrap:'wrap',gap:5}}>
-                        {criticas.map(({mat,pct})=>(
-                          <button key={mat} onClick={()=>setCadForm(f=>({...f,mat}))}
-                            style={{padding:'5px 10px',borderRadius:7,border:`1px solid ${cadForm.mat===mat?'#f87171':'rgba(248,113,113,.2)'}`,background:cadForm.mat===mat?'rgba(248,113,113,.18)':'rgba(248,113,113,.04)',color:cadForm.mat===mat?'#f87171':'var(--text3)',fontSize:11,fontWeight:cadForm.mat===mat?800:400,cursor:'pointer',display:'flex',alignItems:'center',gap:5}}>
-                            {mat} {pct!==null&&<span style={{fontSize:8,opacity:.7}}>{pct}%</span>}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })()}
-                {/* Confirmação da seleção */}
                 {cadForm.mat&&(
-                  <div style={{marginTop:8,padding:'6px 10px',borderRadius:7,background:'rgba(248,113,113,.1)',border:'1px solid rgba(248,113,113,.3)',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                  <div style={{marginTop:8,padding:'6px 10px',borderRadius:7,background:'rgba(248,113,113,.1)',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
                     <span style={{fontSize:11,color:'#f87171',fontWeight:800}}>✓ {cadForm.mat}</span>
-                    <button onClick={()=>setCadForm(f=>({...f,mat:''}))} style={{fontSize:9,color:'#f87171',background:'transparent',border:'none',cursor:'pointer',opacity:.7}}>× trocar</button>
+                    <button onClick={()=>setCadForm(f=>({...f,mat:''}))} style={{fontSize:9,color:'#f87171',background:'none',border:'none',cursor:'pointer'}}>limpar</button>
                   </div>
                 )}
               </div>
 
-              {/* Assunto */}
               <div style={{marginBottom:10}}>
                 <div style={{fontSize:9,color:'var(--text4)',marginBottom:4}}>📖 ASSUNTO / TÓPICO</div>
-                <input value={cadForm.assunto||''} onChange={e=>setCadForm(f=>({...f,assunto:e.target.value}))} placeholder="ex: NBC TA 700, Contratos em geral, art. 37..." style={{width:'100%',padding:'9px 11px',borderRadius:8,border:'1px solid rgba(248,113,113,.2)',background:'rgba(248,113,113,.04)',color:'var(--text)',fontSize:12,outline:'none',boxSizing:'border-box'}}/>
+                <input value={cadForm.assunto||''} onChange={e=>setCadForm(f=>({...f,assunto:e.target.value}))} placeholder="ex: Princípios da Administração Pública..."
+                  style={{width:'100%',padding:'9px 11px',borderRadius:9,border:'1px solid var(--border)',background:'rgba(255,255,255,.03)',color:'var(--text)',fontSize:12,outline:'none',boxSizing:'border-box'}}/>
               </div>
 
-              {/* Questões + Acertei + % */}
               <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:7,marginBottom:10}}>
                 <div>
                   <div style={{fontSize:8,color:'var(--text4)',marginBottom:3}}>📝 QUESTÕES</div>
-                  <input type="number" value={cadForm.questoes||''} onChange={e=>setCadForm(f=>({...f,questoes:e.target.value}))} placeholder="ex: 20" style={{width:'100%',padding:'10px 4px',borderRadius:8,border:'1px solid rgba(251,191,36,.3)',background:'rgba(251,191,36,.06)',color:'#fbbf24',fontSize:16,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
+                  <input type="number" value={cadForm.questoes||''} onChange={e=>setCadForm(f=>({...f,questoes:e.target.value}))} placeholder="0"
+                    style={{width:'100%',padding:'9px 4px',borderRadius:8,border:'1px solid var(--border)',background:'rgba(255,255,255,.03)',color:'var(--text)',fontSize:13,fontWeight:700,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
                 </div>
                 <div>
                   <div style={{fontSize:8,color:'var(--text4)',marginBottom:3}}>✅ ACERTEI</div>
-                  <input type="number" value={cadForm.acertei||''} onChange={e=>setCadForm(f=>({...f,acertei:e.target.value}))} placeholder="ex: 10" style={{width:'100%',padding:'10px 4px',borderRadius:8,border:'1px solid rgba(52,211,153,.3)',background:'rgba(52,211,153,.06)',color:'#34d399',fontSize:16,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
+                  <input type="number" value={cadForm.acertei||''} onChange={e=>setCadForm(f=>({...f,acertei:e.target.value}))} placeholder="0"
+                    style={{width:'100%',padding:'9px 4px',borderRadius:8,border:'1px solid rgba(52,211,153,.25)',background:'rgba(52,211,153,.04)',color:'#34d399',fontSize:13,fontWeight:700,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
                 </div>
                 <div>
                   <div style={{fontSize:8,color:'var(--text4)',marginBottom:3}}>📊 ACERTO</div>
                   {(()=>{
                     const q=parseInt(cadForm.questoes)||0;const a=parseInt(cadForm.acertei)||0;
-                    if(!q)return <div style={{width:'100%',padding:'10px 4px',borderRadius:8,border:'1px solid rgba(148,163,184,.15)',background:'rgba(148,163,184,.04)',color:'var(--text4)',fontSize:16,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center'}}>—%</div>;
+                    if(!q)return <div style={{width:'100%',padding:'10px 4px',borderRadius:8,border:'1px solid var(--border)',textAlign:'center',fontSize:13,color:'var(--text4)'}}>—</div>;
                     const pct=Math.round(a/q*100);
                     const cor=pct>=80?'#34d399':pct>=60?'#fbbf24':'#f87171';
-                    return <div style={{width:'100%',padding:'10px 4px',borderRadius:8,border:`2px solid ${cor}50`,background:`${cor}12`,color:cor,fontSize:16,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center'}}>{pct}%</div>;
+                    return <div style={{width:'100%',padding:'10px 4px',borderRadius:8,border:`2px solid ${cor}50`,background:`${cor}10`,textAlign:'center',fontSize:13,fontWeight:900,color:cor,fontFamily:"'DM Mono',monospace"}}>{pct}%</div>;
                   })()}
                 </div>
               </div>
 
-              {/* Dificuldade */}
-              <div style={{marginBottom:10}}>
-                <div style={{fontSize:9,color:'var(--text4)',marginBottom:6}}>DIFICULDADE</div>
-                <div style={{display:'flex',gap:5}}>
-                  {[1,2,3,4,5].map(s=>{const cors=['#34d399','#a3e635','#fbbf24','#fb923c','#f87171'];return(
-                    <button key={s} onClick={()=>setCadForm(f=>({...f,dificuldade:s}))} style={{flex:1,padding:'9px 4px',borderRadius:8,border:`2px solid ${cadForm.dificuldade>=s?cors[s-1]:'rgba(148,163,184,.28)'}`,background:cadForm.dificuldade>=s?`${cors[s-1]}22`:'rgba(255,255,255,.02)',fontSize:15,cursor:'pointer'}}>⭐</button>
-                  );})}
-                </div>
-                {cadForm.dificuldade>0&&<div style={{textAlign:'center',fontSize:9,color:['#34d399','#a3e635','#fbbf24','#fb923c','#f87171'][cadForm.dificuldade-1],marginTop:3,fontFamily:"'DM Mono',monospace",fontWeight:700}}>{['FÁCIL','TRANQUILO','MÉDIO','DIFÍCIL','MUITO DIFÍCIL'][cadForm.dificuldade-1]}</div>}
-              </div>
-
-              {/* Tempo estudado */}
-              <div style={{marginBottom:10}}>
-                <div style={{fontSize:9,color:'#60a5fa',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:5}}>⏱ TEMPO ESTUDADO (min)</div>
-                <div style={{display:'flex',gap:6}}>
-                  <input type="number" value={cadForm.tempo||''} onChange={e=>setCadForm(f=>({...f,tempo:e.target.value}))} placeholder="ex: 40"
-                    style={{flex:1,padding:'10px',borderRadius:8,border:'1px solid rgba(96,165,250,.3)',background:'rgba(96,165,250,.06)',color:'#60a5fa',fontSize:20,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
-                  <div style={{display:'flex',flexDirection:'column',gap:4}}>
-                    {[30,45,60].map(m=>(
-                      <button key={m} onClick={()=>setCadForm(f=>({...f,tempo:String(m)}))}
-                        style={{padding:'4px 10px',borderRadius:6,border:`1px solid ${cadForm.tempo===String(m)?'#60a5fa':'rgba(96,165,250,.2)'}`,background:cadForm.tempo===String(m)?'rgba(96,165,250,.2)':'transparent',color:cadForm.tempo===String(m)?'#60a5fa':'#475569',fontSize:9,cursor:'pointer',fontFamily:"'DM Mono',monospace",fontWeight:700}}>
-                        {m}min
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                {cadForm.tempo&&<div style={{fontSize:9,color:'#60a5fa',marginTop:4}}>✓ {cadForm.tempo} min serão registrados nas suas horas de estudo</div>}
-              </div>
-
-              {/* Fase inicial — D+3 / D+15 / D+45 */}
               <div style={{marginBottom:12}}>
-                <div style={{fontSize:9,color:'var(--text4)',marginBottom:6}}>📅 INICIAR EM</div>
-                <div style={{display:'flex',gap:6}}>
-                  {[['D+3','Errei agora','#f87171'],['D+15','Já revisei antes','#fbbf24'],['D+45','Sei mas quero fixar','#34d399']].map(([val,desc,cor])=>(
-                    <button key={val} onClick={()=>setCadForm(f=>({...f,prazo:val}))}
-                      style={{flex:1,padding:'8px 4px',borderRadius:9,border:`2px solid ${cadForm.prazo===val?cor:'rgba(148,163,184,.2)'}`,background:cadForm.prazo===val?`${cor}18`:'transparent',cursor:'pointer',textAlign:'center'}}>
-                      <div style={{fontSize:11,fontWeight:800,color:cadForm.prazo===val?cor:'var(--text4)',fontFamily:"'DM Mono',monospace"}}>{val}</div>
-                      <div style={{fontSize:8,color:'var(--text4)',marginTop:2,lineHeight:1.3}}>{desc}</div>
+                <div style={{fontSize:9,color:'var(--text4)',marginBottom:6}}>QUÃO DIFÍCIL FOI?</div>
+                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1fr 1fr',gap:5}}>
+                  {[
+                    {v:1,l:'Muito fácil',cor:'#34d399'},
+                    {v:2,l:'Fácil',cor:'#a3e635'},
+                    {v:3,l:'Médio',cor:'#fbbf24'},
+                    {v:4,l:'Difícil',cor:'#fb923c'},
+                    {v:5,l:'Mto difícil',cor:'#f87171'},
+                  ].map(({v,l,cor})=>(
+                    <button key={v} onClick={()=>setCadForm(f=>({...f,dificuldade:v}))}
+                      style={{padding:'8px 2px',borderRadius:8,border:`2px solid ${cadForm.dificuldade===v?cor:'var(--border)'}`,background:cadForm.dificuldade===v?`${cor}18`:'transparent',cursor:'pointer',textAlign:'center'}}>
+                      <div style={{fontSize:11}}>{'⭐'.repeat(v)}</div>
+                      <div style={{fontSize:7,color:cadForm.dificuldade===v?cor:'var(--text4)',marginTop:2}}>{l}</div>
                     </button>
                   ))}
                 </div>
               </div>
 
-              <button onClick={salvarCaderno} disabled={!cadForm.mat} style={{width:'100%',padding:'13px',borderRadius:10,border:'none',background:cadForm.mat?'#f87171':'var(--border)',color:cadForm.mat?'#0f172a':'var(--text4)',fontSize:13,fontWeight:900,cursor:'pointer',letterSpacing:'1px',fontFamily:"'DM Mono',monospace"}}>
-                {cadSalvo?'✅ SALVO!':'💾 SALVAR → CRIAR '+( cadForm.prazo||'D+3')}
+              <div style={{marginBottom:12}}>
+                <div style={{fontSize:9,color:'#60a5fa',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:6}}>⏱ TEMPO ESTUDADO (opcional)</div>
+                <div style={{display:'flex',gap:6}}>
+                  <input type="number" value={cadForm.tempo||''} onChange={e=>setCadForm(f=>({...f,tempo:e.target.value}))} placeholder="min"
+                    style={{flex:1,padding:'10px',borderRadius:8,border:'1px solid rgba(96,165,250,.25)',background:'rgba(96,165,250,.04)',color:'#60a5fa',fontSize:13,outline:'none',boxSizing:'border-box'}}/>
+                  <div style={{display:'flex',flexDirection:'column',gap:4}}>
+                    {[30,45,60].map(m=>(
+                      <button key={m} onClick={()=>setCadForm(f=>({...f,tempo:String(m)}))}
+                        style={{padding:'4px 10px',borderRadius:6,border:`1px solid ${cadForm.tempo===String(m)?'#60a5fa':'var(--border)'}`,background:cadForm.tempo===String(m)?'rgba(96,165,250,.15)':'transparent',color:cadForm.tempo===String(m)?'#60a5fa':'var(--text4)',fontSize:10,cursor:'pointer'}}>
+                        {m}min
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <button onClick={salvarCaderno} disabled={!cadForm.mat} style={{width:'100%',padding:'13px',borderRadius:10,border:'none',background:cadForm.mat?'#f87171':'var(--border)',color:cadForm.mat?'#0f172a':'var(--text4)',fontSize:13,fontWeight:900,cursor:'pointer'}}>
+                {cadSalvo?'✅ SALVO!':'💾 SALVAR REGISTRO'}
               </button>
             </div>
-
-            {/* SESSÕES HISTÓRICAS */}
-            {sessoes.length>0&&(
-              <div>
-                <div style={{fontSize:9,color:'var(--text4)',fontFamily:"'DM Mono',monospace",marginBottom:7}}>SESSÕES ANTERIORES ({sessoes.length})</div>
-                {[...sessoes].reverse().slice(0,6).map((r,i)=>(
-                  <div key={i} style={{padding:'8px 11px',borderRadius:9,background:'rgba(248,113,113,.05)',border:'1px solid rgba(248,113,113,.12)',marginBottom:4,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-                    <div>
-                      <div style={{fontSize:11,color:'var(--text)',fontWeight:700}}>{r.mat}</div>
-                      <div style={{fontSize:9,color:'var(--text4)'}}>Q:{r.questoes||0} · 🃏{r.anki||0} · 🎧{r.nlm||0}{r.obs?` · ${r.obs.slice(0,22)}`:''}</div>
-                    </div>
-                    <span style={{fontSize:9,color:'var(--text4)',fontFamily:"'DM Mono',monospace"}}>{r.dia}</span>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
         );
       })()}
 
       {/* TÓPICOS PARA REVISITAR */}
-      {aba==='topicos'&&<div>
+      {/* TÓPICOS PARA REVISITAR — agora dentro de Estratégia > Revisitar */}
+      {aba==='estrategia'&&subEstrategia==='revisitar'&&<div>
         <div style={{padding:'10px 12px',borderRadius:10,background:'rgba(251,191,36,.06)',border:'1px solid rgba(251,191,36,.2)',marginBottom:12}}>
           <div style={{fontSize:9,color:'#fbbf24',fontFamily:"'DM Mono',monospace",marginBottom:4}}>📌 TÓPICOS PARA REVISITAR</div>
           <div style={{fontSize:11,color:'#64748b'}}>Lista pessoal de tópicos que precisa voltar — sem data, sem pressão.</div>
@@ -6412,8 +6181,8 @@ function TabMapa(){
         const dominados=assuntosMat.filter(a=>a.status==='dominio').sort((a,b)=>(b.diasSem||0)-(a.diasSem||0));
 
         const addTEC=(a)=>{
-          const prazoDate=new Date();prazoDate.setDate(prazoDate.getDate()+3);
-          const novo={id:Date.now()+Math.random(),mat:matSel,assunto:a.titulo,feitas:a.questoes||0,acertei:a.acertos||0,pct:a.acertoComb,prazo:prazoDate.toISOString().split('T')[0],prazoLabel:'D+3',fase:1,tentativas:1,feito:false,dominado:false,dia:getDK(),obs:`Guruja: ${a.acertoComb}% · ⬇️${Math.abs(a.diffMedia||0)}% da média`,origem:'mapa'};
+          const difEstim=a.acertoComb<65?5:a.acertoComb<75?4:3;
+          const novo={id:Date.now()+Math.random(),mat:matSel,assunto:a.titulo,feitas:a.questoes||0,acertei:a.acertos||0,pct:a.acertoComb,dificuldade:difEstim,tentativas:1,dominado:false,dia:getDK(),obs:`Guruja: ${a.acertoComb}% · ⬇️${Math.abs(a.diffMedia||0)}% da média`,origem:'mapa',historico:[{data:getDK(),questoes:a.questoes||0,acertos:a.acertos||0,dificuldade:difEstim}]};
           const cad=[...lsGet('rev_caderno',[]),novo];lsSet('rev_caderno',cad);
         };
 
