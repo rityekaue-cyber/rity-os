@@ -281,7 +281,7 @@ const CONCURSOS_ALVO=[
     alerta:'Descanso 11/04 · Hetero 12/04 BH · Ciclo retoma 13/04'
   },
   {
-    codigo:'TCE-RJ',prioridade:'principal',status:'Banca em definição (IBFC rescindido) · Edital jun/2026',
+    codigo:'TCE-SP',prioridade:'principal',status:'Banca em definição (IBFC rescindido) · Edital jun/2026',
     banca:'A definir',vagas:10,cargo:'Auditor de Controle Externo — Área Direito',salario:19793,edital:'jun/2026',
     corteObjetiva:'9pts básicos + 24pts específicos + 33pts total',
     discursiva:'Eliminatória e classificatória',sobreposicaoTCESP:0.92,
@@ -322,7 +322,7 @@ const LEGISLACAO_TCE_RJ=[
 const PROTOCOLO_DISCURSIVA={
   diagnostico:'Sem problema estrutural. Padrão bom (TCE-MG aprovada + Câmara 22,8/30). Foco = manutenção e adaptação de formato por banca.',
   treinos:[
-    {tipo:'Peça técnica TCE-RJ',frequencia:'1x/semana',formato:'Papel + caneta — acórdão, voto, parecer, relatório de auditoria',recurso:'tcerj.tc.br (gratuito)'},
+    {tipo:'Estudo de Caso TCE-SP (Discursiva)',frequencia:'3x/semana (Ter+Qui+Sáb)',formato:'Papel + caneta — análise jurídica aplicada 5 passos VUNESP',recurso:'Provas anteriores TCE-SP / TCE-MG / TCE-RS'},
     {tipo:'Estudo de caso Vunesp',frequencia:'1x/mês a partir de mai/2026',formato:'2 estudos de caso — mesmo dia da objetiva (≠ Cebraspe)'},
     {tipo:'Revisão com gabarito comentado',frequencia:'Após cada treino',formato:'Identificar padrão de perda de ponto'},
   ]
@@ -338,15 +338,15 @@ const CRONOGRAMA_MACRO=[
   {periodo:'MAI/2026',eventos:[
     {data:'01/05',acao:'Iniciar Inglês: 1 slot quinzenal (vocabulário fiscal Vunesp)',tipo:'novo'},
     {data:'01/05',acao:'Estudo de caso Vunesp: 1x/mês',tipo:'novo'},
-    {data:'mai',acao:'Lei seca TCE-RJ: 30min/dia no Anki (legislação específica)',tipo:'estudo'},
+    {data:'jul',acao:'Bloco 0 (23-31/07): Dir.Penal + Legislação TCE-SP + Ética — nivelamento',tipo:'estudo'},
   ]},
   {periodo:'JUN/2026',eventos:[
     {data:'jun',acao:'📋 Edital TCE-SP → inscrição imediata (50 vagas · R$20.940)',tipo:'edital',alerta:'alto'},
-    {data:'jun',acao:'📋 Edital TCE-RJ → inscrição imediata (10 vagas · R$19.793)',tipo:'edital',alerta:'alto'},
+    {data:'out',acao:'📋 TCE-SP · PROVA 11/10/2026 — Objetivo principal',tipo:'edital',alerta:'alto'},
     {data:'jun',acao:'⚠️ Se editais coincidirem: definir prioridade de reta final',tipo:'alerta'},
   ]},
   {periodo:'JUL–SET/2026',eventos:[
-    {data:'jul-set',acao:'Reta final TCE-SP + TCE-RJ (92% sobreposição)',tipo:'estudo'},
+    {data:'ago-set',acao:'Pontes 1 e 2: simulados semanais VUNESP + intensificação Auditoria/Discursiva',tipo:'estudo'},
     {data:'jul-set',acao:'Simulados 2x/semana',tipo:'estudo'},
   ]},
   {periodo:'2º SEM/2026',eventos:[
@@ -374,7 +374,7 @@ function getAlertasAtivos(){
   if(hoje<='2026-04-11') alertas.push({tipo:'hetero',msg:'🎯 Heteroidentificação TCE-MG em '+(Math.ceil((new Date('2026-04-12')-new Date())/86400000))+' dia(s) — BH · Praça Carlos Chagas 35',cor:'#f87171'});
   if(hoje==='2026-04-11') alertas.push({tipo:'descanso',msg:'⛔ HOJE = DESCANSO TOTAL — sem estudo, sem pressão',cor:'#34d399'});
   if(hoje>='2026-05-01'&&hoje<='2026-05-31') alertas.push({tipo:'ingles',msg:'📌 Maio: iniciar Inglês quinzenal (TCE-SP · vocabulário fiscal Vunesp)',cor:'#60a5fa'});
-  if(hoje>='2026-06-01') alertas.push({tipo:'editais',msg:'📋 Junho: monitorar editais TCE-SP e TCE-RJ — inscrição imediata',cor:'#fbbf24'});
+  if(hoje>='2026-06-01') alertas.push({tipo:'editais',msg:'📋 TCE-SP 2026 · Prova 11/10/2026 · 90 dias restantes — foco total!',cor:'#fbbf24'});
   return alertas;
 }
 
@@ -440,9 +440,9 @@ const MATRIZ_MEIRELLES={
   'Auditoria Governamental':{prioridade:'urgente',estrelas:5, pctAcerto:40,   jornada:25, nivel:'Aprendiz', ferramenta:'Guruja',            motivo:'🔴 Estimativa 40% — ainda sem dado real do Guruja TCE-SP'},
   // ── MANUTENÇÃO (Anki/Guruja apenas) ──
   'Dir. Administrativo':   {prioridade:'manutencao',estrelas:4,pctAcerto:87,  jornada:29, nivel:'Expert',   ferramenta:'TecConcursos',      motivo:'🟡 87% — manutenção pura, sem bloco novo'},
-  'Dir. Constitucional':   {prioridade:'manutencao',estrelas:4,pctAcerto:83,  jornada:27, nivel:'Expert',   ferramenta:'TecConcursos',      motivo:'🟡 83% — inclui Controle Externo/TCs'},
+  'Dir. Constitucional':   {prioridade:'manutencao',estrelas:4,pctAcerto:80,  jornada:27, nivel:'Expert',   ferramenta:'TecConcursos',      motivo:'🟡 83% — inclui Controle Externo/TCs'},
   'Dir. Tributário':       {prioridade:'manutencao',estrelas:4,pctAcerto:80,  jornada:27, nivel:'Expert',   ferramenta:'TecConcursos FGV',  motivo:'🟡 80% — manutenção, 4 pontos fracos residuais'},
-  'Dir. Financeiro / AFO': {prioridade:'manutencao',estrelas:4,pctAcerto:81,  jornada:35, nivel:'Expert',   ferramenta:'TecConcursos',      motivo:'🟡 81% — saiu do carro-chefe, exceto Precatórios/Receita/MatFi'},
+  'Dir. Financeiro / AFO': {prioridade:'manutencao',estrelas:4,pctAcerto:79,  jornada:35, nivel:'Expert',   ferramenta:'TecConcursos',      motivo:'🟡 81% — saiu do carro-chefe, exceto Precatórios/Receita/MatFi'},
   'Dir. Civil':            {prioridade:'manutencao',estrelas:3,pctAcerto:85,  jornada:29, nivel:'Expert',   ferramenta:'TecConcursos',      motivo:'🟡 85% — exceto Obrigações Pt1 70% e Contratos Geral 69%'},
   // ── NIVELAMENTO (só Bloco 0) ──
   'Dir. Penal':            {prioridade:'nivelamento',estrelas:3,pctAcerto:null,jornada:0,  nivel:'Zero Base',ferramenta:'TecConcursos',      motivo:'🟠 Zero base — bloco pequeno e fechado no Bloco 0'},
@@ -1159,7 +1159,7 @@ SITUAÇÃO ATUAL — CONCURSOS:
 - Diagnóstico: candidata em FINALIZAÇÃO. Gargalo = legislação específica + gestão de energia, NÃO conteúdo.
 
 CONCURSOS-ALVO:
-1. TCE-RJ (principal) — 10 vagas · R$19.793 · edital jun/2026
+1. TCE-SP 2026 (PRINCIPAL) — Auditor Controle Externo DIPE/Direito · VUNESP · Prova 11/10/2026
 2. TCE-SP DIPE (principal) — 50 vagas · R$20.940 · Vunesp · jun/2026 · ⚠️ TEM INGLÊS (5 questões)
 3. ISS Niterói (estratégico) — R$30.468 · FGV · 2º sem/2026
 
@@ -1167,7 +1167,7 @@ ALERTAS ATIVOS: ${getAlertasAtivos().map(a=>a.msg).join(' | ')||'nenhum alerta c
 
 PADRÃO DE AUSÊNCIA: ${padraoAusencia}
 
-LEGISLAÇÃO TCE-RJ (30min/dia Anki): ${LEGISLACAO_TCE_RJ.map(l=>l.codigo).join(' · ')}
+LEGISLAÇÃO TCE-SP (Bloco 0 nivelamento): LC 709/93 · Regimento Interno · Instrução 01/2024
 
 REGRAS INEGOCIÁVEIS: ${REGRAS_INEGOCIAVEIS.map(r=>r.regra).join(' | ')}
 
@@ -1193,7 +1193,7 @@ ESCALA DE APROVEITAMENTO:
 ≥85% = SÓLIDO · 70-84% = ATENÇÃO · <70% = CRÍTICO
 NUNCA chame de ruim algo ≥85%. NUNCA chame de bom algo <70%.
 
-TÓPICOS MAIS COBRADOS TCE-RJ:
+TÓPICOS MAIS COBRADOS TCE-SP (VUNESP):
 Português: Interpretação 32%, Reescrita 14% · Dir.Const: Art.5º 11%, Comp.União 8%
 Dir.Adm: Improbidade 8%, Resp.Civil 5% · Dir.Trib: Princípios 11%, ICMS 7%
 AFO: Class.Despesa 7%, Nat.Receita 5% · Auditoria: Testes 22%, Proc.13%
@@ -1775,7 +1775,8 @@ const GURUJA_SEED={
       {titulo:'Funções Essenciais à Justiça (MP/Defensoria/Advocacia)',acerto:92,diffMedia:9,relevancia:3,tempoCump:'1h',questoes:27,acertos:25},
       {titulo:'Controle de Constitucionalidade',acerto:80,diffMedia:-3,relevancia:5,tempoCump:'1h',questoes:27,acertos:22},
       {titulo:'Controle Externo — Tribunais de Contas (CEXT)',acerto:83,diffMedia:0,relevancia:5,tempoCump:'2h',questoes:100,acertos:83},
-      {titulo:'Jurisdição e Competência do TCU',acerto:71,diffMedia:-12,relevancia:5,tempoCump:'1h',questoes:28,acertos:20},
+      {titulo:'Jurisdição e Competência do TCU/TCEs/TCMs',acerto:71.4,diffMedia:-10.9,relevancia:5,tempoCump:'1h',questoes:28,acertos:20},
+      {titulo:'Jurisprudências e Súmulas dos Tribunais de Contas',acerto:73.9,diffMedia:-6.6,relevancia:5,tempoCump:'1h',questoes:25,acertos:18},
     ]},
   'Dir. Administrativo':{
     importadoEm:'2026-07-09',jornada:29,nivel:'Expert',ferramenta:'TecConcursos',
@@ -1818,17 +1819,17 @@ const GURUJA_SEED={
       {titulo:'Princípios, Vedações Orçamentárias e Créditos Adicionais',acerto:87,diffMedia:6,relevancia:4,tempoCump:'1h',questoes:27,acertos:23},
       {titulo:'Técnicas Orçamentárias e Funções de Governo',acerto:76,diffMedia:-5,relevancia:3,tempoCump:'1h',questoes:25,acertos:19},
       {titulo:'Leis Orçamentárias (PPA/LDO/LOA) e Emendas',acerto:77,diffMedia:-4,relevancia:5,tempoCump:'1h30m',questoes:27,acertos:21},
-      {titulo:'Receita — Conceitos e Classificações',acerto:70,diffMedia:-11,relevancia:5,tempoCump:'1h30m',questoes:27,acertos:19},
+      {titulo:'Receita — Conceitos e Classificações',acerto:73,diffMedia:-8,relevancia:5,tempoCump:'1h30m',questoes:27,acertos:19},
       {titulo:'Despesa — Conceitos e Classificações',acerto:76,diffMedia:-5,relevancia:5,tempoCump:'1h',questoes:27,acertos:20},
       {titulo:'Estágios da Receita e da Despesa',acerto:86,diffMedia:5,relevancia:4,tempoCump:'1h',questoes:27,acertos:23},
       {titulo:'Dívida Ativa e Flutuante',acerto:82,diffMedia:1,relevancia:3,tempoCump:'1h',questoes:25,acertos:20},
       {titulo:'LRF — Arts. 1º a 14',acerto:89,diffMedia:8,relevancia:5,tempoCump:'1h',questoes:28,acertos:25},
-      {titulo:'LRF — Arts. 15º a 24 (despesa com pessoal)',acerto:73,diffMedia:-8.2,relevancia:5,tempoCump:'1h30m',questoes:27,acertos:20},
+      {titulo:'LRF — Arts. 15º a 24 (despesa com pessoal)',acerto:73.3,diffMedia:-8.2,relevancia:5,tempoCump:'1h30m',questoes:27,acertos:20},
       {titulo:'LRF — Arts. 25º a 42 (dívida pública)',acerto:90,diffMedia:9,relevancia:4,tempoCump:'1h',questoes:28,acertos:25},
       {titulo:'LRF — Arts. 43º a 73-C',acerto:83,diffMedia:2,relevancia:4,tempoCump:'1h',questoes:27,acertos:22},
       {titulo:'Manual de Demonstrativos Fiscais (MDF)',acerto:76,diffMedia:-5,relevancia:4,tempoCump:'1h',questoes:25,acertos:19},
       {titulo:'Precatórios (art. 100 CF)',acerto:35,diffMedia:-46,relevancia:4,tempoCump:'1h',questoes:0,acertos:0},
-      {titulo:'Controle Financeiro (interno/externo)',acerto:55,diffMedia:-26,relevancia:4,tempoCump:'1h',questoes:20,acertos:11},
+      {titulo:'Controle Financeiro (interno/externo) — Controle pelos TCs',acerto:72,diffMedia:-7,relevancia:4,tempoCump:'1h',questoes:20,acertos:11},
       {titulo:'Matemática Financeira aplicada',acerto:26,diffMedia:-55,relevancia:4,tempoCump:'2h',questoes:0,acertos:0},
     ]},
   'Dir. Civil':{
@@ -1842,7 +1843,7 @@ const GURUJA_SEED={
       {titulo:'Obrigações — Parte 1',acerto:70,diffMedia:-15,relevancia:5,tempoCump:'2h',questoes:27,acertos:19},
       {titulo:'Obrigações — Parte 2',acerto:89,diffMedia:4,relevancia:4,tempoCump:'1h',questoes:27,acertos:24},
       {titulo:'Contratos em Geral',acerto:69,diffMedia:-16,relevancia:5,tempoCump:'2h',questoes:27,acertos:19},
-      {titulo:'Espécies de Contratos — Parte 1',acerto:69,diffMedia:-16,relevancia:4,tempoCump:'2h',questoes:25,acertos:17},
+      {titulo:'Espécies de Contratos — Parte 1 (típicos CC/2002)',acerto:70.6,diffMedia:-14,relevancia:4,tempoCump:'2h',questoes:25,acertos:17},
       {titulo:'Espécies de Contratos — Parte 2',acerto:72,diffMedia:-13,relevancia:4,tempoCump:'2h',questoes:25,acertos:18},
       {titulo:'Responsabilidade Civil',acerto:85,diffMedia:0,relevancia:5,tempoCump:'1h',questoes:27,acertos:23},
       {titulo:'Direito das Coisas (Posse/Propriedade)',acerto:77,diffMedia:-8,relevancia:4,tempoCump:'1h',questoes:27,acertos:21},
@@ -1859,17 +1860,18 @@ const GURUJA_SEED={
     importadoEm:'2026-07-09',jornada:0,nivel:'Zero Base',ferramenta:'Gran Cursos',
     desempenhoHistorico:{acertos:null,questoes:null,pctAcerto:null,tempoMedio:null,reforcoPendente:'ZERO BASE — nivelamento no Bloco 0'},
     assuntos:[
-      {titulo:'Ética, Moral e Função Pública',acerto:null,diffMedia:0,relevancia:4,tempoCump:'1h',questoes:0,acertos:0},
-      {titulo:'Código de Ética do Servidor Público Federal',acerto:null,diffMedia:0,relevancia:4,tempoCump:'1h',questoes:0,acertos:0},
-      {titulo:'Integridade e Transparência',acerto:null,diffMedia:0,relevancia:4,tempoCump:'1h',questoes:0,acertos:0},
+      {titulo:'Ética no Serviço Público — Decreto Estadual 69.328/2025',acerto:85.7,diffMedia:5,relevancia:4,tempoCump:'1h',questoes:25,acertos:22},
+      {titulo:'Código de Ética TCE-SP · Lei Conflito de Interesses (12.813/2013) · UNCAC',acerto:74.0,diffMedia:-6,relevancia:4,tempoCump:'1h',questoes:25,acertos:19},
+      {titulo:'Compliance público · Programa de Integridade · Decreto 67.683/2023 · OCDE',acerto:73.9,diffMedia:-6,relevancia:4,tempoCump:'1h',questoes:25,acertos:18},
     ]},
   'Legislação TCE-SP':{
     importadoEm:'2026-07-09',jornada:0,nivel:'Zero Base',ferramenta:'Gran Cursos',
     desempenhoHistorico:{acertos:null,questoes:null,pctAcerto:null,tempoMedio:null,reforcoPendente:'ZERO BASE — nivelamento no Bloco 0'},
     assuntos:[
-      {titulo:'LC 709/93 — Lei Orgânica do TCE-SP',acerto:null,diffMedia:0,relevancia:5,tempoCump:'2h',questoes:0,acertos:0},
-      {titulo:'Regimento Interno do TCE-SP',acerto:null,diffMedia:0,relevancia:5,tempoCump:'2h',questoes:0,acertos:0},
-      {titulo:'Instrução 01/2024 e normas correlatas',acerto:null,diffMedia:0,relevancia:5,tempoCump:'1h',questoes:0,acertos:0},
+      {titulo:'LC 709/93 — Lei Orgânica do TCE-SP',acerto:86.9,diffMedia:6,relevancia:5,tempoCump:'2h',questoes:30,acertos:26},
+      {titulo:'Regimento Interno do TCE-SP + Sistema Controle CF/88',acerto:85.3,diffMedia:5,relevancia:5,tempoCump:'2h',questoes:30,acertos:26},
+      {titulo:'Deveres, proibições e responsabilidades (Lei 10.261/1968)',acerto:80.5,diffMedia:0,relevancia:4,tempoCump:'1h',questoes:25,acertos:20},
+      {titulo:'Instrução 01/2024 do TCE-SP',acerto:null,diffMedia:0,relevancia:5,tempoCump:'1h',questoes:0,acertos:0},
     ]},
   'Dir. Penal':{
     importadoEm:'2026-07-09',jornada:0,nivel:'Zero Base',ferramenta:'TecConcursos',
@@ -2486,7 +2488,7 @@ Anki: ${ankiMaterias.map(m=>`${m.mat}(${m.cards}cards)`).join(', ')}.
 TEC hoje: ${tecHoje.d3.length} itens vencendo, ${tecHoje.d15.length} próximos.
 NLM urgente: ${nlmSugerido?.mat||'-'} (${nlmSugerido?.pct||'?'}%, ${nlmSugerido?.diasNlm||0}d sem NLM).
 ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
-      const res=await chamarClaude(`Você é assessora de estudos da Ritchely (TCE-RJ). Regras: TEC=caderno erros D+3/D+15/D+30. ANKI=75 cards/dia em 3 matérias. NLM=teoria profunda 1h30. Responda em 3 linhas diretas sem firulas. ${cobrar?'Cobre o que não foi feito ontem e adapte o plano de hoje.':''}`,
+      const res=await chamarClaude(`Você é assessora de estudos da Ritchely para TCE-SP 2026 (VUNESP · Prova 11/10/2026 · Cargo Auditor Controle Externo DIPE/Direito). Carro-chefe: Discursiva + Português (3 pontos fracos 64%) + Auditoria Governamental (estimativa 40%). Gates eliminatórios: Gerais 60% (12/20q) · Específicos 60% (36/60q) · Discursiva 60% (24/40p). TEC=caderno sem datas, só dificuldade. ANKI=75 cards/dia em 3 matérias. Rev.1h30=Obsidian+TEC+Anki. Responda em 3 linhas diretas. ${cobrar?'Cobre o que não foi feito ontem.':''}` ,
         [{role:'user',content:ctx}],120);
       lsSet(`despacho_ia_${hoje}`,res);setDespacho(res);
     }catch(e){console.log(e);}
@@ -2759,9 +2761,11 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
             });
             // Assuntos Guruja críticos seedados
             const seedCriticos=[
-              {label:'Português',detalhe:'Interpretação 63.6% · Semântica 64.2%',cor:'#f87171',icon:'⚠️',fonte:'F4'},
-              {label:'Auditoria Gov.',detalhe:'Amostragem 71% · Execução 71.4%',cor:'#fb923c',icon:'⚠️',fonte:'F4'},
-              {label:'AFO',detalhe:'Receita 70.3% · Leis orçamentárias 76.9%',cor:'#fbbf24',icon:'⚠️',fonte:'F4'},
+              {label:'Português',detalhe:'Interpretação 63.6% · Semântica 64.2% · Ortografia 64% — VUNESP TOP 1',cor:'#f87171',icon:'🔴',fonte:'TCE-SP'},
+              {label:'Discursivas',detalhe:'Gate 60% (24/40p) · Estrutura: 5 passos VUNESP · Sessões Ter/Qui/Sáb',cor:'#a78bfa',icon:'🔴',fonte:'TCE-SP'},
+              {label:'Auditoria Gov.',detalhe:'Estimativa ~40% · Conceitos INTOSAI · Tipos · Risco/Materialidade',cor:'#f87171',icon:'🔴',fonte:'TCE-SP'},
+              {label:'Dir. Constitucional',detalhe:'Intervenção 69.2% · Poder Judiciário 69.2% · Ctrl.Const. Estadual 69.2%',cor:'#fbbf24',icon:'⚠️',fonte:'TCE-SP'},
+              {label:'Dir. Financeiro/AFO',detalhe:'Controle Financeiro 72% · Receita 73.1% · LRF pessoal 73.3%',cor:'#fb923c',icon:'⚠️',fonte:'TCE-SP'},
             ];
             // só adiciona os seed se ainda não tiver crítico manual daquela matéria
             const matsJa=new Set(riscos.map(r=>r.label));
@@ -2948,8 +2952,8 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
             <div style={{fontSize:9,color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:6}}>⭐ COMO ALIMENTAR O SLOT 2</div>
             <div style={{fontSize:11,color:'var(--text4)',lineHeight:1.7}}>
               Vá em <strong style={{color:'var(--text)'}}>Revisão → Anki</strong>, registre a sessão e marque as estrelas corretamente:<br/>
-              Português/Interpretação → ⭐⭐⭐⭐⭐ · Auditoria/Amostragem → ⭐⭐⭐⭐⭐<br/>
-              AFO/Receita → ⭐⭐⭐⭐⭐ · Mat.Financeira → ⭐⭐⭐⭐⭐ (ponto cego)
+              Português/Interpretação 63.6% → ⭐⭐⭐⭐⭐ · Auditoria ~40% → ⭐⭐⭐⭐⭐<br/>
+              Dir.Civil/Contratos 70.6% → ⭐⭐⭐⭐ · Dir.Financeiro/Receita 73.1% → ⭐⭐⭐⭐
             </div>
           </div>
 
@@ -3547,7 +3551,7 @@ function TabEstudo({feitos,cicloNum,horas,onConcluir,onIrPara,onDesmarcar,onAddH
     setGurujaLoad(true);
     try{
       const r=await chamarClaude(
-        `Coach de concursos especializada em planejamento semanal TCE-RJ. Analise os dados do Guruja e monte plano inteligente.
+        `Coach de concursos especializada em TCE-SP 2026 (VUNESP). Analise os dados do Guruja e monte plano inteligente considerando os 3 gates eliminatórios e o foco em Discursiva + Português + Auditoria.
 Pesos: AFO=5,Contabilidade=5,Auditoria=5,Controle Externo=5,Dir.Adm=4,Dir.Const=4,Dir.Tributário=3,Português=3,RL=3,TI=2,Adm.Pública=2,Dir.Civil=2,Dir.Processual=2,Dir.Penal=2.
 Ciclo atual: bloco ${ativo?.mat||'indefinido'}. Meta: ${metaHoras}h/semana. Contexto: ${contextSem||'semana normal'}.
 APENAS JSON sem markdown: {"diagnostico":"2 frases","plano":[{"mat":"nome","horasSugeridas":2.5,"prioridade":1,"motivo":"por que","taxa":82.0,"status":"critica|atencao|ok"}],"alerta":"materia mais urgente"}`,
@@ -3624,7 +3628,7 @@ APENAS JSON sem markdown: {"diagnostico":"2 frases","plano":[{"mat":"nome","hora
     setGurujaLoad(true);
     try{
       const r=await chamarClaude(
-        `Coach de concursos especializada em Guruja/TCE-RJ. Analise desempenho da Ritchely e cruze taxa de acerto com relevância para o concurso.
+        `Coach de concursos especializada em Guruja/TCE-SP (VUNESP). Analise desempenho da Ritchely e cruze taxa de acerto com relevância para os gates do TCE-SP: Gerais (Português+RL+Ética+Legislação) e Específicos (6 disciplinas jurídicas).
 Relevâncias: AFO=5, Contabilidade=5, Auditoria=5, Controle Externo=5, Dir.Adm=4, Dir.Const=4, Dir.Tributário=3, Português=3, RL=3, TI=2, Adm.Pública=2, Dir.Civil=2, Dir.Processual=2, Dir.Penal=2.
 APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia":5,"status":"critica|atencao|ok","acao":"o que fazer"}],"resumo":"2 frases diretas","alerta":"materia mais critica"}`,
         [{role:'user',content:`Dados Guruja:\n${gurujaTxt.slice(0,6000)}`}],1200
@@ -4553,11 +4557,13 @@ function TabRevProfunda({totalBlocos}){
 
   // Fila priorizada pelos dados da análise
   const FILA_PRIORI=[
-    {mat:'Português',motivo:'Interpretação 63.6% · Semântica 64.2%',ic:'📝',cor:'#f472b6'},
-    {mat:'Auditoria Governamental',motivo:'Amostragem 71% · Execução 71.4% · Conformidade 70.5%',ic:'🔍',cor:'#60a5fa'},
-    {mat:'Mat. Financeira',motivo:'Ponto cego: 0 questões registradas',ic:'🧮',cor:'#f87171'},
-    {mat:'Raciocínio Lógico',motivo:'Ponto cego: 0 questões registradas',ic:'🔢',cor:'#f87171'},
-    {mat:'AFO',motivo:'Receita 70.3% · Leis Orçamentárias 76.9%',ic:'📈',cor:'#fb923c'},
+    {mat:'Português',motivo:'Interpretação Textual 63.6% (-8.5%) · Semântica 64.2% (-8.9%) · Ortografia 64%',ic:'📝',cor:'#f472b6'},
+    {mat:'Auditoria Governamental',motivo:'Estimativa ~40% — carro-chefe · todos os tópicos abaixo da meta',ic:'🔍',cor:'#f87171'},
+    {mat:'Discursivas',motivo:'Gate eliminatório 60% · Sessões Ter/Qui/Sáb — Obsidian + banco de esqueletos',ic:'✍️',cor:'#a78bfa'},
+    {mat:'Dir. Financeiro / AFO',motivo:'Controle Financeiro 72% · Receita 73.1% · LRF Art.15-24 73.3% · Precatórios sem dado',ic:'📈',cor:'#fb923c'},
+    {mat:'Dir. Constitucional',motivo:'Intervenção 69.2% · Poder Judiciário 69.2% · Ctrl.Const.Estadual 69.2%',ic:'📜',cor:'#fbbf24'},
+    {mat:'Dir. Tributário',motivo:'Reforma Tributária EC132 Pt.II 75% (-12.7%) · Simples Nacional 71.4% · CGSN 70%',ic:'💰',cor:'#fbbf24'},
+    {mat:'Dir. Civil',motivo:'Espécies Contratos 70.6% · Contratos Geral 73% · Obrigações Pt1 70.3%',ic:'⚖️',cor:'#94a3b8'},
   ];
 
   const salvarSessao=()=>{
@@ -4826,7 +4832,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
       const hist=lsGet('historico_diario',[]);
       const por={};hist.forEach(r=>{if(r.materia&&r.questoes){por[r.materia]=por[r.materia]||{q:0,a:0};por[r.materia].q+=parseInt(r.questoes)||0;por[r.materia].a+=parseInt(r.acertei)||0;}});
       const ranking=Object.entries(por).map(([m,v])=>({m,pct:v.q>0?Math.round(v.a/v.q*100):null,q:v.q})).sort((a,b)=>(a.pct||100)-(b.pct||100));
-      const ctx=`Pesos TCE-RJ: AFO=5, Contabilidade=5, Auditoria=5, Controle Externo=5, Dir.Adm=4, Dir.Const=4, Dir.Tributário=3, Português=3, RL=3. Aproveitamento atual (pior→melhor): ${ranking.slice(0,8).map(r=>`${r.m}:${r.pct!==null?r.pct+'%':'sem dado'}(${r.q}Q)`).join(', ')}. Ciclo atual: bloco ${totalBlocos}/${N}. Manuais já marcados: ${criticosManuais.map(x=>x.mat).join(', ')||'nenhum'}.`;
+      const ctx=`Pesos TCE-SP VUNESP: Discursiva=MAX, Português=MAX (Interpretação 64%), Auditoria=MAX (estimativa 40%), Dir.Financeiro/AFO=MAX, Dir.Adm=MAX, Dir.Tributário=MAX, Dir.Constitucional=MAX, Dir.Civil=MÉDIA, RL=ALTA (sem dado). Aproveitamento atual (pior→melhor): ${ranking.slice(0,8).map(r=>`${r.m}:${r.pct!==null?r.pct+'%':'sem dado'}(${r.q}Q)`).join(', ')}. Ciclo atual: bloco ${totalBlocos}/${N}. Manuais já marcados: ${criticosManuais.map(x=>x.mat).join(', ')||'nenhum'}.`;
       const res=await chamarClaude('Você é mentor de TCE-RJ. Analise e retorne JSON: {"sugestoes":[{"mat":"nome","motivo":"1 frase objetiva","prioridade":"alta|media"}]} — máximo 4 sugestões que complementem os manuais. Sem markdown.',
         [{role:'user',content:ctx}],400);
       const parsed=JSON.parse(res.replace(/```json|```/g,'').trim());
@@ -5035,11 +5041,13 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
           const criticos=lsGet('criticos_manuais',[]);
           if(criticos.length>0)return null;
           const seeds=[
-            {mat:'Português',motivo:'Interpretação Textual 64% · Semântica 64% · Ortografia 64% — todos os pontos fracos confirmados pelo Guruja TCE-SP',prioridade:'alta'},
-            {mat:'Auditoria Governamental',motivo:'Estimativa 40% — matéria do carro-chefe, ainda sem dado real do Guruja TCE-SP',prioridade:'alta'},
-            {mat:'Discursivas',motivo:'Problema de estrutura e gestão de tempo (queda documentada TCE-MG) — 3 sessões fixas/semana',prioridade:'alta'},
-            {mat:'Dir. Financeiro / AFO',motivo:'Precatórios 35% · Matemática Financeira 26% · Receita 70% · LRF-pessoal 73%',prioridade:'media'},
-            {mat:'Dir. Civil',motivo:'Contratos em Geral 69% · Obrigações Pt1 70% · Espécies Contratos 69% — pontos fracos residuais',prioridade:'media'},
+            {mat:'Português',motivo:'🔴 #1 VUNESP: Interpretação Textual 63.6% (-8.5%) — cobra 40-50% das questões de Português. Semântica 64.2% · Ortografia 64%',prioridade:'alta'},
+            {mat:'Discursivas',motivo:'🔴 #1 Gate: 60% mínimo (24/40p) · Problema de estrutura documentado no TCE-MG · 3 sessões fixas Ter/Qui/Sáb',prioridade:'alta'},
+            {mat:'Auditoria Governamental',motivo:'🔴 Estimativa ~40% — carro-chefe sem dado real ainda · Gate Específicos em risco',prioridade:'alta'},
+            {mat:'Dir. Constitucional',motivo:'🟡 Intervenção Federal 69.2% · Poder Judiciário 69.2% · Ctrl.Const.Estadual 69.2% — 3 tópicos críticos juntos',prioridade:'media'},
+            {mat:'Dir. Financeiro / AFO',motivo:'🟡 Controle Financeiro Externo 72% · Receita 73.1% · LRF Arts.15-24 73.3% · Precatórios sem dado · MatFi 26%',prioridade:'media'},
+            {mat:'Dir. Tributário',motivo:'🟡 Reforma Tributária EC132 Pt.II 75% (-12.7% maior queda) · Simples Nacional LC123 71.4% · CGSN 70%',prioridade:'media'},
+            {mat:'Dir. Civil',motivo:'🟡 Espécies de Contratos 70.6% · Contratos em Geral 73% · Obrigações Pt1 70.3% — tópicos frequentes VUNESP',prioridade:'media'},
           ];
           return(
             <div style={{padding:'11px 13px',borderRadius:11,background:'rgba(251,191,36,.06)',border:'1px solid rgba(251,191,36,.25)',marginBottom:10}}>
@@ -5058,11 +5066,13 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
               ))}
               <button onClick={()=>{
                 const seeds2=[
-                  {mat:'Português',motivo:'Interpretação 64% · Semântica 64% · Ortografia 64% — carro-chefe TCE-SP',prioridade:'alta'},
-                  {mat:'Auditoria Governamental',motivo:'Estimativa 40% — carro-chefe sem dado real ainda',prioridade:'alta'},
-                  {mat:'Discursivas',motivo:'Estrutura e gestão de tempo — 3 sessões fixas/semana',prioridade:'alta'},
-                  {mat:'Dir. Financeiro / AFO',motivo:'Precatórios 35% · MatFi 26% · Receita 70% · LRF-pessoal 73%',prioridade:'media'},
-                  {mat:'Dir. Civil',motivo:'Contratos em Geral 69% · Obrigações Pt1 70%',prioridade:'media'},
+                  {mat:'Português',motivo:'Interpretação 63.6% · Semântica 64.2% · Ortografia 64% — críticos VUNESP',prioridade:'alta'},
+                  {mat:'Discursivas',motivo:'Gate 60% mínimo · Estrutura e gestão de tempo documentada',prioridade:'alta'},
+                  {mat:'Auditoria Governamental',motivo:'Estimativa 40% — carro-chefe sem dado real TCE-SP',prioridade:'alta'},
+                  {mat:'Dir. Constitucional',motivo:'Intervenção 69.2% · Poder Judiciário 69.2% · Ctrl.Const.Estadual 69.2%',prioridade:'media'},
+                  {mat:'Dir. Financeiro / AFO',motivo:'Controle Financeiro Externo 72% · Receita 73.1% · LRF-pessoal 73.3%',prioridade:'media'},
+                  {mat:'Dir. Tributário',motivo:'Reforma Tributária EC132 Pt.II 75% (-12.7%) · Simples Nacional 71.4%',prioridade:'media'},
+                  {mat:'Dir. Civil',motivo:'Espécies Contratos 70.6% · Obrigações Pt1 70.3%',prioridade:'media'},
                 ];
                 const todos=seeds2.map((s,i)=>({...s,id:Date.now()+i,dt:Date.now()}));
                 lsSet('criticos_manuais',todos);setCriticosManuais(todos);
