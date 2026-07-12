@@ -9,7 +9,7 @@
 <meta name="application-name" content="RITY OS"/>
 <meta name="apple-mobile-web-app-title" content="RITY OS"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<link rel="manifest" href="data:application/json,{%22name%22:%22RITY%20OS%20%C2%B7%20TCE-RJ%22,%22short_name%22:%22RITY%20OS%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22%23050a14%22,%22theme_color%22:%22%23050a14%22,%22orientation%22:%22portrait%22}"/>
+<link rel="manifest" href="data:application/json,{%22name%22:%22RITY%20OS%20%C2%B7%20TCE-SP%22,%22short_name%22:%22RITY%20OS%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22%23050a14%22,%22theme_color%22:%22%23050a14%22,%22orientation%22:%22portrait%22}"/>
 <!-- Ícone Apple (inline SVG como data URI) -->
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%23050a14'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-size='300' font-family='serif'%3E⚖%3C/text%3E%3Ctext x='50%25' y='88%25' dominant-baseline='middle' text-anchor='middle' font-size='72' font-family='monospace' fill='%23fbbf24' font-weight='bold'%3ERTY OS%3C/text%3E%3C/svg%3E"/>
 <title>RITY OS · TCE-SP 2026</title>
@@ -309,14 +309,13 @@ const CONCURSOS_ALVO=[
   },
 ];
 
-const LEGISLACAO_TCE_RJ=[
-  {codigo:'LC 63/1990',nome:'Lei Orgânica TCE-RJ',prioridade:1,anki:true,obs:'Base do concurso'},
-  {codigo:'Reg. Interno',nome:'Regimento Interno TCE-RJ',prioridade:1,anki:true,obs:'Procedimentos e competências'},
+const LEGISLACAO_TCE_SP=[
+  {codigo:'LC 709/1993',nome:'Lei Orgânica do TCE-SP',prioridade:1,anki:true,obs:'Base do concurso'},
+  {codigo:'Reg. Interno TCE-SP',nome:'Regimento Interno do TCE-SP',prioridade:1,anki:true,obs:'Procedimentos e competências'},
   {codigo:'CF/88 arts.70-75',nome:'Constituição Federal — Controle Externo',prioridade:1,anki:true,obs:'Fundamento constitucional'},
+  {codigo:'Instrução 01/2024',nome:'Instrução TCE-SP e normas correlatas',prioridade:2,anki:true,obs:'Normas de procedimento'},
   {codigo:'Lei 4.320/64',nome:'Normas Gerais de Direito Financeiro',prioridade:2,anki:true,obs:'Orçamento público'},
   {codigo:'LC 101/2000',nome:'LRF — Lei de Responsabilidade Fiscal',prioridade:2,anki:true,obs:'Já no ciclo — reforçar lei seca'},
-  {codigo:'Lei 8.443/92',nome:'Lei Orgânica TCU',prioridade:2,anki:true,obs:'Comparativo TCE/TCU'},
-  {codigo:'DL 201/67',nome:'Decreto-Lei 201/67 — Municípios',prioridade:3,anki:true,obs:'Crimes e infrações'},
 ];
 
 const PROTOCOLO_DISCURSIVA={
@@ -403,10 +402,10 @@ const FILA_REVISAO_PROFUNDA=[
   {mat:'Mat. Financeira',       ic:'🧮', cor:'#a78bfa', jornada:10, motivo:'Sem % de acerto registrado — conteúdo novo',         ferramenta:'Gran Cursos'},
   {mat:'Adm. Pública',          ic:'🏛️',  cor:'#fb923c', jornada:4,  motivo:'4% da jornada — menor de todas as matérias',        ferramenta:'Guruja'},
   {mat:'Contabilidade Pública', ic:'📊', cor:'#34d399', jornada:11, motivo:'11% jornada — lançamentos ainda travando',           ferramenta:'TecConcursos'},
-  {mat:'Português',             ic:'📝', cor:'#f472b6', jornada:28, motivo:'Interpretação abaixo da média — cai muito na FGV',   ferramenta:'TecConcursos'},
+  {mat:'Português',             ic:'📝', cor:'#f472b6', jornada:28, motivo:'Interpretação abaixo da média — cai muito na VUNESP',   ferramenta:'TecConcursos'},
   {mat:'Auditoria Governamental',ic:'🔍',cor:'#60a5fa', jornada:25, motivo:'77,6% acerto — abaixo da média histórica',          ferramenta:'Guruja'},
   {mat:'Raciocínio Lógico',     ic:'🔢', cor:'#f87171', jornada:7,  motivo:'7% jornada — conectivos e proposições instáveis',   ferramenta:'Gran Cursos'},
-  {mat:'AFO',                   ic:'📈', cor:'#fbbf24', jornada:35, motivo:'80,9% — abaixo da média, LRF ainda frágil',         ferramenta:'TecConcursos'},
+  {mat:'Dir. Financeiro / AFO', ic:'📈', cor:'#fbbf24', jornada:35, motivo:'80,9% — abaixo da média, LRF ainda frágil',         ferramenta:'TecConcursos'},
 ];
 
 // Retorna o estado atual da fila (posição + histórico de revisões)
@@ -613,7 +612,7 @@ async function chamarClaude(systemPrompt,msgs,maxTokens=800){
   else headers['Authorization']=`Bearer ${k}`;
   const res=await fetch('https://api.anthropic.com/v1/messages',{
     method:'POST',headers,
-    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:maxTokens,system:systemPrompt,messages:msgs})
+    body:JSON.stringify({model:'claude-sonnet-5',max_tokens:maxTokens,system:systemPrompt,messages:msgs})
   });
   if(!res.ok){const err=await res.text();throw new Error(`API ${res.status}: ${err.slice(0,200)}`);}
   const data=await res.json();
@@ -804,7 +803,7 @@ const EDITAL={
       {t:'Raciocínio Matemático Básico',p:15,acerto:null,status:'diagnostico'},
       {t:'Outros',p:10,acerto:null,status:'diagnostico'},
     ]},
-  'Ética Pública e Integridade':{bloco:'gerais',
+  'Ética Pública':{bloco:'gerais',
     top:[
       {t:'Ética, Moral e Função Pública',p:40,acerto:null,status:'nivelamento'},
       {t:'Código de Ética do Servidor Público',p:30,acerto:null,status:'nivelamento'},
@@ -904,6 +903,9 @@ const EDITAL={
       {t:'Estrutura e gestão de tempo da resposta',p:20,acerto:null,status:'carro-chefe'},
     ]},
 };
+// Lista de matérias reais do edital, excluindo a chave '_meta' (metadados da prova).
+// Usar SEMPRE isto (e não Object.keys(EDITAL) direto) ao iterar matérias.
+const EDITAL_MATS=Object.keys(EDITAL).filter(k=>k!=='_meta');
 
 // ── HELPERS DOS 3 MODOS DE RADAR ──────────────────────────────
 
@@ -938,7 +940,8 @@ function calcTop5Perigos(n=5){
   const porAssunto=calcAcertoPorAssunto();
   const todayMs=new Date().setHours(0,0,0,0);
   const perigos=[];
-  Object.entries(EDITAL).forEach(([mat,dados])=>{
+  EDITAL_MATS.forEach(mat=>{
+    const dados=EDITAL[mat];
     dados.top.forEach(topico=>{
       const k=mat+'|||'+topico.t;
       const reg=porAssunto[k]||null;
@@ -962,7 +965,7 @@ function calcPontosEmRisco(){
     porMat[r.materia].q+=parseInt(r.questoes)||0;
     porMat[r.materia].a+=parseInt(r.acertei)||0;
   });
-  return Object.keys(EDITAL).map(mat=>{
+  return EDITAL_MATS.map(mat=>{
     const reg=porMat[mat]||null;
     const acerto=reg&&reg.q>0?Math.round(reg.a/reg.q*100):null;
     const topPeso=EDITAL[mat].top.reduce((s,t)=>s+t.p,0); // soma dos tops
@@ -1408,7 +1411,7 @@ Escala: ≥85% SÓLIDO · 70-84% ATENÇÃO · <70% CRÍTICO
       });
 
     // Status do edital
-    const matsEdital=Object.keys(EDITAL);
+    const matsEdital=EDITAL_MATS;
     txt+=`
 📋 STATUS DO EDITAL
 ───────────────────────────────────────
@@ -1594,7 +1597,7 @@ Cole este texto no Claude.ai para análise completa.
     <div style={{display:'flex',flexDirection:'column',height:'calc(100dvh - 155px)'}}>
       <div style={{background:'linear-gradient(135deg,rgba(30,20,10,.95),rgba(10,7,3,.98))',border:'1px solid rgba(251,191,36,.15)',borderRadius:13,padding:'11px 13px',marginBottom:8,display:'flex',justifyContent:'space-between',alignItems:'center',flexShrink:0}}>
         <div>
-          <div style={{fontSize:8,color:'rgba(251,191,36,.5)',letterSpacing:'3px',fontFamily:"'DM Mono',monospace",fontWeight:700}}>ASSESSORA IA · TCE-RJ</div>
+          <div style={{fontSize:8,color:'rgba(251,191,36,.5)',letterSpacing:'3px',fontFamily:"'DM Mono',monospace",fontWeight:700}}>ASSESSORA IA · TCE-SP</div>
           <div style={{fontFamily:"'DM Serif Display',serif",color:'#f0e6d0',fontSize:15,marginTop:2}}>Perguntas · Plano · Suporte</div>
         </div>
         <div style={{display:'flex',gap:6}}>
@@ -2127,7 +2130,7 @@ function calcMotorCanais(feitos,horas,historico){
 // Mantém compatibilidade com código legado que usa calcTempoMorto
 function calcTempoMorto(feitos,horas,historico){
   const motor=calcMotorCanais(feitos,horas,historico);
-  const fallback={mat:'AFO',difMedia:0,diasSem:0};
+  const fallback={mat:'Dir. Financeiro / AFO',difMedia:0,diasSem:0};
   return{
     anki:motor.geral[0]||fallback,
     nlm:motor.nlm.top?{mat:motor.nlm.top.mat,difMedia:0,diasSem:motor.nlm.top.diasNlm}:motor.geral[1]||fallback,
@@ -4757,7 +4760,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
   const[cadRegs,setCadRegs]=useState(()=>lsGet('rev_caderno',[]));
   const[topicos,setTopicos]=useState(()=>lsGet('rev_topicos',[]));
   const[editalStatus,setEditalStatus]=useState(()=>lsGet('edital_status',{}));
-  const[editalMatSel,setEditalMatSel]=useState(Object.keys(EDITAL)[0]||'Português');
+  const[editalMatSel,setEditalMatSel]=useState(EDITAL_MATS[0]||'Português');
   const[topicoForm,setTopicoForm]=useState('');
   const[criticosManuais,setCriticosManuais]=useState(()=>lsGet('criticos_manuais',[]));
   const[critForm,setCritForm]=useState({mat:'',motivo:'',prioridade:'alta'});
@@ -4780,7 +4783,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
   const LABELS_DIF=['FÁCIL','TRANQUILO','MÉDIO','DIFÍCIL','MUITO DIFÍCIL'];
 
   // Tempo Morto calculado no App e passado como prop tmSugestao
-  const tempoMorto=tmSugestao||{anki:{mat:'AFO',difMedia:0,diasSem:0},nlm:{mat:'Auditoria',difMedia:0,diasSem:0},ranking:[],travouRecente:[]};
+  const tempoMorto=tmSugestao||{anki:{mat:'Dir. Financeiro / AFO',difMedia:0,diasSem:0},nlm:{mat:'Auditoria Governamental',difMedia:0,diasSem:0},ranking:[],travouRecente:[]};
 
   // Fix 1h30 — conta blocos desde última revisão
   const ultimaRev=rev1h30Regs.length>0?rev1h30Regs[rev1h30Regs.length-1]:null;
@@ -4799,7 +4802,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
       const historico2=lsGet('historico_diario',[]);
       const ranking=Object.entries(historico2.reduce((acc,r)=>{if(r.materia&&r.questoes){acc[r.materia]=acc[r.materia]||{q:0,a:0};acc[r.materia].q+=parseInt(r.questoes)||0;acc[r.materia].a+=parseInt(r.acertei)||0;}return acc;},{})).map(([m,v])=>({m,pct:v.q>0?Math.round(v.a/v.q*100):null})).sort((a,b)=>(a.pct||100)-(b.pct||100));
       const ctx=`Ciclo atual: bloco ${totalBlocos}/${N}. Motor local sugere Anki: ${tempoMorto.anki.mat} e NLM: ${tempoMorto.nlm.mat}. ${fmtRanking()}. Travou recentemente: ${tempoMorto.travouRecente.join('; ')||'nada'}. Guruja: ${lsGet('guruja_data',null)?.alerta||'sem dado'}.`;
-      const res=await chamarClaude('Você é assistente de estudos para concurso TCE-RJ. Responda APENAS JSON sem markdown: {"anki":"nome_materia","nlm":"nome_materia","motivo":"1 frase explicando por que essas matérias agora"}',
+      const res=await chamarClaude('Você é assistente de estudos para concurso TCE-SP (VUNESP). Responda APENAS JSON sem markdown: {"anki":"nome_materia","nlm":"nome_materia","motivo":"1 frase explicando por que essas matérias agora"}',
         [{role:'user',content:ctx}],200);
       const parsed=JSON.parse(res.replace(/```json|```/g,'').trim());
       const cache={...parsed,dia:dk};
@@ -4833,7 +4836,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
       const por={};hist.forEach(r=>{if(r.materia&&r.questoes){por[r.materia]=por[r.materia]||{q:0,a:0};por[r.materia].q+=parseInt(r.questoes)||0;por[r.materia].a+=parseInt(r.acertei)||0;}});
       const ranking=Object.entries(por).map(([m,v])=>({m,pct:v.q>0?Math.round(v.a/v.q*100):null,q:v.q})).sort((a,b)=>(a.pct||100)-(b.pct||100));
       const ctx=`Pesos TCE-SP VUNESP: Discursiva=MAX, Português=MAX (Interpretação 64%), Auditoria=MAX (estimativa 40%), Dir.Financeiro/AFO=MAX, Dir.Adm=MAX, Dir.Tributário=MAX, Dir.Constitucional=MAX, Dir.Civil=MÉDIA, RL=ALTA (sem dado). Aproveitamento atual (pior→melhor): ${ranking.slice(0,8).map(r=>`${r.m}:${r.pct!==null?r.pct+'%':'sem dado'}(${r.q}Q)`).join(', ')}. Ciclo atual: bloco ${totalBlocos}/${N}. Manuais já marcados: ${criticosManuais.map(x=>x.mat).join(', ')||'nenhum'}.`;
-      const res=await chamarClaude('Você é mentor de TCE-RJ. Analise e retorne JSON: {"sugestoes":[{"mat":"nome","motivo":"1 frase objetiva","prioridade":"alta|media"}]} — máximo 4 sugestões que complementem os manuais. Sem markdown.',
+      const res=await chamarClaude('Você é mentor de TCE-SP (VUNESP). Analise e retorne JSON: {"sugestoes":[{"mat":"nome","motivo":"1 frase objetiva","prioridade":"alta|media"}]} — máximo 4 sugestões que complementem os manuais. Sem markdown.',
         [{role:'user',content:ctx}],400);
       const parsed=JSON.parse(res.replace(/```json|```/g,'').trim());
       const novas=parsed.sugestoes?.filter(s=>s.mat&&!criticosManuais.find(m=>m.mat===s.mat))||[];
@@ -5222,7 +5225,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
 
             {/* Seletor de matéria */}
             <div style={{display:'flex',flexWrap:'wrap',gap:4,marginBottom:12}}>
-              {Object.keys(EDITAL).map(mat=>{
+              {EDITAL_MATS.map(mat=>{
                 const mtops=EDITAL[mat].top;
                 const dom=mtops.filter(t=>editalStatus[mat+':'+t.t]==='domino').length;
                 const pctDom=Math.round(dom/mtops.length*100);
@@ -5524,6 +5527,12 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
                 <MatBtn value={nlmForm.mat===matSugerida?'':nlmForm.mat} onChange={v=>setNlmForm(f=>({...f,mat:v}))}/>
               </div>
 
+              {/* Assunto/tópico dentro da matéria */}
+              <div style={{marginBottom:8}}>
+                <div style={{fontSize:9,color:'#64748b',marginBottom:5}}>ASSUNTO ESTUDADO (opcional)</div>
+                <input type="text" value={nlmForm.oque||''} onChange={e=>setNlmForm(f=>({...f,oque:e.target.value}))} placeholder="ex: Atos Administrativos, Licitações..." style={{width:'100%',padding:'9px 11px',borderRadius:8,border:'1px solid rgba(52,211,153,.2)',background:'rgba(52,211,153,.04)',color:'#e2e8f0',fontSize:11,outline:'none',boxSizing:'border-box'}}/>
+              </div>
+
               {/* Tempo + Dificuldade */}
               <div style={{marginBottom:8}}>
                 <div style={{fontSize:9,color:'#64748b',marginBottom:4}}>⏱ TEMPO (min)</div>
@@ -5538,6 +5547,11 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
                 style={{width:'100%',padding:'14px',borderRadius:10,border:'none',background:nlmForm.mat&&nlmForm.dif?'#34d399':'rgba(148,163,184,.2)',color:nlmForm.mat&&nlmForm.dif?'#0f172a':'#334155',fontSize:14,fontWeight:900,cursor:'pointer',fontFamily:"'DM Mono',monospace",letterSpacing:'1px'}}>
                 {nlmSalvo?'✅ SALVO!':'💾 SALVAR NLM'}
               </button>
+              {(!nlmForm.mat||!nlmForm.dif)&&(
+                <div style={{textAlign:'center',fontSize:9,color:'#f87171',marginTop:6}}>
+                  Falta: {[!nlmForm.mat&&'selecionar matéria',!nlmForm.dif&&'marcar dificuldade'].filter(Boolean).join(' e ')}
+                </div>
+              )}
             </div>
 
             {/* HISTÓRICO */}
@@ -5546,6 +5560,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
               <div key={i} style={{padding:'8px 11px',borderRadius:9,background:r.dia===hoje?'rgba(52,211,153,.08)':'rgba(52,211,153,.03)',border:`1px solid ${r.dia===hoje?'rgba(52,211,153,.3)':'rgba(52,211,153,.12)'}`,marginBottom:4,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
                 <div>
                   <div style={{fontSize:11,color:'var(--text)',fontWeight:700}}>{r.mat}</div>
+                  {r.oque&&<div style={{fontSize:9,color:'#34d399',marginTop:1}}>{r.oque}</div>}
                   <div style={{fontSize:9,color:'#64748b'}}>{r.tempo?`${r.tempo}min`:'—'}{r.dif?` · ${'⭐'.repeat(r.dif)}`:''}</div>
                 </div>
                 <span style={{fontSize:9,color:r.dia===hoje?'#34d399':'#334155',fontFamily:"'DM Mono',monospace",fontWeight:r.dia===hoje?700:400}}>{r.dia===hoje?'hoje':r.dia}</span>
@@ -6977,10 +6992,10 @@ function ModalConfig({fechar}){
               })}
             </div>
 
-            {/* Legislação específica TCE-RJ */}
+            {/* Legislação específica TCE-SP */}
             <div style={{padding:'12px',borderRadius:11,background:'rgba(251,191,36,.06)',border:'1px solid rgba(251,191,36,.2)'}}>
-              <div style={{fontSize:9,color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:8}}>📖 LEGISLAÇÃO TCE-RJ — 30min/dia Anki</div>
-              {LEGISLACAO_TCE_RJ.map((l,i)=>(
+              <div style={{fontSize:9,color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:8}}>📖 LEGISLAÇÃO TCE-SP — 30min/dia Anki</div>
+              {LEGISLACAO_TCE_SP.map((l,i)=>(
                 <div key={i} style={{display:'flex',justifyContent:'space-between',padding:'5px 8px',borderRadius:6,background:'rgba(251,191,36,.06)',marginBottom:4}}>
                   <div>
                     <span style={{fontSize:10,color:'#fbbf24',fontWeight:700,fontFamily:"'DM Mono',monospace"}}>{l.codigo}</span>
@@ -7192,7 +7207,7 @@ function TabDados({horas}){
       ?`Matéria: ${matAtual}. Acerto total: ${pctMat}%. Horas: ${fmtMin(minMatTotal)}. Prioridade: ${meir.prioridade}. Jornada Guruja: ${gseedAtual.jornada}%. Evolução: ${evolMat.map(e=>e.pct!==null?e.pct+'%':'—').join('→')}.`
       :`Comparativo ciclos: ${ciclsComp.filter(c=>c.pAtu!==null).map(c=>`${c.mat}: ant ${c.pAnt}% → atu ${c.pAtu}% (${c.delta!==null?(c.delta>=0?'+':'')+c.delta+'pts':'novo'})`).join('; ')}.`;
     try{
-      const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:200,system:'Você é analista de estudos para concursos. Responda em português, máximo 100 palavras, identifique o padrão mais importante e dê UMA ação concreta. Seja direto.',messages:[{role:'user',content:`Analise: ${ctx} Ciclo: ${feitos.length}/48 blocos feitos.`}]})});
+      const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-5',max_tokens:200,system:'Você é analista de estudos para concursos. Responda em português, máximo 100 palavras, identifique o padrão mais importante e dê UMA ação concreta. Seja direto.',messages:[{role:'user',content:`Analise: ${ctx} Ciclo: ${feitos.length}/48 blocos feitos.`}]})});
       const d=await resp.json();
       const txt=d.content?.[0]?.text||'Sem resposta.';
       setInsightTexto(prev=>({...prev,[tipo]:txt}));
@@ -7720,7 +7735,7 @@ function App(){
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:6}}>
           <div style={{display:'flex',alignItems:'center',gap:7,flexWrap:'wrap'}}>
             <div style={{fontFamily:"'DM Serif Display',serif",fontSize:17,color:'#fbbf24',letterSpacing:'1px',fontWeight:700}}>RITY OS</div>
-            <span style={{fontSize:8,fontWeight:800,letterSpacing:'2px',padding:'2px 6px',borderRadius:3,background:'rgba(251,191,36,.1)',color:'rgba(251,191,36,.6)',border:'1px solid rgba(251,191,36,.2)',fontFamily:"'DM Mono',monospace"}}>TCE-RJ</span>
+            <span style={{fontSize:8,fontWeight:800,letterSpacing:'2px',padding:'2px 6px',borderRadius:3,background:'rgba(251,191,36,.1)',color:'rgba(251,191,36,.6)',border:'1px solid rgba(251,191,36,.2)',fontFamily:"'DM Mono',monospace"}}>TCE-SP</span>
             <div style={{width:7,height:7,borderRadius:'50%',background:syncSt==='ok'?'#34d399':syncSt==='syncing'?'#fbbf24':syncSt==='error'?'#f87171':'#334155',transition:'background .4s'}}/>
             {!chaveOK&&<span onClick={()=>setShowCfg(true)} style={{fontSize:8,padding:'2px 6px',borderRadius:3,background:'rgba(248,113,113,.12)',color:'#f87171',border:'1px solid rgba(248,113,113,.3)',cursor:'pointer',fontFamily:"'DM Mono',monospace"}}>⚠️ SEM CHAVE IA</span>}
             {urgentes.length>0&&<span onClick={()=>setTab('revisao')} style={{fontSize:8,padding:'2px 6px',borderRadius:3,background:'rgba(248,113,113,.1)',color:'#f87171',border:'1px solid rgba(248,113,113,.25)',cursor:'pointer',fontFamily:"'DM Mono',monospace"}}>🚨 {urgentes.length} urgente{urgentes.length>1?'s':''}</span>}
