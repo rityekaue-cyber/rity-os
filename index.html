@@ -202,78 +202,42 @@ const{useState,useEffect,useRef,useMemo,useCallback}=React;
 // Lógica: pesado→leve→pesado | nunca mesma disciplina em dias consecutivos
 // Tags derivadas da Matriz Meirelles: ⭐⭐⭐⭐⭐+jornada baixa = 🔴 URGENTE
 const CICLO=[
-  // ── FASE DIAGNÓSTICO — 05/07 a 19/07 ──────────────────────────
-  // Foco: baseline RL / Ética / Legislação + 1 discursiva classificada
-  // Semana 1 (05-11/07)
-  {id:1,  dia:1, mat:'Discursivas',             ic:'✍️', cor:'#a78bfa', tag:'🔴 CARRO-CHEFE', h:0.75, tipo:'Estrutura',  ferramenta:'Papel + caneta',    conteudo:'Sessão 1 — Estrutura: leitura diagnóstica de peças anteriores VUNESP · Pt1'},
-  {id:2,  dia:1, mat:'Discursivas',             ic:'✍️', cor:'#a78bfa', tag:'🔴 CARRO-CHEFE', h:0.75, tipo:'Estrutura',  ferramenta:'Papel + caneta',    conteudo:'Sessão 1 · Pt2 — anotar padrão de erros estruturais'},
-  {id:3,  dia:1, mat:'Português',               ic:'📝', cor:'#f87171', tag:'🔴 CARRO-CHEFE', h:0.75, tipo:'Questões',   ferramenta:'TecConcursos VUNESP',conteudo:'Interpretação Textual — baseline diagnóstico · Pt1'},
-  {id:4,  dia:1, mat:'Português',               ic:'📝', cor:'#f87171', tag:'🔴 CARRO-CHEFE', h:0.75, tipo:'Questões',   ferramenta:'TecConcursos VUNESP',conteudo:'Interpretação Textual · Pt2 — registrar acerto'},
-  {id:5,  dia:2, mat:'Auditoria Governamental', ic:'🔍', cor:'#f87171', tag:'🔴 CARRO-CHEFE', h:0.75, tipo:'Teoria',     ferramenta:'Guruja',            conteudo:'Conceito, Evolução, INTOSAI, ISSAI — nivelamento · Pt1'},
-  {id:6,  dia:2, mat:'Auditoria Governamental', ic:'🔍', cor:'#f87171', tag:'🔴 CARRO-CHEFE', h:0.75, tipo:'Questões',   ferramenta:'Guruja',            conteudo:'Conceito e Evolução · Pt2 — diagnóstico de acerto'},
-  {id:7,  dia:2, mat:'Português',               ic:'📝', cor:'#f87171', tag:'🔴 CARRO-CHEFE', h:0.75, tipo:'Questões',   ferramenta:'TecConcursos VUNESP',conteudo:'Semântica e Tipologia Textual — baseline · Pt1'},
-  {id:8,  dia:2, mat:'Português',               ic:'📝', cor:'#f87171', tag:'🔴 CARRO-CHEFE', h:0.75, tipo:'Questões',   ferramenta:'TecConcursos VUNESP',conteudo:'Semântica e Tipologia · Pt2 — registrar acerto'},
-  {id:9,  dia:3, mat:'Raciocínio Lógico',       ic:'🔢', cor:'#fb923c', tag:'🟠 DIAGNÓSTICO', h:0.75, tipo:'Teoria',     ferramenta:'Gran Cursos',       conteudo:'Diagnóstico baseline — Proposições e Conectivos · Pt1'},
-  {id:10, dia:3, mat:'Raciocínio Lógico',       ic:'🔢', cor:'#fb923c', tag:'🟠 DIAGNÓSTICO', h:0.75, tipo:'Questões',   ferramenta:'Gran Cursos',       conteudo:'Baseline RL · Pt2 — 20 questões e registrar acerto'},
-  {id:11, dia:3, mat:'Discursivas',             ic:'✍️', cor:'#a78bfa', tag:'🔴 CARRO-CHEFE', h:0.75, tipo:'Escrita',    ferramenta:'Papel + caneta',    conteudo:'Sessão 2 — Escrita cronometrada: 1 peça completa VUNESP · Pt1'},
-  {id:12, dia:3, mat:'Discursivas',             ic:'✍️', cor:'#a78bfa', tag:'🔴 CARRO-CHEFE', h:0.75, tipo:'Escrita',    ferramenta:'Papel + caneta',    conteudo:'Sessão 2 · Pt2 — autocorreção com checklist de critérios'},
-  {id:13, dia:4, mat:'Auditoria Governamental', ic:'🔍', cor:'#f87171', tag:'🔴 CARRO-CHEFE', h:0.75, tipo:'Teoria',     ferramenta:'Guruja',            conteudo:'Tipos de Auditoria — conformidade, financeira, operacional · Pt1'},
-  {id:14, dia:4, mat:'Auditoria Governamental', ic:'🔍', cor:'#f87171', tag:'🔴 CARRO-CHEFE', h:0.75, tipo:'Questões',   ferramenta:'Guruja',            conteudo:'Tipos de Auditoria · Pt2 — questões baseline'},
-  {id:15, dia:4, mat:'Português',               ic:'📝', cor:'#f87171', tag:'🔴 CARRO-CHEFE', h:0.75, tipo:'Questões',   ferramenta:'TecConcursos VUNESP',conteudo:'Ortografia e Formação de Palavras — baseline · Pt1'},
-  {id:16, dia:4, mat:'Português',               ic:'📝', cor:'#f87171', tag:'🔴 CARRO-CHEFE', h:0.75, tipo:'Questões',   ferramenta:'TecConcursos VUNESP',conteudo:'Ortografia · Pt2 — registrar acerto'},
-  {id:17, dia:5, mat:'Ética Pública',           ic:'⚖️',  cor:'#fb923c', tag:'🟠 NIVELAMENTO', h:0.75, tipo:'Teoria',     ferramenta:'Gran Cursos',       conteudo:'Ética Pública e Integridade — do zero · Pt1'},
-  {id:18, dia:5, mat:'Ética Pública',           ic:'⚖️',  cor:'#fb923c', tag:'🟠 NIVELAMENTO', h:0.75, tipo:'Questões',   ferramenta:'Gran Cursos',       conteudo:'Ética Pública · Pt2 — 20 questões baseline'},
-  {id:19, dia:5, mat:'Discursivas',             ic:'✍️', cor:'#a78bfa', tag:'🔴 CARRO-CHEFE', h:0.75, tipo:'Revisão',    ferramenta:'Papel + caneta',    conteudo:'Sessão 3 — Revisão/Reescrita da peça da Sessão 2 · Pt1'},
-  {id:20, dia:5, mat:'Discursivas',             ic:'✍️', cor:'#a78bfa', tag:'🔴 CARRO-CHEFE', h:0.75, tipo:'Revisão',    ferramenta:'Papel + caneta',    conteudo:'Sessão 3 · Pt2 — banco de esqueletos no Obsidian'},
-  // Semana 2 (12-19/07)
-  {id:21, dia:6, mat:'Auditoria Governamental', ic:'🔍', cor:'#f87171', tag:'🔴 CARRO-CHEFE', h:0.75, tipo:'Teoria',     ferramenta:'Guruja',            conteudo:'Risco, Materialidade, Matriz de Planejamento — baseline · Pt1'},
-  {id:22, dia:6, mat:'Auditoria Governamental', ic:'🔍', cor:'#f87171', tag:'🔴 CARRO-CHEFE', h:0.75, tipo:'Questões',   ferramenta:'Guruja',            conteudo:'Risco e Materialidade · Pt2 — questões'},
-  {id:23, dia:6, mat:'Legislação TCE-SP',       ic:'🏛️',  cor:'#fb923c', tag:'🟠 NIVELAMENTO', h:0.75, tipo:'Teoria',     ferramenta:'Gran Cursos',       conteudo:'LC 709/93 e Regimento Interno — do zero · Pt1'},
-  {id:24, dia:6, mat:'Legislação TCE-SP',       ic:'🏛️',  cor:'#fb923c', tag:'🟠 NIVELAMENTO', h:0.75, tipo:'Questões',   ferramenta:'Gran Cursos',       conteudo:'Legislação TCE-SP · Pt2 — baseline'},
-  {id:25, dia:7, mat:'Discursivas',             ic:'✍️', cor:'#a78bfa', tag:'🔴 CARRO-CHEFE', h:0.75, tipo:'Estrutura',  ferramenta:'Papel + caneta',    conteudo:'Sessão 1 — Estrutura: nova peça VUNESP · Pt1'},
-  {id:26, dia:7, mat:'Discursivas',             ic:'✍️', cor:'#a78bfa', tag:'🔴 CARRO-CHEFE', h:0.75, tipo:'Estrutura',  ferramenta:'Papel + caneta',    conteudo:'Sessão 1 · Pt2 — anotar evolução vs. semana 1'},
-  {id:27, dia:7, mat:'Dir. Financeiro / AFO',   ic:'📈', cor:'#fbbf24', tag:'🟡 PONTO FRACO',  h:0.75, tipo:'Questões',   ferramenta:'TecConcursos',      conteudo:'Receita — Conceitos e Classificações — ponto fraco · Pt1'},
-  {id:28, dia:7, mat:'Dir. Financeiro / AFO',   ic:'📈', cor:'#fbbf24', tag:'🟡 PONTO FRACO',  h:0.75, tipo:'Questões',   ferramenta:'TecConcursos',      conteudo:'Receita · Pt2 — registrar acerto'},
-  {id:29, dia:8, mat:'Auditoria Governamental', ic:'🔍', cor:'#f87171', tag:'🔴 CARRO-CHEFE', h:0.75, tipo:'Teoria',     ferramenta:'Guruja',            conteudo:'Achados de Auditoria — planejamento e execução · Pt1'},
-  {id:30, dia:8, mat:'Auditoria Governamental', ic:'🔍', cor:'#f87171', tag:'🔴 CARRO-CHEFE', h:0.75, tipo:'Questões',   ferramenta:'Guruja',            conteudo:'Achados de Auditoria · Pt2 — questões'},
-  {id:31, dia:8, mat:'Português',               ic:'📝', cor:'#f87171', tag:'🔴 CARRO-CHEFE', h:0.75, tipo:'Questões',   ferramenta:'TecConcursos VUNESP',conteudo:'Interpretação Textual — 2ª rodada (monitorar evolução) · Pt1'},
-  {id:32, dia:8, mat:'Português',               ic:'📝', cor:'#f87171', tag:'🔴 CARRO-CHEFE', h:0.75, tipo:'Questões',   ferramenta:'TecConcursos VUNESP',conteudo:'Interpretação · Pt2 — comparar com baseline da semana 1'},
-  {id:33, dia:9, mat:'Discursivas',             ic:'✍️', cor:'#a78bfa', tag:'🔴 CARRO-CHEFE', h:0.75, tipo:'Escrita',    ferramenta:'Papel + caneta',    conteudo:'Sessão 2 — Escrita cronometrada: peça financeira/orçamentária · Pt1'},
-  {id:34, dia:9, mat:'Discursivas',             ic:'✍️', cor:'#a78bfa', tag:'🔴 CARRO-CHEFE', h:0.75, tipo:'Escrita',    ferramenta:'Papel + caneta',    conteudo:'Sessão 2 · Pt2 — autocorreção'},
-  {id:35, dia:9, mat:'Dir. Financeiro / AFO',   ic:'📈', cor:'#fbbf24', tag:'🟡 PONTO FRACO',  h:0.75, tipo:'Questões',   ferramenta:'TecConcursos',      conteudo:'LRF Arts. 15-24 — Despesa com Pessoal — ponto fraco · Pt1'},
-  {id:36, dia:9, mat:'Dir. Financeiro / AFO',   ic:'📈', cor:'#fbbf24', tag:'🟡 PONTO FRACO',  h:0.75, tipo:'Questões',   ferramenta:'TecConcursos',      conteudo:'LRF Arts. 15-24 · Pt2 — registrar acerto'},
-  {id:37, dia:10,mat:'Raciocínio Lógico',       ic:'🔢', cor:'#fb923c', tag:'🟠 DIAGNÓSTICO', h:0.75, tipo:'Questões',   ferramenta:'Gran Cursos',       conteudo:'Equivalências e Negações — aprofundamento · Pt1'},
-  {id:38, dia:10,mat:'Raciocínio Lógico',       ic:'🔢', cor:'#fb923c', tag:'🟠 DIAGNÓSTICO', h:0.75, tipo:'Questões',   ferramenta:'Gran Cursos',       conteudo:'RL · Pt2 — fechar baseline e documentar pontos fracos'},
-  {id:39, dia:10,mat:'Discursivas',             ic:'✍️', cor:'#a78bfa', tag:'🔴 CARRO-CHEFE', h:0.75, tipo:'Revisão',    ferramenta:'Papel + caneta',    conteudo:'Sessão 3 — Revisão da peça financeira · Pt1'},
-  {id:40, dia:10,mat:'Discursivas',             ic:'✍️', cor:'#a78bfa', tag:'🔴 CARRO-CHEFE', h:0.75, tipo:'Revisão',    ferramenta:'Papel + caneta',    conteudo:'Sessão 3 · Pt2 — fechar diagnóstico da discursiva'},
-  // ── SEMANA 2 (13/07 a 19/07) — fila real do Guruja (22 itens) + Discursiva ativa Ter/Qui/Sáb ──
-  {id:41, dia:11,mat:'Discursivas',             ic:'✍️', cor:'#a78bfa', tag:'🔴 CARRO-CHEFE', h:0.75, tipo:'Teoria',     ferramenta:'Guruja',            conteudo:'Orientações e dicas iniciais (DISC.4089.118075)'},
-  {id:42, dia:11,mat:'Legislação TCE-SP',       ic:'📖', cor:'#fbbf24', tag:'🟠 NIVELAMENTO', h:0.75, tipo:'Lei Seca',   ferramenta:'Guruja',            conteudo:'Lei Orgânica do Tribunal de Contas de São Paulo (CEXT.4158.116354)'},
-  {id:43, dia:11,mat:'Raciocínio Lógico',       ic:'🔢', cor:'#fb923c', tag:'🟠 DIAGNÓSTICO', h:0.75, tipo:'Questões',   ferramenta:'Guruja',            conteudo:'Estruturas Lógicas (RLOG.4165.116398)'},
-  {id:44, dia:11,mat:'Dir. Administrativo',     ic:'🏛️', cor:'#fbbf24', tag:'🟡 MANUTENÇÃO',  h:0.75, tipo:'Questões',   ferramenta:'Guruja',            conteudo:'Conceitos e Regime Jurídico Administrativo (DADM.4143.116207)'},
-  {id:45, dia:11,mat:'Dir. Constitucional',     ic:'📜', cor:'#fbbf24', tag:'🟡 MANUTENÇÃO',  h:0.75, tipo:'Teoria',     ferramenta:'Manual',            conteudo:'Teoria Geral do Direito Constitucional; Eficácia e Aplicabilidade das normas'},
-  {id:46, dia:12,mat:'Discursivas',             ic:'✍️', cor:'#a78bfa', tag:'🔴 CARRO-CHEFE', h:0.75, tipo:'Escrita',    ferramenta:'Papel + caneta',    conteudo:'Peça completa cronometrada VUNESP'},
-  {id:47, dia:12,mat:'Ética Pública',           ic:'🤝', cor:'#fb923c', tag:'🟠 NIVELAMENTO', h:0.75, tipo:'Teoria',     ferramenta:'Guruja',            conteudo:'Ética no serviço público e Código de Ética da Administração Pública (ETICA.4100.116305)'},
-  {id:48, dia:12,mat:'Dir. Financeiro / AFO',   ic:'📈', cor:'#fbbf24', tag:'🟡 MANUTENÇÃO',  h:0.75, tipo:'Questões',   ferramenta:'Guruja',            conteudo:'Atividade financeira, normas gerais, natureza jurídica, tipos de despesa (AFO.4185.116371)'},
-  {id:49, dia:12,mat:'Dir. Constitucional',     ic:'📜', cor:'#fbbf24', tag:'🟡 MANUTENÇÃO',  h:0.75, tipo:'Questões',   ferramenta:'Guruja',            conteudo:'Direitos e Garantias Fundamentais (DCON.4101.116437)'},
-  {id:50, dia:13,mat:'Discursivas',             ic:'✍️', cor:'#a78bfa', tag:'🔴 CARRO-CHEFE', h:0.75, tipo:'Teoria',     ferramenta:'Guruja',            conteudo:'Orientações e dicas iniciais (DISC.4090.118079)'},
-  {id:51, dia:13,mat:'Dir. Tributário',         ic:'💰', cor:'#fbbf24', tag:'🟡 MANUTENÇÃO',  h:0.75, tipo:'Questões',   ferramenta:'Guruja',            conteudo:'Conceito de Tributo e Espécies Tributárias (DTRIB.4189.116445)'},
-  {id:52, dia:13,mat:'Legislação TCE-SP',       ic:'📖', cor:'#fbbf24', tag:'🟠 NIVELAMENTO', h:0.75, tipo:'Lei Seca',   ferramenta:'Guruja',            conteudo:'Lei Orgânica do Tribunal de Contas de São Paulo (CEXT.4158.116358)'},
-  {id:53, dia:13,mat:'Dir. Administrativo',     ic:'🏛️', cor:'#fbbf24', tag:'🟡 MANUTENÇÃO',  h:0.75, tipo:'Questões',   ferramenta:'Guruja',            conteudo:'Poderes da Administração e Organização Administrativa (DADM.4143.116211)'},
-  {id:54, dia:14,mat:'Discursivas',             ic:'✍️', cor:'#a78bfa', tag:'🔴 CARRO-CHEFE', h:0.75, tipo:'Escrita',    ferramenta:'Papel + caneta',    conteudo:'Peça financeira/orçamentária cronometrada'},
-  {id:55, dia:14,mat:'Discursivas',             ic:'✍️', cor:'#a78bfa', tag:'🔴 CARRO-CHEFE', h:0.75, tipo:'Teoria',     ferramenta:'Guruja',            conteudo:'Questões Anteriores — Instrumentos de Planejamento Governamental (DISC.4089.118076)'},
-  {id:56, dia:14,mat:'Dir. Civil',              ic:'⚖️', cor:'#94a3b8', tag:'🟡 MANUTENÇÃO',  h:0.75, tipo:'Questões',   ferramenta:'Guruja',            conteudo:'Capacidade Civil e Direitos Inerentes à Personalidade (DCIV.4144.116377)'},
-  {id:57, dia:14,mat:'Dir. Financeiro / AFO',   ic:'📈', cor:'#fbbf24', tag:'🟡 MANUTENÇÃO',  h:0.75, tipo:'Questões',   ferramenta:'Guruja',            conteudo:'Princípios orçamentários, vedações orçamentárias na CF/88 (AFO.4185.116373)'},
-  {id:58, dia:15,mat:'Dir. Penal',              ic:'🚔', cor:'#fb923c', tag:'🟠 NIVELAMENTO', h:0.75, tipo:'Questões',   ferramenta:'Guruja',            conteudo:'Crimes praticados por funcionário público contra a Administração (DPEN.4175.116421)'},
-  {id:59, dia:15,mat:'Direito Empresarial (Comercial)',ic:'🏢',cor:'#fb923c',tag:'🟠 NIVELAMENTO', h:0.75, tipo:'Teoria', ferramenta:'Guruja',            conteudo:'Empresa e Empresário (DEMP.4142.116313)'},
-  {id:60, dia:15,mat:'Dir. Constitucional',     ic:'📜', cor:'#fbbf24', tag:'🟡 MANUTENÇÃO',  h:0.75, tipo:'Revisão',    ferramenta:'Guruja',            conteudo:'Imersão Temática — Direitos e Garantias Fundamentais (DCON.4102.116442)'},
-  {id:61, dia:15,mat:'Dir. Administrativo',     ic:'🏛️', cor:'#fbbf24', tag:'🟡 MANUTENÇÃO',  h:0.75, tipo:'Questões',   ferramenta:'Guruja',            conteudo:'Licitações Públicas (DADM.4147.116218)'},
-  {id:62, dia:16,mat:'Discursivas',             ic:'✍️', cor:'#a78bfa', tag:'🔴 CARRO-CHEFE', h:0.75, tipo:'Revisão',    ferramenta:'Papel + caneta',    conteudo:'Autocorreção da peça escrita na terça'},
-  {id:63, dia:16,mat:'Discursivas',             ic:'✍️', cor:'#a78bfa', tag:'🔴 CARRO-CHEFE', h:0.75, tipo:'Teoria',     ferramenta:'Guruja',            conteudo:'Questões 01 — Tarifa do serviço de gás canalizado, ARSESP (DISC.4090.116080)'},
-  {id:64, dia:16,mat:'Dir. Civil',              ic:'⚖️', cor:'#94a3b8', tag:'🟡 MANUTENÇÃO',  h:0.75, tipo:'Lei Seca',   ferramenta:'Guruja',            conteudo:'Lei de Regularização Fundiária Urbana e Rural — Lei nº 13.465 (DCIV.4146.116386)'},
-  {id:65, dia:16,mat:'Dir. Financeiro / AFO',   ic:'📈', cor:'#fbbf24', tag:'🟡 MANUTENÇÃO',  h:0.75, tipo:'Lei Seca',   ferramenta:'Guruja',            conteudo:'LC nº 101/2000 — Capítulo I — Disposições Preliminares (AFO.4187.116383)'},
-  {id:66, dia:17,mat:'Português',               ic:'📝', cor:'#f472b6', tag:'🔴 CARRO-CHEFE', h:0.75, tipo:'Questões',   ferramenta:'Guruja',            conteudo:'Interpretação de Textos e Compreensão (PORT.4092.118080)'},
-  {id:67, dia:17,mat:'Qualquer matéria',        ic:'🗂️', cor:'#94a3b8', tag:'🟢 REVISÃO',     h:0.75, tipo:'Revisão',    ferramenta:'TEC + Anki',        conteudo:'Consolidar Banco de Erros da semana — revisar todos os itens registrados'},
+  // ── CICLO ATUAL — 13/07 a 19/07 ───────────────────────────────
+  // Fila real do Guruja (22 itens) + Discursiva ativa Ter/Qui/Sáb + Constitucional (Teoria Geral/Eficácia)
+  // SEGUNDA 13/07 · livre — 5 metas
+  {id:1,  dia:1, mat:'Discursivas',                    ic:'✍️', cor:'#a78bfa', tag:'🔴 CARRO-CHEFE', h:0.75, tipo:'Teoria',   ferramenta:'Guruja',         conteudo:'Orientações e dicas iniciais (DISC.4089.118075)'},
+  {id:2,  dia:1, mat:'Legislação TCE-SP',              ic:'📖', cor:'#fbbf24', tag:'🟠 NIVELAMENTO', h:0.75, tipo:'Lei Seca', ferramenta:'Guruja',         conteudo:'Lei Orgânica do Tribunal de Contas de São Paulo (CEXT.4158.116354)'},
+  {id:3,  dia:1, mat:'Raciocínio Lógico',              ic:'🔢', cor:'#fb923c', tag:'🟠 DIAGNÓSTICO', h:0.75, tipo:'Questões', ferramenta:'Guruja',         conteudo:'Estruturas Lógicas (RLOG.4165.116398)'},
+  {id:4,  dia:1, mat:'Dir. Administrativo',            ic:'🏛️', cor:'#fbbf24', tag:'🟡 MANUTENÇÃO',  h:0.75, tipo:'Questões', ferramenta:'Guruja',         conteudo:'Conceitos e Regime Jurídico Administrativo (DADM.4143.116207)'},
+  {id:5,  dia:1, mat:'Dir. Constitucional',            ic:'📜', cor:'#fbbf24', tag:'🟡 MANUTENÇÃO',  h:0.75, tipo:'Teoria',   ferramenta:'Manual',         conteudo:'Teoria Geral do Direito Constitucional; Eficácia e Aplicabilidade das normas'},
+  // TERÇA 14/07 · trabalho 13-17h — 4 metas
+  {id:6,  dia:2, mat:'Discursivas',                    ic:'✍️', cor:'#a78bfa', tag:'🔴 CARRO-CHEFE', h:0.75, tipo:'Escrita',  ferramenta:'Papel + caneta', conteudo:'Peça completa cronometrada VUNESP'},
+  {id:7,  dia:2, mat:'Ética Pública',                  ic:'⚖️', cor:'#fb923c', tag:'🟠 NIVELAMENTO', h:0.75, tipo:'Teoria',   ferramenta:'Guruja',         conteudo:'Ética no serviço público e Código de Ética da Adm. Pública (ETICA.4100.116305)'},
+  {id:8,  dia:2, mat:'Dir. Financeiro / AFO',          ic:'📈', cor:'#fbbf24', tag:'🟡 MANUTENÇÃO',  h:0.75, tipo:'Questões', ferramenta:'Guruja',         conteudo:'Atividade financeira, normas gerais, natureza jurídica, tipos de despesa (AFO.4185.116371)'},
+  {id:9,  dia:2, mat:'Dir. Constitucional',            ic:'📜', cor:'#fbbf24', tag:'🟡 MANUTENÇÃO',  h:0.75, tipo:'Questões', ferramenta:'Guruja',         conteudo:'Direitos e Garantias Fundamentais (DCON.4101.116437)'},
+  // QUARTA 15/07 · livre — 4 metas
+  {id:10, dia:3, mat:'Discursivas',                    ic:'✍️', cor:'#a78bfa', tag:'🔴 CARRO-CHEFE', h:0.75, tipo:'Teoria',   ferramenta:'Guruja',         conteudo:'Orientações e dicas iniciais (DISC.4090.118079)'},
+  {id:11, dia:3, mat:'Dir. Tributário',                ic:'💰', cor:'#fbbf24', tag:'🟡 MANUTENÇÃO',  h:0.75, tipo:'Questões', ferramenta:'Guruja',         conteudo:'Conceito de Tributo e Espécies Tributárias (DTRIB.4189.116445)'},
+  {id:12, dia:3, mat:'Legislação TCE-SP',              ic:'📖', cor:'#fbbf24', tag:'🟠 NIVELAMENTO', h:0.75, tipo:'Lei Seca', ferramenta:'Guruja',         conteudo:'Lei Orgânica do Tribunal de Contas de São Paulo (CEXT.4158.116358)'},
+  {id:13, dia:3, mat:'Dir. Administrativo',            ic:'🏛️', cor:'#fbbf24', tag:'🟡 MANUTENÇÃO',  h:0.75, tipo:'Questões', ferramenta:'Guruja',         conteudo:'Poderes da Administração e Organização Administrativa (DADM.4143.116211)'},
+  // QUINTA 16/07 · trabalho 13-17h — 4 metas
+  {id:14, dia:4, mat:'Discursivas',                    ic:'✍️', cor:'#a78bfa', tag:'🔴 CARRO-CHEFE', h:0.75, tipo:'Escrita',  ferramenta:'Papel + caneta', conteudo:'Peça financeira/orçamentária cronometrada'},
+  {id:15, dia:4, mat:'Discursivas',                    ic:'✍️', cor:'#a78bfa', tag:'🔴 CARRO-CHEFE', h:0.75, tipo:'Teoria',   ferramenta:'Guruja',         conteudo:'Questões Anteriores — Instrumentos de Planejamento Governamental (DISC.4089.118076)'},
+  {id:16, dia:4, mat:'Dir. Civil',                     ic:'⚖️', cor:'#94a3b8', tag:'🟡 MANUTENÇÃO',  h:0.75, tipo:'Questões', ferramenta:'Guruja',         conteudo:'Capacidade Civil e Direitos Inerentes à Personalidade (DCIV.4144.116377)'},
+  {id:17, dia:4, mat:'Dir. Financeiro / AFO',          ic:'📈', cor:'#fbbf24', tag:'🟡 MANUTENÇÃO',  h:0.75, tipo:'Questões', ferramenta:'Guruja',         conteudo:'Princípios orçamentários, vedações orçamentárias na CF/88 (AFO.4185.116373)'},
+  // SEXTA 17/07 · trabalho 13-17h — 4 metas
+  {id:18, dia:5, mat:'Dir. Penal',                     ic:'🚔', cor:'#fb923c', tag:'🟠 NIVELAMENTO', h:0.75, tipo:'Questões', ferramenta:'Guruja',         conteudo:'Crimes praticados por funcionário público contra a Administração (DPEN.4175.116421)'},
+  {id:19, dia:5, mat:'Direito Empresarial (Comercial)',ic:'🏢', cor:'#fb923c', tag:'🟠 NIVELAMENTO', h:0.75, tipo:'Teoria',   ferramenta:'Guruja',         conteudo:'Empresa e Empresário (DEMP.4142.116313)'},
+  {id:20, dia:5, mat:'Dir. Constitucional',            ic:'📜', cor:'#fbbf24', tag:'🟡 MANUTENÇÃO',  h:0.75, tipo:'Revisão',  ferramenta:'Guruja',         conteudo:'Imersão Temática — Direitos e Garantias Fundamentais (DCON.4102.116442)'},
+  {id:21, dia:5, mat:'Dir. Administrativo',            ic:'🏛️', cor:'#fbbf24', tag:'🟡 MANUTENÇÃO',  h:0.75, tipo:'Questões', ferramenta:'Guruja',         conteudo:'Licitações Públicas (DADM.4147.116218)'},
+  // SÁBADO 18/07 · livre — 4 metas
+  {id:22, dia:6, mat:'Discursivas',                    ic:'✍️', cor:'#a78bfa', tag:'🔴 CARRO-CHEFE', h:0.75, tipo:'Revisão',  ferramenta:'Papel + caneta', conteudo:'Autocorreção da peça escrita na terça'},
+  {id:23, dia:6, mat:'Discursivas',                    ic:'✍️', cor:'#a78bfa', tag:'🔴 CARRO-CHEFE', h:0.75, tipo:'Teoria',   ferramenta:'Guruja',         conteudo:'Questões 01 — Tarifa do serviço de gás canalizado, ARSESP (DISC.4090.116080)'},
+  {id:24, dia:6, mat:'Dir. Civil',                     ic:'⚖️', cor:'#94a3b8', tag:'🟡 MANUTENÇÃO',  h:0.75, tipo:'Lei Seca', ferramenta:'Guruja',         conteudo:'Lei de Regularização Fundiária Urbana e Rural — Lei nº 13.465 (DCIV.4146.116386)'},
+  {id:25, dia:6, mat:'Dir. Financeiro / AFO',          ic:'📈', cor:'#fbbf24', tag:'🟡 MANUTENÇÃO',  h:0.75, tipo:'Lei Seca', ferramenta:'Guruja',         conteudo:'LC nº 101/2000 — Capítulo I — Disposições Preliminares (AFO.4187.116383)'},
+  // DOMINGO 19/07 · semi-livre (tarde protegida) — 2 metas
+  {id:26, dia:7, mat:'Português',                      ic:'📝', cor:'#f472b6', tag:'🔴 CARRO-CHEFE', h:0.75, tipo:'Questões', ferramenta:'Guruja',         conteudo:'Interpretação de Textos e Compreensão (PORT.4092.118080)'},
+  {id:27, dia:7, mat:'Qualquer matéria',               ic:'🗂️', cor:'#94a3b8', tag:'🟢 REVISÃO',     h:0.75, tipo:'Revisão',  ferramenta:'TEC + Anki',     conteudo:'Consolidar Banco de Erros da semana — revisar todos os itens registrados'},
 ];
 const N=CICLO.length;
 
@@ -4002,7 +3966,7 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
           <span style={{fontSize:11,color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:700,flexShrink:0}}>{feitos.length}/{N}</span>
         </div>
         <div style={{display:'flex',gap:6,marginBottom:14}}>
-          {[[N,'blocos · 45min'],[`50h`,'total ciclo'],['05→19/07','período'],[`#${cicloNum}`,'ciclo atual']].map(([v,l],i)=>(
+          {[[N,'blocos · 45min'],[`20h`,'total ciclo'],['13→19/07','período'],[`#${cicloNum}`,'ciclo atual']].map(([v,l],i)=>(
             <div key={i} style={{flex:1,padding:'8px 4px',borderRadius:9,textAlign:'center',background:'rgba(251,191,36,.04)',border:'1px solid rgba(251,191,36,.1)'}}>
               <div style={{fontSize:12,fontWeight:900,color:'#fbbf24',fontFamily:"'DM Mono',monospace",lineHeight:1}}>{v}</div>
               <div style={{fontSize:8,color:'#475569',marginTop:2}}>{l}</div>
@@ -4011,7 +3975,7 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
         </div>
         {/* Blocos agrupados por dia */}
         {(()=>{
-          const DIAS_CICLO11={1:'Seg 27/04 · livre',2:'Ter 28/04 · trabalho',3:'Qua 29/04 · livre',4:'Qui 30/04 · trabalho',5:'Sex 01/05 · trabalho',6:'Sáb 02/05 · livre',7:'Dom 03/05 · semi-livre',8:'Seg 04/05 · livre',11:'Seg 13/07 · livre',12:'Ter 14/07 · trabalho',13:'Qua 15/07 · livre',14:'Qui 16/07 · trabalho',15:'Sex 17/07 · trabalho',16:'Sáb 18/07 · livre',17:'Dom 19/07 · semi-livre'};
+          const DIAS_CICLO11={1:'Seg 13/07 · livre',2:'Ter 14/07 · trabalho',3:'Qua 15/07 · livre',4:'Qui 16/07 · trabalho',5:'Sex 17/07 · trabalho',6:'Sáb 18/07 · livre',7:'Dom 19/07 · semi-livre'};
           const diasUnicos=[...new Set(CICLO.map(s=>s.dia))].sort((a,b)=>a-b);
           return diasUnicos.map(dia=>{
           const blocosDia=CICLO.filter(s=>s.dia===dia);
