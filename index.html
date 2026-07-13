@@ -4012,7 +4012,8 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
         {/* Blocos agrupados por dia */}
         {(()=>{
           const DIAS_CICLO11={1:'Seg 27/04 · livre',2:'Ter 28/04 · trabalho',3:'Qua 29/04 · livre',4:'Qui 30/04 · trabalho',5:'Sex 01/05 · trabalho',6:'Sáb 02/05 · livre',7:'Dom 03/05 · semi-livre',8:'Seg 04/05 · livre',11:'Seg 13/07 · livre',12:'Ter 14/07 · trabalho',13:'Qua 15/07 · livre',14:'Qui 16/07 · trabalho',15:'Sex 17/07 · trabalho',16:'Sáb 18/07 · livre',17:'Dom 19/07 · semi-livre'};
-          return Array.from({length:8},(_,dIdx)=>dIdx+1).map(dia=>{
+          const diasUnicos=[...new Set(CICLO.map(s=>s.dia))].sort((a,b)=>a-b);
+          return diasUnicos.map(dia=>{
           const blocosDia=CICLO.filter(s=>s.dia===dia);
           if(!blocosDia.length)return null;
           const todoDone=blocosDia.every(s=>feitosSet.has(s.id));
