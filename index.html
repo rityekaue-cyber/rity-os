@@ -902,6 +902,160 @@ const EDITAL={
 // Usar SEMPRE isto (e não Object.keys(EDITAL) direto) ao iterar matérias.
 const EDITAL_MATS=Object.keys(EDITAL).filter(k=>k!=='_meta');
 
+// ═══ MOTOR REVISÃO 2.0 — cada sub-aba com critério próprio ═══════════════
+// Classificação decoreba × raciocínio por tópico jurídico — usada na Passiva.
+// v1 curada manualmente a partir do Anexo I do Edital 001/2026. Ajustável.
+const DECOREBA_TOPICOS={
+  'Ética Pública':{'Código de Ética do Servidor Público':1},
+  'Legislação TCE-SP':{'LC 709/93 (Lei Orgânica do TCE-SP)':1,'Regimento Interno do TCE-SP':1,'Instrução 01/2024 e normas correlatas':1},
+  'Dir. Constitucional':{'Organização do Estado (arts. 18-43 CF)':1,'Organização dos Poderes (arts. 44-135 CF)':1,'Tributação e Orçamento (arts. 145-169 CF)':1,'Intervenção Federal/Estadual':1,'Poder Judiciário':1},
+  'Dir. Administrativo':{'Licitações e Contratos (Lei 14.133/21)':1,'Improbidade Administrativa (Lei 8.429/92)':1,'Controle da Administração + Lei 12.846/13':1,'Serviços Públicos / Concessões / PPP':1,'Terceiro Setor':1,'Agentes Públicos / Servidores':1,'Intervenção na Propriedade / Bens Públicos':1,'Processo Administrativo (Lei 9.784/99)':1},
+  'Dir. Tributário':{'Limitações Constitucionais ao Poder de Tributar':1,'Competência Tributária':1,'Crédito Tributário':1,'Impostos Federais e Municipais':1,'Impostos Estaduais — Repartição Constitucional':1,'Reforma Tributária — EC 132/2023 Pt I':1,'Reforma Tributária — EC 132/2023 Pt II':1,'Simples Nacional — LC 123/2006':1,'Simples Nacional — CGSN 140/2018':1},
+  'Dir. Financeiro / AFO':{'LRF — Arts. 1º a 14':1,'LRF — Arts. 15º a 24 (despesa pessoal)':1,'LRF — Arts. 25º a 42 (dívida)':1,'LRF — Arts. 43º a 73-C':1,'Leis Orçamentárias (PPA/LDO/LOA)':1,'Precatórios (art. 100 CF)':1,'Manual de Demonstrativos Fiscais':1},
+  'Dir. Civil':{'Técnica Legislativa — elaboração/redação/consolidação de leis (LC 95/1998)':1,'Espécies de Contratos Pt1':1,'Espécies de Contratos Pt2':1,'Regularização Fundiária Urbana e Rural (Lei 13.465/2017)':1,'Loteamento e Parcelamento do Solo (Lei 6.766/1979) / Incorporações (Lei 4.591/1964)':1},
+  'Dir. Penal':{'Crimes contra a Administração Pública (arts. 312 a 337-A CP)':1,'Crimes contra as Finanças Públicas (arts. 359-A a 359-H CP) + infrações da Lei 10.028/2001':1},
+  'Direito Empresarial (Comercial)':{'Recuperação Judicial, Extrajudicial e Falência — LREF (Lei 11.101/2005)':1,'Estatuto Nacional da ME/EPP (LC 123/2006)':1},
+};
+const isDecoreba=(mat,titulo)=>!!(DECOREBA_TOPICOS[mat]&&DECOREBA_TOPICOS[mat][titulo]);
+
+// Peso de risco por gate — Gerais tem margem pequena (20q, corte 12 = 8 de folga);
+// Discursiva é eliminatória e sem chute; Específicos tem folga maior (60q, corte 36).
+function pesoGate(mat){
+  const g=EDITAL[mat];
+  if(!g)return 1;
+  if(g.bloco==='discursiva')return 1.4;
+  if(g.bloco==='gerais')return 1.5;
+  return 1;
+}
+
+const MATS_JURIDICAS=EDITAL_MATS.filter(m=>m.startsWith('Dir.')||m==='Direito Empresarial (Comercial)'||m==='Legislação TCE-SP'||m==='Ética Pública');
+
+// ── 1. QUESTÕES — pior desempenho ponderado dos últimos 7 dias (ontem pesa 3x) ──
+function calcQuestoesPrioridade(historico){
+  const todayMs=new Date().setHours(0,0,0,0);
+  const janela=[];
+  for(let i=1;i<=7;i++){const diaMs=todayMs-i*86400000;const peso=i===1?3:i<=3?2:1;janela.push({diaMs,peso});}
+  const porMat={};
+  historico.forEach(r=>{
+    if(!r.materia||!r.dt)return;
+    const diaMs=new Date(r.dt).setHours(0,0,0,0);
+    const j=janela.find(jj=>jj.diaMs===diaMs);
+    if(!j)return;
+    const q=parseInt(r.questoes)||0,a=parseInt(r.acertei)||0;
+    if(q<=0)return;
+    if(!porMat[r.materia])porMat[r.materia]={qp:0,ap:0,q:0};
+    porMat[r.materia].qp+=q*j.peso;porMat[r.materia].ap+=a*j.peso;porMat[r.materia].q+=q;
+  });
+  const ranking=Object.entries(porMat)
+    .filter(([,v])=>v.q>=10)
+    .map(([mat,v])=>({mat,pct:Math.round(v.ap/v.qp*100),questoes:v.q,peso:pesoGate(mat)}))
+    .sort((a,b)=>(a.pct/a.peso)-(b.pct/b.peso));
+  return{top:ranking[0]||null,ranking};
+}
+
+// ── 2. MEMORIZAÇÃO — fila fixa de todas as matérias do edital por dificuldade pessoal ──
+// Matéria sem dado real (null) = tratada como DIFÍCIL (sobe na fila), não como fácil.
+function calcFilaMemorizacao(){
+  const guruja=getGurujaAssuntos();
+  const lastAnkiMat={};
+  lsGet('rev_anki',[]).forEach(r=>{if(r.mat&&(r.dt||0)>(lastAnkiMat[r.mat]||0))lastAnkiMat[r.mat]=r.dt||0;});
+  const hojeMs=new Date().setHours(0,0,0,0);
+  const fila=EDITAL_MATS.map(mat=>{
+    let pct=null;
+    if(guruja[mat]){
+      const comDado=(guruja[mat].assuntos||[]).filter(a=>a.acerto!=null);
+      if(comDado.length)pct=Math.round(comDado.reduce((s,a)=>s+a.acerto,0)/comDado.length);
+    }
+    if(pct===null){
+      const tops=(EDITAL[mat]?.top||[]).filter(t=>t.acerto!=null);
+      if(tops.length)pct=Math.round(tops.reduce((s,t)=>s+t.acerto,0)/tops.length);
+    }
+    // sem dado = incerteza alta = prioridade alta (dificuldade fictícia 40, abaixo da maioria medida)
+    const dificuldade=pct===null?40:pct;
+    const jaHoje=(lastAnkiMat[mat]||0)>=hojeMs;
+    return{mat,pct,dificuldade,semDado:pct===null,lastAnki:lastAnkiMat[mat]||0,jaHoje};
+  }).sort((a,b)=>a.dificuldade-b.dificuldade||pesoGate(b.mat)-pesoGate(a.mat));
+  const candidatos=fila.filter(f=>!f.jaHoje).sort((a,b)=>a.lastAnki-b.lastAnki);
+  return{filaCompleta:fila,hoje:candidatos[0]||fila[0]};
+}
+
+// ── 3. PASSIVA — decoreba + dificuldade das matérias jurídicas, ponderado pelo peso do gate ──
+function calcPassivaJuridica(){
+  const itens=[];
+  MATS_JURIDICAS.forEach(mat=>{
+    (EDITAL[mat]?.top||[]).forEach(t=>{
+      const decoreba=isDecoreba(mat,t.t);
+      const semDado=t.acerto==null;
+      const acerto=semDado?55:t.acerto; // sem dado: leve prioridade, não escondido
+      const risco=Math.round((100-acerto)*pesoGate(mat)*(decoreba?1.3:1));
+      itens.push({mat,titulo:t.t,decoreba,acerto:t.acerto,semDado,risco,critico:t.acerto!=null&&t.acerto<50});
+    });
+  });
+  return itens.sort((a,b)=>b.risco-a.risco);
+}
+
+// ── 4. PROFUNDA — tópicos <80%, ranqueados por URGÊNCIA real p/ nota final ──
+// Score = distância do teto (80-acerto) × peso do gate × severidade (buraco fundo sangra mais)
+function calcProfunda80(){
+  const guruja=getGurujaAssuntos();
+  const abaixo=[];
+  const push=(mat,titulo,acerto,fonte)=>{
+    const distancia=80-acerto;
+    const buracoFundo=acerto<50?1.8:acerto<60?1.3:1;
+    const score=Math.round(distancia*pesoGate(mat)*buracoFundo);
+    abaixo.push({mat,titulo,acerto,fonte,score,critico:acerto<50});
+  };
+  Object.entries(guruja).forEach(([mat,dados])=>{
+    (dados.assuntos||[]).forEach(a=>{if(a.acerto!=null&&a.acerto<80)push(mat,a.titulo,a.acerto,'Guruja');});
+  });
+  EDITAL_MATS.forEach(mat=>{
+    (EDITAL[mat]?.top||[]).forEach(t=>{
+      if(t.acerto!=null&&t.acerto<80&&!abaixo.some(x=>x.mat===mat&&x.titulo===t.t))push(mat,t.t,t.acerto,'EDITAL');
+    });
+  });
+  return abaixo.sort((a,b)=>b.score-a.score);
+}
+
+// ── 5. ESTRATÉGIA — painel semanal: delta, cobertura do edital, decisão sugerida ──
+function calcEstrategiaSemanal(){
+  const hist=lsGet('historico_diario',[]);
+  const now=new Date();
+  const diaSemana=now.getDay();
+  const inicioSemAtual=new Date(now);inicioSemAtual.setHours(0,0,0,0);inicioSemAtual.setDate(now.getDate()-diaSemana);
+  const inicioSemAnt=new Date(inicioSemAtual);inicioSemAnt.setDate(inicioSemAtual.getDate()-7);
+  const porSemana=(ini,fim)=>{
+    const porMat={};
+    hist.forEach(r=>{
+      if(!r.materia||!r.dt||r.dt<ini||r.dt>=fim)return;
+      const q=parseInt(r.questoes)||0,a=parseInt(r.acertei)||0;
+      if(q<=0)return;
+      if(!porMat[r.materia])porMat[r.materia]={q:0,a:0};
+      porMat[r.materia].q+=q;porMat[r.materia].a+=a;
+    });
+    return porMat;
+  };
+  const semAtual=porSemana(inicioSemAtual.getTime(),now.getTime()+1);
+  const semAnt=porSemana(inicioSemAnt.getTime(),inicioSemAtual.getTime());
+  const delta=Object.keys({...semAtual,...semAnt}).map(mat=>{
+    const pctA=semAtual[mat]&&semAtual[mat].q>0?Math.round(semAtual[mat].a/semAtual[mat].q*100):null;
+    const pctB=semAnt[mat]&&semAnt[mat].q>0?Math.round(semAnt[mat].a/semAnt[mat].q*100):null;
+    return{mat,pctAtual:pctA,pctAnterior:pctB,delta:(pctA!=null&&pctB!=null)?pctA-pctB:null};
+  }).filter(d=>d.delta!==null).sort((a,b)=>a.delta-b.delta);
+
+  const editalStatus=lsGet('edital_status',{});
+  const cobertura=EDITAL_MATS.map(mat=>{
+    const tops=EDITAL[mat]?.top||[];
+    if(!tops.length)return{mat,pct:100,total:0,tocados:0};
+    const tocados=tops.filter(t=>editalStatus[mat+':'+t.t]).length;
+    return{mat,pct:Math.round(tocados/tops.length*100),total:tops.length,tocados};
+  }).sort((a,b)=>a.pct-b.pct);
+
+  const zeroBase=cobertura.filter(c=>c.pct===0&&c.total>0).sort((a,b)=>pesoGate(b.mat)-pesoGate(a.mat));
+  const decisao=zeroBase[0]?{mat:zeroBase[0].mat,texto:`${zeroBase[0].mat} — 0% do edital tocado ainda. Entra essa semana?`}:null;
+  return{delta,cobertura,decisao};
+}
+// ═══ FIM MOTOR REVISÃO 2.0 ════════════════════════════════════════════════
+
 // ── HELPERS DOS 3 MODOS DE RADAR ──────────────────────────────
 
 // Retorna mapa { "Mat — Tópico": { q, a, pct } } do histórico real
@@ -2239,7 +2393,7 @@ function calcUrgencia(item){
   return{score:Math.round(score),nivel,reincidente:tentativas>=3,diasAtraso};
 }
 
-function TabHoje({feitos,onAddHoras}){
+function TabHoje({feitos,onAddHoras,onSetTab}){
   const hoje=getDK();
   const dw=new Date().getDay();
   const NOMES_DW=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
@@ -2600,11 +2754,25 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
         const prova=new Date('2026-10-11');
         const diasRestantes=Math.ceil((prova-hoje)/86400000);
         const hist=lsGet('historico_diario',[]);
-        // Estimativas baseadas no GURUJA_SEED
-        const estimGerais=Math.round((74+0)/2); // Português avg, RL sem dado
-        const estimEspec=Math.round((87+83+80+81+85+40)/6); // matérias específicas avg
+        // Estimativas dinâmicas — média real por matéria (Guruja > EDITAL), só entre quem tem dado
+        const guruja=getGurujaAssuntos();
+        const pctMat=mat=>{
+          if(guruja[mat]){
+            const comDado=(guruja[mat].assuntos||[]).filter(a=>a.acerto!=null);
+            if(comDado.length)return Math.round(comDado.reduce((s,a)=>s+a.acerto,0)/comDado.length);
+          }
+          const tops=(EDITAL[mat]?.top||[]).filter(t=>t.acerto!=null);
+          if(tops.length)return Math.round(tops.reduce((s,t)=>s+t.acerto,0)/tops.length);
+          return null;
+        };
+        const matsGerais=EDITAL_MATS.filter(m=>EDITAL[m]?.bloco==='gerais');
+        const matsEspec=EDITAL_MATS.filter(m=>EDITAL[m]?.bloco==='especificos');
+        const pctsGerais=matsGerais.map(pctMat).filter(v=>v!=null);
+        const pctsEspec=matsEspec.map(pctMat).filter(v=>v!=null);
+        const estimGerais=pctsGerais.length?Math.round(pctsGerais.reduce((s,v)=>s+v,0)/pctsGerais.length):null;
+        const estimEspec=pctsEspec.length?Math.round(pctsEspec.reduce((s,v)=>s+v,0)/pctsEspec.length):null;
         const gates=[
-          {nome:'Conhecimentos Gerais',q:20,min:12,est:null,cor:'#60a5fa',ic:'📝'},
+          {nome:'Conhecimentos Gerais',q:20,min:12,est:estimGerais,cor:'#60a5fa',ic:'📝'},
           {nome:'Conhecimentos Específicos',q:60,min:36,est:estimEspec,cor:'#a78bfa',ic:'⚖️'},
           {nome:'Discursiva',q:40,min:24,est:null,cor:'#34d399',ic:'✍️',pontos:true},
         ];
@@ -2647,6 +2815,49 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
         );
       })()}
 
+      {/* ── AGORA — motor novo: casa o canal de revisão com a hora do dia ── */}
+      {(()=>{
+        const h=new Date().getHours();
+        let canal,motivoHora;
+        if(h<9){canal='questoes';motivoHora='Bloco Ouro (05h-09h) — cérebro fresco, questões';}
+        else if(h<18){canal='passiva';motivoHora='meio do dia — ideal pra ouvir, não pra decorar ativamente';}
+        else{canal='memorizacao';motivoHora='fim do dia — Anki leve fecha bem';}
+
+        let titulo,detalhe,cor,ic,label;
+        if(canal==='questoes'){
+          const q=calcQuestoesPrioridade(lsGet('historico_diario',[]));
+          label='📕 QUESTÕES';cor='#f87171';ic='📕';
+          titulo=q.top?`${q.top.mat} — ${q.top.pct}%`:'Sem dado recente ainda esta semana';
+          detalhe=q.top?`Pior desempenho ponderado dos últimos 7 dias`:'Registre alguma sessão pra essa recomendação aparecer';
+        } else if(canal==='passiva'){
+          const p=calcPassivaJuridica()[0];
+          label='🎧 PASSIVA';cor='#34d399';ic='🎧';
+          titulo=p?`${p.mat} — ${p.titulo}`:'—';
+          detalhe=p?.decoreba?'🔴 decoreba — prioridade de prazo/número':'Maior dificuldade nas matérias jurídicas';
+        } else {
+          const mfila=calcFilaMemorizacao();
+          label='🃏 MEMORIZAÇÃO';cor='#a78bfa';ic='🃏';
+          titulo=mfila.hoje?mfila.hoje.mat:'—';
+          detalhe=mfila.hoje?.pct!=null?`${mfila.hoje.pct}% — há mais tempo sem Anki`:'Sem dado ainda — zero base, prioridade alta';
+        }
+        return(
+          <div style={{borderRadius:14,background:`${cor}08`,border:`1px solid ${cor}30`,marginBottom:12,padding:'13px 16px'}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
+              <span style={{fontSize:9,color:cor,fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px'}}>AGORA · {label}</span>
+              <span style={{fontSize:9,color:'var(--text4)'}}>{motivoHora}</span>
+            </div>
+            <div style={{display:'flex',alignItems:'center',gap:10}}>
+              <span style={{fontSize:20}}>{ic}</span>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:13,fontWeight:900,color:'var(--text)'}}>{titulo}</div>
+                <div style={{fontSize:10,color:'var(--text4)'}}>{detalhe}</div>
+              </div>
+              <button onClick={()=>onSetTab&&onSetTab('revisao')} style={{padding:'8px 12px',borderRadius:9,border:`1px solid ${cor}40`,background:`${cor}12`,color:cor,fontSize:11,fontWeight:800,cursor:'pointer',flexShrink:0}}>→ Ir</button>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* ── SEMÁFORO — decisão principal ── */}
       {(()=>{
         const todayStr=new Date().toISOString().split('T')[0];
@@ -2655,7 +2866,13 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
         const verde=totalPendentes<20;
         const cor=verde?'#34d399':'#f87171';
         const feitosSet=new Set(feitos);
-        const proxBloco=CICLO.filter(s=>!feitosSet.has(s.id))[0]||null;
+        // Bloco de HOJE, pela data real — cicloInicio = 13/07/2026 (dia 1)
+        const cicloInicio=new Date(2026,6,13).setHours(0,0,0,0);
+        const hojeMs2=new Date().setHours(0,0,0,0);
+        const diaHoje=Math.round((hojeMs2-cicloInicio)/86400000)+1;
+        const blocosHoje=CICLO.filter(s=>s.dia===diaHoje&&!feitosSet.has(s.id));
+        const proxBloco=blocosHoje[0]||CICLO.filter(s=>!feitosSet.has(s.id))[0]||null;
+        const atrasado=!blocosHoje.length&&diaHoje>=1&&diaHoje<=7&&CICLO.some(s=>s.dia===diaHoje)&&proxBloco&&proxBloco.dia!==diaHoje;
         return(
           <div style={{borderRadius:14,background:`${cor}08`,border:`2px solid ${cor}30`,marginBottom:12,overflow:'hidden'}}>
             {/* Linha de decisão */}
@@ -2682,7 +2899,7 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
             {/* Meta do ciclo — sempre visível */}
             {proxBloco&&(
               <div style={{borderTop:`1px solid ${cor}20`,padding:'12px 16px',background:`${cor}05`}}>
-                <div style={{fontSize:9,color:'var(--text4)',fontFamily:"'DM Mono',monospace",marginBottom:6}}>META DO CICLO — próximo bloco</div>
+                <div style={{fontSize:9,color:'var(--text4)',fontFamily:"'DM Mono',monospace",marginBottom:6}}>META DO CICLO — {atrasado?`⚠️ atrasado, isso é do dia ${proxBloco.dia}`:'próximo bloco de hoje'}</div>
                 <div style={{display:'flex',alignItems:'center',gap:10}}>
                   <span style={{fontSize:20}}>{proxBloco.ic}</span>
                   <div style={{flex:1}}>
@@ -2712,12 +2929,12 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
         );
       })()}
 
-      {/* SUB-ABAS — 3 abas limpas */}
+      {/* SUB-ABAS */}
       <div style={{display:'flex',gap:4,marginBottom:12,overflowX:'auto',scrollbarWidth:'none'}}>
         {[
+          {id:'hoje',l:'🎯 Missão'},
           {id:'tec',l:`📕 TEC (${lsGet('rev_caderno',[]).filter(x=>!x.dominado).length})`,badge:true},
           {id:'blocos',l:'📚 Blocos'},
-          {id:'radar',l:'🎯 Radar'},
         ].map(s=>{
           const at=subAba===s.id;
           const temBadge=s.badge&&lsGet('rev_caderno',[]).filter(x=>!x.dominado).length>0;
@@ -4057,7 +4274,7 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
 
       {aba==='stats'&&<div>
         <div style={{display:'flex',gap:8,marginBottom:14}}>
-          {[['Hoje',fmtMin(minHoje),'#60a5fa'],['Semana',fmtMin(minSem),'#fbbf24'],['Meta ciclo','36h','#34d399']].map(([l,v,c])=>(
+          {[['Hoje',fmtMin(minHoje),'#60a5fa'],['Semana',fmtMin(minSem),'#fbbf24'],['Meta ciclo',`${Math.round(N*0.75)}h`,'#34d399']].map(([l,v,c])=>(
             <div key={l} style={{flex:1,padding:'14px 8px',borderRadius:12,background:`${c}08`,border:`1px solid ${c}20`,textAlign:'center'}}>
               <div style={{fontSize:16,fontWeight:900,color:c,fontFamily:"'DM Mono',monospace"}}>{v}</div>
               <div style={{fontSize:9,color:'#64748b',marginTop:4}}>{l}</div>
@@ -4543,15 +4760,27 @@ function TabRevProfunda({totalBlocos}){
   const CORS_DIF=['#34d399','#a3e635','#fbbf24','#fb923c','#f87171'];
   const mats=CICLO.map(s=>s.mat).filter((v,i,a)=>a.indexOf(v)===i);
 
-  // Fila priorizada pelos dados da análise
-  const FILA_PRIORI=[
-    {mat:'Português',motivo:'Interpretação Textual 63.6% (-8.5%) · Semântica 64.2% (-8.9%) · Ortografia 64%',ic:'📝',cor:'#f472b6'},
-    {mat:'Discursivas',motivo:'Gate eliminatório 60% · Sessões Ter/Qui/Sáb — Obsidian + banco de esqueletos',ic:'✍️',cor:'#a78bfa'},
-    {mat:'Dir. Financeiro / AFO',motivo:'Controle Financeiro 72% · Receita 73.1% · LRF Art.15-24 73.3% · Precatórios sem dado',ic:'📈',cor:'#fb923c'},
-    {mat:'Dir. Constitucional',motivo:'Intervenção 69.2% · Poder Judiciário 69.2% · Ctrl.Const.Estadual 69.2%',ic:'📜',cor:'#fbbf24'},
-    {mat:'Dir. Tributário',motivo:'Reforma Tributária EC132 Pt.II 75% (-12.7%) · Simples Nacional 71.4% · CGSN 70%',ic:'💰',cor:'#fbbf24'},
-    {mat:'Dir. Civil',motivo:'Espécies Contratos 70.6% · Contratos Geral 73% · Obrigações Pt1 70.3%',ic:'⚖️',cor:'#94a3b8'},
-  ];
+  // Fila priorizada — motor novo: matérias/tópicos que fecharam abaixo de 80% (Guruja real, senão EDITAL)
+  const abaixo80=calcProfunda80();
+  const porMatAbaixo={};
+  abaixo80.forEach(it=>{
+    if(!porMatAbaixo[it.mat])porMatAbaixo[it.mat]={itens:[],maxScore:0,temCritico:false};
+    porMatAbaixo[it.mat].itens.push(it);
+    porMatAbaixo[it.mat].maxScore=Math.max(porMatAbaixo[it.mat].maxScore,it.score);
+    if(it.critico)porMatAbaixo[it.mat].temCritico=true;
+  });
+  const CORES_MAT=['#f472b6','#a78bfa','#fb923c','#fbbf24','#94a3b8','#60a5fa','#f87171','#34d399'];
+  const FILA_PRIORI=Object.entries(porMatAbaixo)
+    .map(([mat,v],idx)=>({
+      mat,
+      // itens já vêm ordenados por score dentro de abaixo80; mostra os piores primeiro
+      motivo:v.itens.sort((a,b)=>b.score-a.score).slice(0,3).map(it=>`${it.titulo} ${it.acerto}%${it.critico?' 🔴':''}`).join(' · '),
+      ic:v.temCritico?'🚨':'📉',
+      cor:v.temCritico?'#f87171':CORES_MAT[idx%CORES_MAT.length],
+      maxScore:v.maxScore,
+      temCritico:v.temCritico,
+    }))
+    .sort((a,b)=>b.maxScore-a.maxScore);
 
   const salvarSessao=()=>{
     if(!matSel)return;
@@ -4594,7 +4823,8 @@ function TabRevProfunda({totalBlocos}){
 
       {/* Fila priorizada */}
       <div style={{marginBottom:14}}>
-        <div style={{fontSize:9,color:'var(--text4)',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:8,letterSpacing:'1px'}}>FILA — escolha a matéria de hoje</div>
+        <div style={{fontSize:9,color:'var(--text4)',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:8,letterSpacing:'1px'}}>FILA DO FIM DE SEMANA — urgência real (buraco fundo + gate apertado primeiro)</div>
+        {FILA_PRIORI.length===0&&<div style={{padding:'10px 12px',borderRadius:9,background:'rgba(52,211,153,.08)',border:'1px solid rgba(52,211,153,.25)',fontSize:11,color:'#34d399',marginBottom:8}}>✅ Nada com dado real abaixo de 80% no momento. Use a lista completa abaixo.</div>}
         {FILA_PRIORI.map((f,i)=>{
           const jaFez=hist.filter(h=>h.mat===f.mat).length;
           const sel=matSel===f.mat;
@@ -4737,7 +4967,7 @@ function TabRevProfunda({totalBlocos}){
 
 function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,ankiSugestoes=[],nlmSugestao=null}){
   const hoje=getDK();
-  const[aba,setAba]=useState('morto');
+  const[aba,setAba]=useState('caderno');
   const[ankiRegs,setAnkiRegs]=useState(()=>lsGet('rev_anki',[]));
   const[nlmRegs,setNlmRegs]=useState(()=>lsGet('rev_nlm',[]));
   const[rev1h30Regs,setRev1h30Regs]=useState(()=>lsGet('rev_1h30',[]));
@@ -4940,7 +5170,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
   ];
   // Sub-navegação fina dentro de Passiva e Estratégia
   const[subPassiva,setSubPassiva]=useState('motor');
-  const[subEstrategia,setSubEstrategia]=useState('criticos');
+  const[subEstrategia,setSubEstrategia]=useState('semanal');
 
   return(
     <div>
@@ -4951,6 +5181,30 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
       </div>
 
       {/* Sub-nav: PASSIVA (NLM + Tempo Morto) */}
+      {/* PASSIVA — motor novo: decoreba + dificuldade jurídica, ponderado pelo peso do gate */}
+      {aba==='passiva'&&(()=>{
+        const passivaLista=calcPassivaJuridica().slice(0,8);
+        return(
+          <div style={{padding:'11px 14px',borderRadius:12,background:'rgba(52,211,153,.06)',border:'1px solid rgba(52,211,153,.25)',marginBottom:12}}>
+            <div style={{fontSize:9,color:'#34d399',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:2}}>🎧 O QUE OUVIR — decoreba + dificuldade jurídica, por prioridade de prova</div>
+            <div style={{fontSize:10,color:'var(--text4)',marginBottom:8}}>🔴 decoreba (memorização pura) · sem cor = raciocínio. Peso maior = gate mais apertado (Gerais/Discursiva).</div>
+            <div style={{display:'flex',flexDirection:'column',gap:4}}>
+              {passivaLista.map((it,i)=>(
+                <div key={it.mat+it.titulo} style={{display:'flex',alignItems:'center',gap:8,padding:'5px 8px',borderRadius:7,background:i===0?'rgba(52,211,153,.1)':'transparent'}}>
+                  <span style={{fontSize:9,color:'var(--text4)',fontFamily:"'DM Mono',monospace",width:16}}>{i+1}º</span>
+                  {it.decoreba&&<span style={{fontSize:9}}>🔴</span>}
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontSize:11,fontWeight:700,color:'var(--text)'}}>{it.mat}</div>
+                    <div style={{fontSize:10,color:'var(--text4)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{it.titulo}</div>
+                  </div>
+                  <span style={{fontSize:10,color:'var(--text4)',fontFamily:"'DM Mono',monospace",flexShrink:0}}>{it.acerto!=null?`${it.acerto}%`:'sem dado'}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
       {aba==='passiva'&&(
         <div style={{display:'flex',gap:6,marginBottom:14}}>
           {[{id:'motor',l:'⏳ Sugestão do dia'},{id:'nlm',l:'🎧 Registrar/Histórico'}].map(s=>(
@@ -4959,11 +5213,11 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
         </div>
       )}
 
-      {/* Sub-nav: ESTRATÉGIA (Críticos + Edital + Revisitar) */}
+      {/* Sub-nav: ESTRATÉGIA (Semanal + Críticos + Edital + Revisitar) */}
       {aba==='estrategia'&&(
-        <div style={{display:'flex',gap:6,marginBottom:14}}>
-          {[{id:'criticos',l:'🎯 Críticos'},{id:'edital',l:'📋 Edital'},{id:'revisitar',l:'📌 Revisitar'}].map(s=>(
-            <button key={s.id} onClick={()=>setSubEstrategia(s.id)} style={{flex:1,padding:'9px 6px',borderRadius:9,border:`1px solid ${subEstrategia===s.id?'rgba(167,139,250,.45)':'var(--border)'}`,background:subEstrategia===s.id?'rgba(167,139,250,.12)':'transparent',color:subEstrategia===s.id?'#a78bfa':'var(--text4)',fontSize:11,fontWeight:700,cursor:'pointer'}}>{s.l}</button>
+        <div style={{display:'flex',gap:6,marginBottom:14,flexWrap:'wrap'}}>
+          {[{id:'semanal',l:'🗓️ Semanal'},{id:'criticos',l:'🎯 Críticos'},{id:'edital',l:'📋 Edital'},{id:'revisitar',l:'📌 Revisitar'}].map(s=>(
+            <button key={s.id} onClick={()=>setSubEstrategia(s.id)} style={{flex:1,minWidth:70,padding:'9px 6px',borderRadius:9,border:`1px solid ${subEstrategia===s.id?'rgba(167,139,250,.45)':'var(--border)'}`,background:subEstrategia===s.id?'rgba(167,139,250,.12)':'transparent',color:subEstrategia===s.id?'#a78bfa':'var(--text4)',fontSize:11,fontWeight:700,cursor:'pointer'}}>{s.l}</button>
           ))}
         </div>
       )}
@@ -5013,6 +5267,57 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
 
 
       {/* PONTOS CRÍTICOS — agora dentro de Estratégia > Críticos */}
+      {/* SEMANAL — motor novo: delta da semana, cobertura do edital, decisão sugerida */}
+      {aba==='estrategia'&&subEstrategia==='semanal'&&(()=>{
+        const estr=calcEstrategiaSemanal();
+        const CORD=v=>v>0?'#34d399':v<0?'#f87171':'#94a3b8';
+        return(
+          <div>
+            <div style={{padding:'10px 13px',borderRadius:11,background:'rgba(167,139,250,.06)',border:'1px solid rgba(167,139,250,.25)',marginBottom:14}}>
+              <div style={{fontSize:9,color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px'}}>🗓️ PAINEL DE DOMINGO — 15 minutos, uma decisão</div>
+              <div style={{fontSize:10,color:'var(--text4)',marginTop:2}}>As outras 3 sub-abas executam sozinhas. Aqui é o único lugar onde você decide.</div>
+            </div>
+
+            {/* (c) Decisão da semana */}
+            {estr.decisao&&(
+              <div style={{padding:'12px 14px',borderRadius:12,background:'rgba(251,191,36,.08)',border:'2px solid rgba(251,191,36,.4)',marginBottom:14}}>
+                <div style={{fontSize:9,color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:4}}>⚡ DECISÃO DA SEMANA</div>
+                <div style={{fontSize:13,fontWeight:800,color:'var(--text)'}}>{estr.decisao.texto}</div>
+              </div>
+            )}
+
+            {/* (a) Delta da semana */}
+            <div style={{marginBottom:14}}>
+              <div style={{fontSize:9,color:'var(--text4)',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:8,letterSpacing:'1px'}}>DELTA DA SEMANA — vs. semana anterior</div>
+              {estr.delta.length===0&&<div style={{fontSize:11,color:'var(--text4)',padding:'8px 0'}}>Sem dado comparável ainda (precisa de 2 semanas registradas na mesma matéria).</div>}
+              {estr.delta.map(d=>(
+                <div key={d.mat} style={{display:'flex',alignItems:'center',gap:8,padding:'7px 10px',borderRadius:8,background:'rgba(255,255,255,.02)',marginBottom:4}}>
+                  <span style={{flex:1,fontSize:11,color:'var(--text)'}}>{d.mat}</span>
+                  <span style={{fontSize:10,color:'var(--text4)',fontFamily:"'DM Mono',monospace"}}>{d.pctAnterior}%→{d.pctAtual}%</span>
+                  <span style={{fontSize:11,fontWeight:800,color:CORD(d.delta),fontFamily:"'DM Mono',monospace",width:40,textAlign:'right'}}>{d.delta>0?'+':''}{d.delta}%</span>
+                </div>
+              ))}
+            </div>
+
+            {/* (b) Cobertura do edital */}
+            <div>
+              <div style={{fontSize:9,color:'var(--text4)',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:8,letterSpacing:'1px'}}>COBERTURA DO EDITAL — % de tópicos já tocados ≥1x</div>
+              {estr.cobertura.map(c=>(
+                <div key={c.mat} style={{marginBottom:6}}>
+                  <div style={{display:'flex',justifyContent:'space-between',fontSize:10,marginBottom:2}}>
+                    <span style={{color:'var(--text)'}}>{c.mat}</span>
+                    <span style={{color:'var(--text4)',fontFamily:"'DM Mono',monospace"}}>{c.tocados}/{c.total} · {c.pct}%</span>
+                  </div>
+                  <div style={{height:4,borderRadius:2,background:'rgba(148,163,184,.15)',overflow:'hidden'}}>
+                    <div style={{height:'100%',width:`${c.pct}%`,background:c.pct===0?'#f87171':c.pct<50?'#fb923c':'#34d399',borderRadius:2}}/>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
       {aba==='estrategia'&&subEstrategia==='criticos'&&<div>
         {/* F2 — Header e seed automático dos dados da análise */}
         <div style={{padding:'10px 13px',borderRadius:11,background:'rgba(248,113,113,.06)',border:'1px solid rgba(248,113,113,.25)',marginBottom:10}}>
@@ -5346,12 +5651,33 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
         // Matérias pendentes = sugeridas que ainda não foram registradas hoje
         const pendentes=sugestoes.filter(s=>!matsHoje.has(s.mat));
         const concluidas=sugestoes.filter(s=>matsHoje.has(s.mat));
+        // ── Motor novo: fila fixa das 12 matérias do edital por dificuldade pessoal ──
+        const filaMem=calcFilaMemorizacao();
         return(
           <div>
+            {/* FILA FIXA — motor novo, ordem de dificuldade pessoal */}
+            <div style={{padding:'11px 14px',borderRadius:12,background:'rgba(167,139,250,.07)',border:'1px solid rgba(167,139,250,.3)',marginBottom:12}}>
+              <div style={{fontSize:9,color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:6}}>🃏 FILA FIXA — as 12 matérias do edital, da mais difícil pra você até a mais fácil</div>
+              {filaMem.hoje&&(
+                <div style={{padding:'8px 10px',borderRadius:9,background:'rgba(167,139,250,.12)',marginBottom:8}}>
+                  <div style={{fontSize:9,color:'#a78bfa'}}>HOJE — há mais tempo sem Anki</div>
+                  <div style={{fontSize:13,fontWeight:900,color:'var(--text)'}}>{filaMem.hoje.mat} {filaMem.hoje.pct!=null?`— ${filaMem.hoje.pct}%`:'— sem dado ainda'}</div>
+                </div>
+              )}
+              <div style={{display:'flex',flexDirection:'column',gap:3}}>
+                {filaMem.filaCompleta.map((f,i)=>(
+                  <div key={f.mat} style={{display:'flex',alignItems:'center',gap:8,padding:'4px 6px',borderRadius:6,background:f.mat===filaMem.hoje?.mat?'rgba(167,139,250,.1)':'transparent'}}>
+                    <span style={{fontSize:9,color:'var(--text4)',fontFamily:"'DM Mono',monospace",width:16}}>{i+1}º</span>
+                    <span style={{fontSize:11,color:f.jaHoje?'#34d399':'var(--text)',flex:1}}>{f.jaHoje?'✅ ':''}{f.mat}</span>
+                    <span style={{fontSize:10,color:'var(--text4)',fontFamily:"'DM Mono',monospace"}}>{f.pct!=null?`${f.pct}%`:'—'}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
             {/* STATUS DO DIA */}
             {sugestoes.length>0&&(
               <div style={{padding:'10px 13px',borderRadius:11,background:'rgba(167,139,250,.07)',border:'1px solid rgba(167,139,250,.25)',marginBottom:12}}>
-                <div style={{fontSize:9,color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:8}}>📋 STATUS DO DIA — {hoje}</div>
+                <div style={{fontSize:9,color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:8}}>📋 SUGESTÃO COMPLEMENTAR (déficit recente) — {hoje}</div>
                 <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
                   {sugestoes.map(s=>{
                     const feita=matsHoje.has(s.mat);
@@ -5562,7 +5888,11 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
         const todosItens=lsGet('rev_caderno',[]);
         const ativos=todosItens.filter(t=>!t.dominado);
         const dominados=todosItens.filter(t=>t.dominado);
+        const questPrior=calcQuestoesPrioridade(lsGet('historico_diario',[]));
+        const matPrioritaria=questPrior.top?.mat||null;
         const ordenados=[...ativos].sort((a,b)=>{
+          const boostA=a.mat===matPrioritaria?1:0,boostB=b.mat===matPrioritaria?1:0;
+          if(boostB!==boostA)return boostB-boostA;
           const difA=a.dificuldade||3,difB=b.dificuldade||3;
           if(difB!==difA)return difB-difA;
           const pctA=a.pct??50,pctB=b.pct??50;
@@ -5652,6 +5982,14 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
 
         return(
           <div>
+            {/* Prioridade da semana — motor novo: pior desempenho ponderado dos últimos 7 dias */}
+            {questPrior.top&&(
+              <div style={{padding:'11px 14px',borderRadius:12,background:'rgba(248,113,113,.07)',border:'1px solid rgba(248,113,113,.3)',marginBottom:10}}>
+                <div style={{fontSize:9,color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:3}}>🎯 PRIORIDADE DA SEMANA</div>
+                <div style={{fontSize:13,fontWeight:900,color:'var(--text)'}}>{questPrior.top.mat} — {questPrior.top.pct}%</div>
+                <div style={{fontSize:10,color:'var(--text4)',marginTop:2}}>Pior desempenho ponderado dos últimos 7 dias ({questPrior.top.questoes} questões, ontem pesa mais). Itens dessa matéria sobem pro topo da lista abaixo.</div>
+              </div>
+            )}
             {/* Resumo fixo no topo */}
             <div style={{padding:'12px 14px',borderRadius:12,background:'rgba(96,165,250,.06)',border:'1px solid rgba(96,165,250,.2)',marginBottom:14}}>
               <div style={{display:'flex',gap:16}}>
@@ -7745,7 +8083,7 @@ function App(){
       <div style={{flex:1,overflowY:'auto',padding:'16px 16px 0',background:'var(--bg)'}}>
         {tab==='ia'     &&<TabIA     appCtx={appCtx} onMIT={saveMIT}/>}
         {tab==='estudo' &&<TabEstudo feitos={feitos} cicloNum={cicloNum} horas={horas} onConcluir={concluir} onIrPara={irPara} onDesmarcar={desmarcar} onAddHoras={addHoras} onSyncHistorico={syncHistorico} mit={mit} planoSemana={planoSemana} onSavePlano={savePlano}/>}
-        {tab==='hoje'   &&<TabHoje feitos={feitos} onAddHoras={addHoras}/>}
+        {tab==='hoje'   &&<TabHoje feitos={feitos} onAddHoras={addHoras} onSetTab={setTab}/>}
         {tab==='revisao'&&<TabRevisao totalBlocos={feitos.length} tmSugestao={tmSugestao} tmIA={tmIA} onSyncHistorico={syncHistorico} onAddHoras={addHoras} ankiSugestoes={calcMotorCanais(feitos,horas,historico).anki.materias||[]} nlmSugestao={calcMotorCanais(feitos,horas,historico).nlm.top||null}/>}
         {tab==='dados'  &&<TabDados horas={horas}/>}
         {tab==='mapa'   &&<TabMapa/>}
