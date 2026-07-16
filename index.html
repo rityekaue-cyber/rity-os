@@ -273,21 +273,12 @@ const CONCURSOS_ALVO=[
     alerta:'Descanso 11/04 · Hetero 12/04 BH · Ciclo retoma 13/04'
   },
   {
-    codigo:'TCE-SP',prioridade:'principal',status:'Banca em definição (IBFC rescindido) · Edital jun/2026',
-    banca:'A definir',vagas:10,cargo:'Auditor de Controle Externo — Área Direito',salario:19793,edital:'jun/2026',
-    corteObjetiva:'9pts básicos + 24pts específicos + 33pts total',
-    discursiva:'Eliminatória e classificatória',sobreposicaoTCESP:0.92,
-    alerta:'Lei seca diária 30min no Anki a partir de agora'
-  },
-  {
-    codigo:'TCE-SP',prioridade:'principal',status:'Vunesp contratada 27/03 · Edital até jun/2026',
-    banca:'Vunesp',vagas:50,cargo:'Auditor de Controle Externo — DIPE',salario:20940.20,edital:'jun/2026',
-    estrutura:'80 questões: 20 gerais + 60 específicas',
-    corteMinimoGerais:'10/20',corteMinimoespecificas:'30/60',
-    discursiva:'2 estudos de caso (mesmo dia da objetiva)',
-    gerais:{portugues:15,matematica:10,ingles:5},
-    alerta:'⚠️ INGLÊS: 5 questões — iniciar slot quinzenal em mai/2026',
-    sobreposicaoTCERJ:0.92
+    codigo:'TCE-SP',prioridade:'principal',status:'Edital 001/2026 publicado 03/07 · Inscrições 13/07 a 11/08',
+    banca:'Vunesp',vagas:10,cargo:'Auditor de Controle Externo — DIPE — Especialidade Direito',salario:20940.20,edital:'001/2026',
+    estrutura:'80 questões: 20 Gerais (Português+RL+Ética+Legislação) + 60 Específicas (6 blocos de Direito)',
+    corteMinimoGerais:'12/20',corteMinimoespecificas:'36/60',
+    discursiva:'Prova Escrita — Estudo de Caso, 2 questões, 40 pontos, mínimo 24',
+    alerta:'Prova 11/10/2026 · Sem histórico de edição anterior — cargo novo criado pela LC 1.423/2025'
   },
   {
     codigo:'ISS-Niterói',prioridade:'estrategico',status:'Edital previsto 2º sem/2026',
@@ -320,52 +311,47 @@ const PROTOCOLO_DISCURSIVA={
 };
 
 const CRONOGRAMA_MACRO=[
-  {periodo:'ABR/2026',eventos:[
-    {data:'09/04',acao:'Ciclo 9 ativo (pos.1: ADPU ⭐⭐⭐⭐⭐)',tipo:'estudo'},
-    {data:'11/04',acao:'⛔ DESCANSO TOTAL — sem estudo',tipo:'descanso'},
-    {data:'12/04',acao:'🎯 HETEROIDENTIFICAÇÃO TCE-MG — BH · Praça Carlos Chagas 35',tipo:'prova'},
-    {data:'13/04',acao:'Ciclo retoma posição 1',tipo:'estudo'},
+  {periodo:'JUL/2026 — Diagnóstico (05→19/07)',eventos:[
+    {data:'05-19/07',acao:'Baseline RL/Ética/Legislação TCE-SP + causa-raiz da discursiva',tipo:'estudo'},
+    {data:'03/07',acao:'📋 Edital 001/2026 publicado — DIPE Direito, 10 vagas, R$20.940,20',tipo:'edital',alerta:'alto'},
+    {data:'13/07-11/08',acao:'📋 Inscrições abertas — Vunesp',tipo:'edital',alerta:'alto'},
+    {data:'20-22/07',acao:'Preparação — ajuste de rotina, pauta do Bloco 0',tipo:'estudo'},
   ]},
-  {periodo:'MAI/2026',eventos:[
-    {data:'01/05',acao:'Iniciar Inglês: 1 slot quinzenal (vocabulário fiscal Vunesp)',tipo:'novo'},
-    {data:'01/05',acao:'Estudo de caso Vunesp: 1x/mês',tipo:'novo'},
-    {data:'jul',acao:'Bloco 0 (23-31/07): Dir.Penal + Legislação TCE-SP + Ética — nivelamento',tipo:'estudo'},
+  {periodo:'JUL-SET/2026 — Blocos de férias + Pontes',eventos:[
+    {data:'23-31/07',acao:'Bloco 0: sprint nivelamento — Penal, Legislação TCE-SP, Ética, Civil residual',tipo:'estudo'},
+    {data:'01-23/08',acao:'Ponte 1 — 1 simulado VUNESP/semana',tipo:'estudo'},
+    {data:'24/08-04/09',acao:'Bloco 1: 2 simulados, intensificação por erro',tipo:'estudo'},
+    {data:'05-20/09',acao:'Ponte 2 — 2-3 simulados/semana',tipo:'estudo'},
+    {data:'21/09-01/10',acao:'Bloco 2: ajuste fino, últimos simulados',tipo:'estudo'},
   ]},
-  {periodo:'JUN/2026',eventos:[
-    {data:'jun',acao:'📋 Edital TCE-SP → inscrição imediata (50 vagas · R$20.940)',tipo:'edital',alerta:'alto'},
-    {data:'out',acao:'📋 TCE-SP · PROVA 11/10/2026 — Objetivo principal',tipo:'edital',alerta:'alto'},
-    {data:'jun',acao:'⚠️ Se editais coincidirem: definir prioridade de reta final',tipo:'alerta'},
+  {periodo:'OUT/2026 — Reta final',eventos:[
+    {data:'02-06/10',acao:'Transição — manutenção leve, zero conteúdo novo',tipo:'estudo'},
+    {data:'07-10/10',acao:'Taper — descanso + logística da prova',tipo:'descanso'},
+    {data:'11/10',acao:'📋 PROVA TCE-SP — objetivo principal',tipo:'prova',alerta:'alto'},
   ]},
-  {periodo:'JUL–SET/2026',eventos:[
-    {data:'ago-set',acao:'Pontes 1 e 2: simulados semanais VUNESP + intensificação Auditoria/Discursiva',tipo:'estudo'},
-    {data:'jul-set',acao:'Simulados 2x/semana',tipo:'estudo'},
-  ]},
-  {periodo:'2º SEM/2026',eventos:[
-    {data:'2sem',acao:'Edital ISS Niterói → retomar MATFI + RLOG + tributário municipal',tipo:'edital'},
-    {data:'2sem',acao:'Reservar 3-4 semanas para reforço antes da prova ISS',tipo:'alerta'},
+  {periodo:'2º SEM/2026 — Monitoramento paralelo',eventos:[
+    {data:'2sem',acao:'Edital ISS Niterói — quando sair, 3-4 semanas para MATFI + RLOG + tributário municipal',tipo:'edital'},
   ]},
 ];
 
 const REGRAS_INEGOCIAVEIS=[
-  {regra:'Anki 30min TODO DIA — sem negociação',categoria:'diario'},
+  {regra:'Anki + TEC todo dia — sem negociação',categoria:'diario'},
+  {regra:'Discursiva 3x/semana (Ter/Qui/Sáb) — Bloco Ouro, papel + caneta sempre',categoria:'discursiva'},
   {regra:'Nunca mesma disciplina em dias consecutivos',categoria:'ciclo'},
-  {regra:'Máximo 30h/semana sem edital publicado',categoria:'carga'},
-  {regra:'Discursiva 1x/semana — papel + caneta sempre',categoria:'discursiva'},
-  {regra:'Mínimo viável em crise: 11 metas/semana',categoria:'crise'},
-  {regra:'Inglês (TCE-SP): iniciar mai/2026 — 1 slot quinzenal',categoria:'novo'},
-  {regra:'Estudo de caso Vunesp: 1x/mês a partir de mai',categoria:'novo'},
+  {regra:'Sem Inglês, sem Auditoria Governamental — fora do escopo Direito/DIPE',categoria:'escopo'},
+  {regra:'Hibernação (Adm.Pública/Contabilidade/Proc.Civil/TI): máx. 2h/semana, só tempo morto',categoria:'escopo'},
   {regra:'ISS Niterói: quando edital sair, 3-4 semanas para MATFI e RLOG',categoria:'futuro'},
-  {regra:'11/04: descanso total — 12/04: heteroidentificação TCE-MG',categoria:'imediato'},
 ];
 
 // Função auxiliar: retorna alertas ativos baseados na data atual
 function getAlertasAtivos(){
   const hoje=new Date().toISOString().split('T')[0];
   const alertas=[];
-  if(hoje<='2026-04-11') alertas.push({tipo:'hetero',msg:'🎯 Heteroidentificação TCE-MG em '+(Math.ceil((new Date('2026-04-12')-new Date())/86400000))+' dia(s) — BH · Praça Carlos Chagas 35',cor:'#f87171'});
-  if(hoje==='2026-04-11') alertas.push({tipo:'descanso',msg:'⛔ HOJE = DESCANSO TOTAL — sem estudo, sem pressão',cor:'#34d399'});
-  if(hoje>='2026-05-01'&&hoje<='2026-05-31') alertas.push({tipo:'ingles',msg:'📌 Maio: iniciar Inglês quinzenal (TCE-SP · vocabulário fiscal Vunesp)',cor:'#60a5fa'});
-  if(hoje>='2026-06-01') alertas.push({tipo:'editais',msg:'📋 TCE-SP 2026 · Prova 11/10/2026 · 90 dias restantes — foco total!',cor:'#fbbf24'});
+  if(hoje>='2026-07-13'&&hoje<='2026-08-11') alertas.push({tipo:'inscricao',msg:'📋 Inscrições TCE-SP abertas até 11/08 — R$95,00',cor:'#60a5fa'});
+  if(hoje>='2026-07-20'&&hoje<'2026-07-23') alertas.push({tipo:'prep',msg:'🔧 Preparação — ajustar rotina pro Bloco 0 (23-31/07)',cor:'#a78bfa'});
+  if(hoje>='2026-07-23'&&hoje<='2026-07-31') alertas.push({tipo:'bloco0',msg:'🎯 Bloco 0 ativo — nivelamento Penal/Legislação/Ética/Civil',cor:'#fb923c'});
+  const diasProva=Math.ceil((new Date('2026-10-11')-new Date(hoje))/86400000);
+  if(diasProva>0) alertas.push({tipo:'prova',msg:`📋 TCE-SP · Prova 11/10/2026 · ${diasProva} dias restantes`,cor:'#fbbf24'});
   return alertas;
 }
 
@@ -386,30 +372,38 @@ const PROTOCOLO_ANTIBURNOUT={
     friccaoZero:'Ambiente preparado na noite anterior: caderno na mesa, Anki engatilhado. Se tiver que pensar no que estudar às 05h30, a fadiga de decisão te manda de volta para a cama.',
   }
 };
-// Lógica: a cada 7 ciclos concluídos no Foco, a matéria da vez
-// entra como bloco extra de 2h. Após registrar, vai para o fim
-// da fila automaticamente. Anki + tempo morto cobrem o restante.
-const FILA_REVISAO_PROFUNDA=[
-  {mat:'TI / Análise de Dados', ic:'💻', cor:'#38bdf8', jornada:15, motivo:'Jornada mais baixa das técnicas — base frágil',     ferramenta:'Gran Cursos'},
-  {mat:'Mat. Financeira',       ic:'🧮', cor:'#a78bfa', jornada:10, motivo:'Sem % de acerto registrado — conteúdo novo',         ferramenta:'Gran Cursos'},
-  {mat:'Adm. Pública',          ic:'🏛️',  cor:'#fb923c', jornada:4,  motivo:'4% da jornada — menor de todas as matérias',        ferramenta:'Guruja'},
-  {mat:'Contabilidade Pública', ic:'📊', cor:'#34d399', jornada:11, motivo:'11% jornada — lançamentos ainda travando',           ferramenta:'TecConcursos'},
-  {mat:'Português',             ic:'📝', cor:'#f472b6', jornada:28, motivo:'Interpretação abaixo da média — cai muito na VUNESP',   ferramenta:'TecConcursos'},
-  {mat:'Raciocínio Lógico',     ic:'🔢', cor:'#f87171', jornada:7,  motivo:'7% jornada — conectivos e proposições instáveis',   ferramenta:'Gran Cursos'},
-  {mat:'Dir. Financeiro / AFO', ic:'📈', cor:'#fbbf24', jornada:35, motivo:'80,9% — abaixo da média, LRF ainda frágil',         ferramenta:'TecConcursos'},
-];
+// A fila de Revisão Profunda agora é 100% dinâmica — ver getFilaRevProfunda() abaixo,
+// que deriva de calcProfunda80() e só considera as 12 matérias reais do EDITAL_MATS.
 
 // Retorna o estado atual da fila (posição + histórico de revisões)
+// Fonte dinâmica: calcProfunda80() agrupado por matéria — só as 12 matérias reais do
+// edital TCE-SP entram aqui (EDITAL_MATS nunca incluiu as hibernação/suspensas).
 function getFilaRevProfunda(){
   const hist=lsGet('rev_profunda_hist',[]);
-  // Descobre qual é a próxima na fila: a que foi revisada há mais tempo
-  // Na ausência de histórico, usa a ordem original
-  const posicoes=FILA_REVISAO_PROFUNDA.map((m,i)=>{
+  const abaixo80=calcProfunda80();
+  const porMat={};
+  abaixo80.forEach(it=>{
+    if(!porMat[it.mat])porMat[it.mat]={itens:[],maxScore:0,temCritico:false};
+    porMat[it.mat].maxScore=Math.max(porMat[it.mat].maxScore,it.score);
+    if(it.critico)porMat[it.mat].temCritico=true;
+    porMat[it.mat].itens.push(it);
+  });
+  const CORES_MAT=['#f472b6','#a78bfa','#fb923c','#fbbf24','#94a3b8','#60a5fa','#f87171','#34d399'];
+  let base=Object.entries(porMat).map(([mat,v],i)=>({
+    mat,ic:v.temCritico?'🚨':'📉',cor:v.temCritico?'#f87171':CORES_MAT[i%CORES_MAT.length],
+    motivo:v.itens.sort((a,b)=>b.score-a.score).slice(0,2).map(it=>`${it.titulo} ${it.acerto}%`).join(' · '),
+    jornada:null,ferramenta:'TecConcursos',maxScore:v.maxScore,
+  })).sort((a,b)=>b.maxScore-a.maxScore);
+  if(base.length===0){
+    // nada com dado real abaixo de 80% no momento — fallback neutro com as matérias reais do edital
+    base=EDITAL_MATS.filter(m=>m!=='Discursivas').map((mat,i)=>({mat,ic:'📚',cor:CORES_MAT[i%CORES_MAT.length],motivo:'Manutenção — sem ponto crítico registrado agora',jornada:null,ferramenta:'TecConcursos',maxScore:0}));
+  }
+  const posicoes=base.map((m,i)=>{
     const ultRev=hist.filter(h=>h.mat===m.mat).sort((a,b)=>b.cicloRef-a.cicloRef)[0]||null;
     return{...m,posOriginal:i,ultRevCiclo:ultRev?.cicloRef||0,ultRevData:ultRev?.data||null,totalRevisoes:hist.filter(h=>h.mat===m.mat).length};
   });
-  // Ordena: quem foi revisada há mais ciclos fica na frente
-  posicoes.sort((a,b)=>a.ultRevCiclo-b.ultRevCiclo||a.posOriginal-b.posOriginal);
+  // Ordena: quem foi revisada há mais ciclos fica na frente; empate desfeito por urgência
+  posicoes.sort((a,b)=>a.ultRevCiclo-b.ultRevCiclo||b.maxScore-a.maxScore);
   return posicoes;
 }
 
@@ -746,26 +740,6 @@ function Pomodoro({cor,onFase}){
   );
 }
 
-// ── Dados do Edital Área Fiscal (tópicos mais cobrados) ────────
-// ── PESO DAS MATÉRIAS NO EDITAL (Área Fiscal — Faixa Preta) ──────
-// Fonte: análise histórica de provas fiscais (atualizar conforme edital específico)
-const PESO_MATERIA={
-  'Português':          {pesoEdital:100, fonte:'Faixa Preta Área Fiscal'},
-  'Dir. Constitucional':{pesoEdital:100, fonte:'Faixa Preta Área Fiscal'},
-  'Dir. Administrativo':{pesoEdital:100, fonte:'Faixa Preta Área Fiscal'},
-  'Dir. Tributário':    {pesoEdital:100, fonte:'Faixa Preta Área Fiscal'},
-  'AFO':                {pesoEdital:100, fonte:'Faixa Preta AFO/Dir.Fin/CASP'},
-  'Contabilidade Pública':  {pesoEdital:100, fonte:'Faixa Preta Cont.Geral'},
-  'Dir. Civil':         {pesoEdital:100, fonte:'Faixa Preta Área Fiscal'},
-  'Dir. Penal':         {pesoEdital:100, fonte:'Faixa Preta Área Fiscal'},
-  'Raciocínio Lógico':  {pesoEdital:100, fonte:'Faixa Preta Área Fiscal'},
-  'TI / Análise de Dados':{pesoEdital:100, fonte:'pendente'},
-  'Controle Externo':   {pesoEdital:100, fonte:'pendente'},
-  'Adm. Pública':       {pesoEdital:100, fonte:'Faixa Preta Adm.Geral/Pública'},
-  'Dir. Processual Civil':{pesoEdital:100, fonte:'pendente'},
-  'Mat. Financeira':    {pesoEdital:100, fonte:'Faixa Preta Área Fiscal'},
-};
-
 const EDITAL={
   // TCE-SP — VUNESP — Auditor de Controle Externo (DIPE/Direito) — Prova 11/10/2026
   // Gates eliminatórios: Gerais 60% (12/20q) · Específicos 60% (36/60q) · Discursiva 60% (24/40p)
@@ -903,20 +877,13 @@ const EDITAL={
 const EDITAL_MATS=Object.keys(EDITAL).filter(k=>k!=='_meta');
 
 // ═══ MOTOR REVISÃO 2.0 — cada sub-aba com critério próprio ═══════════════
-// Classificação decoreba × raciocínio por tópico jurídico — usada na Passiva.
-// v1 curada manualmente a partir do Anexo I do Edital 001/2026. Ajustável.
-const DECOREBA_TOPICOS={
-  'Ética Pública':{'Código de Ética do Servidor Público':1},
-  'Legislação TCE-SP':{'LC 709/93 (Lei Orgânica do TCE-SP)':1,'Regimento Interno do TCE-SP':1,'Instrução 01/2024 e normas correlatas':1},
-  'Dir. Constitucional':{'Organização do Estado (arts. 18-43 CF)':1,'Organização dos Poderes (arts. 44-135 CF)':1,'Tributação e Orçamento (arts. 145-169 CF)':1,'Intervenção Federal/Estadual':1,'Poder Judiciário':1},
-  'Dir. Administrativo':{'Licitações e Contratos (Lei 14.133/21)':1,'Improbidade Administrativa (Lei 8.429/92)':1,'Controle da Administração + Lei 12.846/13':1,'Serviços Públicos / Concessões / PPP':1,'Terceiro Setor':1,'Agentes Públicos / Servidores':1,'Intervenção na Propriedade / Bens Públicos':1,'Processo Administrativo (Lei 9.784/99)':1},
-  'Dir. Tributário':{'Limitações Constitucionais ao Poder de Tributar':1,'Competência Tributária':1,'Crédito Tributário':1,'Impostos Federais e Municipais':1,'Impostos Estaduais — Repartição Constitucional':1,'Reforma Tributária — EC 132/2023 Pt I':1,'Reforma Tributária — EC 132/2023 Pt II':1,'Simples Nacional — LC 123/2006':1,'Simples Nacional — CGSN 140/2018':1},
-  'Dir. Financeiro / AFO':{'LRF — Arts. 1º a 14':1,'LRF — Arts. 15º a 24 (despesa pessoal)':1,'LRF — Arts. 25º a 42 (dívida)':1,'LRF — Arts. 43º a 73-C':1,'Leis Orçamentárias (PPA/LDO/LOA)':1,'Precatórios (art. 100 CF)':1,'Manual de Demonstrativos Fiscais':1},
-  'Dir. Civil':{'Técnica Legislativa — elaboração/redação/consolidação de leis (LC 95/1998)':1,'Espécies de Contratos Pt1':1,'Espécies de Contratos Pt2':1,'Regularização Fundiária Urbana e Rural (Lei 13.465/2017)':1,'Loteamento e Parcelamento do Solo (Lei 6.766/1979) / Incorporações (Lei 4.591/1964)':1},
-  'Dir. Penal':{'Crimes contra a Administração Pública (arts. 312 a 337-A CP)':1,'Crimes contra as Finanças Públicas (arts. 359-A a 359-H CP) + infrações da Lei 10.028/2001':1},
-  'Direito Empresarial (Comercial)':{'Recuperação Judicial, Extrajudicial e Falência — LREF (Lei 11.101/2005)':1,'Estatuto Nacional da ME/EPP (LC 123/2006)':1},
-};
-const isDecoreba=(mat,titulo)=>!!(DECOREBA_TOPICOS[mat]&&DECOREBA_TOPICOS[mat][titulo]);
+// Heurística por padrão — funciona em QUALQUER título (EDITAL ou Guruja), já que os dois
+// usam nomenclaturas diferentes e não batem por string exata. Detecta lei/artigo/decreto/
+// número de norma = decoreba (memorização de referência); resto = raciocínio.
+const PADROES_DECOREBA=[/\bLei\b/i,/\bLC\b/,/\bDecreto\b/i,/\bInstrução\b/i,/\bResolução\b/i,
+  /art\.?\s?\d/i,/arts?\.?\s?\d/i,/§/,/\d{3,4}\/\d{2,4}/,/CGSN/,/\bCP\b/,/CF\/88/,
+  /LREF/,/Espécies de/i,/Impostos/i,/Crimes contra/i,/Precatórios/i,/Regimento Interno/i,/UNCAC/,/OCDE/];
+const isDecorebaHeuristico=titulo=>PADROES_DECOREBA.some(p=>p.test(titulo));
 
 // Peso de risco por gate — Gerais tem margem pequena (20q, corte 12 = 8 de folga);
 // Discursiva é eliminatória e sem chute; Específicos tem folga maior (60q, corte 36).
@@ -980,15 +947,23 @@ function calcFilaMemorizacao(){
 }
 
 // ── 3. PASSIVA — decoreba + dificuldade das matérias jurídicas, ponderado pelo peso do gate ──
+// Prioriza os tópicos REAIS que você importou do Guruja (mais granular, muda quando você
+// alimenta) e só cai pro EDITAL fixo quando ainda não há nada seu importado pra essa matéria.
 function calcPassivaJuridica(){
+  const guruja=getGurujaAssuntos();
   const itens=[];
   MATS_JURIDICAS.forEach(mat=>{
-    (EDITAL[mat]?.top||[]).forEach(t=>{
-      const decoreba=isDecoreba(mat,t.t);
+    const gurujaTopicos=guruja[mat]?.assuntos;
+    const usaGuruja=gurujaTopicos&&gurujaTopicos.length>0;
+    const fonte=usaGuruja
+      ?gurujaTopicos.map(a=>({titulo:a.titulo,acerto:a.acerto}))
+      :(EDITAL[mat]?.top||[]).map(t=>({titulo:t.t,acerto:t.acerto}));
+    fonte.forEach(t=>{
+      const decoreba=isDecorebaHeuristico(t.titulo);
       const semDado=t.acerto==null;
-      const acerto=semDado?55:t.acerto; // sem dado: leve prioridade, não escondido
+      const acerto=semDado?55:t.acerto;
       const risco=Math.round((100-acerto)*pesoGate(mat)*(decoreba?1.3:1));
-      itens.push({mat,titulo:t.t,decoreba,acerto:t.acerto,semDado,risco,critico:t.acerto!=null&&t.acerto<50});
+      itens.push({mat,titulo:t.titulo,decoreba,acerto:t.acerto,semDado,risco,critico:t.acerto!=null&&t.acerto<50,origem:usaGuruja?'Guruja':'EDITAL'});
     });
   });
   return itens.sort((a,b)=>b.risco-a.risco);
@@ -1279,7 +1254,7 @@ function TabIA({appCtx,onMIT}){
     const d=new Date();
     const dw=d.getDay();
     const treinos={0:'CORRIDA LONGA 60min + tarde livre',1:'CORRIDA LEVE 35min',2:'CORRIDA PESADA 50min',3:'CORRIDA LEVE 35min',4:'CORRIDA PESADA 50min',5:'CORRIDA LEVE 35min',6:'descanso'};
-    const trabalha=[1,2,5].includes(dw);
+    const trabalha=[2,4,5].includes(dw);
     const historico=lsGet('historico_diario',[]);
     const ultReg=historico.slice(-1)[0];
     const gurujaData=lsGet('guruja_data',null);
@@ -1323,8 +1298,8 @@ LEGISLAÇÃO TCE-SP (Bloco 0 nivelamento): LC 709/93 · Regimento Interno · Ins
 
 REGRAS INEGOCIÁVEIS: ${REGRAS_INEGOCIAVEIS.map(r=>r.regra).join(' | ')}
 
-FILA REVISÃO PROFUNDA (a cada 7 blocos do Foco — 2h cada):
-${FILA_REVISAO_PROFUNDA.map((m,i)=>`${i+1}. ${m.mat} (${m.jornada}% jornada · ${m.ferramenta})`).join(' → ')}
+FILA REVISÃO PROFUNDA (a cada 7 blocos do Foco — 2h cada, só matérias reais do edital):
+${getFilaRevProfunda().slice(0,5).map((m,i)=>`${i+1}. ${m.mat}${m.maxScore?` (urgência ${m.maxScore})`:''}`).join(' → ')}
 
 MÉTODO: Ciclo Meirelles — ⭐ = importância para prova · estrelas por tópico · nunca mesma disciplina em dias consecutivos
 
@@ -1345,11 +1320,8 @@ ESCALA DE APROVEITAMENTO:
 ≥85% = SÓLIDO · 70-84% = ATENÇÃO · <70% = CRÍTICO
 NUNCA chame de ruim algo ≥85%. NUNCA chame de bom algo <70%.
 
-TÓPICOS MAIS COBRADOS TCE-SP (VUNESP):
-Português: Interpretação 32%, Reescrita 14% · Dir.Const: Art.5º 11%, Comp.União 8%
-Dir.Adm: Improbidade 8%, Resp.Civil 5% · Dir.Trib: Princípios 11%, ICMS 7%
-AFO: Class.Despesa 7%, Nat.Receita 5% · Auditoria: Testes 22%, Proc.13%
-Contab: Princípios 6%, DRE 5% · RLOG: Associação 20%, Equivalências 16%
+TÓPICOS DE MAIOR PESO INTERNO POR MATÉRIA (proporção dentro da matéria, edital DIPE 2026 é inédito — sem histórico de provas anteriores pra estatística real):
+${EDITAL_MATS.filter(m=>EDITAL[m]?.bloco==='especificos').map(m=>{const top=[...(EDITAL[m].top||[])].sort((a,b)=>b.p-a.p)[0];return top?`${m}: ${top.t} (${top.p}%)`:null;}).filter(Boolean).join(' · ')}
 
 SISTEMA DE REVISÃO:
 TEC = erros, questões erradas, 30min/dia · ANKI = conceitos, 75 cards/dia
@@ -1369,7 +1341,7 @@ Se mencionar MITs, inclua: MIT:["t1","t2","t3"]`;
   function buildCheckin(){
     const d=new Date();
     const dw=d.getDay();
-    const trabalha=[1,2,5].includes(dw);
+    const trabalha=[2,4,5].includes(dw);
     const fimSem=[0,6].includes(dw);
     const historico=lsGet('historico_diario',[]);
     const ultReg=[...historico].sort((a,b)=>(b.dt||0)-(a.dt||0))[0];
@@ -7372,7 +7344,7 @@ function ModalConfig({fechar}){
             {/* Info do app */}
             <div style={{padding:'12px',borderRadius:11,background:'rgba(148,163,184,.06)',border:'1px solid rgba(148,163,184,.15)'}}>
               <div style={{fontSize:9,color:'#64748b',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:8}}>⚙️ APP</div>
-              {[['Versão','RITY OS v5.0 — Ciclo 10'],['Ciclo','10 · 48 slots · 45min cada · 36h total'],['Período','20/04 → 26/04/2026'],['Meta semanal','26–30h (máx. 30h sem edital)'],['Formato','Pt1 = teoria 45min · Pt2 = questões 45min'],['Método','Ciclo Meirelles + Anki + Estudo Reverso'],['Dieta','Low carb · Cetogênico'],['Kauê','13 anos · Preparatório Colégio Naval'],['Atualizado','20/04/2026']].map(([k,v])=>(
+              {[['Versão','RITY OS'],['Ciclo atual',`${N} blocos · 45min cada · ${Math.round(N*0.75)}h total`],['Período','13→19/07/2026'],['Meta semanal',`${lsGet('meta_horas_sem',35)}h`],['Formato','Pt1 = teoria 45min · Pt2 = questões 45min'],['Método','Ciclo Meirelles + Anki + Estudo Reverso'],['Dieta','Low carb · Cetogênico'],['Kauê','Preparatório Colégio Naval — processo separado'],['Atualizado','16/07/2026']].map(([k,v])=>(
                 <div key={k} style={{display:'flex',justifyContent:'space-between',padding:'6px 8px',borderRadius:6,background:'rgba(148,163,184,.06)',marginBottom:3}}>
                   <span style={{fontSize:9,color:'#64748b',fontFamily:"'DM Mono',monospace",fontWeight:700}}>{k}</span>
                   <span style={{fontSize:10,color:'#94a3b8',textAlign:'right',maxWidth:'65%'}}>{v}</span>
@@ -7504,8 +7476,8 @@ function TabDados({horas}){
     return{label:`S${i+1}`,pct:q>0?Math.round(ac/q*100):null,q};
   }),[histMat]);
 
-  // comparativo ciclos (Forma 3)
-  const cicloAtualData={ini:new Date('2026-04-20'),label:'Ciclo 10'};
+  // comparativo períodos (Forma 3) — janela rolante de 14 dias, nunca fica desatualizado
+  const cicloAtualData={ini:new Date(Date.now()-14*86400000),label:'Últimos 14 dias'};
   const ciclsComp=useMemo(()=>{
     const mats=Object.keys(GURUJA_SEED);
     return mats.map(mat=>{
@@ -7869,32 +7841,6 @@ function App(){
   useEffect(()=>{
     Sync.onStatus(s=>setSyncSt(s));
     if(Sync.isConfigured()){Sync.init().then(ok=>{if(ok){setFeitos(lsGet('feitos',[]));setCicloNum(lsGet('cicloNum',1));setHoras(lsGet('horas',[]));setMit(lsGet('mit',[]));}});}
-    // ── Registro único: 40min Contabilidade TEC hoje ─────────
-    (()=>{
-      const KEY='rity_reg_40min_ctbg_20260424';
-      if(!localStorage.getItem(KEY)){
-        try{
-          const h=JSON.parse(localStorage.getItem('horas')||'[]');
-          h.push({mat:'Contabilidade Pública',min:40,dt:Date.now(),origem:'caderno_tec'});
-          localStorage.setItem('horas',JSON.stringify(h));
-          localStorage.setItem(KEY,'done');
-        }catch(e){}
-      }
-    })();
-    // ── Seed único: dificuldade base das matérias sem questões ──
-    (()=>{
-      const KEY='rity_seed_difbase_v1';
-      if(!localStorage.getItem(KEY)){
-        try{
-          const cur=JSON.parse(localStorage.getItem('dif_base_materias')||'{}');
-          if(!cur['Mat. Financeira'])cur['Mat. Financeira']=5;
-          if(!cur['Raciocínio Lógico'])cur['Raciocínio Lógico']=5;
-          if(!cur['Português'])cur['Português']=4;
-          localStorage.setItem('dif_base_materias',JSON.stringify(cur));
-          localStorage.setItem(KEY,'done');
-        }catch(e){}
-      }
-    })();
     const _f=lsGet('feitos',[]);
     if(lsGet('ciclo_versao','')!=='v37'){
       if(_f.length>0)lsSet('feitos',[]);
