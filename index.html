@@ -5143,7 +5143,196 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
         );})}
       </div>
 
-      {/* Sub-nav: PASSIVA (NLM + Tempo Morto) */}
+      {/* ═══ QUESTÕES — Caderno de Erros TEC ═══ */}
+      {aba==='caderno'&&(()=>{
+        const todosItens=cadRegs;
+        const noEscopo=t=>EDITAL_MATS.includes(t.mat);
+        const foraEscopoN=todosItens.filter(t=>!t.dominado&&!noEscopo(t)).length;
+        const ativos=todosItens.filter(t=>!t.dominado&&noEscopo(t));
+        const dominados=todosItens.filter(t=>t.dominado);
+        const questPrior=calcQuestoesPrioridade(lsGet('historico_diario',[]));
+        const matPrioritaria=questPrior.top?.mat||null;
+        const scoreItem=t=>{
+          const dif=t.dificuldade||3;
+          const pct=t.pct??50;
+          const distancia=Math.max(0,80-pct);
+          const boost=t.mat===matPrioritaria?1.5:1;
+          return (dif*8+distancia)*pesoGate(t.mat)*boost;
+        };
+        const ordenados=[...ativos].sort((a,b)=>scoreItem(b)-scoreItem(a));
+        const seteAtras=new Date();seteAtras.setDate(seteAtras.getDate()-7);
+        const seteAtrasStr=seteAtras.toISOString().split('T')[0];
+        let questoesSemana=0;
+        todosItens.forEach(t=>{(t.historico||[]).forEach(h=>{if(h.data>=seteAtrasStr&&h.questoes)questoesSemana+=h.questoes;}); });
+        return(
+          <div>
+            {questPrior.top&&(
+              <div style={{padding:'11px 14px',borderRadius:12,background:'rgba(248,113,113,.07)',border:'1px solid rgba(248,113,113,.3)',marginBottom:10}}>
+                <div style={{fontSize:9,color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:3}}>🎯 PRIORIDADE DA SEMANA</div>
+                <div style={{fontSize:13,fontWeight:900,color:'var(--text)'}}>{questPrior.top.mat} — {questPrior.top.pct}%</div>
+                <div style={{fontSize:10,color:'var(--text4)',marginTop:2}}>Pior desempenho ponderado dos últimos 7 dias ({questPrior.top.questoes} questões, ontem pesa mais). Itens dessa matéria sobem pro topo da lista abaixo.</div>
+              </div>
+            )}
+            {foraEscopoN>0&&(
+              <div style={{padding:'8px 12px',borderRadius:9,background:'rgba(148,163,184,.06)',border:'1px solid rgba(148,163,184,.18)',marginBottom:10,fontSize:10,color:'var(--text4)'}}>
+                🗂️ {foraEscopoN} item(ns) de matéria fora do edital TCE-SP estão ocultos aqui (não apagados) — foco só no que cai na sua prova.
+              </div>
+            )}
+            <div style={{padding:'12px 14px',borderRadius:12,background:'rgba(96,165,250,.06)',border:'1px solid rgba(96,165,250,.2)',marginBottom:14}}>
+              <div style={{display:'flex',gap:16}}>
+                <div>
+                  <div style={{fontSize:20,fontWeight:900,color:'#60a5fa',fontFamily:"'DM Mono',monospace",lineHeight:1}}>{questoesSemana}</div>
+                  <div style={{fontSize:9,color:'var(--text4)',marginTop:2}}>questões essa semana</div>
+                </div>
+                <div>
+                  <div style={{fontSize:20,fontWeight:900,color:'#f87171',fontFamily:"'DM Mono',monospace",lineHeight:1}}>{ativos.length}</div>
+                  <div style={{fontSize:9,color:'var(--text4)',marginTop:2}}>pendentes</div>
+                </div>
+                <div>
+                  <div style={{fontSize:20,fontWeight:900,color:'#34d399',fontFamily:"'DM Mono',monospace",lineHeight:1}}>{dominados.length}</div>
+                  <div style={{fontSize:9,color:'var(--text4)',marginTop:2}}>dominadas no total</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Novo registro */}
+            <div style={{padding:'12px',borderRadius:12,background:'rgba(248,113,113,.05)',border:'1px solid rgba(248,113,113,.2)',marginBottom:16}}>
+              <div style={{fontSize:9,letterSpacing:'2px',color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:10}}>📕 NOVO ERRO / TÓPICO</div>
+              <div style={{marginBottom:8}}>
+                <div style={{fontSize:9,color:'#64748b',marginBottom:4}}>MATÉRIA</div>
+                <MatBtn value={cadForm.mat} onChange={v=>setCadForm(f=>({...f,mat:v}))} placeholder="Ou digitar matéria..."/>
+              </div>
+              <div style={{marginBottom:8}}>
+                <div style={{fontSize:9,color:'#64748b',marginBottom:4}}>ASSUNTO</div>
+                <input value={cadForm.assunto||''} onChange={e=>setCadForm(f=>({...f,assunto:e.target.value}))} placeholder="ex: Controle de constitucionalidade difuso" style={{width:'100%',padding:'9px 10px',borderRadius:7,border:'1px solid rgba(248,113,113,.15)',background:'rgba(248,113,113,.03)',color:'#f1f5f9',fontSize:11,outline:'none',boxSizing:'border-box'}}/>
+              </div>
+              <div style={{display:'flex',gap:8,marginBottom:8}}>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:9,color:'#64748b',marginBottom:4}}>QUESTÕES FEITAS</div>
+                  <input type="number" value={cadForm.questoes||''} onChange={e=>setCadForm(f=>({...f,questoes:e.target.value}))} placeholder="0" style={{width:'100%',padding:'9px 10px',borderRadius:7,border:'1px solid rgba(248,113,113,.15)',background:'rgba(248,113,113,.03)',color:'#f1f5f9',fontSize:14,fontWeight:700,textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
+                </div>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:9,color:'#64748b',marginBottom:4}}>ACERTOS</div>
+                  <input type="number" value={cadForm.acertei||''} onChange={e=>setCadForm(f=>({...f,acertei:e.target.value}))} placeholder="0" style={{width:'100%',padding:'9px 10px',borderRadius:7,border:'1px solid rgba(248,113,113,.15)',background:'rgba(248,113,113,.03)',color:'#34d399',fontSize:14,fontWeight:700,textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
+                </div>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:9,color:'#64748b',marginBottom:4}}>TEMPO (min)</div>
+                  <input type="number" value={cadForm.tempo||''} onChange={e=>setCadForm(f=>({...f,tempo:e.target.value}))} placeholder="0" style={{width:'100%',padding:'9px 10px',borderRadius:7,border:'1px solid rgba(248,113,113,.15)',background:'rgba(248,113,113,.03)',color:'#f1f5f9',fontSize:14,fontWeight:700,textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
+                </div>
+              </div>
+              <div style={{marginBottom:10}}>
+                <div style={{fontSize:9,color:'#64748b',marginBottom:6}}>DIFICULDADE</div>
+                <Estrelas val={cadForm.dificuldade||0} onChange={v=>setCadForm(f=>({...f,dificuldade:v}))}/>
+              </div>
+              <button onClick={salvarCaderno} disabled={!cadForm.mat} style={{width:'100%',padding:'12px',borderRadius:9,border:'none',background:cadForm.mat?'#f87171':'rgba(148,163,184,.2)',color:cadForm.mat?'#0f172a':'#64748b',fontSize:12,fontWeight:800,cursor:cadForm.mat?'pointer':'default'}}>
+                {cadSalvo?'✅ SALVO!':'💾 REGISTRAR'}
+              </button>
+            </div>
+
+            {/* Lista ordenada por urgência */}
+            <div style={{fontSize:9,color:'var(--text4)',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:8,letterSpacing:'1px'}}>FILA — urgência (gate × dificuldade × distância de 80%)</div>
+            {ordenados.length===0&&<div style={{padding:'16px',textAlign:'center',fontSize:11,color:'var(--text4)'}}>Nenhum item pendente. Registre um erro acima quando errar uma questão.</div>}
+            {ordenados.map(t=>{
+              const exp=cadExpandidos.has(t.id);
+              return(
+                <div key={t.id} style={{padding:'11px 13px',borderRadius:10,background:'rgba(255,255,255,.02)',border:'1px solid rgba(148,163,184,.12)',marginBottom:6}}>
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',cursor:'pointer'}} onClick={()=>setCadExpandidos(s=>{const n=new Set(s);n.has(t.id)?n.delete(t.id):n.add(t.id);return n;})}>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontSize:11,fontWeight:800,color:'var(--text)'}}>{t.mat}</div>
+                      <div style={{fontSize:10,color:'var(--text4)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{t.assunto||t.obs||'—'}</div>
+                    </div>
+                    <div style={{textAlign:'right',flexShrink:0,marginLeft:8}}>
+                      <div style={{fontSize:12,fontWeight:900,color:t.pct!=null&&t.pct<50?'#f87171':t.pct!=null&&t.pct<70?'#fb923c':'#fbbf24'}}>{t.pct!=null?`${t.pct}%`:'—'}</div>
+                      <div style={{fontSize:9,color:'#64748b'}}>{'⭐'.repeat(t.dificuldade||3)}</div>
+                    </div>
+                  </div>
+                  {exp&&(
+                    <div style={{marginTop:10,paddingTop:10,borderTop:'1px solid rgba(148,163,184,.1)',display:'flex',gap:6}}>
+                      <button onClick={()=>marcarDominadoCaderno(t.id)} style={{flex:1,padding:'9px',borderRadius:8,border:'none',background:'rgba(52,211,153,.15)',color:'#34d399',fontSize:11,fontWeight:700,cursor:'pointer'}}>✅ Dominei</button>
+                      <button onClick={()=>{const q=parseInt(prompt('Quantas questões você fez agora?')||'0');if(!q)return;const a=parseInt(prompt('Quantas acertou?')||'0');registrarRevisaoCaderno(t.id,q,a,t.dificuldade||3);}} style={{flex:1,padding:'9px',borderRadius:8,border:'1px solid rgba(96,165,250,.3)',background:'transparent',color:'#60a5fa',fontSize:11,fontWeight:700,cursor:'pointer'}}>🔁 Registrar nova tentativa</button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        );
+      })()}
+
+      {/* ═══ MEMORIZAÇÃO — Anki ═══ */}
+      {aba==='anki'&&(()=>{
+        const regHoje=ankiRegs.filter(r=>r.dia===hoje);
+        const matsHoje=new Set(regHoje.map(r=>r.mat));
+        const sugestoes=ankiSugestoes.length>0?ankiSugestoes:[];
+        const pendentes=sugestoes.filter(s=>!matsHoje.has(s.mat));
+        const concluidas=sugestoes.filter(s=>matsHoje.has(s.mat));
+        const filaMem=calcFilaMemorizacao();
+        return(
+          <div>
+            <div style={{padding:'11px 14px',borderRadius:12,background:'rgba(167,139,250,.07)',border:'1px solid rgba(167,139,250,.3)',marginBottom:12}}>
+              <div style={{fontSize:9,color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:6}}>🃏 FILA FIXA — as 12 matérias do edital, da mais difícil pra você até a mais fácil</div>
+              {filaMem.hoje&&(
+                <div style={{padding:'8px 10px',borderRadius:9,background:'rgba(167,139,250,.12)',marginBottom:8}}>
+                  <div style={{fontSize:9,color:'#a78bfa'}}>HOJE — há mais tempo sem Anki</div>
+                  <div style={{fontSize:13,fontWeight:900,color:'var(--text)'}}>{filaMem.hoje.mat} {filaMem.hoje.pct!=null?`— ${filaMem.hoje.pct}%`:'— sem dado ainda'}</div>
+                </div>
+              )}
+              <div style={{display:'flex',flexDirection:'column',gap:3}}>
+                {filaMem.filaCompleta.map((f,i)=>(
+                  <div key={f.mat} style={{display:'flex',alignItems:'center',gap:8,padding:'4px 6px',borderRadius:6,background:f.mat===filaMem.hoje?.mat?'rgba(167,139,250,.1)':'transparent'}}>
+                    <span style={{fontSize:9,color:'var(--text4)',fontFamily:"'DM Mono',monospace",width:16}}>{i+1}º</span>
+                    <span style={{fontSize:11,color:f.jaHoje?'#34d399':'var(--text)',flex:1}}>{f.jaHoje?'✅ ':''}{f.mat}</span>
+                    <span style={{fontSize:10,color:'var(--text4)',fontFamily:"'DM Mono',monospace"}}>{f.pct!=null?`${f.pct}%`:'—'}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {sugestoes.length>0&&(
+              <div style={{marginBottom:14}}>
+                <div style={{fontSize:9,color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:8}}>📋 SUGESTÃO COMPLEMENTAR (déficit recente) — {hoje}</div>
+                {pendentes.map(s=>(
+                  <div key={s.mat} onClick={()=>setAnkiForm(f=>({...f,mat:s.mat}))} style={{padding:'9px 12px',borderRadius:9,background:'rgba(167,139,250,.06)',border:'1px solid rgba(167,139,250,.2)',marginBottom:5,cursor:'pointer'}}>
+                    <div style={{fontSize:11,fontWeight:700,color:'var(--text)'}}>{s.mat}</div>
+                    {s.motivo&&<div style={{fontSize:9,color:'var(--text4)'}}>{s.motivo}</div>}
+                  </div>
+                ))}
+                {concluidas.map(s=>(
+                  <div key={s.mat} style={{padding:'9px 12px',borderRadius:9,background:'rgba(52,211,153,.06)',marginBottom:5}}>
+                    <div style={{fontSize:11,color:'#34d399'}}>✅ {s.mat} — feito hoje</div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div style={{padding:'12px',borderRadius:12,background:'rgba(167,139,250,.05)',border:'1px solid rgba(167,139,250,.2)'}}>
+              <div style={{fontSize:9,letterSpacing:'2px',color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:10}}>🃏 REGISTRAR SESSÃO</div>
+              <div style={{marginBottom:8}}>
+                <div style={{fontSize:9,color:'#64748b',marginBottom:4}}>MATÉRIA</div>
+                <MatBtn value={ankiForm.mat} onChange={v=>setAnkiForm(f=>({...f,mat:v}))} placeholder="Ou digitar matéria..."/>
+              </div>
+              <div style={{display:'flex',gap:8,marginBottom:10}}>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:9,color:'#64748b',marginBottom:4}}>CARDS</div>
+                  <input type="number" value={ankiForm.cards||''} onChange={e=>setAnkiForm(f=>({...f,cards:e.target.value}))} placeholder="25" style={{width:'100%',padding:'9px 10px',borderRadius:7,border:'1px solid rgba(167,139,250,.2)',background:'rgba(167,139,250,.04)',color:'#f1f5f9',fontSize:14,fontWeight:700,textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
+                </div>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:9,color:'#64748b',marginBottom:4}}>TEMPO (min)</div>
+                  <input type="number" value={ankiForm.tempo||''} onChange={e=>setAnkiForm(f=>({...f,tempo:e.target.value}))} placeholder="15" style={{width:'100%',padding:'9px 10px',borderRadius:7,border:'1px solid rgba(167,139,250,.2)',background:'rgba(167,139,250,.04)',color:'#f1f5f9',fontSize:14,fontWeight:700,textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
+                </div>
+              </div>
+              <div style={{marginBottom:10}}>
+                <div style={{fontSize:9,color:'#64748b',marginBottom:6}}>DIFICULDADE MÉDIA DA SESSÃO</div>
+                <Estrelas val={ankiForm.dif} onChange={v=>setAnkiForm(f=>({...f,dif:v}))}/>
+              </div>
+              <button onClick={salvarAnki} disabled={!ankiForm.mat||!ankiForm.dif} style={{width:'100%',padding:'12px',borderRadius:9,border:'none',background:(ankiForm.mat&&ankiForm.dif)?'#a78bfa':'rgba(148,163,184,.2)',color:(ankiForm.mat&&ankiForm.dif)?'#0f172a':'#64748b',fontSize:12,fontWeight:800,cursor:(ankiForm.mat&&ankiForm.dif)?'pointer':'default'}}>
+                {ankiSalvo?'✅ SALVO!':'💾 REGISTRAR'}
+              </button>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* PASSIVA — motor novo: decoreba + dificuldade jurídica, ponderado pelo peso do gate */}
       {aba==='passiva'&&(()=>{
         const passivaLista=calcPassivaJuridica().slice(0,8);
@@ -5463,6 +5652,9 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
 
       {/* TÓPICOS PARA REVISITAR */}
       {/* TÓPICOS PARA REVISITAR — agora dentro de Estratégia > Revisitar */}
+      {/* ═══ PROFUNDA ═══ */}
+      {aba==='rev1h30'&&<TabRevProfunda totalBlocos={totalBlocos}/>}
+
       {aba==='estrategia'&&subEstrategia==='revisitar'&&<div>
         <div style={{padding:'10px 12px',borderRadius:10,background:'rgba(251,191,36,.06)',border:'1px solid rgba(251,191,36,.2)',marginBottom:12}}>
           <div style={{fontSize:9,color:'#fbbf24',fontFamily:"'DM Mono',monospace",marginBottom:4}}>📌 TÓPICOS PARA REVISITAR</div>
