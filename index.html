@@ -198,7 +198,7 @@ const _w=console.warn;console.warn=(...a)=>{if(String(a[0]||'').includes('Babel'
 const{useState,useEffect,useRef,useMemo,useCallback}=React;
 
 // ─── CONSTANTES ───────────────────────────────────────────────
-// ── CICLO 9 — Meirelles Ponderado — 09/04 a 16/04/2026 ───────
+// ── CICLO ATUAL — 13 a 19/07/2026 ───────────────────────────
 // Lógica: pesado→leve→pesado | nunca mesma disciplina em dias consecutivos
 // Tags derivadas da Matriz Meirelles: ⭐⭐⭐⭐⭐+jornada baixa = 🔴 URGENTE
 const CICLO=[
@@ -241,36 +241,13 @@ const CICLO=[
 ];
 const N=CICLO.length;
 
-// ── PAINEL ESTRATÉGICO — atualizado 09/04/2026 ───────────────
-
-const RESULTADOS_COMPROVADOS=[
-  {concurso:'TCE-MG',resultado:'Top 1%',detalhe:'16.000 inscritos · 73,8% geral · 7º discursivas',status:'heteroidentificação'},
-  {concurso:'TCE-MG discursiva',resultado:'✅ Aprovada após recurso',detalhe:'Recorreu e ganhou +1 ponto — superou o corte',status:'ok'},
-  {concurso:'TCE-MG heteroidentificação',resultado:'🎯 12/04/2026',detalhe:'BH — Praça Carlos Chagas, 35 · chegada antecipada',status:'agendado'},
-  {concurso:'Câmara Rio (FGV)',resultado:'87,8 pts objetiva',detalhe:'Excelente desempenho — acima da média',status:'ok'},
-  {concurso:'Câmara Rio (FGV)',resultado:'22,8/30 discursiva',detalhe:'Acima da média — sem problema estrutural',status:'ok'},
-  {concurso:'Bancas dominadas',resultado:'FGV · Cebraspe · Vunesp',detalhe:'Sem problema de adaptação de banca',status:'ok'},
-];
-
-const TCE_MG_STATUS={
-  posicao:58,
-  notaObjetiva:61.00,
-  notaDiscursiva:10.60,
-  total:71.60,
-  gapParaPos35:1.99, // pontos na discursiva
-  mediaDiscursivaTop20:15.86,
-  projecao:'Nomeação possível 2026 — monitorar ativamente',
-  vantagem:'Saiu do Rio de ônibus R$104,90 — única capital com essa opção viável',
-  dataHetero:'2026-04-12',
-  localHetero:'BH — Praça Carlos Chagas, 35',
-  diasDescanso:['2026-04-11'],
-};
+// ── PAINEL ESTRATÉGICO ───────────────────────────────────────
 
 const CONCURSOS_ALVO=[
   {
-    codigo:'TCE-MG',prioridade:'finalizado',status:'Heteroidentificação 12/04 — nomeação possível 2026',
+    codigo:'TCE-MG',prioridade:'finalizado',status:'Heteroidentificação concluída — nomeação possível 2026',
     banca:'Cebraspe',vagas:'aprovada',salario:null,edital:'finalizado',
-    alerta:'Descanso 11/04 · Hetero 12/04 BH · Ciclo retoma 13/04'
+    alerta:'Monitorar convocação'
   },
   {
     codigo:'TCE-SP',prioridade:'principal',status:'Edital 001/2026 publicado 03/07 · Inscrições 13/07 a 11/08',
@@ -287,7 +264,7 @@ const CONCURSOS_ALVO=[
     salarioObservacao:'Maior salário dos alvos'
   },
   {
-    codigo:'TCE-SC',prioridade:'descartado',status:'Decisão tomada 09/04/2026',
+    codigo:'TCE-SC',prioridade:'descartado',status:'Descartado',
     banca:'FGV',alerta:'Descartado — foco nos outros'
   },
 ];
@@ -302,10 +279,10 @@ const LEGISLACAO_TCE_SP=[
 ];
 
 const PROTOCOLO_DISCURSIVA={
-  diagnostico:'Sem problema estrutural. Padrão bom (TCE-MG aprovada + Câmara 22,8/30). Foco = manutenção e adaptação de formato por banca.',
+  diagnostico:'Carro-chefe. Gate eliminatório independente (mínimo 24/40). No TCE-MG a discursiva foi o ponto mais frágil (10,60 vs 15,86 média do top-20) — tratar como prioridade de treino ativo, não manutenção.',
   treinos:[
     {tipo:'Estudo de Caso TCE-SP (Discursiva)',frequencia:'3x/semana (Ter+Qui+Sáb)',formato:'Papel + caneta — análise jurídica aplicada 5 passos VUNESP',recurso:'Provas anteriores TCE-SP / TCE-MG / TCE-RS'},
-    {tipo:'Estudo de caso Vunesp',frequencia:'1x/mês a partir de mai/2026',formato:'2 estudos de caso — mesmo dia da objetiva (≠ Cebraspe)'},
+    {tipo:'Correção externa',frequencia:'Idealmente 1x/semana',formato:'Professor/mentoria — quebrar teto da autocorreção'},
     {tipo:'Revisão com gabarito comentado',frequencia:'Após cada treino',formato:'Identificar padrão de perda de ponto'},
   ]
 };
@@ -355,7 +332,7 @@ function getAlertasAtivos(){
   return alertas;
 }
 
-// ── PROTOCOLO ANTI-BURNOUT — baseado em diagnóstico 14/04/2026 ─
+// ── PROTOCOLO ANTI-BURNOUT ───────────────────────────────────
 const PROTOCOLO_ANTIBURNOUT={
   diagnostico:'Crash adrenal pós-viagem TCE-MG + esforço cognitivo brutal (8 metas/2 dias) + sono irregular. Taquicardia = SNS sobrecarregado. Quando o corpo grita, a mente não absorve.',
   sinaisAlerta:['taquicardia','confusão mental','fadiga de decisão','não consegue começar','estuda mas não retém'],
@@ -414,7 +391,7 @@ function deveRevisaoProfunda(totalBlocosFoco){
   const ultimoCicloRev=ultimaRev?.cicloRef||0;
   return totalBlocosFoco>0&&(totalBlocosFoco-ultimoCicloRev)>=7;
 }
-// Fonte: arquivo de planejamento 08/04/2026
+// Matriz de prioridade por matéria — TCE-SP
 // estrelas = importância do tópico para a prova (por tópico, não por matéria)
 // prioridade = estrelas × déficit × jornada
 const MATRIZ_MEIRELLES={
@@ -423,9 +400,9 @@ const MATRIZ_MEIRELLES={
   'Português':             {prioridade:'urgente', estrelas:5, pctAcerto:74,   jornada:28, nivel:'Expert',   ferramenta:'TecConcursos VUNESP',motivo:'🔴 3 pontos fracos críticos: Interpretação 64% · Semântica 64% · Ortografia 64%'},
   // ── MANUTENÇÃO (Anki/Guruja apenas) ──
   'Dir. Administrativo':   {prioridade:'manutencao',estrelas:4,pctAcerto:87,  jornada:29, nivel:'Expert',   ferramenta:'TecConcursos',      motivo:'🟡 87% — manutenção pura, sem bloco novo'},
-  'Dir. Constitucional':   {prioridade:'manutencao',estrelas:4,pctAcerto:80,  jornada:27, nivel:'Expert',   ferramenta:'TecConcursos',      motivo:'🟡 83% — inclui Controle Externo/TCs'},
+  'Dir. Constitucional':   {prioridade:'manutencao',estrelas:4,pctAcerto:83,  jornada:27, nivel:'Expert',   ferramenta:'TecConcursos',      motivo:'🟡 83% — inclui Controle Externo/TCs'},
   'Dir. Tributário':       {prioridade:'manutencao',estrelas:4,pctAcerto:80,  jornada:27, nivel:'Expert',   ferramenta:'TecConcursos FGV',  motivo:'🟡 80% — manutenção, 4 pontos fracos residuais'},
-  'Dir. Financeiro / AFO': {prioridade:'manutencao',estrelas:4,pctAcerto:79,  jornada:35, nivel:'Expert',   ferramenta:'TecConcursos',      motivo:'🟡 81% — saiu do carro-chefe, exceto Precatórios/Receita/MatFi'},
+  'Dir. Financeiro / AFO': {prioridade:'manutencao',estrelas:4,pctAcerto:81,  jornada:35, nivel:'Expert',   ferramenta:'TecConcursos',      motivo:'🟡 81% — saiu do carro-chefe, exceto Precatórios/Receita/MatFi'},
   'Dir. Civil':            {prioridade:'manutencao',estrelas:3,pctAcerto:85,  jornada:29, nivel:'Expert',   ferramenta:'TecConcursos',      motivo:'🟡 85% — exceto Obrigações Pt1 70% e Contratos Geral 69%'},
   // ── NIVELAMENTO (só Bloco 0) ──
   'Dir. Penal':            {prioridade:'nivelamento',estrelas:3,pctAcerto:null,jornada:0,  nivel:'Zero Base',ferramenta:'TecConcursos',      motivo:'🟠 Zero base — bloco pequeno e fechado no Bloco 0'},
@@ -4954,7 +4931,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
   const[criticoIALoad,setCriticoIALoad]=useState(false);
   const[ankiForm,setAnkiForm]=useState({mat:'',tempo:'',cards:'',questoes:'',dif:0});
   const[ankiSalvo,setAnkiSalvo]=useState(false);
-  const[nlmForm,setNlmForm]=useState({mat:'',oque:'',tempo:'',questoes:'',dif:0});
+  const[nlmForm,setNlmForm]=useState({mat:'',oque:'',tempo:'',questoes:'',dif:0,fonte:'NLM',pct:''});
   const[nlmSalvo,setNlmSalvo]=useState(false);
   const[cadForm,setCadForm]=useState({mat:'',assunto:'',questoes:'',acertei:'',dificuldade:3,obs:''});
   const[cadSalvo,setCadSalvo]=useState(false);
@@ -5049,11 +5026,25 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
   };
   const salvarNlm=()=>{
     if(!nlmForm.mat||!nlmForm.dif)return;
-    const novo={...nlmForm,id:Date.now(),dt:Date.now(),dia:hoje};
+    const pctNum=nlmForm.pct!==''&&nlmForm.pct!=null?parseInt(nlmForm.pct):null;
+    const novo={...nlmForm,pct:pctNum,id:Date.now(),dt:Date.now(),dia:hoje};
     const n=[...nlmRegs,novo];setNlmRegs(n);lsSet('rev_nlm',n);
     const mins=parseInt(nlmForm.tempo)||0;
-    if(mins>0&&onAddHoras)onAddHoras({mat:`NLM — ${nlmForm.mat}`,min:mins,dt:Date.now()});else if(mins>0){const h=lsGet('horas',[]);lsSet('horas',[...h,{mat:`NLM — ${nlmForm.mat}`,min:mins,dt:Date.now()}]);}
-    setNlmForm({mat:'',oque:'',tempo:'',questoes:'',dif:0});
+    const rotulo=nlmForm.fonte&&nlmForm.fonte!=='NLM'?nlmForm.fonte:'NLM';
+    if(mins>0&&onAddHoras)onAddHoras({mat:`${rotulo} — ${nlmForm.mat}`,min:mins,dt:Date.now()});else if(mins>0){const h=lsGet('horas',[]);lsSet('horas',[...h,{mat:`${rotulo} — ${nlmForm.mat}`,min:mins,dt:Date.now()}]);}
+    // Fecha o ciclo: se registrou % de acerto num assunto, alimenta o caderno pra priorização aprender
+    if(pctNum!=null&&nlmForm.oque){
+      const caderno=lsGet('rev_caderno',[]);
+      const idx=caderno.findIndex(t=>t.mat===nlmForm.mat&&(t.assunto||'').toLowerCase()===nlmForm.oque.toLowerCase());
+      const hentry={data:getDK(),questoes:null,acertos:null,dificuldade:nlmForm.dif,pct:pctNum,origem:'passiva'};
+      if(idx>=0){
+        caderno[idx]={...caderno[idx],pct:pctNum,dificuldade:nlmForm.dif,dominado:pctNum>=85?caderno[idx].dominado:false,historico:[...(caderno[idx].historico||[]),hentry]};
+      }else{
+        caderno.push({id:Date.now()+1,mat:nlmForm.mat,assunto:nlmForm.oque,feitas:0,acertei:0,pct:pctNum,dificuldade:nlmForm.dif,tentativas:1,dominado:false,dia:hoje,obs:`Autoteste ${rotulo}`,origem:'passiva',historico:[hentry]});
+      }
+      lsSet('rev_caderno',caderno);
+    }
+    setNlmForm({mat:'',oque:'',tempo:'',questoes:'',dif:0,fonte:'NLM',pct:''});
     setNlmSalvo(true);setTimeout(()=>setNlmSalvo(false),2000);
   };
   const salvarCaderno=()=>{
@@ -5185,10 +5176,10 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
         </div>
       )}
 
-      {/* Sub-nav: ESTRATÉGIA (Semanal + Críticos + Edital + Revisitar) */}
+      {/* Sub-nav: ESTRATÉGIA (Semanal + Críticos + Revisitar) — Radar do Edital fica só na aba Mapa */}
       {aba==='estrategia'&&(
         <div style={{display:'flex',gap:6,marginBottom:14,flexWrap:'wrap'}}>
-          {[{id:'semanal',l:'🗓️ Semanal'},{id:'criticos',l:'🎯 Críticos'},{id:'edital',l:'📋 Edital'},{id:'revisitar',l:'📌 Revisitar'}].map(s=>(
+          {[{id:'semanal',l:'🗓️ Semanal'},{id:'criticos',l:'🎯 Críticos'},{id:'revisitar',l:'📌 Revisitar'}].map(s=>(
             <button key={s.id} onClick={()=>setSubEstrategia(s.id)} style={{flex:1,minWidth:70,padding:'9px 6px',borderRadius:9,border:`1px solid ${subEstrategia===s.id?'rgba(167,139,250,.45)':'var(--border)'}`,background:subEstrategia===s.id?'rgba(167,139,250,.12)':'transparent',color:subEstrategia===s.id?'#a78bfa':'var(--text4)',fontSize:11,fontWeight:700,cursor:'pointer'}}>{s.l}</button>
           ))}
         </div>
@@ -5469,728 +5460,6 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
       </div>}
 
       {/* EDITAL — agora dentro de Estratégia > Edital */}
-      {aba==='estrategia'&&subEstrategia==='edital'&&(()=>{
-        const porAssunto=calcAcertoPorAssunto();
-        const tops=EDITAL[editalMatSel]?.top||[];
-        const domino=tops.filter(t=>editalStatus[editalMatSel+':'+t.t]==='domino').length;
-        const estudei=tops.filter(t=>editalStatus[editalMatSel+':'+t.t]==='estudei').length;
-
-        return(
-          <div>
-            <div style={{padding:'10px 12px',borderRadius:10,background:'rgba(251,191,36,.06)',border:'1px solid rgba(251,191,36,.2)',marginBottom:12}}>
-              <div style={{fontSize:9,color:'#fbbf24',fontFamily:"'DM Mono',monospace",marginBottom:2}}>F4 · RADAR DO EDITAL — peso × seu desempenho real (bússola de dificuldade)</div>
-              <div style={{fontSize:10,color:'var(--text4)'}}>Toque para marcar: ⬜ → 🟡 → ✅ · Acerto real calculado do histórico</div>
-            </div>
-
-            {/* Seletor de matéria */}
-            <div style={{display:'flex',flexWrap:'wrap',gap:4,marginBottom:12}}>
-              {EDITAL_MATS.map(mat=>{
-                const mtops=EDITAL[mat].top;
-                const dom=mtops.filter(t=>editalStatus[mat+':'+t.t]==='domino').length;
-                const pctDom=Math.round(dom/mtops.length*100);
-                const cor=pctDom>=80?'#34d399':pctDom>=40?'#fbbf24':'#60a5fa';
-                // conta perigos reais nessa matéria
-                const nPerigo=mtops.filter(t=>{
-                  const k=mat+'|||'+t.t;
-                  const reg=porAssunto[k];
-                  const acerto=reg?Math.round(reg.a/reg.q*100):null;
-                  return acerto!==null&&acerto<70&&t.p>=8;
-                }).length;
-                return(
-                  <button key={mat} onClick={()=>setEditalMatSel(mat)}
-                    style={{padding:'5px 9px',borderRadius:8,border:`1px solid ${editalMatSel===mat?cor:'rgba(255,255,255,.1)'}`,background:editalMatSel===mat?`${cor}15`:'transparent',color:editalMatSel===mat?cor:'#475569',fontSize:9,cursor:'pointer',position:'relative'}}>
-                    {mat.length>12?mat.slice(0,11)+'…':mat}
-                    {nPerigo>0&&<span style={{marginLeft:3,fontSize:7,color:'#f87171',fontWeight:900}}>⚠️{nPerigo}</span>}
-                    {dom>0&&<span style={{marginLeft:3,fontSize:8,color:cor}}>{dom}/{mtops.length}</span>}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Tópicos com cruzamento */}
-            {EDITAL[editalMatSel]&&<div>
-              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
-                <div style={{fontSize:11,fontWeight:700,color:'var(--text)'}}>{editalMatSel}</div>
-                <div style={{display:'flex',gap:5}}>
-                  <span style={{fontSize:8,padding:'2px 6px',borderRadius:4,background:'rgba(52,211,153,.15)',color:'#34d399'}}>{domino} ✅</span>
-                  <span style={{fontSize:8,padding:'2px 6px',borderRadius:4,background:'rgba(251,191,36,.15)',color:'#fbbf24'}}>{estudei} 🟡</span>
-                  <span style={{fontSize:8,padding:'2px 6px',borderRadius:4,background:'rgba(148,163,184,.1)',color:'var(--text4)'}}>{tops.length-domino-estudei} ⬜</span>
-                </div>
-              </div>
-
-              {EDITAL[editalMatSel].top.map((item,i)=>{
-                const key=editalMatSel+':'+item.t;
-                const assKey=editalMatSel+'|||'+item.t;
-                const st=editalStatus[key]||'';
-                const reg=porAssunto[assKey]||null;
-                const acerto=reg?Math.round(reg.a/reg.q*100):null;
-                const score=calcScorePerigo(item.p, acerto, reg?.lastDt||0);
-                const scoreNorm=Math.min(Math.round(score),100);
-
-                // Cor baseada no cruzamento peso × acerto
-                let corItem,bgItem,borderItem,alertLabel;
-                if(acerto===null){
-                  // sem dado: cor pelo peso
-                  corItem=item.p>=15?'#f87171':item.p>=8?'#fbbf24':'#60a5fa';
-                  bgItem=`${corItem}06`; borderItem=`${corItem}20`;
-                  alertLabel=item.p>=15?'🔴 SEM DADO — ALTO PESO':item.p>=8?'🟡 SEM DADO':'';
-                } else if(acerto<60&&item.p>=10){
-                  corItem='#f87171'; bgItem='rgba(248,113,113,.08)'; borderItem='rgba(248,113,113,.35)';
-                  alertLabel='🔴 PERIGO REAL';
-                } else if(acerto<70&&item.p>=5){
-                  corItem='#fbbf24'; bgItem='rgba(251,191,36,.06)'; borderItem='rgba(251,191,36,.25)';
-                  alertLabel='🟡 ATENÇÃO';
-                } else if(acerto>=85){
-                  corItem='#34d399'; bgItem='rgba(52,211,153,.05)'; borderItem='rgba(52,211,153,.2)';
-                  alertLabel='';
-                } else {
-                  corItem='#64748b'; bgItem='rgba(255,255,255,.02)'; borderItem='rgba(255,255,255,.08)';
-                  alertLabel='';
-                }
-
-                const stIcon=st==='domino'?'✅':st==='estudei'?'🟡':'⬜';
-
-                return(
-                  <div key={i} onClick={()=>toggleEditalStatus(editalMatSel,item.t)}
-                    style={{padding:'10px 12px',borderRadius:10,background:bgItem,border:`1px solid ${borderItem}`,marginBottom:6,cursor:'pointer'}}>
-                    <div style={{display:'flex',alignItems:'flex-start',gap:8}}>
-                      <span style={{fontSize:14,flexShrink:0,marginTop:1}}>{stIcon}</span>
-                      <div style={{flex:1,minWidth:0}}>
-                        <div style={{fontSize:11,color:'var(--text)',fontWeight:600,lineHeight:1.4}}>{item.t}</div>
-                        <div style={{display:'flex',gap:6,marginTop:4,flexWrap:'wrap',alignItems:'center'}}>
-                          {/* Peso no edital */}
-                          <span style={{fontSize:9,padding:'1px 6px',borderRadius:4,background:'rgba(96,165,250,.12)',color:'#60a5fa',fontFamily:"'DM Mono',monospace",fontWeight:700}}>
-                            📊 {item.p}% da prova
-                          </span>
-                          {/* Acerto real */}
-                          {acerto!==null
-                            ?<span style={{fontSize:9,padding:'1px 6px',borderRadius:4,background:`${acerto>=70?'rgba(52,211,153,.12)':acerto>=50?'rgba(251,191,36,.12)':'rgba(248,113,113,.12)'}`,color:acerto>=70?'#34d399':acerto>=50?'#fbbf24':'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:700}}>
-                              🎯 você: {acerto}% ({reg.q}Q)
-                            </span>
-                            :<span style={{fontSize:9,color:'var(--text4)'}}>sem questões registradas</span>
-                          }
-                          {/* Alert label */}
-                          {alertLabel&&<span style={{fontSize:9,color:corItem,fontWeight:800}}>{alertLabel}</span>}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-
-              {/* Resumo + alerta de perigos */}
-              {(()=>{
-                const perigos=EDITAL[editalMatSel].top.filter(t=>{
-                  const k=editalMatSel+'|||'+t.t;
-                  const reg=porAssunto[k];
-                  const ac=reg?Math.round(reg.a/reg.q*100):null;
-                  return ac!==null&&ac<70&&t.p>=5;
-                });
-                return(
-                  <div style={{marginTop:10}}>
-                    <div style={{display:'flex',gap:8,padding:'8px 12px',borderRadius:9,background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.08)',marginBottom:perigos.length?8:0}}>
-                      <div style={{flex:1,textAlign:'center'}}><div style={{fontSize:14,fontWeight:900,color:'#34d399'}}>{domino}</div><div style={{fontSize:8,color:'var(--text4)'}}>Domino ✅</div></div>
-                      <div style={{flex:1,textAlign:'center'}}><div style={{fontSize:14,fontWeight:900,color:'#fbbf24'}}>{estudei}</div><div style={{fontSize:8,color:'var(--text4)'}}>Estudei 🟡</div></div>
-                      <div style={{flex:1,textAlign:'center'}}><div style={{fontSize:14,fontWeight:900,color:'#475569'}}>{tops.length-domino-estudei}</div><div style={{fontSize:8,color:'var(--text4)'}}>Pendente ⬜</div></div>
-                      {perigos.length>0&&<div style={{flex:1,textAlign:'center'}}><div style={{fontSize:14,fontWeight:900,color:'#f87171'}}>{perigos.length}</div><div style={{fontSize:8,color:'#f87171'}}>⚠️ Perigo</div></div>}
-                    </div>
-                    {perigos.length>0&&(
-                      <div style={{padding:'8px 11px',borderRadius:9,background:'rgba(248,113,113,.06)',border:'1px solid rgba(248,113,113,.25)'}}>
-                        <div style={{fontSize:9,color:'#f87171',fontWeight:800,marginBottom:4}}>⚠️ TÓPICOS CRÍTICOS — alto peso + baixo acerto</div>
-                        {perigos.map((t,i)=>{
-                          const k=editalMatSel+'|||'+t.t;
-                          const reg=porAssunto[k];
-                          const ac=reg?Math.round(reg.a/reg.q*100):0;
-                          return<div key={i} style={{fontSize:10,color:'var(--text2)',marginBottom:2}}>• {t.t} <span style={{color:'#f87171',fontFamily:"'DM Mono',monospace"}}>{t.p}% prova · {ac}% acerto</span></div>;
-                        })}
-                      </div>
-                    )}
-                  </div>
-                );
-              })()}
-            </div>}
-          </div>
-        );
-      })()}
-
-      {/* ANKI */}
-      {aba==='anki'&&(()=>{
-        // Status do dia: quais matérias já foram registradas hoje
-        const regHoje=ankiRegs.filter(r=>r.dia===hoje);
-        const matsHoje=new Set(regHoje.map(r=>r.mat));
-        // Matérias sugeridas pelo motor (vindas do Hoje)
-        const sugestoes=ankiSugestoes.length>0?ankiSugestoes:[];
-        // Matérias pendentes = sugeridas que ainda não foram registradas hoje
-        const pendentes=sugestoes.filter(s=>!matsHoje.has(s.mat));
-        const concluidas=sugestoes.filter(s=>matsHoje.has(s.mat));
-        // ── Motor novo: fila fixa das 12 matérias do edital por dificuldade pessoal ──
-        const filaMem=calcFilaMemorizacao();
-        return(
-          <div>
-            {/* FILA FIXA — motor novo, ordem de dificuldade pessoal */}
-            <div style={{padding:'11px 14px',borderRadius:12,background:'rgba(167,139,250,.07)',border:'1px solid rgba(167,139,250,.3)',marginBottom:12}}>
-              <div style={{fontSize:9,color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:6}}>🃏 FILA FIXA — as 12 matérias do edital, da mais difícil pra você até a mais fácil</div>
-              {filaMem.hoje&&(
-                <div style={{padding:'8px 10px',borderRadius:9,background:'rgba(167,139,250,.12)',marginBottom:8}}>
-                  <div style={{fontSize:9,color:'#a78bfa'}}>HOJE — há mais tempo sem Anki</div>
-                  <div style={{fontSize:13,fontWeight:900,color:'var(--text)'}}>{filaMem.hoje.mat} {filaMem.hoje.pct!=null?`— ${filaMem.hoje.pct}%`:'— sem dado ainda'}</div>
-                </div>
-              )}
-              <div style={{display:'flex',flexDirection:'column',gap:3}}>
-                {filaMem.filaCompleta.map((f,i)=>(
-                  <div key={f.mat} style={{display:'flex',alignItems:'center',gap:8,padding:'4px 6px',borderRadius:6,background:f.mat===filaMem.hoje?.mat?'rgba(167,139,250,.1)':'transparent'}}>
-                    <span style={{fontSize:9,color:'var(--text4)',fontFamily:"'DM Mono',monospace",width:16}}>{i+1}º</span>
-                    <span style={{fontSize:11,color:f.jaHoje?'#34d399':'var(--text)',flex:1}}>{f.jaHoje?'✅ ':''}{f.mat}</span>
-                    <span style={{fontSize:10,color:'var(--text4)',fontFamily:"'DM Mono',monospace"}}>{f.pct!=null?`${f.pct}%`:'—'}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            {/* STATUS DO DIA */}
-            {sugestoes.length>0&&(
-              <div style={{padding:'10px 13px',borderRadius:11,background:'rgba(167,139,250,.07)',border:'1px solid rgba(167,139,250,.25)',marginBottom:12}}>
-                <div style={{fontSize:9,color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:8}}>📋 SUGESTÃO COMPLEMENTAR (déficit recente) — {hoje}</div>
-                <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
-                  {sugestoes.map(s=>{
-                    const feita=matsHoje.has(s.mat);
-                    const reg=regHoje.find(r=>r.mat===s.mat);
-                    return(
-                      <div key={s.mat} style={{display:'flex',alignItems:'center',gap:5,padding:'5px 10px',borderRadius:8,background:feita?'rgba(52,211,153,.1)':'rgba(167,139,250,.08)',border:`1px solid ${feita?'rgba(52,211,153,.35)':'rgba(167,139,250,.2)'}`}}>
-                        <span style={{fontSize:11}}>{feita?'✅':'⏳'}</span>
-                        <div>
-                          <div style={{fontSize:11,fontWeight:700,color:feita?'#34d399':'var(--text)'}}>{s.mat.split(' ').slice(0,2).join(' ')}</div>
-                          {feita&&reg&&<div style={{fontSize:9,color:'#34d399',fontFamily:"'DM Mono',monospace"}}>{reg.cards||0} cards · {'⭐'.repeat(reg.dif||0)}</div>}
-                          {!feita&&<div style={{fontSize:9,color:'var(--text4)',fontFamily:"'DM Mono',monospace"}}>{s.cards} cards</div>}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* FORMULÁRIO */}
-            <div style={{background:'rgba(167,139,250,.05)',border:'1px solid rgba(167,139,250,.2)',borderRadius:13,padding:'14px',marginBottom:12}}>
-              <div style={{fontSize:9,letterSpacing:'2px',color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:12}}>🃏 REGISTRAR SESSÃO</div>
-
-              {/* Botões de matéria sugerida */}
-              {pendentes.length>0&&(
-                <div style={{marginBottom:10}}>
-                  <div style={{fontSize:9,color:'#64748b',marginBottom:6}}>SUGERIDAS HOJE — toque para selecionar</div>
-                  <div style={{display:'flex',flexDirection:'column',gap:6}}>
-                    {pendentes.map(s=>{
-                      const sel=ankiForm.mat===s.mat;
-                      return(
-                        <button key={s.mat} onClick={()=>setAnkiForm(f=>({...f,mat:s.mat,cards:String(s.cards)}))}
-                          style={{padding:'10px 13px',borderRadius:9,border:`2px solid ${sel?'#a78bfa':'rgba(167,139,250,.25)'}`,background:sel?'rgba(167,139,250,.18)':'rgba(167,139,250,.05)',cursor:'pointer',textAlign:'left',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-                          <div>
-                            <div style={{fontSize:13,fontWeight:700,color:sel?'#a78bfa':'var(--text)'}}>{s.mat}</div>
-                            <div style={{fontSize:9,color:'var(--text4)',marginTop:1}}>{s.motivo}</div>
-                          </div>
-                          <span style={{fontSize:12,color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:800,flexShrink:0}}>{s.cards} cards</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* Separador para matéria livre */}
-              <div style={{marginBottom:8}}>
-                <div style={{fontSize:9,color:'#64748b',marginBottom:5}}>{pendentes.length>0?'OU OUTRA MATÉRIA':'MATÉRIA'}</div>
-                <MatBtn value={pendentes.some(s=>s.mat===ankiForm.mat)?'':ankiForm.mat} onChange={v=>setAnkiForm(f=>({...f,mat:v}))}/>
-              </div>
-
-              {/* Cards + Tempo + Dificuldade */}
-              <div style={{marginBottom:8}}>
-                <div style={{fontSize:9,color:'#64748b',marginBottom:4}}>🃏 CARDS FEITOS</div>
-                <input type="number" value={ankiForm.cards||''} onChange={e=>setAnkiForm(f=>({...f,cards:e.target.value}))} placeholder="ex: 35" style={{width:'100%',padding:'13px',borderRadius:8,border:'1px solid rgba(167,139,250,.3)',background:'rgba(167,139,250,.06)',color:'#a78bfa',fontSize:20,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
-              </div>
-              <div style={{marginBottom:8}}>
-                <div style={{fontSize:9,color:'#60a5fa',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:5}}>⏱ TEMPO ESTUDADO (min)</div>
-                <div style={{display:'flex',gap:6}}>
-                  <input type="number" value={ankiForm.tempo||''} onChange={e=>setAnkiForm(f=>({...f,tempo:e.target.value}))} placeholder="ex: 30"
-                    style={{flex:1,padding:'10px',borderRadius:8,border:'1px solid rgba(96,165,250,.3)',background:'rgba(96,165,250,.06)',color:'#60a5fa',fontSize:20,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
-                  <div style={{display:'flex',flexDirection:'column',gap:4}}>
-                    {[20,30,45].map(m=>(
-                      <button key={m} onClick={()=>setAnkiForm(f=>({...f,tempo:String(m)}))}
-                        style={{padding:'4px 10px',borderRadius:6,border:`1px solid ${ankiForm.tempo===String(m)?'#60a5fa':'rgba(96,165,250,.2)'}`,background:ankiForm.tempo===String(m)?'rgba(96,165,250,.2)':'transparent',color:ankiForm.tempo===String(m)?'#60a5fa':'#475569',fontSize:9,cursor:'pointer',fontFamily:"'DM Mono',monospace",fontWeight:700}}>
-                        {m}min
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                {!ankiForm.tempo&&ankiForm.cards&&<div style={{fontSize:8,color:'#475569',marginTop:3}}>Sem tempo → estimativa automática ({Math.round((parseInt(ankiForm.cards)||0)*0.4)}min por cards)</div>}
-                {ankiForm.tempo&&<div style={{fontSize:9,color:'#60a5fa',marginTop:4}}>✓ {ankiForm.tempo} min serão registrados nas suas horas</div>}
-              </div>
-              <div style={{marginBottom:12}}>
-                <div style={{fontSize:9,color:'#64748b',marginBottom:6}}>DIFICULDADE</div>
-                <Estrelas val={ankiForm.dif} onChange={v=>setAnkiForm(f=>({...f,dif:v}))}/>
-                {ankiForm.dif>0&&<div style={{textAlign:'center',fontSize:9,color:CORS_DIF[ankiForm.dif-1],marginTop:3,fontFamily:"'DM Mono',monospace",fontWeight:700}}>{LABELS_DIF[ankiForm.dif-1]}</div>}
-              </div>
-              <button onClick={salvarAnki} disabled={!ankiForm.mat||!ankiForm.dif}
-                style={{width:'100%',padding:'14px',borderRadius:10,border:'none',background:ankiForm.mat&&ankiForm.dif?'#a78bfa':'rgba(148,163,184,.2)',color:ankiForm.mat&&ankiForm.dif?'#0f172a':'#334155',fontSize:14,fontWeight:900,cursor:'pointer',fontFamily:"'DM Mono',monospace",letterSpacing:'1px'}}>
-                {ankiSalvo?'✅ SALVO!':'💾 SALVAR ANKI'}
-              </button>
-            </div>
-
-            {/* HISTÓRICO */}
-            <div style={{fontSize:9,color:'#475569',fontFamily:"'DM Mono',monospace",marginBottom:8,letterSpacing:'2px'}}>HISTÓRICO RECENTE</div>
-            {[...ankiRegs].reverse().slice(0,7).map((r,i)=>(
-              <div key={i} style={{padding:'8px 11px',borderRadius:9,background:r.dia===hoje?'rgba(167,139,250,.1)':'rgba(167,139,250,.04)',border:`1px solid ${r.dia===hoje?'rgba(167,139,250,.3)':'rgba(167,139,250,.12)'}`,marginBottom:4,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-                <div>
-                  <div style={{fontSize:11,color:'var(--text)',fontWeight:700}}>{r.mat}</div>
-                  <div style={{fontSize:9,color:'#64748b'}}>{r.cards?`${r.cards} cards`:'—'}{r.dif?` · ${'⭐'.repeat(r.dif)}`:''}</div>
-                </div>
-                <span style={{fontSize:9,color:r.dia===hoje?'#a78bfa':'#334155',fontFamily:"'DM Mono',monospace",fontWeight:r.dia===hoje?700:400}}>{r.dia===hoje?'hoje':r.dia}</span>
-              </div>
-            ))}
-            {ankiRegs.length===0&&<div style={{textAlign:'center',padding:'20px',color:'#334155',fontSize:11}}>Nenhum registro ainda.</div>}
-          </div>
-        );
-      })()}
-
-      {/* NLM */}
-      {aba==='passiva'&&subPassiva==='nlm'&&(()=>{
-        const regHojeNlm=nlmRegs.filter(r=>r.dia===hoje);
-        const matsHojeNlm=new Set(regHojeNlm.map(r=>r.mat));
-        const matSugerida=nlmSugestao?.mat||null;
-        const jaFezSugestao=matSugerida&&matsHojeNlm.has(matSugerida);
-        return(
-          <div>
-            {/* STATUS DO DIA */}
-            {(matSugerida||regHojeNlm.length>0)&&(
-              <div style={{padding:'10px 13px',borderRadius:11,background:'rgba(52,211,153,.07)',border:'1px solid rgba(52,211,153,.25)',marginBottom:12}}>
-                <div style={{fontSize:9,color:'#34d399',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:6}}>📋 STATUS DO DIA — {hoje}</div>
-                {matSugerida&&(
-                  <div style={{display:'flex',alignItems:'center',gap:8}}>
-                    <span style={{fontSize:13}}>{jaFezSugestao?'✅':'🎧'}</span>
-                    <div>
-                      <div style={{fontSize:12,fontWeight:700,color:jaFezSugestao?'#34d399':'var(--text)'}}>{matSugerida}</div>
-                      <div style={{fontSize:9,color:'var(--text4)'}}>sugerida hoje · {nlmSugestao?.pct||'—'}% acerto{nlmSugestao?.diasNlm?` · ${nlmSugestao.diasNlm}d sem NLM`:''}</div>
-                    </div>
-                    {jaFezSugestao&&<span style={{marginLeft:'auto',fontSize:9,color:'#34d399',fontFamily:"'DM Mono',monospace",fontWeight:700}}>{regHojeNlm.find(r=>r.mat===matSugerida)?.tempo||'—'}min</span>}
-                  </div>
-                )}
-                {regHojeNlm.filter(r=>r.mat!==matSugerida).map((r,i)=>(
-                  <div key={i} style={{display:'flex',alignItems:'center',gap:8,marginTop:6,paddingTop:6,borderTop:'1px solid rgba(52,211,153,.1)'}}>
-                    <span style={{fontSize:12}}>✅</span>
-                    <div style={{fontSize:11,fontWeight:700,color:'#34d399'}}>{r.mat}</div>
-                    <span style={{marginLeft:'auto',fontSize:9,color:'#34d399',fontFamily:"'DM Mono',monospace"}}>{r.tempo||'—'}min</span>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* FORMULÁRIO */}
-            <div style={{background:'rgba(52,211,153,.05)',border:'1px solid rgba(52,211,153,.2)',borderRadius:13,padding:'14px',marginBottom:12}}>
-              <div style={{fontSize:9,letterSpacing:'2px',color:'#34d399',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:12}}>🎧 REGISTRAR SESSÃO NLM</div>
-
-              {/* Botão de matéria sugerida */}
-              {matSugerida&&!jaFezSugestao&&(
-                <div style={{marginBottom:10}}>
-                  <div style={{fontSize:9,color:'#64748b',marginBottom:6}}>SUGERIDA HOJE</div>
-                  <button onClick={()=>setNlmForm(f=>({...f,mat:matSugerida}))}
-                    style={{width:'100%',padding:'11px 13px',borderRadius:9,border:`2px solid ${nlmForm.mat===matSugerida?'#34d399':'rgba(52,211,153,.3)'}`,background:nlmForm.mat===matSugerida?'rgba(52,211,153,.18)':'rgba(52,211,153,.05)',cursor:'pointer',textAlign:'left',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-                    <div>
-                      <div style={{fontSize:13,fontWeight:700,color:nlmForm.mat===matSugerida?'#34d399':'var(--text)'}}>{matSugerida}</div>
-                      <div style={{fontSize:9,color:'var(--text4)',marginTop:1}}>{nlmSugestao?.pct||'—'}% acerto · manutenção</div>
-                    </div>
-                    <span style={{fontSize:9,color:'#34d399',fontFamily:"'DM Mono',monospace",fontWeight:700,flexShrink:0}}>🎧 ouvir</span>
-                  </button>
-                </div>
-              )}
-
-              {/* Matéria livre */}
-              <div style={{marginBottom:8}}>
-                <div style={{fontSize:9,color:'#64748b',marginBottom:5}}>{matSugerida&&!jaFezSugestao?'OU OUTRA MATÉRIA':'MATÉRIA'}</div>
-                <MatBtn value={nlmForm.mat===matSugerida?'':nlmForm.mat} onChange={v=>setNlmForm(f=>({...f,mat:v}))}/>
-              </div>
-
-              {/* Assunto/tópico dentro da matéria */}
-              <div style={{marginBottom:8}}>
-                <div style={{fontSize:9,color:'#64748b',marginBottom:5}}>ASSUNTO ESTUDADO (opcional)</div>
-                <input type="text" value={nlmForm.oque||''} onChange={e=>setNlmForm(f=>({...f,oque:e.target.value}))} placeholder="ex: Atos Administrativos, Licitações..." style={{width:'100%',padding:'9px 11px',borderRadius:8,border:'1px solid rgba(52,211,153,.2)',background:'rgba(52,211,153,.04)',color:'#e2e8f0',fontSize:11,outline:'none',boxSizing:'border-box'}}/>
-              </div>
-
-              {/* Tempo + Dificuldade */}
-              <div style={{marginBottom:8}}>
-                <div style={{fontSize:9,color:'#64748b',marginBottom:4}}>⏱ TEMPO (min)</div>
-                <input type="number" value={nlmForm.tempo||''} onChange={e=>setNlmForm(f=>({...f,tempo:e.target.value}))} placeholder="ex: 45" style={{width:'100%',padding:'13px',borderRadius:8,border:'1px solid rgba(52,211,153,.3)',background:'rgba(52,211,153,.06)',color:'#34d399',fontSize:20,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
-              </div>
-              <div style={{marginBottom:12}}>
-                <div style={{fontSize:9,color:'#64748b',marginBottom:6}}>DIFICULDADE</div>
-                <Estrelas val={nlmForm.dif} onChange={v=>setNlmForm(f=>({...f,dif:v}))}/>
-                {nlmForm.dif>0&&<div style={{textAlign:'center',fontSize:9,color:CORS_DIF[nlmForm.dif-1],marginTop:3,fontFamily:"'DM Mono',monospace",fontWeight:700}}>{LABELS_DIF[nlmForm.dif-1]}</div>}
-              </div>
-              <button onClick={salvarNlm} disabled={!nlmForm.mat||!nlmForm.dif}
-                style={{width:'100%',padding:'14px',borderRadius:10,border:'none',background:nlmForm.mat&&nlmForm.dif?'#34d399':'rgba(148,163,184,.2)',color:nlmForm.mat&&nlmForm.dif?'#0f172a':'#334155',fontSize:14,fontWeight:900,cursor:'pointer',fontFamily:"'DM Mono',monospace",letterSpacing:'1px'}}>
-                {nlmSalvo?'✅ SALVO!':'💾 SALVAR NLM'}
-              </button>
-              {(!nlmForm.mat||!nlmForm.dif)&&(
-                <div style={{textAlign:'center',fontSize:9,color:'#f87171',marginTop:6}}>
-                  Falta: {[!nlmForm.mat&&'selecionar matéria',!nlmForm.dif&&'marcar dificuldade'].filter(Boolean).join(' e ')}
-                </div>
-              )}
-            </div>
-
-            {/* HISTÓRICO */}
-            <div style={{fontSize:9,color:'#475569',fontFamily:"'DM Mono',monospace",marginBottom:8,letterSpacing:'2px'}}>HISTÓRICO RECENTE</div>
-            {[...nlmRegs].reverse().slice(0,7).map((r,i)=>(
-              <div key={i} style={{padding:'8px 11px',borderRadius:9,background:r.dia===hoje?'rgba(52,211,153,.08)':'rgba(52,211,153,.03)',border:`1px solid ${r.dia===hoje?'rgba(52,211,153,.3)':'rgba(52,211,153,.12)'}`,marginBottom:4,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-                <div>
-                  <div style={{fontSize:11,color:'var(--text)',fontWeight:700}}>{r.mat}</div>
-                  {r.oque&&<div style={{fontSize:9,color:'#34d399',marginTop:1}}>{r.oque}</div>}
-                  <div style={{fontSize:9,color:'#64748b'}}>{r.tempo?`${r.tempo}min`:'—'}{r.dif?` · ${'⭐'.repeat(r.dif)}`:''}</div>
-                </div>
-                <span style={{fontSize:9,color:r.dia===hoje?'#34d399':'#334155',fontFamily:"'DM Mono',monospace",fontWeight:r.dia===hoje?700:400}}>{r.dia===hoje?'hoje':r.dia}</span>
-              </div>
-            ))}
-            {nlmRegs.length===0&&<div style={{textAlign:'center',padding:'20px',color:'#334155',fontSize:11}}>Nenhum registro ainda.</div>}
-          </div>
-        );
-      })()}
-
-      {/* REVISÃO PROFUNDA — substitui 1h30 */}
-      {aba==='rev1h30'&&<TabRevProfunda totalBlocos={totalBlocos}/>}
-
-      {/* CADERNO DE ERROS — REGISTRO */}
-      {/* CADERNO DE ERROS — REGISTRO — Forma 1: só dificuldade, sem datas */}
-      {aba==='caderno'&&(()=>{
-        const todosItens=lsGet('rev_caderno',[]);
-        const ativos=todosItens.filter(t=>!t.dominado);
-        const dominados=todosItens.filter(t=>t.dominado);
-        const questPrior=calcQuestoesPrioridade(lsGet('historico_diario',[]));
-        const matPrioritaria=questPrior.top?.mat||null;
-        const ordenados=[...ativos].sort((a,b)=>{
-          const boostA=a.mat===matPrioritaria?1:0,boostB=b.mat===matPrioritaria?1:0;
-          if(boostB!==boostA)return boostB-boostA;
-          const difA=a.dificuldade||3,difB=b.dificuldade||3;
-          if(difB!==difA)return difB-difA;
-          const pctA=a.pct??50,pctB=b.pct??50;
-          return pctA-pctB;
-        });
-        const seteAtras=new Date();seteAtras.setDate(seteAtras.getDate()-7);
-        const seteAtrasStr=seteAtras.toISOString().split('T')[0];
-        let questoesSemana=0;
-        todosItens.forEach(t=>{(t.historico||[]).forEach(h=>{if(h.data>=seteAtrasStr&&h.questoes)questoesSemana+=h.questoes;});});
-
-        const difCors=['','#34d399','#a3e635','#fbbf24','#fb923c','#f87171'];
-        const difLabels=['','Muito fácil','Fácil','Médio','Difícil','Muito difícil'];
-
-        const ItemCaderno=({t})=>{
-          const expandido=cadExpandidos.has(t.id);
-          const toggleExpand=()=>setCadExpandidos(prev=>{const n=new Set(prev);expandido?n.delete(t.id):n.add(t.id);return n;});
-          const[novasQ,setNovasQ]=useState('');
-          const[novosA,setNovosA]=useState('');
-          const[novaDif,setNovaDif]=useState(t.dificuldade||3);
-          const pctCor=t.pct===null||t.pct===undefined?'#64748b':t.pct>=80?'#34d399':t.pct>=60?'#fbbf24':'#f87171';
-          const dif=t.dificuldade||3;
-          const hist=t.historico||[];
-          const salvar=()=>{
-            const q=parseInt(novasQ)||0;const a=parseInt(novosA)||0;
-            if(q===0)return;
-            registrarRevisaoCaderno(t.id,q,a,novaDif);
-            setNovasQ('');setNovosA('');setCadExpandidos(prev=>{const n=new Set(prev);n.delete(t.id);return n;});
-          };
-          return(
-            <div style={{borderRadius:12,background:'rgba(255,255,255,.02)',border:`1px solid ${difCors[dif]}30`,marginBottom:8,overflow:'hidden'}}>
-              <div onClick={toggleExpand} style={{display:'flex',alignItems:'center',gap:10,padding:'12px 14px',cursor:'pointer'}}>
-                <div style={{textAlign:'center',flexShrink:0,width:44}}>
-                  <div style={{fontSize:18,fontWeight:900,color:pctCor,fontFamily:"'DM Mono',monospace",lineHeight:1}}>{t.pct!==null&&t.pct!==undefined?t.pct+'%':'—'}</div>
-                  {t.feitas>0&&<div style={{fontSize:8,color:'var(--text4)'}}>{t.feitas}Q</div>}
-                </div>
-                <div style={{flex:1,minWidth:0}}>
-                  <div style={{fontSize:13,fontWeight:800,color:'var(--text)'}}>{t.mat}</div>
-                  {t.assunto&&<div style={{fontSize:10,color:'var(--text4)',marginTop:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{t.assunto}</div>}
-                  <div style={{display:'flex',gap:5,marginTop:4,flexWrap:'wrap',alignItems:'center'}}>
-                    <span style={{fontSize:9,padding:'1px 6px',borderRadius:4,background:`${difCors[dif]}18`,color:difCors[dif],fontFamily:"'DM Mono',monospace",fontWeight:700}}>{'⭐'.repeat(dif)} {difLabels[dif]}</span>
-                    {(t.tentativas||0)>0&&<span style={{fontSize:9,color:'#a78bfa',fontFamily:"'DM Mono',monospace"}}>↻ {t.tentativas}x</span>}
-                  </div>
-                </div>
-                <span style={{fontSize:11,color:'var(--text4)',flexShrink:0}}>{expandido?'▲':'▼'}</span>
-              </div>
-              {expandido&&(
-                <div style={{borderTop:'1px solid var(--border)',padding:'12px 14px'}}>
-                  {hist.length>0&&(
-                    <div style={{marginBottom:10,padding:'8px 10px',borderRadius:8,background:'rgba(255,255,255,.02)'}}>
-                      <div style={{fontSize:8,color:'var(--text4)',fontFamily:"'DM Mono',monospace",marginBottom:4}}>HISTÓRICO</div>
-                      {[...hist].slice(-4).reverse().map((h,i)=>(
-                        <div key={i} style={{fontSize:10,color:'var(--text4)',marginBottom:2}}>
-                          {h.data} — {h.questoes!==undefined?`${h.questoes}Q, ${h.acertos}✓ · `:''}{h.dificuldade?`${'⭐'.repeat(h.dificuldade)}`:h.acao||''}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  <div style={{fontSize:9,color:'var(--text4)',marginBottom:6,fontFamily:"'DM Mono',monospace"}}>REGISTRAR NOVA REVISÃO</div>
-                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:8}}>
-                    <div>
-                      <div style={{fontSize:9,color:'var(--text4)',marginBottom:3}}>QUESTÕES</div>
-                      <input type="number" value={novasQ} onChange={e=>setNovasQ(e.target.value)} placeholder="ex: 10"
-                        style={{width:'100%',padding:'9px',borderRadius:8,border:'1px solid var(--border)',background:'rgba(255,255,255,.03)',color:'var(--text)',fontSize:14,fontWeight:700,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
-                    </div>
-                    <div>
-                      <div style={{fontSize:9,color:'var(--text4)',marginBottom:3}}>ACERTOS</div>
-                      <input type="number" value={novosA} onChange={e=>setNovosA(e.target.value)} placeholder="ex: 7"
-                        style={{width:'100%',padding:'9px',borderRadius:8,border:'1px solid rgba(52,211,153,.25)',background:'rgba(52,211,153,.04)',color:'#34d399',fontSize:14,fontWeight:700,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
-                    </div>
-                  </div>
-                  <div style={{fontSize:9,color:'var(--text4)',marginBottom:4}}>QUÃO DIFÍCIL FOI DESSA VEZ?</div>
-                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1fr 1fr',gap:4,marginBottom:10}}>
-                    {[1,2,3,4,5].map(v=>(
-                      <button key={v} onClick={()=>setNovaDif(v)}
-                        style={{padding:'7px 2px',borderRadius:7,border:`2px solid ${novaDif===v?difCors[v]:'var(--border)'}`,background:novaDif===v?`${difCors[v]}18`:'transparent',fontSize:11,cursor:'pointer'}}>⭐</button>
-                    ))}
-                  </div>
-                  <div style={{display:'flex',gap:6}}>
-                    <button onClick={salvar} disabled={!novasQ} style={{flex:1,padding:'10px',borderRadius:9,border:'none',background:novasQ?'#60a5fa':'var(--border)',color:novasQ?'#0f172a':'var(--text4)',fontSize:12,fontWeight:800,cursor:'pointer'}}>💾 Salvar revisão</button>
-                    <button onClick={()=>marcarDominadoCaderno(t.id)} style={{padding:'10px 12px',borderRadius:9,border:'1px solid rgba(52,211,153,.35)',background:'rgba(52,211,153,.08)',color:'#34d399',fontSize:12,fontWeight:800,cursor:'pointer',whiteSpace:'nowrap'}}>✅ Dominei</button>
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        };
-
-        return(
-          <div>
-            {/* Prioridade da semana — motor novo: pior desempenho ponderado dos últimos 7 dias */}
-            {questPrior.top&&(
-              <div style={{padding:'11px 14px',borderRadius:12,background:'rgba(248,113,113,.07)',border:'1px solid rgba(248,113,113,.3)',marginBottom:10}}>
-                <div style={{fontSize:9,color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:3}}>🎯 PRIORIDADE DA SEMANA</div>
-                <div style={{fontSize:13,fontWeight:900,color:'var(--text)'}}>{questPrior.top.mat} — {questPrior.top.pct}%</div>
-                <div style={{fontSize:10,color:'var(--text4)',marginTop:2}}>Pior desempenho ponderado dos últimos 7 dias ({questPrior.top.questoes} questões, ontem pesa mais). Itens dessa matéria sobem pro topo da lista abaixo.</div>
-              </div>
-            )}
-            {/* Resumo fixo no topo */}
-            <div style={{padding:'12px 14px',borderRadius:12,background:'rgba(96,165,250,.06)',border:'1px solid rgba(96,165,250,.2)',marginBottom:14}}>
-              <div style={{display:'flex',gap:16}}>
-                <div>
-                  <div style={{fontSize:20,fontWeight:900,color:'#60a5fa',fontFamily:"'DM Mono',monospace",lineHeight:1}}>{questoesSemana}</div>
-                  <div style={{fontSize:9,color:'var(--text4)',marginTop:2}}>questões essa semana</div>
-                </div>
-                <div>
-                  <div style={{fontSize:20,fontWeight:900,color:'#34d399',fontFamily:"'DM Mono',monospace",lineHeight:1}}>{dominados.length}</div>
-                  <div style={{fontSize:9,color:'var(--text4)',marginTop:2}}>dominadas no total</div>
-                </div>
-                <div>
-                  <div style={{fontSize:20,fontWeight:900,color:'#f87171',fontFamily:"'DM Mono',monospace",lineHeight:1}}>{ativos.filter(t=>(t.dificuldade||3)>=4).length}</div>
-                  <div style={{fontSize:9,color:'var(--text4)',marginTop:2}}>difíceis ativas</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Lista ordenada por dificuldade */}
-            {ordenados.length>0?<>
-              <div style={{fontSize:10,color:'var(--text4)',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:8,letterSpacing:'1px'}}>MAIS DIFÍCIL PRIMEIRO — toque para registrar</div>
-              {ordenados.map(t=><ItemCaderno key={t.id} t={t}/>)}
-            </>:(
-              <div style={{padding:'24px',borderRadius:12,background:'rgba(52,211,153,.06)',border:'1px solid rgba(52,211,153,.2)',marginBottom:12,textAlign:'center'}}>
-                <div style={{fontSize:22,marginBottom:6}}>✅</div>
-                <div style={{fontSize:13,color:'#34d399',fontWeight:700}}>Nenhum item ativo</div>
-                <div style={{fontSize:10,color:'var(--text4)',marginTop:3}}>Registre um novo erro abaixo.</div>
-              </div>
-            )}
-
-            {/* Dominadas — colapsável */}
-            {dominados.length>0&&(
-              <details style={{marginTop:10,marginBottom:14}}>
-                <summary style={{fontSize:10,color:'#34d399',fontFamily:"'DM Mono',monospace",fontWeight:700,cursor:'pointer',padding:'8px 10px',borderRadius:8,background:'rgba(52,211,153,.05)',border:'1px solid rgba(52,211,153,.2)',listStyle:'none',display:'flex',justifyContent:'space-between'}}>
-                  <span>✅ DOMINADAS ({dominados.length})</span><span style={{opacity:.5}}>▼</span>
-                </summary>
-                <div style={{marginTop:6}}>
-                  {[...dominados].sort((a,b)=>{
-                    const da=(a.historico||[]).slice(-1)[0]?.data||'';
-                    const db=(b.historico||[]).slice(-1)[0]?.data||'';
-                    return db.localeCompare(da);
-                  }).map(t=>{
-                    const ultimaData=(t.historico||[]).slice(-1)[0]?.data||t.dia;
-                    return(
-                      <div key={t.id} style={{display:'flex',alignItems:'center',gap:10,padding:'9px 12px',borderRadius:9,background:'rgba(52,211,153,.04)',border:'1px solid rgba(52,211,153,.15)',marginBottom:5}}>
-                        <span style={{fontSize:14,color:'#34d399'}}>✓</span>
-                        <div style={{flex:1}}>
-                          <div style={{fontSize:11,fontWeight:700,color:'var(--text)'}}>{t.mat}{t.assunto?` — ${t.assunto}`:''}</div>
-                          <div style={{fontSize:9,color:'var(--text4)'}}>dominado em {ultimaData} · {t.tentativas||1}x revisado</div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </details>
-            )}
-
-            {/* SUGESTÕES DO GURUJA */}
-            {(()=>{
-              const dados=getGurujaAssuntos();
-              const todasSugestoes=[];
-              Object.entries(dados).forEach(([mat,d])=>{
-                if(!d.assuntos)return;
-                d.assuntos.filter(a=>a.acerto<75||a.diffMedia<-3).forEach(a=>todasSugestoes.push({...a,mat,score:calcScoreAssunto(a)}));
-              });
-              todasSugestoes.sort((a,b)=>b.score-a.score);
-              if(!todasSugestoes.length)return null;
-              const jaNoTec=new Set(todosItens.filter(t=>!t.dominado).map(t=>`${t.mat}||${t.assunto}`));
-              const sugestoesFiltradas=todasSugestoes.filter(s=>!jaNoTec.has(`${s.mat}||${s.titulo}`)).slice(0,5);
-              if(!sugestoesFiltradas.length)return null;
-              const addGurujaAoTec=(s)=>{
-                const difEstim=s.acerto<65?5:s.acerto<75?4:3;
-                const novo={
-                  id:Date.now()+Math.random(),mat:s.mat,assunto:s.titulo,
-                  feitas:s.questoes||0,acertei:s.acertos||0,pct:s.acerto,dificuldade:difEstim,
-                  tentativas:1,dominado:false,dia:getDK(),
-                  obs:`Guruja: ${s.acerto}% · ⬇️${Math.abs(s.diffMedia||0)}% da média`,
-                  origem:'guruja',historico:[{data:getDK(),questoes:s.questoes||0,acertos:s.acertos||0,dificuldade:difEstim}]
-                };
-                const novoCaderno=[...lsGet('rev_caderno',[]),novo];
-                lsSet('rev_caderno',novoCaderno);
-                setCadRegs(novoCaderno);
-              };
-              return(
-                <div style={{background:'rgba(251,191,36,.04)',border:'1px solid rgba(251,191,36,.25)',borderRadius:13,padding:'13px',marginBottom:12}}>
-                  <div style={{fontSize:9,color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:3,letterSpacing:'1px'}}>📥 SUGESTÕES GURUJA — assuntos críticos</div>
-                  <div style={{fontSize:10,color:'var(--text4)',marginBottom:10}}>Toque em + para adicionar ao TEC. Dificuldade estimada pelo % de acerto.</div>
-                  {sugestoesFiltradas.map((s,i)=>(
-                    <div key={i} style={{display:'flex',alignItems:'center',gap:8,padding:'8px 10px',borderRadius:9,background:s.diffMedia<-5?'rgba(248,113,113,.07)':'rgba(251,191,36,.05)',border:`1px solid ${s.diffMedia<-5?'rgba(248,113,113,.25)':'rgba(251,191,36,.2)'}`,marginBottom:6}}>
-                      <div style={{flex:1,minWidth:0}}>
-                        <div style={{fontSize:11,color:'var(--text)',fontWeight:700,lineHeight:1.3}}>{s.titulo.length>45?s.titulo.slice(0,43)+'…':s.titulo}</div>
-                        <div style={{display:'flex',gap:6,marginTop:3,flexWrap:'wrap'}}>
-                          <span style={{fontSize:9,color:'var(--text4)'}}>{s.mat}</span>
-                          <span style={{fontSize:9,color:s.acerto<70?'#f87171':'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:700}}>{s.acerto}%</span>
-                          {s.diffMedia<0&&<span style={{fontSize:9,color:'#f87171',fontWeight:700}}>⬇️{Math.abs(s.diffMedia).toFixed(1)}% da média</span>}
-                        </div>
-                      </div>
-                      <button onClick={()=>addGurujaAoTec(s)} style={{padding:'7px 12px',borderRadius:8,border:'none',background:'#fbbf24',color:'#0f172a',fontSize:11,fontWeight:900,cursor:'pointer',flexShrink:0}}>+ Add</button>
-                    </div>
-                  ))}
-                </div>
-              );
-            })()}
-
-            {/* FORMULÁRIO de novo registro */}
-            <div style={{background:'rgba(248,113,113,.04)',border:'1px solid rgba(248,113,113,.18)',borderRadius:13,padding:'14px',marginBottom:12}}>
-              <div style={{fontSize:9,color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:12}}>➕ NOVO REGISTRO</div>
-
-              <div style={{marginBottom:10}}>
-                <div style={{fontSize:9,color:'var(--text4)',marginBottom:6,fontFamily:"'DM Mono',monospace",fontWeight:700}}>MATÉRIA</div>
-                <input
-                  value={cadForm.mat}
-                  onChange={e=>setCadForm(f=>({...f,mat:e.target.value}))}
-                  placeholder="🔍 Digite a matéria que estudou..."
-                  style={{width:'100%',padding:'10px 12px',borderRadius:9,border:`1px solid ${cadForm.mat?'#f87171':'rgba(248,113,113,.2)'}`,background:'rgba(248,113,113,.04)',color:'var(--text)',fontSize:13,outline:'none',boxSizing:'border-box',marginBottom:10}}
-                />
-                {(()=>{
-                  const hist7=lsGet('historico_diario',[]).filter(r=>r.dt&&Date.now()-r.dt<7*86400000&&r.materia);
-                  const recentes=[...new Set(hist7.sort((a,b)=>(b.dt||0)-(a.dt||0)).map(r=>r.materia))].slice(0,5);
-                  if(!recentes.length)return null;
-                  return(
-                    <div style={{marginBottom:8}}>
-                      <div style={{fontSize:8,color:'#60a5fa',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:5}}>📚 ESTUDOU RECENTEMENTE</div>
-                      <div style={{display:'flex',flexWrap:'wrap',gap:5}}>
-                        {recentes.map(m=>(
-                          <button key={m} onClick={()=>setCadForm(f=>({...f,mat:m}))}
-                            style={{padding:'5px 10px',borderRadius:7,border:`1px solid ${cadForm.mat===m?'#60a5fa':'rgba(96,165,250,.2)'}`,background:cadForm.mat===m?'rgba(96,165,250,.2)':'rgba(96,165,250,.05)',color:cadForm.mat===m?'#60a5fa':'var(--text3)',fontSize:11,fontWeight:cadForm.mat===m?800:400,cursor:'pointer'}}>
-                            {m}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })()}
-                {(()=>{
-                  const matsCiclo=[...new Set(CICLO.map(s=>s.mat))];
-                  return(
-                    <div style={{marginBottom:8}}>
-                      <div style={{fontSize:8,color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:5}}>🔄 NO CICLO ATUAL</div>
-                      <div style={{display:'flex',flexWrap:'wrap',gap:5}}>
-                        {matsCiclo.map(m=>(
-                          <button key={m} onClick={()=>setCadForm(f=>({...f,mat:m}))}
-                            style={{padding:'5px 10px',borderRadius:7,border:`1px solid ${cadForm.mat===m?'#fbbf24':'rgba(251,191,36,.2)'}`,background:cadForm.mat===m?'rgba(251,191,36,.2)':'rgba(251,191,36,.05)',color:cadForm.mat===m?'#fbbf24':'var(--text3)',fontSize:11,fontWeight:cadForm.mat===m?800:400,cursor:'pointer'}}>
-                            {m}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })()}
-                {cadForm.mat&&(
-                  <div style={{marginTop:8,padding:'6px 10px',borderRadius:7,background:'rgba(248,113,113,.1)',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-                    <span style={{fontSize:11,color:'#f87171',fontWeight:800}}>✓ {cadForm.mat}</span>
-                    <button onClick={()=>setCadForm(f=>({...f,mat:''}))} style={{fontSize:9,color:'#f87171',background:'none',border:'none',cursor:'pointer'}}>limpar</button>
-                  </div>
-                )}
-              </div>
-
-              <div style={{marginBottom:10}}>
-                <div style={{fontSize:9,color:'var(--text4)',marginBottom:4}}>📖 ASSUNTO / TÓPICO</div>
-                <input value={cadForm.assunto||''} onChange={e=>setCadForm(f=>({...f,assunto:e.target.value}))} placeholder="ex: Princípios da Administração Pública..."
-                  style={{width:'100%',padding:'9px 11px',borderRadius:9,border:'1px solid var(--border)',background:'rgba(255,255,255,.03)',color:'var(--text)',fontSize:12,outline:'none',boxSizing:'border-box'}}/>
-              </div>
-
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:7,marginBottom:10}}>
-                <div>
-                  <div style={{fontSize:8,color:'var(--text4)',marginBottom:3}}>📝 QUESTÕES</div>
-                  <input type="number" value={cadForm.questoes||''} onChange={e=>setCadForm(f=>({...f,questoes:e.target.value}))} placeholder="0"
-                    style={{width:'100%',padding:'9px 4px',borderRadius:8,border:'1px solid var(--border)',background:'rgba(255,255,255,.03)',color:'var(--text)',fontSize:13,fontWeight:700,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
-                </div>
-                <div>
-                  <div style={{fontSize:8,color:'var(--text4)',marginBottom:3}}>✅ ACERTEI</div>
-                  <input type="number" value={cadForm.acertei||''} onChange={e=>setCadForm(f=>({...f,acertei:e.target.value}))} placeholder="0"
-                    style={{width:'100%',padding:'9px 4px',borderRadius:8,border:'1px solid rgba(52,211,153,.25)',background:'rgba(52,211,153,.04)',color:'#34d399',fontSize:13,fontWeight:700,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
-                </div>
-                <div>
-                  <div style={{fontSize:8,color:'var(--text4)',marginBottom:3}}>📊 ACERTO</div>
-                  {(()=>{
-                    const q=parseInt(cadForm.questoes)||0;const a=parseInt(cadForm.acertei)||0;
-                    if(!q)return <div style={{width:'100%',padding:'10px 4px',borderRadius:8,border:'1px solid var(--border)',textAlign:'center',fontSize:13,color:'var(--text4)'}}>—</div>;
-                    const pct=Math.round(a/q*100);
-                    const cor=pct>=80?'#34d399':pct>=60?'#fbbf24':'#f87171';
-                    return <div style={{width:'100%',padding:'10px 4px',borderRadius:8,border:`2px solid ${cor}50`,background:`${cor}10`,textAlign:'center',fontSize:13,fontWeight:900,color:cor,fontFamily:"'DM Mono',monospace"}}>{pct}%</div>;
-                  })()}
-                </div>
-              </div>
-
-              <div style={{marginBottom:12}}>
-                <div style={{fontSize:9,color:'var(--text4)',marginBottom:6}}>QUÃO DIFÍCIL FOI?</div>
-                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1fr 1fr',gap:5}}>
-                  {[
-                    {v:1,l:'Muito fácil',cor:'#34d399'},
-                    {v:2,l:'Fácil',cor:'#a3e635'},
-                    {v:3,l:'Médio',cor:'#fbbf24'},
-                    {v:4,l:'Difícil',cor:'#fb923c'},
-                    {v:5,l:'Mto difícil',cor:'#f87171'},
-                  ].map(({v,l,cor})=>(
-                    <button key={v} onClick={()=>setCadForm(f=>({...f,dificuldade:v}))}
-                      style={{padding:'8px 2px',borderRadius:8,border:`2px solid ${cadForm.dificuldade===v?cor:'var(--border)'}`,background:cadForm.dificuldade===v?`${cor}18`:'transparent',cursor:'pointer',textAlign:'center'}}>
-                      <div style={{fontSize:11}}>{'⭐'.repeat(v)}</div>
-                      <div style={{fontSize:7,color:cadForm.dificuldade===v?cor:'var(--text4)',marginTop:2}}>{l}</div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div style={{marginBottom:12}}>
-                <div style={{fontSize:9,color:'#60a5fa',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:6}}>⏱ TEMPO ESTUDADO (opcional)</div>
-                <div style={{display:'flex',gap:6}}>
-                  <input type="number" value={cadForm.tempo||''} onChange={e=>setCadForm(f=>({...f,tempo:e.target.value}))} placeholder="min"
-                    style={{flex:1,padding:'10px',borderRadius:8,border:'1px solid rgba(96,165,250,.25)',background:'rgba(96,165,250,.04)',color:'#60a5fa',fontSize:13,outline:'none',boxSizing:'border-box'}}/>
-                  <div style={{display:'flex',flexDirection:'column',gap:4}}>
-                    {[30,45,60].map(m=>(
-                      <button key={m} onClick={()=>setCadForm(f=>({...f,tempo:String(m)}))}
-                        style={{padding:'4px 10px',borderRadius:6,border:`1px solid ${cadForm.tempo===String(m)?'#60a5fa':'var(--border)'}`,background:cadForm.tempo===String(m)?'rgba(96,165,250,.15)':'transparent',color:cadForm.tempo===String(m)?'#60a5fa':'var(--text4)',fontSize:10,cursor:'pointer'}}>
-                        {m}min
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <button onClick={salvarCaderno} disabled={!cadForm.mat} style={{width:'100%',padding:'13px',borderRadius:10,border:'none',background:cadForm.mat?'#f87171':'var(--border)',color:cadForm.mat?'#0f172a':'var(--text4)',fontSize:13,fontWeight:900,cursor:'pointer'}}>
-                {cadSalvo?'✅ SALVO!':'💾 SALVAR REGISTRO'}
-              </button>
-            </div>
-          </div>
-        );
-      })()}
 
       {/* TÓPICOS PARA REVISITAR */}
       {/* TÓPICOS PARA REVISITAR — agora dentro de Estratégia > Revisitar */}
@@ -7253,16 +6522,16 @@ function ModalConfig({fechar}){
 
             {/* TCE-MG Status */}
             <div style={{padding:'12px',borderRadius:11,background:'rgba(52,211,153,.06)',border:'1px solid rgba(52,211,153,.25)'}}>
-              <div style={{fontSize:9,color:'#34d399',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:8}}>🏆 TCE-MG — SITUAÇÃO ATUAL</div>
+              <div style={{fontSize:9,color:'#34d399',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:8}}>🏆 TCE-MG — MONITORAMENTO</div>
               <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:5}}>
-                {[['Posição','58ª'],['Objetiva','61,00'],['Discursiva','10,60 ✅ recurso'],['Total','71,60'],['Gap pos.35','1,99pts discursiva'],['Hetero','12/04 · BH']].map(([k,v])=>(
+                {[['Posição','58ª'],['Objetiva','61,00'],['Discursiva','10,60'],['Total','71,60'],['Gap pos.35','1,99pts'],['Status','aguarda convocação']].map(([k,v])=>(
                   <div key={k} style={{padding:'6px 8px',borderRadius:7,background:'rgba(52,211,153,.08)'}}>
                     <div style={{fontSize:8,color:'#64748b',fontFamily:"'DM Mono',monospace"}}>{k}</div>
                     <div style={{fontSize:11,color:'#34d399',fontWeight:700}}>{v}</div>
                   </div>
                 ))}
               </div>
-              <div style={{marginTop:8,fontSize:10,color:'#94a3b8',lineHeight:1.5}}>Top 1% com 16.000 inscritos · Nomeação possível 2026 · Saiu do Rio por R$104,90</div>
+              <div style={{marginTop:8,fontSize:10,color:'#94a3b8',lineHeight:1.5}}>Top 1% · 16.000 inscritos · Nomeação possível 2026. Lição: o gap de 1,99pt foi na discursiva — por isso ela é carro-chefe no TCE-SP.</div>
             </div>
 
             {/* Concursos-alvo */}
