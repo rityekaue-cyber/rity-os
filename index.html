@@ -405,10 +405,10 @@ const MATRIZ_MEIRELLES={
   'Dir. Financeiro / AFO': {prioridade:'manutencao',estrelas:4,pctAcerto:81,  jornada:35, nivel:'Expert',   ferramenta:'TecConcursos',      motivo:'🟡 81% — saiu do carro-chefe, exceto Precatórios/Receita/MatFi'},
   'Dir. Civil':            {prioridade:'manutencao',estrelas:3,pctAcerto:85,  jornada:29, nivel:'Expert',   ferramenta:'TecConcursos',      motivo:'🟡 85% — exceto Obrigações Pt1 70% e Contratos Geral 69%'},
   // ── NIVELAMENTO (só Bloco 0) ──
-  'Dir. Penal':            {prioridade:'nivelamento',estrelas:3,pctAcerto:null,jornada:0,  nivel:'Zero Base',ferramenta:'TecConcursos',      motivo:'🟠 Zero base — bloco pequeno e fechado no Bloco 0'},
+  'Dir. Penal':            {prioridade:'manutencao',estrelas:3,pctAcerto:89,  jornada:18, nivel:'Bom',      ferramenta:'TecConcursos',      motivo:'🟢 89% — primeiro dado real (simulado 13-19/07), bloco pequeno e fechado'},
   'Legislação TCE-SP':     {prioridade:'nivelamento',estrelas:3,pctAcerto:null,jornada:0,  nivel:'Zero Base',ferramenta:'Gran Cursos',       motivo:'🟠 Zero base — norma local, só no Bloco 0'},
   'Ética Pública':         {prioridade:'nivelamento',estrelas:3,pctAcerto:null,jornada:0,  nivel:'Zero Base',ferramenta:'Gran Cursos',       motivo:'🟠 Zero base — Bloco 0, depois manutenção leve'},
-  'Raciocínio Lógico':     {prioridade:'nivelamento',estrelas:4,pctAcerto:null,jornada:7,  nivel:'Aprendiz', ferramenta:'Gran Cursos',       motivo:'🟠 Não testado — diagnóstico pendente'},
+  'Raciocínio Lógico':     {prioridade:'urgente',   estrelas:5,pctAcerto:76,  jornada:17, nivel:'Aprendiz', ferramenta:'Gran Cursos',       motivo:'🔴 76% — primeiro dado real (simulado 13-19/07). Pior nota confirmada da semana, gate Gerais apertado'},
   'Direito Empresarial (Comercial)':{prioridade:'nivelamento',estrelas:3,pctAcerto:null,jornada:0,  nivel:'Zero Base',ferramenta:'Guruja',           motivo:'🟠 Zero base — confirmado no edital, entra no Bloco 0'},
   // ── HIBERNAÇÃO (2h/semana total, só tempo morto) ──
   'Adm. Pública':          {prioridade:'hibernacao', estrelas:2,pctAcerto:76,  jornada:4,  nivel:'Aprendiz', ferramenta:'NotebookLM',        motivo:'⚫ Fora escopo TCE-SP — 2h/semana máx, só tempo morto'},
@@ -1846,6 +1846,7 @@ const GURUJA_SEED={
       {titulo:'Sintaxe (frase, oração, período, termos)',acerto:80,diffMedia:6,relevancia:3,tempoCump:'1h30m',questoes:25,acertos:20},
       {titulo:'Morfologia',acerto:83,diffMedia:9,relevancia:3,tempoCump:'1h',questoes:27,acertos:22},
       {titulo:'Pontuação e Linguagem',acerto:85,diffMedia:11,relevancia:3,tempoCump:'1h',questoes:27,acertos:23},
+      {titulo:'Interpretação de Textos e Compreensão (simulado 13-19/07)',acerto:86,diffMedia:12,relevancia:5,tempoCump:'1h30m',questoes:15,acertos:13},
     ]},
   'Dir. Constitucional':{
     importadoEm:'2026-07-09',jornada:27,nivel:'Expert',ferramenta:'TecConcursos',
@@ -1867,6 +1868,8 @@ const GURUJA_SEED={
       {titulo:'Controle Externo — Tribunais de Contas (CEXT)',acerto:83,diffMedia:0,relevancia:5,tempoCump:'2h',questoes:100,acertos:83},
       {titulo:'Jurisdição e Competência do TCU/TCEs/TCMs',acerto:71.4,diffMedia:-10.9,relevancia:5,tempoCump:'1h',questoes:28,acertos:20},
       {titulo:'Jurisprudências e Súmulas dos Tribunais de Contas',acerto:73.9,diffMedia:-6.6,relevancia:5,tempoCump:'1h',questoes:25,acertos:18},
+      {titulo:'Teoria Geral do Direito Constitucional; Eficácia e Aplicabilidade (simulado 13-19/07)',acerto:90,diffMedia:7,relevancia:4,tempoCump:'1h',questoes:10,acertos:9},
+      {titulo:'Direitos e Garantias Fundamentais e Direitos Humanos (simulado 13-19/07)',acerto:100,diffMedia:17,relevancia:5,tempoCump:'1h',questoes:10,acertos:10},
     ]},
   'Dir. Administrativo':{
     importadoEm:'2026-07-09',jornada:29,nivel:'Expert',ferramenta:'TecConcursos',
@@ -1884,6 +1887,9 @@ const GURUJA_SEED={
       {titulo:'Intervenção na Propriedade / Bens Públicos',acerto:75,diffMedia:-12,relevancia:3,tempoCump:'1h',questoes:27,acertos:20},
       {titulo:'Agentes Públicos (Servidores)',acerto:83,diffMedia:-4,relevancia:4,tempoCump:'1h',questoes:27,acertos:22},
       {titulo:'Improbidade Administrativa (Lei 8.429/92)',acerto:85,diffMedia:-2,relevancia:5,tempoCump:'1h',questoes:27,acertos:23},
+      {titulo:'Conceitos e Regime Jurídico Administrativo (simulado 13-19/07)',acerto:92,diffMedia:9,relevancia:5,tempoCump:'1h',questoes:12,acertos:11},
+      {titulo:'Poderes da Administração e Organização Administrativa (simulado 13-19/07)',acerto:100,diffMedia:17,relevancia:5,tempoCump:'1h',questoes:10,acertos:10},
+      {titulo:'Licitações Públicas — imersão temática (simulado 13-19/07)',acerto:87,diffMedia:4,relevancia:5,tempoCump:'1h',questoes:15,acertos:13},
     ]},
   'Dir. Tributário':{
     importadoEm:'2026-07-09',jornada:27,nivel:'Expert',ferramenta:'TecConcursos FGV',
@@ -1901,6 +1907,7 @@ const GURUJA_SEED={
       {titulo:'Reforma Tributária — EC 132/2023 Pt II',acerto:75,diffMedia:-5.2,relevancia:5,tempoCump:'1h',questoes:22,acertos:17},
       {titulo:'Simples Nacional — LC 123/2006',acerto:71,diffMedia:-9,relevancia:4,tempoCump:'1h',questoes:28,acertos:20},
       {titulo:'Simples Nacional — Resolução CGSN 140/2018',acerto:70,diffMedia:-10,relevancia:4,tempoCump:'1h',questoes:27,acertos:19},
+      {titulo:'Conceito de Tributo e Espécies Tributárias (simulado 13-19/07)',acerto:76,diffMedia:-4,relevancia:5,tempoCump:'2h',questoes:21,acertos:16},
     ]},
   'Dir. Financeiro / AFO':{
     importadoEm:'2026-07-09',jornada:35,nivel:'Expert',ferramenta:'TecConcursos',
@@ -1921,6 +1928,8 @@ const GURUJA_SEED={
       {titulo:'Precatórios (art. 100 CF)',acerto:35,diffMedia:-46,relevancia:4,tempoCump:'1h',questoes:0,acertos:0},
       {titulo:'Controle Financeiro (interno/externo) — Controle pelos TCs',acerto:72,diffMedia:-7,relevancia:4,tempoCump:'1h',questoes:20,acertos:11},
       {titulo:'Matemática Financeira aplicada',acerto:26,diffMedia:-55,relevancia:4,tempoCump:'2h',questoes:0,acertos:0},
+      {titulo:'Atividade financeira, normas gerais, natureza jurídica, tipos de despesa (simulado 13-19/07)',acerto:86,diffMedia:5,relevancia:4,tempoCump:'1h',questoes:14,acertos:12},
+      {titulo:'Princípios orçamentários, vedações orçamentárias CF/88 (simulado 13-19/07)',acerto:86,diffMedia:5,relevancia:4,tempoCump:'1h',questoes:15,acertos:13},
     ]},
   'Dir. Civil':{
     importadoEm:'2026-07-09',jornada:29,nivel:'Expert',ferramenta:'TecConcursos',
@@ -1937,14 +1946,16 @@ const GURUJA_SEED={
       {titulo:'Espécies de Contratos — Parte 2',acerto:72,diffMedia:-13,relevancia:4,tempoCump:'2h',questoes:25,acertos:18},
       {titulo:'Responsabilidade Civil',acerto:85,diffMedia:0,relevancia:5,tempoCump:'1h',questoes:27,acertos:23},
       {titulo:'Direito das Coisas (Posse/Propriedade)',acerto:77,diffMedia:-8,relevancia:4,tempoCump:'1h',questoes:27,acertos:21},
+      {titulo:'Capacidade Civil e Direitos Inerentes à Personalidade (simulado 13-19/07)',acerto:84,diffMedia:-1,relevancia:4,tempoCump:'1h30m',questoes:25,acertos:21},
     ]},
   'Raciocínio Lógico':{
-    importadoEm:'2026-07-09',jornada:7,nivel:'Aprendiz',ferramenta:'Gran Cursos',
-    desempenhoHistorico:{acertos:null,questoes:null,pctAcerto:null,tempoMedio:null,reforcoPendente:'DIAGNÓSTICO PENDENTE — nunca testado'},
+    importadoEm:'2026-07-19',jornada:17,nivel:'Aprendiz',ferramenta:'Gran Cursos',
+    desempenhoHistorico:{acertos:13,questoes:17,pctAcerto:76,tempoMedio:'1h30m',reforcoPendente:'Primeiro diagnóstico real — pior nota confirmada da semana (simulado 13-19/07). Teoria estruturada antes de cronometrado.'},
     assuntos:[
       {titulo:'Proposições, Conectivos e Tabela-Verdade',acerto:null,diffMedia:0,relevancia:5,tempoCump:'2h',questoes:0,acertos:0},
       {titulo:'Equivalências Lógicas e Negação',acerto:null,diffMedia:0,relevancia:5,tempoCump:'2h',questoes:0,acertos:0},
       {titulo:'Silogismos e Inferências',acerto:null,diffMedia:0,relevancia:4,tempoCump:'2h',questoes:0,acertos:0},
+      {titulo:'Estruturas Lógicas (simulado 13-19/07) — PRIMEIRO DADO REAL',acerto:76,diffMedia:0,relevancia:5,tempoCump:'1h30m',questoes:17,acertos:13},
     ]},
   'Ética Pública':{
     importadoEm:'2026-07-09',jornada:0,nivel:'Zero Base',ferramenta:'Gran Cursos',
@@ -1964,11 +1975,12 @@ const GURUJA_SEED={
       {titulo:'Instrução 01/2024 do TCE-SP',acerto:null,diffMedia:0,relevancia:5,tempoCump:'1h',questoes:0,acertos:0},
     ]},
   'Dir. Penal':{
-    importadoEm:'2026-07-09',jornada:0,nivel:'Zero Base',ferramenta:'TecConcursos',
-    desempenhoHistorico:{acertos:null,questoes:null,pctAcerto:null,tempoMedio:null,reforcoPendente:'ZERO BASE — nivelamento Bloco 0'},
+    importadoEm:'2026-07-19',jornada:18,nivel:'Bom',ferramenta:'TecConcursos',
+    desempenhoHistorico:{acertos:16,questoes:18,pctAcerto:89,tempoMedio:'2h',reforcoPendente:'Primeiro diagnóstico real (simulado 13-19/07) — bem acima da meta, manutenção leve'},
     assuntos:[
       {titulo:'Crimes contra a Administração Pública (arts. 312 a 337-A CP)',acerto:null,diffMedia:0,relevancia:5,tempoCump:'2h',questoes:0,acertos:0},
       {titulo:'Crimes contra as Finanças Públicas (arts. 359-A a 359-H CP) e Lei 10.028/2001',acerto:null,diffMedia:0,relevancia:5,tempoCump:'1h30m',questoes:0,acertos:0},
+      {titulo:'Crimes praticados por funcionário público contra a Administração (simulado 13-19/07) — PRIMEIRO DADO REAL',acerto:89,diffMedia:0,relevancia:5,tempoCump:'2h',questoes:18,acertos:16},
     ]},
 };
 
@@ -7302,6 +7314,28 @@ function App(){
   useEffect(()=>{
     Sync.onStatus(s=>setSyncSt(s));
     if(Sync.isConfigured()){Sync.init().then(ok=>{if(ok){setFeitos(lsGet('feitos',[]));setCicloNum(lsGet('cicloNum',1));setHoras(lsGet('horas',[]));setMit(lsGet('mit',[]));}});}
+    // ── Seed único: simulado Guruja 13-19/07 (251 questões, 8 matérias) ──
+    // Sem isso, a fila de Questões (últimos 7 dias) não enxerga esse resultado real.
+    (()=>{
+      const KEY='rity_seed_simulado_20260719';
+      if(!localStorage.getItem(KEY)){
+        try{
+          const hist=JSON.parse(localStorage.getItem('historico_diario')||'[]');
+          const novos=[
+            {materia:'Dir. Administrativo',questoes:63,acertei:59,dt:Date.now(),origem:'guruja_simulado'},
+            {materia:'Dir. Constitucional',questoes:42,acertei:40,dt:Date.now(),origem:'guruja_simulado'},
+            {materia:'Português',questoes:22,acertei:19,dt:Date.now(),origem:'guruja_simulado'},
+            {materia:'Dir. Civil',questoes:25,acertei:21,dt:Date.now(),origem:'guruja_simulado'},
+            {materia:'Dir. Financeiro / AFO',questoes:43,acertei:37,dt:Date.now(),origem:'guruja_simulado'},
+            {materia:'Dir. Penal',questoes:18,acertei:16,dt:Date.now(),origem:'guruja_simulado'},
+            {materia:'Raciocínio Lógico',questoes:17,acertei:13,dt:Date.now(),origem:'guruja_simulado'},
+            {materia:'Dir. Tributário',questoes:21,acertei:16,dt:Date.now(),origem:'guruja_simulado'},
+          ];
+          localStorage.setItem('historico_diario',JSON.stringify([...hist,...novos]));
+          localStorage.setItem(KEY,'done');
+        }catch(e){}
+      }
+    })();
     const _f=lsGet('feitos',[]);
     if(lsGet('ciclo_versao','')!=='v37'){
       if(_f.length>0)lsSet('feitos',[]);
