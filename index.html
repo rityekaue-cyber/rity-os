@@ -880,6 +880,40 @@ function pesoGate(mat){
   return 1;
 }
 
+// ═══ MOTOR DISCURSIVA — técnica do dia + prioridade por matéria ═══════════
+const DISCURSIVA_TECNICAS={
+  blurting:{nome:'Blurting Temático',ic:'💭',cor:'#a78bfa',como:'Escolha 2 temas que já domina na objetiva. Feche o material e escreva tudo que lembrar, sem se preocupar com forma. Depois compare com a fonte e marque em outra cor o que faltou.'},
+  esqueleto:{nome:'Esqueletos',ic:'🦴',cor:'#60a5fa',como:'Pegue 2-3 questões discursivas. NÃO escreva a resposta completa — só monte introdução, desenvolvimento 1, desenvolvimento 2 e conclusão em tópicos.'},
+  simulado:{nome:'Simulado Progressivo',ic:'✍️',cor:'#f87171',como:'Escreva 1 peça completa (20-30 linhas) baseada num esqueleto já feito. Cronometre, mas não se desespere se passar do tempo.'},
+  micro:{nome:'Micro-Parágrafo',ic:'📝',cor:'#34d399',como:'Escolha 1 dos esqueletos da semana. Escreva só 1 parágrafo de desenvolvimento perfeito — foco total em conectivos e clareza.'},
+  feynman:{nome:'Feynman',ic:'🎙️',cor:'#fbbf24',como:'Escolha 1 tema complexo. Grave um áudio de 3-5min explicando como se fosse pra alguém leigo. Ouça e identifique onde gaguejou ou foi confuso.'},
+  revisao:{nome:'Revisão',ic:'🔍',cor:'#94a3b8',como:'Leia em voz alta a peça de quarta-feira. Identifique frases longas, repetições, falta de clareza. Reescreva os trechos problemáticos. Depois leia uma redação nota máxima — sem escrever.'},
+};
+// getDay(): 0=domingo,1=segunda,2=terça,3=quarta,4=quinta,5=sexta,6=sábado
+const DISCURSIVA_SEMANA={0:'revisao',1:'blurting',2:'esqueleto',3:'simulado',4:'micro',5:'feynman',6:null};
+
+function calcPrioridadeDiscursiva(mat){
+  if(!mat)return null;
+  const guruja=getGurujaAssuntos();
+  let pct=null;
+  if(guruja[mat]){
+    const comDado=(guruja[mat].assuntos||[]).filter(a=>a.acerto!=null);
+    if(comDado.length)pct=Math.round(comDado.reduce((s,a)=>s+a.acerto,0)/comDado.length);
+  }
+  if(pct===null){
+    const tops=(EDITAL[mat]?.top||[]).filter(t=>t.acerto!=null);
+    if(tops.length)pct=Math.round(tops.reduce((s,t)=>s+t.acerto,0)/tops.length);
+  }
+  const peso=pesoGate(mat);
+  const distancia=pct===null?40:Math.max(0,90-pct);
+  const score=distancia*peso;
+  let label,cor;
+  if(score>=45){label='🔴 ALTA';cor='#f87171';}
+  else if(score>=20){label='🟡 MÉDIA';cor='#fbbf24';}
+  else{label='🟢 BAIXA';cor='#34d399';}
+  return{label,cor,pct,score};
+}
+
 const MATS_JURIDICAS=EDITAL_MATS.filter(m=>m.startsWith('Dir.')||m==='Direito Empresarial (Comercial)'||m==='Legislação TCE-SP'||m==='Ética Pública');
 
 // ── 1. QUESTÕES — pior desempenho ponderado dos últimos 7 dias (ontem pesa 3x) ──
@@ -5801,6 +5835,153 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
 
 // ─── TAB: AGENDA ─────────────────────────────────────────────
 // ─── ABA: MAPA DA PROVA ──────────────────────────────────────
+function TabDiscursiva(){
+  const hoje=getDK();
+  const diaSemanaNum=new Date().getDay();
+  const tecnicaHojeId=DISCURSIVA_SEMANA[diaSemanaNum];
+  const tecnicaHoje=tecnicaHojeId?DISCURSIVA_TECNICAS[tecnicaHojeId]:null;
+  const[discRegs,setDiscRegs]=useState(()=>lsGet('rev_discursiva',[]));
+  const[discForm,setDiscForm]=useState({mat:'',topico:'',tecnica:tecnicaHojeId||'blurting',tempo:''});
+  const[discSalvo,setDiscSalvo]=useState(false);
+
+  const prioridade=discForm.mat?calcPrioridadeDiscursiva(discForm.mat):null;
+
+  const salvarDisc=()=>{
+    if(!discForm.mat||!discForm.tecnica)return;
+    const novo={...discForm,prioridade:prioridade?.label||null,id:Date.now(),dt:Date.now(),dia:hoje};
+    const n=[...discRegs,novo];setDiscRegs(n);lsSet('rev_discursiva',n);
+    const mins=parseInt(discForm.tempo)||0;
+    if(mins>0){const h=lsGet('horas',[]);lsSet('horas',[...h,{mat:`Discursiva — ${discForm.mat}`,min:mins,dt:Date.now()}]);}
+    setDiscForm({mat:'',topico:'',tecnica:tecnicaHojeId||'blurting',tempo:''});
+    setDiscSalvo(true);setTimeout(()=>setDiscSalvo(false),2000);
+  };
+
+  const inicioSemana=new Date();inicioSemana.setDate(inicioSemana.getDate()-inicioSemana.getDay());inicioSemana.setHours(0,0,0,0);
+  const diasSemanaLabels=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  const feitoNoDia={};
+  discRegs.forEach(r=>{
+    if((r.dt||0)>=inicioSemana.getTime()){
+      const d=new Date(r.dt).getDay();
+      feitoNoDia[d]=(feitoNoDia[d]||0)+1;
+    }
+  });
+  const regsSemana=discRegs.filter(r=>(r.dt||0)>=inicioSemana.getTime());
+  const minutosSemana=regsSemana.reduce((s,r)=>s+(parseInt(r.tempo)||0),0);
+  const tecnicasTocadas=new Set(regsSemana.map(r=>r.tecnica));
+
+  return(
+    <div>
+      {tecnicaHoje?(
+        <div style={{padding:'14px 16px',borderRadius:14,background:`${tecnicaHoje.cor}10`,border:`2px solid ${tecnicaHoje.cor}40`,marginBottom:14}}>
+          <div style={{fontSize:9,color:tecnicaHoje.cor,fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:4}}>✍️ TÉCNICA DE HOJE</div>
+          <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:8}}>
+            <span style={{fontSize:22}}>{tecnicaHoje.ic}</span>
+            <div style={{fontSize:16,fontWeight:900,color:'var(--text)'}}>{tecnicaHoje.nome}</div>
+          </div>
+          <div style={{fontSize:11,color:'var(--text3)',lineHeight:1.6}}>{tecnicaHoje.como}</div>
+        </div>
+      ):(
+        <div style={{padding:'14px 16px',borderRadius:14,background:'rgba(52,211,153,.08)',border:'2px solid rgba(52,211,153,.3)',marginBottom:14,textAlign:'center'}}>
+          <div style={{fontSize:22}}>🌴</div>
+          <div style={{fontSize:13,fontWeight:800,color:'#34d399',marginTop:4}}>Sábado é seu dia livre de discursiva</div>
+          <div style={{fontSize:10,color:'var(--text4)',marginTop:2}}>Descanso real — sem escrever hoje.</div>
+        </div>
+      )}
+
+      <div style={{marginBottom:16}}>
+        <div style={{fontSize:9,color:'var(--text4)',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:8,letterSpacing:'1px'}}>MAPA DA SEMANA</div>
+        <div style={{display:'flex',gap:4}}>
+          {[1,2,3,4,5,6,0].map(d=>{
+            const tec=DISCURSIVA_SEMANA[d];
+            const info=tec?DISCURSIVA_TECNICAS[tec]:null;
+            const feito=(feitoNoDia[d]||0)>0;
+            const ehHoje=d===diaSemanaNum;
+            return(
+              <div key={d} style={{flex:1,textAlign:'center',padding:'8px 3px',borderRadius:9,background:feito?'rgba(52,211,153,.15)':ehHoje?`${info?.cor||'#94a3b8'}15`:'rgba(255,255,255,.02)',border:ehHoje?`1px solid ${info?.cor||'#94a3b8'}50`:'1px solid transparent'}}>
+                <div style={{fontSize:8,color:'var(--text4)',fontWeight:700}}>{diasSemanaLabels[d]}</div>
+                <div style={{fontSize:14,marginTop:2}}>{feito?'✅':info?info.ic:'🌴'}</div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div style={{padding:'12px',borderRadius:12,background:'rgba(167,139,250,.05)',border:'1px solid rgba(167,139,250,.2)',marginBottom:16}}>
+        <div style={{fontSize:9,letterSpacing:'2px',color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:10}}>✍️ REGISTRAR SESSÃO</div>
+
+        <div style={{marginBottom:8}}>
+          <div style={{fontSize:9,color:'#64748b',marginBottom:5}}>TÉCNICA</div>
+          <div style={{display:'flex',gap:5,flexWrap:'wrap'}}>
+            {Object.entries(DISCURSIVA_TECNICAS).map(([id,t])=>(
+              <button key={id} onClick={()=>setDiscForm(f=>({...f,tecnica:id}))}
+                style={{padding:'7px 10px',borderRadius:7,border:`1px solid ${discForm.tecnica===id?t.cor:'var(--border)'}`,background:discForm.tecnica===id?`${t.cor}18`:'transparent',color:discForm.tecnica===id?t.cor:'var(--text4)',fontSize:10,fontWeight:700,cursor:'pointer'}}>
+                {t.ic} {t.nome}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div style={{marginBottom:8}}>
+          <div style={{fontSize:9,color:'#64748b',marginBottom:4}}>MATÉRIA (conteúdo da peça)</div>
+          <MatBtn value={discForm.mat} onChange={v=>setDiscForm(f=>({...f,mat:v}))} placeholder="Ou digitar matéria..."/>
+          {prioridade&&(
+            <div style={{marginTop:6,fontSize:10,color:prioridade.cor,fontWeight:700}}>
+              Prioridade pra prova: {prioridade.label} {prioridade.pct!=null?`(matéria em ${prioridade.pct}%)`:'(sem dado ainda)'}
+            </div>
+          )}
+        </div>
+
+        <div style={{marginBottom:8}}>
+          <div style={{fontSize:9,color:'#64748b',marginBottom:4}}>TÓPICO</div>
+          <input value={discForm.topico||''} onChange={e=>setDiscForm(f=>({...f,topico:e.target.value}))} placeholder="ex: Improbidade Administrativa" style={{width:'100%',padding:'9px 10px',borderRadius:7,border:'1px solid rgba(167,139,250,.2)',background:'rgba(167,139,250,.04)',color:'#f1f5f9',fontSize:11,outline:'none',boxSizing:'border-box'}}/>
+        </div>
+
+        <div style={{marginBottom:12}}>
+          <div style={{fontSize:9,color:'#64748b',marginBottom:4}}>⏱ TEMPO (min)</div>
+          <input type="number" value={discForm.tempo||''} onChange={e=>setDiscForm(f=>({...f,tempo:e.target.value}))} placeholder="ex: 30" style={{width:'100%',padding:'13px',borderRadius:8,border:'1px solid rgba(167,139,250,.3)',background:'rgba(167,139,250,.06)',color:'#a78bfa',fontSize:20,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
+        </div>
+
+        <button onClick={salvarDisc} disabled={!discForm.mat} style={{width:'100%',padding:'13px',borderRadius:9,border:'none',background:discForm.mat?'#a78bfa':'rgba(148,163,184,.2)',color:discForm.mat?'#0f172a':'#64748b',fontSize:12,fontWeight:800,cursor:discForm.mat?'pointer':'default'}}>
+          {discSalvo?'✅ SALVO!':'💾 REGISTRAR'}
+        </button>
+      </div>
+
+      <div style={{padding:'12px 14px',borderRadius:12,background:'rgba(96,165,250,.06)',border:'1px solid rgba(96,165,250,.2)',marginBottom:16}}>
+        <div style={{display:'flex',gap:16}}>
+          <div>
+            <div style={{fontSize:20,fontWeight:900,color:'#60a5fa',fontFamily:"'DM Mono',monospace",lineHeight:1}}>{minutosSemana}</div>
+            <div style={{fontSize:9,color:'var(--text4)',marginTop:2}}>min essa semana</div>
+          </div>
+          <div>
+            <div style={{fontSize:20,fontWeight:900,color:'#a78bfa',fontFamily:"'DM Mono',monospace",lineHeight:1}}>{regsSemana.length}</div>
+            <div style={{fontSize:9,color:'var(--text4)',marginTop:2}}>sessões</div>
+          </div>
+          <div>
+            <div style={{fontSize:20,fontWeight:900,color:'#34d399',fontFamily:"'DM Mono',monospace",lineHeight:1}}>{tecnicasTocadas.size}/6</div>
+            <div style={{fontSize:9,color:'var(--text4)',marginTop:2}}>técnicas tocadas</div>
+          </div>
+        </div>
+      </div>
+
+      <div style={{fontSize:9,color:'var(--text4)',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:8,letterSpacing:'1px'}}>HISTÓRICO RECENTE</div>
+      {discRegs.length===0&&<div style={{padding:'14px',textAlign:'center',fontSize:11,color:'var(--text4)'}}>Nenhuma sessão registrada ainda.</div>}
+      {[...discRegs].sort((a,b)=>(b.dt||0)-(a.dt||0)).slice(0,12).map(r=>{
+        const t=DISCURSIVA_TECNICAS[r.tecnica];
+        return(
+          <div key={r.id} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'9px 12px',borderRadius:9,background:r.dia===hoje?'rgba(167,139,250,.08)':'rgba(255,255,255,.02)',border:'1px solid rgba(148,163,184,.1)',marginBottom:5}}>
+            <div>
+              <div style={{fontSize:11,color:'var(--text)',fontWeight:700}}>{t?.ic} {t?.nome||r.tecnica} — {r.mat}</div>
+              {r.topico&&<div style={{fontSize:9,color:'#a78bfa',marginTop:1}}>{r.topico}</div>}
+              <div style={{fontSize:9,color:'#64748b'}}>{r.tempo?`${r.tempo}min`:'—'}{r.prioridade?` · prioridade ${r.prioridade}`:''}</div>
+            </div>
+            <div style={{fontSize:9,color:'var(--text4)',fontFamily:"'DM Mono',monospace",flexShrink:0}}>{r.dia===hoje?'hoje':r.dia}</div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function TabMapa(){
   const[aba,setAba]=useState('ranking');
   const[matSel,setMatSel]=useState('Português');
@@ -7503,6 +7684,7 @@ function App(){
     {id:'ia',e:'🤖',l:'IA'},
     {id:'estudo',e:'📚',l:'Estudo'},
     {id:'hoje',e:'📅',l:'Hoje'},
+    {id:'discursiva',e:'✍️',l:'Discursiva'},
     {id:'revisao',e:'🧠',l:'Revisão'},
     {id:'dados',e:'📓',l:'Dados'},
     {id:'mapa',e:'📊',l:'Mapa'},
@@ -7630,6 +7812,7 @@ function App(){
         {tab==='hoje'   &&<TabHoje feitos={feitos} onAddHoras={addHoras} onSetTab={setTab}/>}
         {tab==='revisao'&&<TabRevisao totalBlocos={feitos.length} tmSugestao={tmSugestao} tmIA={tmIA} onSyncHistorico={syncHistorico} onAddHoras={addHoras} ankiSugestoes={calcMotorCanais(feitos,horas,historico).anki.materias||[]} nlmSugestao={calcMotorCanais(feitos,horas,historico).nlm.top||null}/>}
         {tab==='dados'  &&<TabDados horas={horas}/>}
+        {tab==='discursiva'&&<TabDiscursiva/>}
         {tab==='mapa'   &&<TabMapa/>}
         {tab==='agenda' &&<TabAgenda planoSemana={planoSemana} onSetTab={setTab}/>}
         <div style={{height:80}}/>
