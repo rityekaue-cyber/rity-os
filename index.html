@@ -324,6 +324,14 @@ const REGRAS_INEGOCIAVEIS=[
 function getAlertasAtivos(){
   const hoje=new Date().toISOString().split('T')[0];
   const alertas=[];
+  // Fim de ciclo — avisa no último dia e depois dele
+  try{
+    const cicloIni=new Date(2026,6,13).setHours(0,0,0,0);
+    const diaCiclo=Math.round((new Date().setHours(0,0,0,0)-cicloIni)/86400000)+1;
+    const maxDia=Math.max(...CICLO.map(s=>s.dia));
+    if(diaCiclo===maxDia) alertas.push({tipo:'ciclo',msg:'📆 Último dia do ciclo — montar o ciclo da próxima semana',cor:'#fb923c'});
+    else if(diaCiclo>maxDia) alertas.push({tipo:'ciclo',msg:`⚠️ Ciclo encerrado há ${diaCiclo-maxDia} dia(s) — montar ciclo novo`,cor:'#f87171'});
+  }catch(e){}
   if(hoje>='2026-07-13'&&hoje<='2026-08-11') alertas.push({tipo:'inscricao',msg:'📋 Inscrições TCE-SP abertas até 11/08 — R$95,00',cor:'#60a5fa'});
   if(hoje>='2026-07-20'&&hoje<'2026-07-23') alertas.push({tipo:'prep',msg:'🔧 Preparação — ajustar rotina pro Bloco 0 (23-31/07)',cor:'#a78bfa'});
   if(hoje>='2026-07-23'&&hoje<='2026-07-31') alertas.push({tipo:'bloco0',msg:'🎯 Bloco 0 ativo — nivelamento Penal/Legislação/Ética/Civil',cor:'#fb923c'});
@@ -878,7 +886,7 @@ const MATS_JURIDICAS=EDITAL_MATS.filter(m=>m.startsWith('Dir.')||m==='Direito Em
 function calcQuestoesPrioridade(historico){
   const todayMs=new Date().setHours(0,0,0,0);
   const janela=[];
-  for(let i=1;i<=7;i++){const diaMs=todayMs-i*86400000;const peso=i===1?3:i<=3?2:1;janela.push({diaMs,peso});}
+  for(let i=0;i<=7;i++){const diaMs=todayMs-i*86400000;const peso=i<=1?3:i<=3?2:1;janela.push({diaMs,peso});}
   const porMat={};
   historico.forEach(r=>{
     if(!r.materia||!r.dt)return;
@@ -4784,22 +4792,24 @@ function TabRevProfunda({totalBlocos}){
 
       {/* Fila priorizada */}
       <div style={{marginBottom:14}}>
-        <div style={{fontSize:9,color:'var(--text4)',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:8,letterSpacing:'1px'}}>FILA DO FIM DE SEMANA — urgência real (buraco fundo + gate apertado primeiro)</div>
+        <div style={{fontSize:9,color:'var(--text4)',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:8,letterSpacing:'1px'}}>FILA DO FIM DE SEMANA — urgência real (buraco fundo + gate apertado primeiro) · verde = já revisado neste ciclo</div>
         {FILA_PRIORI.length===0&&<div style={{padding:'10px 12px',borderRadius:9,background:'rgba(52,211,153,.08)',border:'1px solid rgba(52,211,153,.25)',fontSize:11,color:'#34d399',marginBottom:8}}>✅ Nada com dado real abaixo de 80% no momento. Use a lista completa abaixo.</div>}
         {FILA_PRIORI.map((f,i)=>{
           const jaFez=hist.filter(h=>h.mat===f.mat).length;
+          const feitoNoCiclo=hist.some(h=>h.mat===f.mat&&(h.cicloRef||0)>(totalBlocos-7));
           const sel=matSel===f.mat;
+          const corBase=feitoNoCiclo?'#34d399':f.cor;
           return(
             <button key={f.mat} onClick={()=>setMatSel(f.mat)}
-              style={{width:'100%',display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:10,border:`2px solid ${sel?f.cor:'var(--border)'}`,background:sel?`${f.cor}10`:'transparent',cursor:'pointer',marginBottom:6,textAlign:'left'}}>
-              <span style={{fontSize:9,fontWeight:900,color:sel?f.cor:'#475569',width:16,flexShrink:0,fontFamily:"'DM Mono',monospace"}}>{i+1}</span>
-              <span style={{fontSize:16,flexShrink:0}}>{f.ic}</span>
+              style={{width:'100%',display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:10,border:`2px solid ${sel?corBase:feitoNoCiclo?'rgba(52,211,153,.3)':'var(--border)'}`,background:sel?`${corBase}10`:feitoNoCiclo?'rgba(52,211,153,.07)':'transparent',cursor:'pointer',marginBottom:6,textAlign:'left'}}>
+              <span style={{fontSize:9,fontWeight:900,color:sel?corBase:'#475569',width:16,flexShrink:0,fontFamily:"'DM Mono',monospace"}}>{i+1}</span>
+              <span style={{fontSize:16,flexShrink:0}}>{feitoNoCiclo?'✅':f.ic}</span>
               <div style={{flex:1,minWidth:0}}>
-                <div style={{fontSize:12,fontWeight:700,color:sel?f.cor:'var(--text)'}}>{f.mat}</div>
+                <div style={{fontSize:12,fontWeight:700,color:sel||feitoNoCiclo?corBase:'var(--text)'}}>{f.mat}</div>
                 <div style={{fontSize:9,color:'var(--text4)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{f.motivo}</div>
               </div>
               {jaFez>0&&<span style={{fontSize:9,padding:'1px 6px',borderRadius:4,background:'rgba(52,211,153,.12)',color:'#34d399',fontFamily:"'DM Mono',monospace",flexShrink:0}}>{jaFez}x</span>}
-              {sel&&<span style={{fontSize:14,color:f.cor,flexShrink:0}}>✓</span>}
+              {sel&&<span style={{fontSize:14,color:corBase,flexShrink:0}}>✓</span>}
             </button>
           );
         })}
@@ -5242,15 +5252,16 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
             </div>
 
             {/* Lista ordenada por urgência */}
-            <div style={{fontSize:9,color:'var(--text4)',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:8,letterSpacing:'1px'}}>FILA — urgência (gate × dificuldade × distância de 80%)</div>
+            <div style={{fontSize:9,color:'var(--text4)',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:8,letterSpacing:'1px'}}>FILA — urgência (gate × dificuldade × distância de 80%) · verde = praticado hoje</div>
             {ordenados.length===0&&<div style={{padding:'16px',textAlign:'center',fontSize:11,color:'var(--text4)'}}>Nenhum item pendente. Registre um erro acima quando errar uma questão.</div>}
             {ordenados.map(t=>{
               const exp=cadExpandidos.has(t.id);
+              const feitoHoje=(t.historico||[]).some(h=>h.data===hoje);
               return(
-                <div key={t.id} style={{padding:'11px 13px',borderRadius:10,background:'rgba(255,255,255,.02)',border:'1px solid rgba(148,163,184,.12)',marginBottom:6}}>
+                <div key={t.id} style={{padding:'11px 13px',borderRadius:10,background:feitoHoje?'rgba(52,211,153,.10)':'rgba(255,255,255,.02)',border:`1px solid ${feitoHoje?'rgba(52,211,153,.3)':'rgba(148,163,184,.12)'}`,marginBottom:6}}>
                   <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',cursor:'pointer'}} onClick={()=>setCadExpandidos(s=>{const n=new Set(s);n.has(t.id)?n.delete(t.id):n.add(t.id);return n;})}>
                     <div style={{flex:1,minWidth:0}}>
-                      <div style={{fontSize:11,fontWeight:800,color:'var(--text)'}}>{t.mat}</div>
+                      <div style={{fontSize:11,fontWeight:800,color:feitoHoje?'#34d399':'var(--text)'}}>{feitoHoje?'✅ ':''}{t.mat}</div>
                       <div style={{fontSize:10,color:'var(--text4)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{t.assunto||t.obs||'—'}</div>
                     </div>
                     <div style={{textAlign:'right',flexShrink:0,marginLeft:8}}>
@@ -5429,8 +5440,97 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
         );
       })()}
 
+      {/* ═══ PASSIVA — REGISTRAR / HISTÓRICO ═══ */}
+      {aba==='passiva'&&subPassiva==='nlm'&&(()=>{
+        const regHoje=nlmRegs.filter(r=>r.dia===hoje);
+        const matsHoje=new Set(regHoje.map(r=>r.mat));
+        const minutosHoje=regHoje.reduce((s,r)=>s+(parseInt(r.tempo)||0),0);
+        // Fila de prioridade por matéria (mesma régua da Passiva), marcando o que já foi feito hoje
+        const listaPrior=calcPassivaJuridica();
+        const porMat={};
+        listaPrior.forEach(it=>{ if(!porMat[it.mat])porMat[it.mat]={mat:it.mat,risco:it.risco,decoreba:it.decoreba,titulo:it.titulo}; });
+        const filaMats=Object.values(porMat).sort((a,b)=>b.risco-a.risco);
+        return(
+          <div>
+            {/* FILA DE PRIORIDADE — verde = já ouvi hoje */}
+            <div style={{padding:'11px 14px',borderRadius:12,background:'rgba(52,211,153,.06)',border:'1px solid rgba(52,211,153,.25)',marginBottom:12}}>
+              <div style={{fontSize:9,color:'#34d399',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:2}}>🎧 PRIORIDADE DE HOJE — verde = já registrado</div>
+              <div style={{fontSize:10,color:'var(--text4)',marginBottom:8}}>{regHoje.length>0?`${regHoje.length} sessão(ões) hoje · ${minutosHoje}min`:'Nada registrado hoje ainda'}</div>
+              <div style={{display:'flex',flexDirection:'column',gap:3}}>
+                {filaMats.map((f,i)=>{
+                  const feito=matsHoje.has(f.mat);
+                  return(
+                    <div key={f.mat} onClick={()=>setNlmForm(fm=>({...fm,mat:f.mat}))} style={{display:'flex',alignItems:'center',gap:8,padding:'5px 7px',borderRadius:6,background:feito?'rgba(52,211,153,.13)':'transparent',cursor:'pointer'}}>
+                      <span style={{fontSize:9,color:'var(--text4)',fontFamily:"'DM Mono',monospace",width:16}}>{i+1}º</span>
+                      {f.decoreba&&<span style={{fontSize:9}}>🔴</span>}
+                      <span style={{fontSize:11,color:feito?'#34d399':'var(--text)',flex:1,fontWeight:feito?700:400}}>{feito?'✅ ':''}{f.mat}</span>
+                      <span style={{fontSize:9,color:'var(--text4)',fontFamily:"'DM Mono',monospace"}}>risco {f.risco}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
 
-      {/* PONTOS CRÍTICOS — agora dentro de Estratégia > Críticos */}
+            {/* FORMULÁRIO */}
+            <div style={{padding:'12px',borderRadius:12,background:'rgba(52,211,153,.05)',border:'1px solid rgba(52,211,153,.2)',marginBottom:14}}>
+              <div style={{fontSize:9,letterSpacing:'2px',color:'#34d399',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:12}}>🎧 REGISTRAR ESTUDO PASSIVO</div>
+              <div style={{marginBottom:8}}>
+                <div style={{fontSize:9,color:'#64748b',marginBottom:4}}>MATÉRIA</div>
+                <MatBtn value={nlmForm.mat} onChange={v=>setNlmForm(f=>({...f,mat:v}))} placeholder="Ou digitar matéria..."/>
+              </div>
+              <div style={{marginBottom:8}}>
+                <div style={{fontSize:9,color:'#64748b',marginBottom:4}}>ASSUNTO ESTUDADO <span style={{color:'#475569'}}>(recomendado — liga o % à priorização)</span></div>
+                <input value={nlmForm.oque||''} onChange={e=>setNlmForm(f=>({...f,oque:e.target.value}))} placeholder="ex: LRF arts. 15 a 24" style={{width:'100%',padding:'9px 10px',borderRadius:7,border:'1px solid rgba(52,211,153,.2)',background:'rgba(52,211,153,.04)',color:'#f1f5f9',fontSize:11,outline:'none',boxSizing:'border-box'}}/>
+              </div>
+              <div style={{marginBottom:8}}>
+                <div style={{fontSize:9,color:'#64748b',marginBottom:4}}>⏱ TEMPO (min)</div>
+                <input type="number" value={nlmForm.tempo||''} onChange={e=>setNlmForm(f=>({...f,tempo:e.target.value}))} placeholder="ex: 45" style={{width:'100%',padding:'13px',borderRadius:8,border:'1px solid rgba(52,211,153,.3)',background:'rgba(52,211,153,.06)',color:'#34d399',fontSize:20,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
+              </div>
+              <div style={{marginBottom:8}}>
+                <div style={{fontSize:9,color:'#64748b',marginBottom:5}}>📍 POR ONDE</div>
+                <div style={{display:'flex',gap:5,flexWrap:'wrap'}}>
+                  {['NLM','Podcast','Vídeo','Releitura','Áudio-aula','Outro'].map(f=>(
+                    <button key={f} onClick={()=>setNlmForm(fm=>({...fm,fonte:f}))}
+                      style={{padding:'7px 11px',borderRadius:7,border:`1px solid ${nlmForm.fonte===f?'#34d399':'var(--border)'}`,background:nlmForm.fonte===f?'rgba(52,211,153,.15)':'transparent',color:nlmForm.fonte===f?'#34d399':'var(--text4)',fontSize:10,fontWeight:700,cursor:'pointer'}}>
+                      {f}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div style={{marginBottom:8}}>
+                <div style={{fontSize:9,color:'#64748b',marginBottom:4}}>🎯 % DE ACERTOS <span style={{color:'#475569'}}>(opcional — se fez autoteste)</span></div>
+                <input type="number" min="0" max="100" value={nlmForm.pct||''} onChange={e=>setNlmForm(f=>({...f,pct:e.target.value}))} placeholder="ex: 70" style={{width:'100%',padding:'11px',borderRadius:8,border:'1px solid rgba(52,211,153,.25)',background:'rgba(52,211,153,.04)',color:'#34d399',fontSize:16,fontWeight:800,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
+                {nlmForm.pct!==''&&nlmForm.pct!=null&&nlmForm.oque&&<div style={{fontSize:9,color:'#34d399',marginTop:4,textAlign:'center'}}>✓ Isso vai alimentar a priorização — "{nlmForm.oque}" sobe/desce conforme esse %</div>}
+                {nlmForm.pct!==''&&nlmForm.pct!=null&&!nlmForm.oque&&<div style={{fontSize:9,color:'#fb923c',marginTop:4,textAlign:'center'}}>⚠️ Preencha "assunto estudado" acima pra esse % contar na priorização</div>}
+              </div>
+              <div style={{marginBottom:12}}>
+                <div style={{fontSize:9,color:'#64748b',marginBottom:6}}>DIFICULDADE</div>
+                <Estrelas val={nlmForm.dif} onChange={v=>setNlmForm(f=>({...f,dif:v}))}/>
+                {nlmForm.dif>0&&<div style={{textAlign:'center',fontSize:9,color:CORS_DIF[nlmForm.dif-1],marginTop:3,fontFamily:"'DM Mono',monospace",fontWeight:700}}>{LABELS_DIF[nlmForm.dif-1]}</div>}
+              </div>
+              <button onClick={salvarNlm} disabled={!nlmForm.mat||!nlmForm.dif} style={{width:'100%',padding:'13px',borderRadius:9,border:'none',background:(nlmForm.mat&&nlmForm.dif)?'#34d399':'rgba(148,163,184,.2)',color:(nlmForm.mat&&nlmForm.dif)?'#0f172a':'#64748b',fontSize:12,fontWeight:800,cursor:(nlmForm.mat&&nlmForm.dif)?'pointer':'default'}}>
+                {nlmSalvo?'✅ SALVO!':'💾 REGISTRAR'}
+              </button>
+              {(!nlmForm.mat||!nlmForm.dif)&&<div style={{fontSize:9,color:'#fb923c',marginTop:6,textAlign:'center'}}>Falta: {!nlmForm.mat?'selecionar matéria':''}{!nlmForm.mat&&!nlmForm.dif?' · ':''}{!nlmForm.dif?'marcar dificuldade':''}</div>}
+            </div>
+
+            {/* HISTÓRICO */}
+            <div style={{fontSize:9,color:'var(--text4)',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:8,letterSpacing:'1px'}}>HISTÓRICO RECENTE</div>
+            {nlmRegs.length===0&&<div style={{padding:'14px',textAlign:'center',fontSize:11,color:'var(--text4)'}}>Nenhuma sessão registrada ainda.</div>}
+            {[...nlmRegs].sort((a,b)=>(b.dt||0)-(a.dt||0)).slice(0,12).map(r=>(
+              <div key={r.id} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'9px 12px',borderRadius:9,background:r.dia===hoje?'rgba(52,211,153,.08)':'rgba(255,255,255,.02)',border:'1px solid rgba(148,163,184,.1)',marginBottom:5}}>
+                <div>
+                  <div style={{fontSize:11,color:'var(--text)',fontWeight:700}}>{r.mat}{r.fonte&&r.fonte!=='NLM'?<span style={{fontSize:9,color:'#64748b',fontWeight:400}}> · {r.fonte}</span>:''}</div>
+                  {r.oque&&<div style={{fontSize:9,color:'#34d399',marginTop:1}}>{r.oque}</div>}
+                  <div style={{fontSize:9,color:'#64748b'}}>{r.tempo?`${r.tempo}min`:'—'}{r.dif?` · ${'⭐'.repeat(r.dif)}`:''}{r.pct!=null?` · ${r.pct}% acerto`:''}</div>
+                </div>
+                <div style={{fontSize:9,color:'var(--text4)',fontFamily:"'DM Mono',monospace",flexShrink:0}}>{r.dia===hoje?'hoje':r.dia}</div>
+              </div>
+            ))}
+          </div>
+        );
+      })()}
+
       {/* SEMANAL — motor novo: delta da semana, cobertura do edital, decisão sugerida */}
       {aba==='estrategia'&&subEstrategia==='semanal'&&(()=>{
         const estr=calcEstrategiaSemanal();
@@ -7317,21 +7417,24 @@ function App(){
     // ── Seed único: simulado Guruja 13-19/07 (251 questões, 8 matérias) ──
     // Sem isso, a fila de Questões (últimos 7 dias) não enxerga esse resultado real.
     (()=>{
-      const KEY='rity_seed_simulado_20260719';
+      const KEY='rity_seed_simulado_20260719_v2';
       if(!localStorage.getItem(KEY)){
         try{
           const hist=JSON.parse(localStorage.getItem('historico_diario')||'[]');
+          const semAntigo=hist.filter(r=>r.origem!=='guruja_simulado');
+          const _dk=getDK();
+          const _dt=Date.now();
           const novos=[
-            {materia:'Dir. Administrativo',questoes:63,acertei:59,dt:Date.now(),origem:'guruja_simulado'},
-            {materia:'Dir. Constitucional',questoes:42,acertei:40,dt:Date.now(),origem:'guruja_simulado'},
-            {materia:'Português',questoes:22,acertei:19,dt:Date.now(),origem:'guruja_simulado'},
-            {materia:'Dir. Civil',questoes:25,acertei:21,dt:Date.now(),origem:'guruja_simulado'},
-            {materia:'Dir. Financeiro / AFO',questoes:43,acertei:37,dt:Date.now(),origem:'guruja_simulado'},
-            {materia:'Dir. Penal',questoes:18,acertei:16,dt:Date.now(),origem:'guruja_simulado'},
-            {materia:'Raciocínio Lógico',questoes:17,acertei:13,dt:Date.now(),origem:'guruja_simulado'},
-            {materia:'Dir. Tributário',questoes:21,acertei:16,dt:Date.now(),origem:'guruja_simulado'},
+            {materia:'Dir. Administrativo',questoes:63,acertei:59,dt:_dt,dia:_dk,origem:'guruja_simulado'},
+            {materia:'Dir. Constitucional',questoes:42,acertei:40,dt:_dt,dia:_dk,origem:'guruja_simulado'},
+            {materia:'Português',questoes:22,acertei:19,dt:_dt,dia:_dk,origem:'guruja_simulado'},
+            {materia:'Dir. Civil',questoes:25,acertei:21,dt:_dt,dia:_dk,origem:'guruja_simulado'},
+            {materia:'Dir. Financeiro / AFO',questoes:43,acertei:37,dt:_dt,dia:_dk,origem:'guruja_simulado'},
+            {materia:'Dir. Penal',questoes:18,acertei:16,dt:_dt,dia:_dk,origem:'guruja_simulado'},
+            {materia:'Raciocínio Lógico',questoes:17,acertei:13,dt:_dt,dia:_dk,origem:'guruja_simulado'},
+            {materia:'Dir. Tributário',questoes:21,acertei:16,dt:_dt,dia:_dk,origem:'guruja_simulado'},
           ];
-          localStorage.setItem('historico_diario',JSON.stringify([...hist,...novos]));
+          localStorage.setItem('historico_diario',JSON.stringify([...semAntigo,...novos]));
           localStorage.setItem(KEY,'done');
         }catch(e){}
       }
