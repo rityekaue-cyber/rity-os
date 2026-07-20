@@ -198,9 +198,6 @@ const _w=console.warn;console.warn=(...a)=>{if(String(a[0]||'').includes('Babel'
 const{useState,useEffect,useRef,useMemo,useCallback}=React;
 
 // ─── CONSTANTES ───────────────────────────────────────────────
-// ── CICLO ATUAL — 13 a 19/07/2026 ───────────────────────────
-// Lógica: pesado→leve→pesado | nunca mesma disciplina em dias consecutivos
-// Tags derivadas da Matriz Meirelles: ⭐⭐⭐⭐⭐+jornada baixa = 🔴 URGENTE
 const CICLO=[
   // ── CICLO ATUAL — 20/07 a 26/07/2026 ─────────────────────────
   // 28 metas da fila Guruja, ordenadas por score = relevância(⭐) × peso_gate × gap_nota_real
@@ -1856,7 +1853,8 @@ Cole este texto no Claude.ai para análise completa.
 // MatBtn — seletor de matéria reutilizável (global para não recriar em cada render)
 const MATS_GLOBAL=()=>CICLO.map(s=>s.mat).filter((v,i,a)=>a.indexOf(v)===i);
 function MatBtn({value,onChange,placeholder}){
-  const mats=MATS_GLOBAL();
+  // Todas as matérias do edital + qualquer extra que esteja no ciclo da semana
+  const mats=[...new Set([...EDITAL_MATS,...MATS_GLOBAL()])];
   const isPreset=mats.includes(value);
   return(
     <div>
@@ -5223,7 +5221,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
     {id:'estrategia',l:`🎯 Estratégia${criticosManuais.length>0?` (${criticosManuais.length})`:''}`},
   ];
   // Sub-navegação fina dentro de Passiva e Estratégia
-  const[subPassiva,setSubPassiva]=useState('motor');
+  const[subPassiva,setSubPassiva]=useState('nlm');
   const[subEstrategia,setSubEstrategia]=useState('semanal');
 
   return(
@@ -5451,7 +5449,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
 
       {aba==='passiva'&&(
         <div style={{display:'flex',gap:6,marginBottom:14}}>
-          {[{id:'motor',l:'⏳ Sugestão do dia'},{id:'nlm',l:'🎧 Registrar/Histórico'}].map(s=>(
+          {[{id:'nlm',l:'✏️ Registrar o que estudei'},{id:'motor',l:'⏳ Sugestão do dia'}].map(s=>(
             <button key={s.id} onClick={()=>setSubPassiva(s.id)} style={{flex:1,padding:'9px',borderRadius:9,border:`1px solid ${subPassiva===s.id?'rgba(52,211,153,.45)':'var(--border)'}`,background:subPassiva===s.id?'rgba(52,211,153,.12)':'transparent',color:subPassiva===s.id?'#34d399':'var(--text4)',fontSize:11,fontWeight:700,cursor:'pointer'}}>{s.l}</button>
           ))}
         </div>
@@ -7656,9 +7654,9 @@ function App(){
       }
     })();
     const _f=lsGet('feitos',[]);
-    if(lsGet('ciclo_versao','')!=='v37'){
+    if(lsGet('ciclo_versao','')!=='v38'){
       if(_f.length>0)lsSet('feitos',[]);
-      lsSet('cicloNum',19);lsSet('ciclo_versao','v37');
+      lsSet('cicloNum',20);lsSet('ciclo_versao','v38');
     }
     setFeitos(lsGet('feitos',[]));setCicloNum(lsGet('cicloNum',1));setHoras(lsGet('horas',[]));setMit(lsGet('mit',[]));
     const tick=setInterval(()=>setClock(new Date()),1000);
@@ -7825,6 +7823,7 @@ function App(){
             <div style={{textAlign:'right'}}>
               <div style={{fontSize:16,fontWeight:900,fontFamily:"'DM Mono',monospace",color:'var(--text)',lineHeight:1}}>{fH(clock)}</div>
               <div style={{fontSize:8,color:'var(--text4)',lineHeight:1,marginTop:2}}>{fmtMin(minHoje)} hoje · {fmtMin(minSemana)}/{metaHoras}h</div>
+              <div style={{fontSize:7,color:'var(--text4)',lineHeight:1,marginTop:2,opacity:.7,fontFamily:"'DM Mono',monospace"}}>build 20/07 · ciclo 20→26/07</div>
             </div>
             <button onClick={()=>setDarkMode(v=>!v)} title={darkMode?'Modo claro':'Modo escuro'} style={{width:32,height:32,borderRadius:'50%',border:'1px solid var(--border2)',background:'var(--card2)',color:'var(--text3)',fontSize:15,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>{darkMode?'☀️':'🌙'}</button>
             <button onClick={()=>setShowCfg(true)} style={{width:32,height:32,borderRadius:'50%',border:'1px solid var(--border2)',background:'var(--card2)',color:'var(--text3)',fontSize:14,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>⚙️</button>
