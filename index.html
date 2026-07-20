@@ -7881,27 +7881,22 @@ ReactDOM.createRoot(document.getElementById('root')).render(
 </script>
 
 <script>
+// Service Worker removido — o registro anterior usava URL.createObjectURL(blob),
+// que gera uma URL nova e efêmera a cada carregamento de página. O navegador não
+// consegue comparar/atualizar um Service Worker registrado assim (a checagem de
+// atualização depende de re-buscar a MESMA URL), então uma versão antiga podia
+// ficar presa servindo conteúdo desatualizado — provavelmente a causa do ciclo
+// errado aparecendo mesmo com o arquivo novo já publicado.
+// Limpeza ativa: remove qualquer Service Worker e cache antigos de sessões passadas.
 if('serviceWorker' in navigator){
-  // Cache versionado com timestamp do build — força atualização a cada deploy
-  const BUILD_TS='${Date.now()}';
-  const swCode=`
-const CACHE='rity-os-${new Date().toISOString().slice(0,10)}-'+self.registration.scope.slice(-6).replace(/[^a-z0-9]/gi,'');
-const ASSETS=[self.registration.scope];
-self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS).catch(()=>{})));self.skipWaiting();});
-self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>{console.log('[SW] Deletando cache antigo:',k);return caches.delete(k)}))));self.clients.claim();});
-self.addEventListener('fetch',e=>{
-  // Network-first: tenta rede, fallback para cache
-  e.respondWith(
-    fetch(e.request).then(r=>{
-      const clone=r.clone();
-      caches.open(CACHE).then(c=>c.put(e.request,clone)).catch(()=>{});
-      return r;
-    }).catch(()=>caches.match(e.request))
-  );
-});
-`;
-  const blob=new Blob([swCode],{type:'application/javascript'});
-  navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(()=>{});
+  navigator.serviceWorker.getRegistrations().then(regs=>{
+    regs.forEach(r=>r.unregister());
+  }).catch(()=>{});
+}
+if('caches' in window){
+  caches.keys().then(keys=>{
+    keys.forEach(k=>caches.delete(k));
+  }).catch(()=>{});
 }
 </script>
 </body>
