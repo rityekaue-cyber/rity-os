@@ -199,45 +199,45 @@ const{useState,useEffect,useRef,useMemo,useCallback}=React;
 
 // ─── CONSTANTES ───────────────────────────────────────────────
 const CICLO=[
-  // ── CICLO ATUAL — 20/07 a 26/07/2026 ─────────────────────────
-  // 28 metas da fila Guruja, ordenadas por score = relevância(⭐) × peso_gate × gap_nota_real
-  // Trabalho: Seg/Qua/Sex (4 metas) · Livre: Ter/Qui (6 metas) · Sáb/Dom (2 metas)
-  // Cada dia mistura 🔴 difícil / 🟡 médio / 🟢 fácil
-  // SEGUNDA 20/07 · trabalho — 4 metas
-  {id:1,  dia:1, mat:'Raciocínio Lógico',              ic:'🔢', cor:'#f87171', tag:'🔴 DIFÍCIL',   h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Equivalências Lógicas (RLOG.4165.117164)'},
-  {id:2,  dia:1, mat:'Legislação TCE-SP',              ic:'📖', cor:'#fbbf24', tag:'🟡 MÉDIO',     h:0.75, tipo:'Lei Seca', ferramenta:'Guruja', conteudo:'Lei Orgânica do TCE-SP (CEXT.4155.117137)'},
-  {id:3,  dia:1, mat:'Discursivas',                    ic:'📋', cor:'#94a3b8', tag:'🟢 FÁCIL',     h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Orientações Gerais sobre a Meta 2 (GERAL.4164.117293)'},
-  {id:4,  dia:1, mat:'Dir. Constitucional',            ic:'📜', cor:'#94a3b8', tag:'🟢 FÁCIL',     h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Organização do Estado (DCON.4101.116984)'},
-  // TERÇA 21/07 · livre — 6 metas
-  {id:5,  dia:2, mat:'Discursivas',                    ic:'✍️', cor:'#f87171', tag:'🔴 DIFÍCIL',   h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Questões Anteriores — Licitações e Contratos Administrativos (DISC.4089.116323)'},
-  {id:6,  dia:2, mat:'Direito Empresarial (Comercial)',ic:'🏢', cor:'#f87171', tag:'🔴 DIFÍCIL',   h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Estabelecimento e Institutos Complementares I (DEMP.4142.116735)'},
-  {id:7,  dia:2, mat:'Ética Pública',                  ic:'⚖️', cor:'#fbbf24', tag:'🟡 MÉDIO',     h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Ética no serviço público (ETICA.4100.117196)'},
-  {id:8,  dia:2, mat:'Português',                      ic:'📝', cor:'#fbbf24', tag:'🟡 MÉDIO',     h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Semântica (PORT.4092.116930)'},
-  {id:9,  dia:2, mat:'Dir. Financeiro / AFO',          ic:'📈', cor:'#94a3b8', tag:'🟢 FÁCIL',     h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'[EXTRA] LC 101/2000 Cap. IV — Da Despesa Pública (AFO.4187.117227)'},
-  {id:10, dia:2, mat:'Dir. Administrativo',            ic:'🏛️', cor:'#94a3b8', tag:'🟢 FÁCIL',     h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Lei das Estatais (13.303/2016), Consórcios Públicos (DADM.4143.116815)'},
-  // QUARTA 22/07 · trabalho — 4 metas
-  {id:11, dia:3, mat:'Dir. Tributário',                ic:'💰', cor:'#f87171', tag:'🔴 DIFÍCIL',   h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Limitações ao Poder de Tributar (DTRIB.4169.117242)'},
-  {id:12, dia:3, mat:'Legislação TCE-SP',              ic:'📖', cor:'#fbbf24', tag:'🟡 MÉDIO',     h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Lei Orgânica do TCE-SP (CEXT.4155.117140)'},
-  {id:13, dia:3, mat:'Dir. Financeiro / AFO',          ic:'📈', cor:'#fbbf24', tag:'🟡 MÉDIO',     h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'PPA, LDO, fundos na Lei 4.320 (AFO.4185.117214)'},
-  {id:14, dia:3, mat:'Dir. Constitucional',            ic:'📜', cor:'#94a3b8', tag:'🟢 FÁCIL',     h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Administração Pública (DCON.4101.116989)'},
-  // QUINTA 23/07 · livre — 6 metas
-  {id:15, dia:4, mat:'Discursivas',                    ic:'✍️', cor:'#f87171', tag:'🔴 DIFÍCIL',   h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Questões Anteriores — Dir. Constitucional / Dir. Administrativo (DISC.4089.117018)'},
-  {id:16, dia:4, mat:'Direito Empresarial (Comercial)',ic:'🏢', cor:'#f87171', tag:'🔴 DIFÍCIL',   h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Estabelecimento e Institutos Complementares II (DEMP.4142.116736)'},
-  {id:17, dia:4, mat:'Português',                      ic:'📝', cor:'#fbbf24', tag:'🟡 MÉDIO',     h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'[EXTRA] Resolução de Prova — Analista de Recursos Humanos (PORT.4091.116443)'},
-  {id:18, dia:4, mat:'Dir. Civil',                     ic:'⚖️', cor:'#fbbf24', tag:'🟡 MÉDIO',     h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Ato e Fato Jurídico (DCIV.4144.116993)'},
-  {id:19, dia:4, mat:'Dir. Administrativo',            ic:'🏛️', cor:'#94a3b8', tag:'🟢 FÁCIL',     h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Terceiro Setor e Parcerias (DADM.4143.116827)'},
-  {id:20, dia:4, mat:'Dir. Constitucional',            ic:'📜', cor:'#94a3b8', tag:'🟢 FÁCIL',     h:0.75, tipo:'Revisão',  ferramenta:'Guruja', conteudo:'Imersão temática — Poder Legislativo (DCON.4102.117151)'},
-  // SEXTA 24/07 · trabalho — 4 metas
-  {id:21, dia:5, mat:'Discursivas',                    ic:'✍️', cor:'#f87171', tag:'🔴 DIFÍCIL',   h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Questões 02 — Princípios Constitucionais (DISC.4090.117075)'},
-  {id:22, dia:5, mat:'Dir. Financeiro / AFO',          ic:'📈', cor:'#fbbf24', tag:'🟡 MÉDIO',     h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'LOA, emendas, ciclo orçamentário, controle interno e externo (AFO.4185.117220)'},
-  {id:23, dia:5, mat:'Português',                      ic:'📝', cor:'#94a3b8', tag:'🟢 FÁCIL',     h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Resolução de prova: Controlador Interno (Pref. Pontal) (PORT.4092.116810)'},
-  {id:24, dia:5, mat:'Dir. Administrativo',            ic:'🏛️', cor:'#94a3b8', tag:'🟢 FÁCIL',     h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'[EXTRA] Lei do Usuário de Serviços Públicos (13.460/2017) (DADM.4147.116790)'},
-  // SÁBADO 25/07 · livre — 2 metas
-  {id:25, dia:6, mat:'Dir. Tributário',                ic:'💰', cor:'#f87171', tag:'🔴 DIFÍCIL',   h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Competência Tributária, Impostos e Repartição das Receitas (DTRIB.4169.117256)'},
-  {id:26, dia:6, mat:'Legislação TCE-SP',              ic:'📖', cor:'#fbbf24', tag:'🟡 MÉDIO',     h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'[EXTRA] Bloco A — Lei Orgânica e Regimento Interno (CEXT.4157.117141)'},
-  // DOMINGO 26/07 · tarde protegida — 2 metas
-  {id:27, dia:7, mat:'Discursivas',                    ic:'✍️', cor:'#f87171', tag:'🔴 DIFÍCIL',   h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Questões 03 — Competências dos Tribunais de Contas Municipais (DISC.4090.117076)'},
-  {id:28, dia:7, mat:'Dir. Civil',                     ic:'⚖️', cor:'#94a3b8', tag:'🟢 FÁCIL',     h:0.75, tipo:'Lei Seca', ferramenta:'Guruja', conteudo:'[EXTRA] Lei 6.766/1979 — Parcelamento do solo urbano (DCIV.4146.117000)'},
+  // ── CICLO ATUAL — 27/07 a 02/08/2026 ──────────────────────────
+  // Fila real do Guruja (34 itens, 5 atrasados trazidos pra frente) + 2 trocas manuais
+  // (segunda: Civil-Regularização no lugar de Empresarial; Civil-Prescrição no lugar de Orientações)
+  // 4 metas/dia · dificuldade real (não a estrela do Guruja) · 1 fácil+1 médio+2 difíceis nos 4 primeiros dias
+  // SEGUNDA 27/07 — 4 metas
+  {id:1,  dia:1, mat:'Discursivas',           ic:'✍️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'⚠️ATRASADO — Anteriores: Dir. Constitucional/Dir. Administrativo (DISC.4089.117018)'},
+  {id:2,  dia:1, mat:'Dir. Civil',            ic:'⚖️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Lei Seca', ferramenta:'Guruja', conteudo:'Lei de Regularização Fundiária Urbana e Rural (DCIV.4146.118201)'},
+  {id:3,  dia:1, mat:'Dir. Administrativo',   ic:'🏛️', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'⚠️ATRASADO — Lei do Usuário de Serviços Públicos, 13.460/2017 (DADM.4147.116790)'},
+  {id:4,  dia:1, mat:'Dir. Civil',            ic:'⚖️', cor:'#94a3b8', tag:'🟢 FÁCIL',   h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Prescrição e Decadência (DCIV.4144.118183)'},
+  // TERÇA 28/07 — 4 metas
+  {id:5,  dia:2, mat:'Discursivas',           ic:'✍️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'⚠️ATRASADO — Questão 03: Competências dos Tribunais de Contas Municipais (DISC.4090.117076)'},
+  {id:6,  dia:2, mat:'Direito Empresarial (Comercial)',ic:'🏢', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teoria', ferramenta:'Guruja', conteudo:'Direito Societário — exceto Simples e LTDA (DEMP.4142.117028)'},
+  {id:7,  dia:2, mat:'Dir. Financeiro / AFO', ic:'📈', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'⚠️ATRASADO — LC 101/2000 Cap. IV — Despesa Pública (AFO.4187.117227)'},
+  {id:8,  dia:2, mat:'Dir. Constitucional',   ic:'📜', cor:'#94a3b8', tag:'🟢 FÁCIL',   h:0.75, tipo:'Teste',    ferramenta:'Guruja', conteudo:'Resolução de questões favoritas (DCON.4101.118353)'},
+  // QUARTA 29/07 — 4 metas
+  {id:9,  dia:3, mat:'Discursivas',           ic:'✍️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'⚠️ATRASADO — Questão 01: Tarifa do serviço de gás canalizado, ARSESP (DISC.4090.116080)'},
+  {id:10, dia:3, mat:'Raciocínio Lógico',     ic:'🔢', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Lógica de Argumentação (RLOG.4165.118396)'},
+  {id:11, dia:3, mat:'Português',             ic:'📝', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Concordância Verbal e Nominal (PORT.4092.117474)'},
+  {id:12, dia:3, mat:'Ética Pública',         ic:'🤝', cor:'#94a3b8', tag:'🟢 FÁCIL',   h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Código de Ética TCE-SP (ETICA.4100.118347)'},
+  // QUINTA 30/07 — 4 metas
+  {id:13, dia:4, mat:'Discursivas',           ic:'✍️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Anteriores — Dir. Tributário: Lançamento Tributário (DISC.4089.118412)'},
+  {id:14, dia:4, mat:'Dir. Administrativo',   ic:'🏛️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'[EXTRA] Concessões Públicas e Parcerias Público-Privadas (DADM.4147.118546)'},
+  {id:15, dia:4, mat:'Dir. Civil',            ic:'⚖️', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Obrigações (DCIV.4144.118186)'},
+  {id:16, dia:4, mat:'Dir. Penal',            ic:'🚔', cor:'#94a3b8', tag:'🟢 FÁCIL',   h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Crimes praticados por particular contra a Administração (DPEN.4176.117149)'},
+  // SEXTA 31/07 — 4 metas
+  {id:17, dia:5, mat:'Discursivas',           ic:'✍️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Questão 04 — Parceria Público-Privada, SPRegula (DISC.4090.118417)'},
+  {id:18, dia:5, mat:'Dir. Financeiro / AFO', ic:'📈', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Precatórios (AFO.4185.118470)'},
+  {id:19, dia:5, mat:'Dir. Constitucional',   ic:'📜', cor:'#94a3b8', tag:'🟢 FÁCIL',   h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Poder Legislativo (DCON.4101.118354)'},
+  {id:20, dia:5, mat:'Dir. Tributário',       ic:'💰', cor:'#94a3b8', tag:'🟢 FÁCIL',   h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Legislação Tributária e Obrigação Tributária (DTRIB.4189.118392)'},
+  // SÁBADO 01/08 — 4 metas
+  {id:21, dia:6, mat:'Discursivas',           ic:'✍️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Anteriores — Dir. Financeiro: LRF, Renúncia de Receita (DISC.4089.118413)'},
+  {id:22, dia:6, mat:'Legislação TCE-SP',     ic:'📖', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Lei Seca', ferramenta:'Guruja', conteudo:'Regimento Interno do TCE-SP (CEXT.4155.118512)'},
+  {id:23, dia:6, mat:'Dir. Administrativo',   ic:'🏛️', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Servidores Públicos (DADM.4143.118534)'},
+  {id:24, dia:6, mat:'Dir. Financeiro / AFO', ic:'📈', cor:'#94a3b8', tag:'🟢 FÁCIL',   h:0.75, tipo:'Teste',    ferramenta:'Guruja', conteudo:'Resolução de questões favoritas (AFO.4185.118467)'},
+  // DOMINGO 02/08 — 4 metas
+  {id:25, dia:7, mat:'Discursivas',           ic:'✍️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Questão 05 — Licitações e Calamidade Pública, inédito (DISC.4090.118418)'},
+  {id:26, dia:7, mat:'Dir. Administrativo',   ic:'🏛️', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Teste',    ferramenta:'Guruja', conteudo:'Resolução de questões favoritas (DADM.4143.118133)'},
+  {id:27, dia:7, mat:'Legislação TCE-SP',     ic:'📖', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'[EXTRA] Bloco A — Lei Orgânica e Regimento Interno (CEXT.4157.118514)'},
+  {id:28, dia:7, mat:'Dir. Constitucional',   ic:'📜', cor:'#94a3b8', tag:'🟢 FÁCIL',   h:0.75, tipo:'Revisão',  ferramenta:'Guruja', conteudo:'[EXTRA] Imersão temática — Organização do Estado e Administração Pública (DCON.4102.117026)'},
 ];
 const N=CICLO.length;
 
@@ -326,7 +326,7 @@ function getAlertasAtivos(){
   const alertas=[];
   // Fim de ciclo — avisa no último dia e depois dele
   try{
-    const cicloIni=new Date(2026,6,20).setHours(0,0,0,0);
+    const cicloIni=new Date(2026,6,27).setHours(0,0,0,0);
     const diaCiclo=Math.round((new Date().setHours(0,0,0,0)-cicloIni)/86400000)+1;
     const maxDia=Math.max(...CICLO.map(s=>s.dia));
     if(diaCiclo===maxDia) alertas.push({tipo:'ciclo',msg:'📆 Último dia do ciclo — montar o ciclo da próxima semana',cor:'#fb923c'});
@@ -882,6 +882,48 @@ function pesoGate(mat){
   if(g.bloco==='discursiva')return 1.4;
   if(g.bloco==='gerais')return 1.5;
   return 1;
+}
+
+// ═══ MOTOR DE DESTAQUE — "já vista" + "urgência", reaproveitado em Hoje e Revisão ═══
+// "Já vista": a matéria tem pelo menos 1 tópico com dado real (Guruja importado ou EDITAL)
+function jaVista(mat){
+  const guruja=getGurujaAssuntos();
+  if(guruja[mat]&&(guruja[mat].assuntos||[]).some(a=>a.acerto!=null))return true;
+  const tops=EDITAL[mat]?.top||[];
+  return tops.some(t=>t.acerto!=null);
+}
+// Urgência agregada por matéria — mesma régua (peso do gate × distância) usada em
+// Questões/Profunda/Passiva, só que aqui devolve um nível pronto pra badge visual.
+function calcUrgenciaMateria(mat){
+  const guruja=getGurujaAssuntos();
+  let assuntos=[];
+  if(guruja[mat])assuntos=(guruja[mat].assuntos||[]).map(a=>a.acerto).filter(v=>v!=null);
+  if(!assuntos.length){
+    const tops=(EDITAL[mat]?.top||[]).filter(t=>t.acerto!=null);
+    assuntos=tops.map(t=>t.acerto);
+  }
+  if(!assuntos.length)return{nivel:'alta',score:50,pior:null,pct:null};
+  const pior=Math.min(...assuntos);
+  const peso=pesoGate(mat);
+  const distancia=Math.max(0,90-pior);
+  const severidade=pior<50?1.8:pior<65?1.4:pior<75?1.15:1;
+  const score=Math.round(distancia*peso*severidade);
+  const nivel=score>=45?'alta':score>=22?'media':'baixa';
+  return{nivel,score,pior,pct:pior};
+}
+// Badge visual reutilizável: 👁️ = já tem dado real · bolinha colorida = urgência
+function BadgeMateria({mat,tamanho=9}){
+  const vista=jaVista(mat);
+  const urg=calcUrgenciaMateria(mat);
+  const cor=urg.nivel==='alta'?'#f87171':urg.nivel==='media'?'#fbbf24':null;
+  if(!vista&&!cor)return null;
+  return(
+    <span style={{display:'inline-flex',alignItems:'center',gap:3,marginLeft:5}}>
+      {!vista&&<span title="Sem dado real ainda" style={{fontSize:tamanho}}>⬜</span>}
+      {vista&&<span title={`Já tem dado real${urg.pct!=null?` — ${urg.pct}%`:''}`} style={{fontSize:tamanho}}>👁️</span>}
+      {cor&&<span title={`Precisa revisar — urgência ${urg.nivel}`} style={{width:6,height:6,borderRadius:3,background:cor,display:'inline-block'}}/>}
+    </span>
+  );
 }
 
 // ═══ MOTOR DISCURSIVA — técnica do dia + prioridade por matéria ═══════════
@@ -1893,6 +1935,9 @@ const GURUJA_SEED={
       {titulo:'Sintaxe (frase, oração, período, termos)',acerto:80,diffMedia:6,relevancia:3,tempoCump:'1h30m',questoes:25,acertos:20},
       {titulo:'Morfologia',acerto:83,diffMedia:9,relevancia:3,tempoCump:'1h',questoes:27,acertos:22},
       {titulo:'Pontuação e Linguagem',acerto:85,diffMedia:11,relevancia:3,tempoCump:'1h',questoes:27,acertos:23},
+      {titulo:'Resolução de prova — Controlador Interno Pref. Pontal (semana 20-26/07)',acerto:84,diffMedia:10,relevancia:2,tempoCump:'1h',questoes:0,acertos:0},
+      {titulo:'Semântica (semana 20-26/07)',acerto:80,diffMedia:6,relevancia:4,tempoCump:'1h',questoes:0,acertos:0},
+      {titulo:'[EXTRA] Analista de Recursos Humanos (semana 20-26/07)',acerto:83,diffMedia:9,relevancia:4,tempoCump:'1h',questoes:0,acertos:0},
       {titulo:'Interpretação de Textos e Compreensão (simulado 13-19/07)',acerto:86,diffMedia:12,relevancia:5,tempoCump:'1h30m',questoes:15,acertos:13},
     ]},
   'Dir. Constitucional':{
@@ -1905,6 +1950,8 @@ const GURUJA_SEED={
       {titulo:'Direitos Sociais e Nacionalidade',acerto:79,diffMedia:-4,relevancia:4,tempoCump:'1h',questoes:28,acertos:22},
       {titulo:'Direitos Políticos e Partidos Políticos',acerto:77,diffMedia:-6,relevancia:4,tempoCump:'1h',questoes:27,acertos:21},
       {titulo:'Organização do Estado — União e Estados',acerto:85,diffMedia:2,relevancia:5,tempoCump:'1h',questoes:27,acertos:23},
+      {titulo:'Organização do Estado (semana 20-26/07)',acerto:86,diffMedia:1,relevancia:5,tempoCump:'2h',questoes:0,acertos:0},
+      {titulo:'Administração Pública (semana 20-26/07)',acerto:95,diffMedia:10,relevancia:5,tempoCump:'1h',questoes:0,acertos:0},
       {titulo:'Organização do Estado — Municípios e DF',acerto:81,diffMedia:-2,relevancia:4,tempoCump:'1h',questoes:27,acertos:22},
       {titulo:'Organização do Estado — Intervenção (Parte III)',acerto:69,diffMedia:-14,relevancia:4,tempoCump:'1h',questoes:26,acertos:18},
       {titulo:'Poder Executivo',acerto:85,diffMedia:2,relevancia:4,tempoCump:'1h',questoes:27,acertos:23},
@@ -1923,6 +1970,8 @@ const GURUJA_SEED={
     desempenhoHistorico:{acertos:null,questoes:null,pctAcerto:87,tempoMedio:'1h10m',reforcoPendente:null},
     assuntos:[
       {titulo:'Regime Jurídico, Princípios, Poderes e Deveres',acerto:93,diffMedia:6,relevancia:5,tempoCump:'1h',questoes:28,acertos:26},
+      {titulo:'Lei das Estatais (13.303/2016), Consórcios Públicos (semana 20-26/07)',acerto:70,diffMedia:-23,relevancia:4,tempoCump:'4h',questoes:0,acertos:0},
+      {titulo:'Terceiro Setor e Parcerias (semana 20-26/07)',acerto:86,diffMedia:-7,relevancia:4,tempoCump:'1h30m',questoes:0,acertos:0},
       {titulo:'Licitações e Contratos (Lei 14.133/21)',acerto:85,diffMedia:-2,relevancia:5,tempoCump:'2h',questoes:28,acertos:24},
       {titulo:'Organização Administrativa (Direta/Indireta)',acerto:93,diffMedia:6,relevancia:5,tempoCump:'1h',questoes:28,acertos:26},
       {titulo:'Atos Administrativos',acerto:89,diffMedia:2,relevancia:5,tempoCump:'1h',questoes:28,acertos:25},
@@ -1944,6 +1993,8 @@ const GURUJA_SEED={
     assuntos:[
       {titulo:'Conceito, Classificação e Natureza Jurídica dos Tributos',acerto:75,diffMedia:-5,relevancia:4,tempoCump:'1h30m',questoes:28,acertos:21},
       {titulo:'Limitações Constitucionais ao Poder de Tributar',acerto:75,diffMedia:-5,relevancia:5,tempoCump:'1h',questoes:28,acertos:21},
+      {titulo:'Limitações ao Poder de Tributar (semana 20-26/07)',acerto:91,diffMedia:16,relevancia:5,tempoCump:'2h',questoes:0,acertos:0},
+      {titulo:'Competência Tributária, Impostos e Repartição das Receitas (semana 20-26/07)',acerto:91,diffMedia:5,relevancia:5,tempoCump:'2h',questoes:0,acertos:0},
       {titulo:'Competência Tributária',acerto:86,diffMedia:6,relevancia:3,tempoCump:'1h',questoes:28,acertos:24},
       {titulo:'Legislação Tributária',acerto:82,diffMedia:2,relevancia:3,tempoCump:'1h30m',questoes:28,acertos:23},
       {titulo:'Obrigação Tributária',acerto:87,diffMedia:7,relevancia:4,tempoCump:'1h',questoes:28,acertos:24},
@@ -1973,6 +2024,8 @@ const GURUJA_SEED={
       {titulo:'LRF — Arts. 43º a 73-C',acerto:83,diffMedia:2,relevancia:4,tempoCump:'1h',questoes:27,acertos:22},
       {titulo:'Manual de Demonstrativos Fiscais (MDF)',acerto:76,diffMedia:-5,relevancia:4,tempoCump:'1h',questoes:25,acertos:19},
       {titulo:'Precatórios (art. 100 CF)',acerto:35,diffMedia:-46,relevancia:4,tempoCump:'1h',questoes:0,acertos:0},
+      {titulo:'PPA, LDO, fundos na Lei 4.320 (semana 20-26/07)',acerto:82,diffMedia:0,relevancia:5,tempoCump:'1h',questoes:0,acertos:0},
+      {titulo:'LOA, emendas, ciclo orçamentário (semana 20-26/07)',acerto:83,diffMedia:0,relevancia:5,tempoCump:'2h',questoes:0,acertos:0},
       {titulo:'Controle Financeiro (interno/externo) — Controle pelos TCs',acerto:72,diffMedia:-7,relevancia:4,tempoCump:'1h',questoes:20,acertos:11},
       {titulo:'Matemática Financeira aplicada',acerto:26,diffMedia:-55,relevancia:4,tempoCump:'2h',questoes:0,acertos:0},
       {titulo:'Atividade financeira, normas gerais, natureza jurídica, tipos de despesa (simulado 13-19/07)',acerto:86,diffMedia:5,relevancia:4,tempoCump:'1h',questoes:14,acertos:12},
@@ -1993,6 +2046,7 @@ const GURUJA_SEED={
       {titulo:'Espécies de Contratos — Parte 2',acerto:72,diffMedia:-13,relevancia:4,tempoCump:'2h',questoes:25,acertos:18},
       {titulo:'Responsabilidade Civil',acerto:85,diffMedia:0,relevancia:5,tempoCump:'1h',questoes:27,acertos:23},
       {titulo:'Direito das Coisas (Posse/Propriedade)',acerto:77,diffMedia:-8,relevancia:4,tempoCump:'1h',questoes:27,acertos:21},
+      {titulo:'Ato e Fato Jurídico (semana 20-26/07)',acerto:84,diffMedia:0,relevancia:3,tempoCump:'1h30m',questoes:0,acertos:0},
       {titulo:'Capacidade Civil e Direitos Inerentes à Personalidade (simulado 13-19/07)',acerto:84,diffMedia:-1,relevancia:4,tempoCump:'1h30m',questoes:25,acertos:21},
     ]},
   'Raciocínio Lógico':{
@@ -2001,6 +2055,7 @@ const GURUJA_SEED={
     assuntos:[
       {titulo:'Proposições, Conectivos e Tabela-Verdade',acerto:null,diffMedia:0,relevancia:5,tempoCump:'2h',questoes:0,acertos:0},
       {titulo:'Equivalências Lógicas e Negação',acerto:null,diffMedia:0,relevancia:5,tempoCump:'2h',questoes:0,acertos:0},
+      {titulo:'Equivalências Lógicas (semana 20-26/07)',acerto:85,diffMedia:0,relevancia:4,tempoCump:'2h',questoes:0,acertos:0},
       {titulo:'Silogismos e Inferências',acerto:null,diffMedia:0,relevancia:4,tempoCump:'2h',questoes:0,acertos:0},
       {titulo:'Estruturas Lógicas (simulado 13-19/07) — PRIMEIRO DADO REAL',acerto:76,diffMedia:0,relevancia:5,tempoCump:'1h30m',questoes:17,acertos:13},
     ]},
@@ -2010,6 +2065,7 @@ const GURUJA_SEED={
     assuntos:[
       {titulo:'Ética no Serviço Público — Decreto Estadual 69.328/2025',acerto:85.7,diffMedia:5,relevancia:4,tempoCump:'1h',questoes:25,acertos:22},
       {titulo:'Código de Ética TCE-SP · Lei Conflito de Interesses (12.813/2013) · UNCAC',acerto:74.0,diffMedia:-6,relevancia:4,tempoCump:'1h',questoes:25,acertos:19},
+      {titulo:'Ética no serviço público (semana 20-26/07)',acerto:90,diffMedia:10,relevancia:4,tempoCump:'1h',questoes:0,acertos:0},
       {titulo:'Compliance público · Programa de Integridade · Decreto 67.683/2023 · OCDE',acerto:73.9,diffMedia:-6,relevancia:4,tempoCump:'1h',questoes:25,acertos:18},
     ]},
   'Legislação TCE-SP':{
@@ -2020,6 +2076,9 @@ const GURUJA_SEED={
       {titulo:'Regimento Interno do TCE-SP + Sistema Controle CF/88',acerto:85.3,diffMedia:5,relevancia:5,tempoCump:'2h',questoes:30,acertos:26},
       {titulo:'Deveres, proibições e responsabilidades (Lei 10.261/1968)',acerto:80.5,diffMedia:0,relevancia:4,tempoCump:'1h',questoes:25,acertos:20},
       {titulo:'Instrução 01/2024 do TCE-SP',acerto:null,diffMedia:0,relevancia:5,tempoCump:'1h',questoes:0,acertos:0},
+      {titulo:'Lei Orgânica do TCE-SP — Questões (semana 20-26/07)',acerto:85,diffMedia:0,relevancia:4,tempoCump:'1h',questoes:0,acertos:0},
+      {titulo:'Bloco A — Lei Orgânica e Regimento Interno (semana 20-26/07)',acerto:70,diffMedia:-15,relevancia:3,tempoCump:'1h',questoes:0,acertos:0},
+      {titulo:'Lei Orgânica do TCE-SP — Questões (semana 20-26/07)',acerto:85,diffMedia:0,relevancia:4,tempoCump:'1h',questoes:12,acertos:10},
     ]},
   'Dir. Penal':{
     importadoEm:'2026-07-19',jornada:18,nivel:'Bom',ferramenta:'TecConcursos',
@@ -2831,22 +2890,25 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
         else if(h<18){canal='passiva';motivoHora='meio do dia — ideal pra ouvir, não pra decorar ativamente';}
         else{canal='memorizacao';motivoHora='fim do dia — Anki leve fecha bem';}
 
-        let titulo,detalhe,cor,ic,label;
+        let titulo,detalhe,cor,ic,label,matAgora=null;
         if(canal==='questoes'){
           const q=calcQuestoesPrioridade(lsGet('historico_diario',[]));
           label='📕 QUESTÕES';cor='#f87171';ic='📕';
           titulo=q.top?`${q.top.mat} — ${q.top.pct}%`:'Sem dado recente ainda esta semana';
           detalhe=q.top?`Pior desempenho ponderado dos últimos 7 dias`:'Registre alguma sessão pra essa recomendação aparecer';
+          matAgora=q.top?.mat||null;
         } else if(canal==='passiva'){
           const p=calcPassivaJuridica()[0];
           label='🎧 PASSIVA';cor='#34d399';ic='🎧';
           titulo=p?`${p.mat} — ${p.titulo}`:'—';
           detalhe=p?.decoreba?'🔴 decoreba — prioridade de prazo/número':'Maior dificuldade nas matérias jurídicas';
+          matAgora=p?.mat||null;
         } else {
           const mfila=calcFilaMemorizacao();
           label='🃏 MEMORIZAÇÃO';cor='#a78bfa';ic='🃏';
           titulo=mfila.hoje?mfila.hoje.mat:'—';
           detalhe=mfila.hoje?.pct!=null?`${mfila.hoje.pct}% — há mais tempo sem Anki`:'Sem dado ainda — zero base, prioridade alta';
+          matAgora=mfila.hoje?.mat||null;
         }
         return(
           <div style={{borderRadius:14,background:`${cor}08`,border:`1px solid ${cor}30`,marginBottom:12,padding:'13px 16px'}}>
@@ -2857,7 +2919,7 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
             <div style={{display:'flex',alignItems:'center',gap:10}}>
               <span style={{fontSize:20}}>{ic}</span>
               <div style={{flex:1,minWidth:0}}>
-                <div style={{fontSize:13,fontWeight:900,color:'var(--text)'}}>{titulo}</div>
+                <div style={{fontSize:13,fontWeight:900,color:'var(--text)',display:'flex',alignItems:'center'}}>{titulo}{matAgora&&<BadgeMateria mat={matAgora}/>}</div>
                 <div style={{fontSize:10,color:'var(--text4)'}}>{detalhe}</div>
               </div>
               <button onClick={()=>onSetTab&&onSetTab('revisao')} style={{padding:'8px 12px',borderRadius:9,border:`1px solid ${cor}40`,background:`${cor}12`,color:cor,fontSize:11,fontWeight:800,cursor:'pointer',flexShrink:0}}>→ Ir</button>
@@ -2903,7 +2965,7 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
         const cor=verde?'#34d399':'#f87171';
         const feitosSet=new Set(feitos);
         // Bloco de HOJE, pela data real — cicloInicio = 13/07/2026 (dia 1)
-        const cicloInicio=new Date(2026,6,20).setHours(0,0,0,0);
+        const cicloInicio=new Date(2026,6,27).setHours(0,0,0,0);
         const hojeMs2=new Date().setHours(0,0,0,0);
         const diaHoje=Math.round((hojeMs2-cicloInicio)/86400000)+1;
         const blocosHoje=CICLO.filter(s=>s.dia===diaHoje&&!feitosSet.has(s.id));
@@ -2939,7 +3001,7 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
                 <div style={{display:'flex',alignItems:'center',gap:10}}>
                   <span style={{fontSize:20}}>{proxBloco.ic}</span>
                   <div style={{flex:1}}>
-                    <div style={{fontSize:13,fontWeight:900,color:'var(--text)'}}>{proxBloco.mat}</div>
+                    <div style={{fontSize:13,fontWeight:900,color:'var(--text)',display:'flex',alignItems:'center'}}>{proxBloco.mat}<BadgeMateria mat={proxBloco.mat}/></div>
                     <div style={{fontSize:11,color:'var(--text4)'}}>{proxBloco.conteudo}</div>
                     <div style={{display:'flex',gap:6,marginTop:4}}>
                       <span style={{fontSize:9,padding:'1px 6px',borderRadius:4,background:`${proxBloco.cor}20`,color:proxBloco.cor,fontFamily:"'DM Mono',monospace",fontWeight:700}}>{proxBloco.tag}</span>
@@ -4219,7 +4281,7 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
           <span style={{fontSize:11,color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:700,flexShrink:0}}>{feitos.length}/{N}</span>
         </div>
         <div style={{display:'flex',gap:6,marginBottom:14}}>
-          {[[N,'blocos · 45min'],[`${Math.round(N*0.75)}h`,'total ciclo'],['20→26/07','período'],[`#${cicloNum}`,'ciclo atual']].map(([v,l],i)=>(
+          {[[N,'blocos · 45min'],[`${Math.round(N*0.75)}h`,'total ciclo'],['27/07→02/08','período'],[`#${cicloNum}`,'ciclo atual']].map(([v,l],i)=>(
             <div key={i} style={{flex:1,padding:'8px 4px',borderRadius:9,textAlign:'center',background:'rgba(251,191,36,.04)',border:'1px solid rgba(251,191,36,.1)'}}>
               <div style={{fontSize:12,fontWeight:900,color:'#fbbf24',fontFamily:"'DM Mono',monospace",lineHeight:1}}>{v}</div>
               <div style={{fontSize:8,color:'#475569',marginTop:2}}>{l}</div>
@@ -4228,7 +4290,7 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
         </div>
         {/* Blocos agrupados por dia */}
         {(()=>{
-          const DIAS_CICLO11={1:'Seg 20/07 · trabalho',2:'Ter 21/07 · livre',3:'Qua 22/07 · trabalho',4:'Qui 23/07 · livre',5:'Sex 24/07 · trabalho',6:'Sáb 25/07 · livre',7:'Dom 26/07 · tarde protegida'};
+          const DIAS_CICLO11={1:'Seg 27/07 · férias',2:'Ter 28/07 · férias',3:'Qua 29/07 · férias',4:'Qui 30/07 · férias',5:'Sex 31/07 · férias',6:'Sáb 01/08 · férias',7:'Dom 02/08 · férias'};
           const diasUnicos=[...new Set(CICLO.map(s=>s.dia))].sort((a,b)=>a-b);
           return diasUnicos.map(dia=>{
           const blocosDia=CICLO.filter(s=>s.dia===dia);
@@ -4872,7 +4934,7 @@ function TabRevProfunda({totalBlocos}){
               <span style={{fontSize:9,fontWeight:900,color:sel?corBase:'#475569',width:16,flexShrink:0,fontFamily:"'DM Mono',monospace"}}>{i+1}</span>
               <span style={{fontSize:16,flexShrink:0}}>{feitoNoCiclo?'✅':f.ic}</span>
               <div style={{flex:1,minWidth:0}}>
-                <div style={{fontSize:12,fontWeight:700,color:sel||feitoNoCiclo?corBase:'var(--text)'}}>{f.mat}</div>
+                <div style={{fontSize:12,fontWeight:700,color:sel||feitoNoCiclo?corBase:'var(--text)',display:'flex',alignItems:'center'}}>{f.mat}<BadgeMateria mat={f.mat} tamanho={8}/></div>
                 <div style={{fontSize:9,color:'var(--text4)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{f.motivo}</div>
               </div>
               {jaFez>0&&<span style={{fontSize:9,padding:'1px 6px',borderRadius:4,background:'rgba(52,211,153,.12)',color:'#34d399',fontFamily:"'DM Mono',monospace",flexShrink:0}}>{jaFez}x</span>}
@@ -5328,7 +5390,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
                 <div key={t.id} style={{padding:'11px 13px',borderRadius:10,background:feitoHoje?'rgba(52,211,153,.10)':'rgba(255,255,255,.02)',border:`1px solid ${feitoHoje?'rgba(52,211,153,.3)':'rgba(148,163,184,.12)'}`,marginBottom:6}}>
                   <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',cursor:'pointer'}} onClick={()=>setCadExpandidos(s=>{const n=new Set(s);n.has(t.id)?n.delete(t.id):n.add(t.id);return n;})}>
                     <div style={{flex:1,minWidth:0}}>
-                      <div style={{fontSize:11,fontWeight:800,color:feitoHoje?'#34d399':'var(--text)'}}>{feitoHoje?'✅ ':''}{t.mat}</div>
+                      <div style={{fontSize:11,fontWeight:800,color:feitoHoje?'#34d399':'var(--text)',display:'flex',alignItems:'center'}}>{feitoHoje?'✅ ':''}{t.mat}<BadgeMateria mat={t.mat}/></div>
                       <div style={{fontSize:10,color:'var(--text4)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{t.assunto||t.obs||'—'}</div>
                     </div>
                     <div style={{textAlign:'right',flexShrink:0,marginLeft:8}}>
@@ -5364,14 +5426,14 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
               {filaMem.hoje&&(
                 <div style={{padding:'8px 10px',borderRadius:9,background:'rgba(167,139,250,.12)',marginBottom:8}}>
                   <div style={{fontSize:9,color:'#a78bfa'}}>HOJE — há mais tempo sem Anki</div>
-                  <div style={{fontSize:13,fontWeight:900,color:'var(--text)'}}>{filaMem.hoje.mat} {filaMem.hoje.pct!=null?`— ${filaMem.hoje.pct}%`:'— sem dado ainda'}</div>
+                  <div style={{fontSize:13,fontWeight:900,color:'var(--text)',display:'flex',alignItems:'center'}}>{filaMem.hoje.mat} {filaMem.hoje.pct!=null?`— ${filaMem.hoje.pct}%`:'— sem dado ainda'}<BadgeMateria mat={filaMem.hoje.mat}/></div>
                 </div>
               )}
               <div style={{display:'flex',flexDirection:'column',gap:3}}>
                 {filaMem.filaCompleta.map((f,i)=>(
                   <div key={f.mat} style={{display:'flex',alignItems:'center',gap:8,padding:'4px 6px',borderRadius:6,background:f.mat===filaMem.hoje?.mat?'rgba(167,139,250,.1)':'transparent'}}>
                     <span style={{fontSize:9,color:'var(--text4)',fontFamily:"'DM Mono',monospace",width:16}}>{i+1}º</span>
-                    <span style={{fontSize:11,color:f.jaHoje?'#34d399':'var(--text)',flex:1}}>{f.jaHoje?'✅ ':''}{f.mat}</span>
+                    <span style={{fontSize:11,color:f.jaHoje?'#34d399':'var(--text)',flex:1,display:'flex',alignItems:'center'}}>{f.jaHoje?'✅ ':''}{f.mat}<BadgeMateria mat={f.mat}/></span>
                     <span style={{fontSize:10,color:'var(--text4)',fontFamily:"'DM Mono',monospace"}}>{f.pct!=null?`${f.pct}%`:'—'}</span>
                   </div>
                 ))}
@@ -5530,7 +5592,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
                     <div key={f.mat} onClick={()=>setNlmForm(fm=>({...fm,mat:f.mat}))} style={{display:'flex',alignItems:'center',gap:8,padding:'5px 7px',borderRadius:6,background:feito?'rgba(52,211,153,.13)':'transparent',cursor:'pointer'}}>
                       <span style={{fontSize:9,color:'var(--text4)',fontFamily:"'DM Mono',monospace",width:16}}>{i+1}º</span>
                       {f.decoreba&&<span style={{fontSize:9}}>🔴</span>}
-                      <span style={{fontSize:11,color:feito?'#34d399':'var(--text)',flex:1,fontWeight:feito?700:400}}>{feito?'✅ ':''}{f.mat}</span>
+                      <span style={{fontSize:11,color:feito?'#34d399':'var(--text)',flex:1,fontWeight:feito?700:400,display:'flex',alignItems:'center'}}>{feito?'✅ ':''}{f.mat}<BadgeMateria mat={f.mat} tamanho={8}/></span>
                       <span style={{fontSize:9,color:'var(--text4)',fontFamily:"'DM Mono',monospace"}}>risco {f.risco}</span>
                     </div>
                   );
@@ -5636,7 +5698,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
               {estr.cobertura.map(c=>(
                 <div key={c.mat} style={{marginBottom:6}}>
                   <div style={{display:'flex',justifyContent:'space-between',fontSize:10,marginBottom:2}}>
-                    <span style={{color:'var(--text)'}}>{c.mat}</span>
+                    <span style={{color:'var(--text)',display:'flex',alignItems:'center'}}>{c.mat}<BadgeMateria mat={c.mat} tamanho={8}/></span>
                     <span style={{color:'var(--text4)',fontFamily:"'DM Mono',monospace"}}>{c.tocados}/{c.total} · {c.pct}%</span>
                   </div>
                   <div style={{height:4,borderRadius:2,background:'rgba(148,163,184,.15)',overflow:'hidden'}}>
@@ -7654,9 +7716,9 @@ function App(){
       }
     })();
     const _f=lsGet('feitos',[]);
-    if(lsGet('ciclo_versao','')!=='v38'){
+    if(lsGet('ciclo_versao','')!=='v39'){
       if(_f.length>0)lsSet('feitos',[]);
-      lsSet('cicloNum',20);lsSet('ciclo_versao','v38');
+      lsSet('cicloNum',21);lsSet('ciclo_versao','v39');
     }
     setFeitos(lsGet('feitos',[]));setCicloNum(lsGet('cicloNum',1));setHoras(lsGet('horas',[]));setMit(lsGet('mit',[]));
     const tick=setInterval(()=>setClock(new Date()),1000);
