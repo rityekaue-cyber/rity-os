@@ -458,11 +458,11 @@ function calcTagDinamica(mat){
   const pct=tq>0?Math.round(ta/tq*100):0;
   const lastDt=Math.max(...regs.map(r=>r.dt||0));
   const diasSem=Math.floor((Date.now()-lastDt)/86400000);
-  if(pct>=85){
+  if(pct>=LIMIAR_DOMINIO){
     if(diasSem>15)return'🟡 OXIDANDO ('+pct+'%)';
     return'🟢 SÓLIDO ('+pct+'%)';
   }
-  if(pct>=70)return'🟡 ATENÇÃO ('+pct+'%)';
+  if(pct>=LIMIAR_ATENCAO)return'🟡 ATENÇÃO ('+pct+'%)';
   return'🔴 CRÍTICO ('+pct+'%)';
 }
 
@@ -911,6 +911,36 @@ function calcUrgenciaMateria(mat){
   const nivel=score>=45?'alta':score>=22?'media':'baixa';
   return{nivel,score,pior,pct:pior};
 }
+// Últimos toques por matéria, cruzando todas as fontes — usado pro alerta de oxidação
+function ultimoToqueMateria(mat){
+  let ultimo=0;
+  lsGet('historico_diario',[]).forEach(r=>{if(r.materia===mat&&(r.dt||0)>ultimo)ultimo=r.dt;});
+  lsGet('rev_anki',[]).forEach(r=>{if(r.mat===mat&&(r.dt||0)>ultimo)ultimo=r.dt;});
+  lsGet('rev_nlm',[]).forEach(r=>{if(r.mat===mat&&(r.dt||0)>ultimo)ultimo=r.dt;});
+  lsGet('rev_caderno',[]).forEach(r=>{if(r.mat===mat&&(r.dt||0)>ultimo)ultimo=r.dt;});
+  return ultimo;
+}
+// Top matérias oxidando: nota histórica boa (≥80%) mas há muito tempo sem tocar.
+// Risco = quanto pior fica a surpresa se cair na prova sem você saber que já esfriou.
+function calcTopOxidacao(n=3){
+  const guruja=getGurujaAssuntos();
+  const hoje=Date.now();
+  const itens=EDITAL_MATS.map(mat=>{
+    let pct=null;
+    if(guruja[mat]){
+      const comDado=(guruja[mat].assuntos||[]).filter(a=>a.acerto!=null);
+      if(comDado.length)pct=Math.round(comDado.reduce((s,a)=>s+a.acerto,0)/comDado.length);
+    }
+    if(pct===null){
+      const tops=(EDITAL[mat]?.top||[]).filter(t=>t.acerto!=null);
+      if(tops.length)pct=Math.round(tops.reduce((s,t)=>s+t.acerto,0)/tops.length);
+    }
+    const ultimo=ultimoToqueMateria(mat);
+    const diasSem=ultimo>0?Math.floor((hoje-ultimo)/86400000):null;
+    return{mat,pct,diasSem};
+  }).filter(i=>i.pct!=null&&i.pct>=80&&i.diasSem!=null&&i.diasSem>14);
+  return itens.sort((a,b)=>(b.pct*b.diasSem)-(a.pct*a.diasSem)).slice(0,n);
+}
 // Badge visual reutilizável: 👁️ = já tem dado real · bolinha colorida = urgência
 function BadgeMateria({mat,tamanho=9}){
   const vista=jaVista(mat);
@@ -938,6 +968,21 @@ const DISCURSIVA_TECNICAS={
 // getDay(): 0=domingo,1=segunda,2=terça,3=quarta,4=quinta,5=sexta,6=sábado
 const DISCURSIVA_SEMANA={0:'revisao',1:'blurting',2:'esqueleto',3:'simulado',4:'micro',5:'feynman',6:null};
 
+// Tipos de erro confirmados na correção real (27/07) — usados quando uma peça volta corrigida
+const TIPOS_ERRO_DISCURSIVA={
+  principio_sem_regra:{nome:'Princípio sem regra específica',ic:'⚖️',como:'Citou o princípio mas não o dispositivo/regra exata que se aplica'},
+  consequencia_trocada:{nome:'Consequência trocada',ic:'🔀',como:'Respondeu uma consequência jurídica diferente da que foi pedida'},
+  parafrase_solta:{nome:'Paráfrase onde tem termo técnico',ic:'📝',como:'Usou palavra própria quando existia termo técnico exato esperado'},
+  requisito_omitido:{nome:'Requisito omitido',ic:'❌',como:'Deixou de mencionar uma exigência explícita do dispositivo'},
+  outro:{nome:'Outro',ic:'❓',como:'Erro que não se encaixa nos 4 padrões acima'},
+};
+function calcPadraoErroDiscursiva(discRegs){
+  const cont={};
+  discRegs.forEach(r=>{(r.erros||[]).forEach(e=>{cont[e]=(cont[e]||0)+1;});});
+  const ordenado=Object.entries(cont).sort((a,b)=>b[1]-a[1]);
+  return ordenado.map(([id,n])=>({id,n,...TIPOS_ERRO_DISCURSIVA[id]}));
+}
+
 function calcPrioridadeDiscursiva(mat){
   if(!mat)return null;
   const guruja=getGurujaAssuntos();
@@ -958,6 +1003,17 @@ function calcPrioridadeDiscursiva(mat){
   else if(score>=20){label='🟡 MÉDIA';cor='#fbbf24';}
   else{label='🟢 BAIXA';cor='#34d399';}
   return{label,cor,pct,score};
+}
+
+// ── LIMIARES ÚNICOS DE STATUS — antes o app usava 75/80/85 misturados pra 'dominado'
+// e 50/60/70/75 misturados pra 'crítico'. Agora todo status usa a mesma régua.
+const LIMIAR_DOMINIO=85;   // ≥85% = dominado (verde)
+const LIMIAR_ATENCAO=70;   // 70-84% = atenção (amarelo) · <70% = crítico (vermelho)
+function statusPct(pct){
+  if(pct==null)return'nao_estudado';
+  if(pct>=LIMIAR_DOMINIO)return'dominio';
+  if(pct>=LIMIAR_ATENCAO)return'atencao';
+  return'critico';
 }
 
 const MATS_JURIDICAS=EDITAL_MATS.filter(m=>m.startsWith('Dir.')||m==='Direito Empresarial (Comercial)'||m==='Legislação TCE-SP'||m==='Ética Pública');
@@ -1054,6 +1110,45 @@ function calcProfunda80(){
     });
   });
   return abaixo.sort((a,b)=>b.score-a.score);
+}
+
+// ── PROJEÇÃO DE NOTA FINAL — se a prova fosse hoje, quantos pontos você faria ──
+function calcProjecaoNotaFinal(){
+  const guruja=getGurujaAssuntos();
+  const pctMat=mat=>{
+    if(guruja[mat]){
+      const comDado=(guruja[mat].assuntos||[]).filter(a=>a.acerto!=null);
+      if(comDado.length)return comDado.reduce((s,a)=>s+a.acerto,0)/comDado.length;
+    }
+    const tops=(EDITAL[mat]?.top||[]).filter(t=>t.acerto!=null);
+    if(tops.length)return tops.reduce((s,t)=>s+t.acerto,0)/tops.length;
+    return null;
+  };
+  const matsGerais=EDITAL_MATS.filter(m=>EDITAL[m]?.bloco==='gerais');
+  const matsEspec=EDITAL_MATS.filter(m=>EDITAL[m]?.bloco==='especificos');
+  const pctsGerais=matsGerais.map(pctMat).filter(v=>v!=null);
+  const pctsEspec=matsEspec.map(pctMat).filter(v=>v!=null);
+  const mediaGerais=pctsGerais.length?pctsGerais.reduce((s,v)=>s+v,0)/pctsGerais.length:null;
+  const mediaEspec=pctsEspec.length?pctsEspec.reduce((s,v)=>s+v,0)/pctsEspec.length:null;
+  const pontosGerais=mediaGerais!=null?Math.round(mediaGerais/100*20):null;
+  const pontosEspec=mediaEspec!=null?Math.round(mediaEspec/100*60):null;
+  const pontosObjetiva=(pontosGerais||0)+(pontosEspec||0);
+
+  const discRegs=lsGet('rev_discursiva',[]);
+  const corrigidas=discRegs.filter(r=>r.foiCorrigida&&r.nota!==''&&r.nota!=null&&!isNaN(parseFloat(r.nota)));
+  const mediaNota=corrigidas.length?corrigidas.reduce((s,r)=>s+parseFloat(r.nota),0)/corrigidas.length:null;
+  const pontosDiscursiva=mediaNota!=null?Math.round(mediaNota/10*40):null;
+
+  const notaFinal=pontosObjetiva+(pontosDiscursiva||0);
+  return{
+    pontosGerais,pontosEspec,pontosObjetiva,pontosDiscursiva,notaFinal,
+    passaGerais:pontosGerais!=null?pontosGerais>=12:null,
+    passaEspec:pontosEspec!=null?pontosEspec>=36:null,
+    passaDiscursiva:pontosDiscursiva!=null?pontosDiscursiva>=24:null,
+    cobGerais:pctsGerais.length,totalGerais:matsGerais.length,
+    cobEspec:pctsEspec.length,totalEspec:matsEspec.length,
+    correcoesRegistradas:corrigidas.length,
+  };
 }
 
 // ── 5. ESTRATÉGIA — painel semanal: delta, cobertura do edital, decisão sugerida ──
@@ -2048,6 +2143,7 @@ const GURUJA_SEED={
       {titulo:'Direito das Coisas (Posse/Propriedade)',acerto:77,diffMedia:-8,relevancia:4,tempoCump:'1h',questoes:27,acertos:21},
       {titulo:'Ato e Fato Jurídico (semana 20-26/07)',acerto:84,diffMedia:0,relevancia:3,tempoCump:'1h30m',questoes:0,acertos:0},
       {titulo:'Capacidade Civil e Direitos Inerentes à Personalidade (simulado 13-19/07)',acerto:84,diffMedia:-1,relevancia:4,tempoCump:'1h30m',questoes:25,acertos:21},
+      {titulo:'Lei 13.465/2017 — Regularização Fundiária Urbana (REURB) — ~30 questões já cobradas pela VUNESP (TEC)',acerto:58.3,diffMedia:-27,relevancia:5,tempoCump:'4h',questoes:36,acertos:21},
     ]},
   'Raciocínio Lógico':{
     importadoEm:'2026-07-19',jornada:17,nivel:'Aprendiz',ferramenta:'Gran Cursos',
@@ -2952,6 +3048,25 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
               <div style={{fontSize:12,fontWeight:800,color:'var(--text)'}}>{t.nome}</div>
             </div>
             <button onClick={()=>onSetTab&&onSetTab('discursiva')} style={{padding:'8px 12px',borderRadius:9,border:`1px solid ${t.cor}40`,background:`${t.cor}12`,color:t.cor,fontSize:11,fontWeight:800,cursor:'pointer',flexShrink:0}}>→ Ir</button>
+          </div>
+        );
+      })()}
+
+      {/* ── OXIDAÇÃO — matérias boas há muito tempo sem tocar ── */}
+      {(()=>{
+        const oxidando=calcTopOxidacao(2);
+        if(oxidando.length===0)return null;
+        return(
+          <div style={{padding:'11px 14px',borderRadius:12,background:'rgba(251,191,36,.07)',border:'1px solid rgba(251,191,36,.3)',marginBottom:12}}>
+            <div style={{fontSize:9,color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:6}}>🟡 OXIDANDO — boas há muito tempo sem tocar</div>
+            {oxidando.map(o=>(
+              <div key={o.mat} style={{display:'flex',alignItems:'center',gap:8,marginBottom:3}}>
+                <span style={{fontSize:11,color:'var(--text)',flex:1}}>{o.mat}</span>
+                <span style={{fontSize:10,color:'#34d399',fontFamily:"'DM Mono',monospace"}}>{o.pct}%</span>
+                <span style={{fontSize:10,color:'#fbbf24',fontFamily:"'DM Mono',monospace"}}>{o.diasSem}d sem ver</span>
+              </div>
+            ))}
+            <div style={{fontSize:9,color:'var(--text4)',marginTop:5}}>A nota que aparece no app é a última medida — pode já estar desatualizada.</div>
           </div>
         );
       })()}
@@ -5663,12 +5778,38 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
       {/* SEMANAL — motor novo: delta da semana, cobertura do edital, decisão sugerida */}
       {aba==='estrategia'&&subEstrategia==='semanal'&&(()=>{
         const estr=calcEstrategiaSemanal();
+        const proj=calcProjecaoNotaFinal();
         const CORD=v=>v>0?'#34d399':v<0?'#f87171':'#94a3b8';
         return(
           <div>
             <div style={{padding:'10px 13px',borderRadius:11,background:'rgba(167,139,250,.06)',border:'1px solid rgba(167,139,250,.25)',marginBottom:14}}>
               <div style={{fontSize:9,color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px'}}>🗓️ PAINEL DE DOMINGO — 15 minutos, uma decisão</div>
               <div style={{fontSize:10,color:'var(--text4)',marginTop:2}}>As outras 3 sub-abas executam sozinhas. Aqui é o único lugar onde você decide.</div>
+            </div>
+
+            {/* PROJEÇÃO DE NOTA FINAL — se a prova fosse hoje */}
+            <div style={{padding:'13px 15px',borderRadius:12,background:'rgba(96,165,250,.06)',border:'2px solid rgba(96,165,250,.3)',marginBottom:14}}>
+              <div style={{fontSize:9,color:'#60a5fa',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:8}}>📊 SE A PROVA FOSSE HOJE</div>
+              <div style={{display:'flex',gap:8,marginBottom:10}}>
+                {[
+                  ['Gerais',proj.pontosGerais,'/20',12,proj.passaGerais],
+                  ['Específicos',proj.pontosEspec,'/60',36,proj.passaEspec],
+                  ['Discursiva',proj.pontosDiscursiva,'/40',24,proj.passaDiscursiva],
+                ].map(([l,v,max,corte,passa])=>(
+                  <div key={l} style={{flex:1,padding:'8px',borderRadius:9,background:passa===null?'rgba(148,163,184,.08)':passa?'rgba(52,211,153,.1)':'rgba(248,113,113,.1)',border:`1px solid ${passa===null?'rgba(148,163,184,.2)':passa?'rgba(52,211,153,.3)':'rgba(248,113,113,.3)'}`,textAlign:'center'}}>
+                    <div style={{fontSize:16,fontWeight:900,color:passa===null?'#64748b':passa?'#34d399':'#f87171',fontFamily:"'DM Mono',monospace"}}>{v!=null?v:'—'}{max}</div>
+                    <div style={{fontSize:8,color:'var(--text4)',marginTop:2}}>{l} · corte {corte}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{textAlign:'center',padding:'8px',borderRadius:9,background:'rgba(96,165,250,.1)'}}>
+                <div style={{fontSize:22,fontWeight:900,color:'#60a5fa',fontFamily:"'DM Mono',monospace"}}>{proj.notaFinal}/120</div>
+                <div style={{fontSize:9,color:'var(--text4)'}}>nota final estimada</div>
+              </div>
+              <div style={{fontSize:9,color:'var(--text4)',marginTop:8,lineHeight:1.5}}>
+                Gerais: {proj.cobGerais}/{proj.totalGerais} matérias com dado real · Específicos: {proj.cobEspec}/{proj.totalEspec} · Discursiva: {proj.correcoesRegistradas} correção(ões) registrada(s).
+                {proj.correcoesRegistradas===0&&' Sem correção registrada ainda, a nota de discursiva conta como 0 — registre correções na aba Discursiva pra essa projeção ficar real.'}
+              </div>
             </div>
 
             {/* (c) Decisão da semana */}
@@ -5936,10 +6077,11 @@ function TabDiscursiva(){
   const tecnicaHojeId=DISCURSIVA_SEMANA[diaSemanaNum];
   const tecnicaHoje=tecnicaHojeId?DISCURSIVA_TECNICAS[tecnicaHojeId]:null;
   const[discRegs,setDiscRegs]=useState(()=>lsGet('rev_discursiva',[]));
-  const[discForm,setDiscForm]=useState({mat:'',topico:'',tecnica:tecnicaHojeId||'blurting',tempo:''});
+  const[discForm,setDiscForm]=useState({mat:'',topico:'',tecnica:tecnicaHojeId||'blurting',tempo:'',foiCorrigida:false,nota:'',erros:[]});
   const[discSalvo,setDiscSalvo]=useState(false);
 
   const prioridade=discForm.mat?calcPrioridadeDiscursiva(discForm.mat):null;
+  const toggleErro=id=>setDiscForm(f=>({...f,erros:f.erros.includes(id)?f.erros.filter(e=>e!==id):[...f.erros,id]}));
 
   const salvarDisc=()=>{
     if(!discForm.mat||!discForm.tecnica)return;
@@ -5947,7 +6089,7 @@ function TabDiscursiva(){
     const n=[...discRegs,novo];setDiscRegs(n);lsSet('rev_discursiva',n);
     const mins=parseInt(discForm.tempo)||0;
     if(mins>0){const h=lsGet('horas',[]);lsSet('horas',[...h,{mat:`Discursiva — ${discForm.mat}`,min:mins,dt:Date.now()}]);}
-    setDiscForm({mat:'',topico:'',tecnica:tecnicaHojeId||'blurting',tempo:''});
+    setDiscForm({mat:'',topico:'',tecnica:tecnicaHojeId||'blurting',tempo:'',foiCorrigida:false,nota:'',erros:[]});
     setDiscSalvo(true);setTimeout(()=>setDiscSalvo(false),2000);
   };
 
@@ -6036,10 +6178,51 @@ function TabDiscursiva(){
           <input type="number" value={discForm.tempo||''} onChange={e=>setDiscForm(f=>({...f,tempo:e.target.value}))} placeholder="ex: 30" style={{width:'100%',padding:'13px',borderRadius:8,border:'1px solid rgba(167,139,250,.3)',background:'rgba(167,139,250,.06)',color:'#a78bfa',fontSize:20,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
         </div>
 
+        <div style={{marginBottom:12,padding:'10px',borderRadius:9,background:discForm.foiCorrigida?'rgba(248,113,113,.06)':'transparent',border:discForm.foiCorrigida?'1px solid rgba(248,113,113,.25)':'1px solid transparent'}}>
+          <label style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer'}}>
+            <input type="checkbox" checked={discForm.foiCorrigida} onChange={e=>setDiscForm(f=>({...f,foiCorrigida:e.target.checked}))} style={{width:16,height:16}}/>
+            <span style={{fontSize:10,color:'#64748b',fontWeight:700}}>📝 Essa peça voltou corrigida (registrar nota + tipo de erro)</span>
+          </label>
+          {discForm.foiCorrigida&&(
+            <div style={{marginTop:10}}>
+              <div style={{fontSize:9,color:'#64748b',marginBottom:4}}>NOTA RECEBIDA (0-10)</div>
+              <input type="number" min="0" max="10" step="0.5" value={discForm.nota||''} onChange={e=>setDiscForm(f=>({...f,nota:e.target.value}))} placeholder="ex: 6" style={{width:'100%',padding:'9px',borderRadius:7,border:'1px solid rgba(248,113,113,.25)',background:'rgba(248,113,113,.04)',color:'#f87171',fontSize:16,fontWeight:800,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box',marginBottom:8}}/>
+              <div style={{fontSize:9,color:'#64748b',marginBottom:5}}>TIPO(S) DE ERRO — marque todos que se aplicam</div>
+              <div style={{display:'flex',flexDirection:'column',gap:4}}>
+                {Object.entries(TIPOS_ERRO_DISCURSIVA).map(([id,t])=>(
+                  <label key={id} style={{display:'flex',alignItems:'center',gap:7,padding:'6px 8px',borderRadius:7,background:discForm.erros.includes(id)?'rgba(248,113,113,.12)':'rgba(255,255,255,.02)',cursor:'pointer'}}>
+                    <input type="checkbox" checked={discForm.erros.includes(id)} onChange={()=>toggleErro(id)} style={{width:14,height:14}}/>
+                    <span style={{fontSize:10,color:discForm.erros.includes(id)?'#f87171':'var(--text3)'}}>{t.ic} {t.nome}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
         <button onClick={salvarDisc} disabled={!discForm.mat} style={{width:'100%',padding:'13px',borderRadius:9,border:'none',background:discForm.mat?'#a78bfa':'rgba(148,163,184,.2)',color:discForm.mat?'#0f172a':'#64748b',fontSize:12,fontWeight:800,cursor:discForm.mat?'pointer':'default'}}>
           {discSalvo?'✅ SALVO!':'💾 REGISTRAR'}
         </button>
       </div>
+
+      {/* PADRÃO DE ERRO — só aparece se houver correções registradas */}
+      {(()=>{
+        const padrao=calcPadraoErroDiscursiva(discRegs);
+        if(padrao.length===0)return null;
+        return(
+          <div style={{padding:'12px 14px',borderRadius:12,background:'rgba(248,113,113,.05)',border:'1px solid rgba(248,113,113,.2)',marginBottom:16}}>
+            <div style={{fontSize:9,color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:8}}>🎯 PADRÃO DE ERRO — o que mais se repete nas correções</div>
+            {padrao.map(p=>(
+              <div key={p.id} style={{display:'flex',alignItems:'center',gap:8,marginBottom:5}}>
+                <span style={{fontSize:13}}>{p.ic}</span>
+                <span style={{fontSize:11,color:'var(--text)',flex:1}}>{p.nome}</span>
+                <span style={{fontSize:11,fontWeight:900,color:'#f87171',fontFamily:"'DM Mono',monospace"}}>{p.n}x</span>
+              </div>
+            ))}
+            <div style={{fontSize:9,color:'var(--text4)',marginTop:6}}>Se o mesmo tipo se repetir por 3+ semanas, é sinal de treinar especificamente ele — não discursiva em geral.</div>
+          </div>
+        );
+      })()}
 
       <div style={{padding:'12px 14px',borderRadius:12,background:'rgba(96,165,250,.06)',border:'1px solid rgba(96,165,250,.2)',marginBottom:16}}>
         <div style={{display:'flex',gap:16}}>
@@ -6079,7 +6262,7 @@ function TabDiscursiva(){
 
 function TabMapa(){
   const[aba,setAba]=useState('ranking');
-  const[matSel,setMatSel]=useState('Português');
+  const[matSel,setMatSel]=useState('todas');
   const[ordemTabela,setOrdemTabela]=useState('risco'); // risco|acerto|peso
 
   // Lê dados
@@ -6131,7 +6314,24 @@ function TabMapa(){
           pontosRisco,
           estudado,
           diasSem,
-          status:acertoComb>=85?'dominio':acertoComb>=75?'atencao':estudado?'critico':'nao_estudado',
+          status:!estudado?'nao_estudado':statusPct(acertoComb),
+        });
+      });
+    });
+    // Matérias sem nenhuma chave no Guruja (ex: Empresarial) não apareceriam — completa com o EDITAL
+    EDITAL_MATS.filter(m=>m!=='Discursivas'&&!guruja[m]).forEach(mat=>{
+      (EDITAL[mat]?.top||[]).forEach(t=>{
+        const k=mat+'|||'+t.t;
+        const reg=acertoPorAssunto[k]||null;
+        const acertoApp=reg?Math.round(reg.a/reg.q*100):null;
+        const acertoComb=acertoApp!==null?acertoApp:t.acerto;
+        const estudado=reg!==null||t.acerto!=null;
+        const diasSem=reg?.lastDt?Math.floor((todayMs-reg.lastDt)/86400000):null;
+        lista.push({
+          mat,titulo:t.t,pesoEdital:(t.p||10)/5,acertoGuruja:t.acerto,acertoApp,
+          acertoComb:acertoComb||0,diffMedia:0,relevancia:Math.round((t.p||10)/20)||1,
+          tempoCump:null,questoesGuruja:null,pontosRisco:estudado?0:5,estudado,diasSem,
+          status:!estudado?'nao_estudado':statusPct(acertoComb),
         });
       });
     });
@@ -6154,275 +6354,81 @@ function TabMapa(){
     <div style={{maxWidth:680,margin:'0 auto'}}>
       <div style={{marginBottom:12}}>
         <div style={{fontSize:18,fontWeight:900,color:'var(--text)',fontFamily:"'DM Serif Display',serif",marginBottom:2}}>📊 Mapa da Prova</div>
-        <div style={{fontSize:11,color:'var(--text4)'}}>Peso no edital × seu desempenho real · {todosAssuntos.length} assuntos mapeados</div>
+        <div style={{fontSize:11,color:'var(--text4)'}}>Toque numa matéria pra filtrar · toque de novo pra ver todas</div>
       </div>
 
-      {/* Sub-abas */}
-      <div style={{display:'flex',gap:4,marginBottom:14,overflowX:'auto',scrollbarWidth:'none',paddingBottom:2}}>
-        {ABAS_MAPA.map(a=>{const at=aba===a.id;return(
-          <button key={a.id} onClick={()=>setAba(a.id)} style={{flexShrink:0,padding:'8px 11px',borderRadius:9,border:`1px solid ${at?'var(--tab-active-border)':'var(--border)'}`,background:at?'var(--tab-active-bg)':'transparent',color:at?'var(--tab-active-color)':'var(--tab-inactive-color)',fontSize:10,fontWeight:700,fontFamily:"'DM Mono',monospace",cursor:'pointer',whiteSpace:'nowrap'}}>{a.l}</button>
-        );})}
-      </div>
-
-      {/* MODO 3 — Ranking de pontos em risco */}
-      {aba==='ranking'&&(()=>{
-        const sorted=[...todosAssuntos].sort((a,b)=>b.pontosRisco-a.pontosRisco);
-        const naoEst=sorted.filter(a=>a.status==='nao_estudado');
-        const criticos=sorted.filter(a=>a.status==='critico');
-        const atencao=sorted.filter(a=>a.status==='atencao');
-
-        const Item=({a,i})=>{
-          const cor=corStatus[a.status];
+      {/* TIRA DE MATÉRIAS — visual rápido, dobra como filtro */}
+      <div style={{display:'flex',gap:5,overflowX:'auto',paddingBottom:8,marginBottom:14,scrollbarWidth:'none'}}>
+        {EDITAL_MATS.filter(m=>m!=='Discursivas').map(mat=>{
+          const urg=calcUrgenciaMateria(mat);
+          const vista=jaVista(mat);
+          const cor=!vista?'#64748b':urg.nivel==='alta'?'#f87171':urg.nivel==='media'?'#fbbf24':'#34d399';
+          const ativo=matSel===mat;
           return(
-            <div style={{display:'flex',alignItems:'center',gap:8,padding:'10px 12px',borderRadius:10,background:`${cor}08`,border:`1px solid ${cor}22`,marginBottom:6}}>
-              <span style={{fontSize:12,width:20,flexShrink:0,fontWeight:900,color:cor}}>{i+1}</span>
-              <div style={{flex:1,minWidth:0}}>
-                <div style={{fontSize:11,fontWeight:700,color:'var(--text)',lineHeight:1.3}}>{a.titulo.length>44?a.titulo.slice(0,42)+'…':a.titulo}</div>
-                <div style={{fontSize:9,color:'var(--text4)',marginTop:2}}>{a.mat}</div>
-                <div style={{display:'flex',gap:6,marginTop:3,flexWrap:'wrap'}}>
-                  <span style={{fontSize:9,padding:'1px 5px',borderRadius:4,background:`${cor}15`,color:cor,fontWeight:700}}>{emojiStatus[a.status]} {labelStatus[a.status]}</span>
-                  {a.diffMedia<0&&<span style={{fontSize:9,color:'#f87171'}}>⬇️{Math.abs(a.diffMedia).toFixed(1)}% da média</span>}
-                  <span style={{fontSize:9,color:'var(--text4)'}}>{'★'.repeat(a.relevancia)}</span>
-                </div>
-              </div>
-              <div style={{textAlign:'right',flexShrink:0}}>
-                <div style={{fontSize:15,fontWeight:900,color:cor,fontFamily:"'DM Mono',monospace"}}>{a.status==='nao_estudado'?'—':a.acertoComb+'%'}</div>
-                <div style={{fontSize:8,color:'var(--text4)'}}>Guruja: {a.acertoGuruja}%</div>
-              </div>
+            <button key={mat} onClick={()=>setMatSel(ativo?'todas':mat)}
+              style={{flexShrink:0,display:'flex',flexDirection:'column',alignItems:'center',gap:3,padding:'8px 10px',borderRadius:10,border:`2px solid ${ativo?cor:'transparent'}`,background:`${cor}15`,cursor:'pointer'}}>
+              <div style={{width:10,height:10,borderRadius:5,background:cor}}/>
+              <div style={{fontSize:8,color:ativo?cor:'var(--text4)',fontWeight:ativo?800:600,whiteSpace:'nowrap'}}>{mat.length>13?mat.slice(0,12)+'…':mat}</div>
+            </button>
+          );
+        })}
+      </div>
+      {matSel!=='todas'&&(
+        <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10,padding:'6px 10px',borderRadius:8,background:'rgba(96,165,250,.08)'}}>
+          <span style={{fontSize:10,color:'#60a5fa',flex:1}}>Filtrando: <b>{matSel}</b></span>
+          <button onClick={()=>setMatSel('todas')} style={{fontSize:9,color:'var(--text4)',background:'none',border:'none',cursor:'pointer',textDecoration:'underline'}}>ver todas</button>
+        </div>
+      )}
+
+      {/* 3 BLOCOS FIXOS — sempre a mesma ordem, agrupados por matéria */}
+      {(()=>{
+        const base=matSel==='todas'?todosAssuntos:todosAssuntos.filter(a=>a.mat===matSel);
+        const naoVi=base.filter(a=>a.status==='nao_estudado').sort((a,b)=>b.relevancia-a.relevancia);
+        const caindo=base.filter(a=>a.status==='critico'||a.status==='atencao').sort((a,b)=>a.acertoComb-b.acertoComb);
+        const domino=base.filter(a=>a.status==='dominio').sort((a,b)=>(b.diasSem||0)-(a.diasSem||0));
+
+        const agrupar=lista=>{
+          const porMat={};
+          lista.forEach(a=>{(porMat[a.mat]=porMat[a.mat]||[]).push(a);});
+          return Object.entries(porMat);
+        };
+
+        const Bloco=({titulo,cor,lista,corAssunto,cap=3,mostrarDias})=>{
+          if(lista.length===0)return null;
+          const grupos=agrupar(lista);
+          return(
+            <div style={{marginBottom:18}}>
+              <div style={{fontSize:9,color:cor,fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:8}}>{titulo} ({lista.length})</div>
+              {grupos.map(([mat,itens])=>{
+                const visiveis=itens.slice(0,cap);
+                const resto=itens.length-visiveis.length;
+                return(
+                  <div key={mat} style={{marginBottom:10,padding:'8px 10px',borderRadius:10,background:`${cor}06`,border:`1px solid ${cor}18`}}>
+                    <div style={{fontSize:10,fontWeight:800,color:'var(--text)',marginBottom:5}}>{mat} <span style={{color:'var(--text4)',fontWeight:400}}>({itens.length})</span></div>
+                    {visiveis.map(a=>(
+                      <div key={a.titulo} style={{display:'flex',alignItems:'center',gap:6,padding:'3px 0'}}>
+                        <span style={{fontSize:10,color:'var(--text3)',flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{a.titulo}</span>
+                        {corAssunto&&<span style={{fontSize:9,fontWeight:800,color:a.status==='critico'?'#f87171':'#fbbf24',fontFamily:"'DM Mono',monospace",flexShrink:0}}>{a.acertoComb}%</span>}
+                        {mostrarDias&&a.diasSem!=null&&<span style={{fontSize:9,color:a.diasSem>15?'#fbbf24':'var(--text4)',fontFamily:"'DM Mono',monospace",flexShrink:0}}>{a.diasSem}d</span>}
+                      </div>
+                    ))}
+                    {resto>0&&<div style={{fontSize:9,color:'var(--text4)',marginTop:3}}>+{resto} mais</div>}
+                  </div>
+                );
+              })}
             </div>
           );
         };
 
         return(
           <div>
-            <div style={{display:'flex',gap:6,marginBottom:12,flexWrap:'wrap'}}>
-              {[['⬜ Não estudados',naoEst.length,'#64748b'],['🔴 Críticos',criticos.length,'#f87171'],['🟡 Atenção',atencao.length,'#fbbf24'],['🟢 Dominados',todosAssuntos.filter(a=>a.status==='dominio').length,'#34d399']].map(([l,v,c])=>(
-                <div key={l} style={{flex:1,minWidth:60,padding:'8px',borderRadius:9,background:`${c}0d`,border:`1px solid ${c}25`,textAlign:'center'}}>
-                  <div style={{fontSize:16,fontWeight:900,color:c,fontFamily:"'DM Mono',monospace"}}>{v}</div>
-                  <div style={{fontSize:8,color:'var(--text4)',marginTop:2}}>{l}</div>
-                </div>
-              ))}
-            </div>
-            {naoEst.length>0&&<><div style={{fontSize:9,color:'#64748b',fontFamily:"'DM Mono',monospace",marginBottom:6,marginTop:8}}>⬜ NÃO ESTUDADOS — por relevância</div>{naoEst.slice(0,5).map((a,i)=><Item key={a.mat+a.titulo} a={a} i={i}/>)}</>}
-            {criticos.length>0&&<><div style={{fontSize:9,color:'#f87171',fontFamily:"'DM Mono',monospace",marginBottom:6,marginTop:12}}>🔴 CRÍTICOS — acerto {'<'}75%</div>{criticos.map((a,i)=><Item key={a.mat+a.titulo} a={a} i={i}/>)}</>}
-            {atencao.length>0&&<><div style={{fontSize:9,color:'#fbbf24',fontFamily:"'DM Mono',monospace",marginBottom:6,marginTop:12}}>🟡 ATENÇÃO — acerto 75–84%</div>{atencao.slice(0,8).map((a,i)=><Item key={a.mat+a.titulo} a={a} i={i}/>)}</>}
-          </div>
-        );
-      })()}
-
-      {/* MODO 1 — Tabela por assunto */}
-      {aba==='tabela'&&(()=>{
-        const cols={risco:'Risco',acerto:'Acerto',peso:'Peso'};
-        const sorted=[...todosAssuntos].sort((a,b)=>{
-          if(ordemTabela==='acerto')return a.acertoComb-b.acertoComb;
-          if(ordemTabela==='peso')return b.relevancia-a.relevancia;
-          // risco: não estudados primeiro, depois por pontosRisco
-          if(a.status==='nao_estudado'&&b.status!=='nao_estudado')return -1;
-          if(b.status==='nao_estudado'&&a.status!=='nao_estudado')return 1;
-          return b.pontosRisco-a.pontosRisco;
-        });
-        return(
-          <div>
-            <div style={{display:'flex',gap:6,marginBottom:10}}>
-              <span style={{fontSize:10,color:'var(--text4)'}}>Ordenar por:</span>
-              {Object.entries(cols).map(([k,l])=>(
-                <button key={k} onClick={()=>setOrdemTabela(k)} style={{padding:'4px 10px',borderRadius:7,border:`1px solid ${ordemTabela===k?'#60a5fa':'var(--border)'}`,background:ordemTabela===k?'rgba(96,165,250,.15)':'transparent',color:ordemTabela===k?'#60a5fa':'var(--text4)',fontSize:10,cursor:'pointer'}}>{l}</button>
-              ))}
-            </div>
-            {sorted.map((a,i)=>{
-              const cor=corStatus[a.status];
-              return(
-                <div key={a.mat+a.titulo} style={{display:'flex',alignItems:'center',gap:8,padding:'8px 10px',borderRadius:9,background:`${cor}07`,border:`1px solid ${cor}20`,marginBottom:4}}>
-                  <span style={{fontSize:12,flexShrink:0}}>{emojiStatus[a.status]}</span>
-                  <div style={{flex:1,minWidth:0}}>
-                    <div style={{fontSize:11,color:'var(--text)',fontWeight:600,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{a.titulo}</div>
-                    <div style={{fontSize:9,color:'var(--text4)'}}>{a.mat} · {'★'.repeat(a.relevancia)} · {a.tempoCump}</div>
-                  </div>
-                  <div style={{textAlign:'right',flexShrink:0,minWidth:60}}>
-                    <div style={{fontSize:13,fontWeight:900,color:cor,fontFamily:"'DM Mono',monospace"}}>{a.status==='nao_estudado'?'⬜':a.acertoComb+'%'}</div>
-                    {a.diffMedia!==undefined&&<div style={{fontSize:8,color:a.diffMedia<0?'#f87171':'#34d399'}}>{a.diffMedia>0?'+':''}{a.diffMedia.toFixed(1)}%</div>}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        );
-      })()}
-
-      {/* MODO 2 — Dashboard visual com barras */}
-      {aba==='barras'&&(()=>{
-        const mats=Object.keys(guruja);
-        return(
-          <div>
-            <div style={{fontSize:10,color:'var(--text4)',marginBottom:12}}>Barra cinza = relevância do assunto · Barra colorida = seu acerto · Lacuna = pontos em risco</div>
-            {mats.map(mat=>{
-              const assuntos=(guruja[mat]?.assuntos||[]).map(a=>{
-                const k=mat+'|||'+a.titulo;
-                const reg=acertoPorAssunto[k];
-                const acertoComb=reg?Math.round((a.acerto*(a.questoes||20)+Math.round(reg.a/reg.q*100)*reg.q)/((a.questoes||20)+reg.q)):a.acerto;
-                return{...a,acertoComb,status:acertoComb>=85?'dominio':acertoComb>=75?'atencao':acertoComb>0?'critico':'nao_estudado'};
-              });
-              const mediaAcerto=Math.round(assuntos.reduce((s,a)=>s+a.acertoComb,0)/assuntos.length);
-              const corMat=mediaAcerto>=85?'#34d399':mediaAcerto>=75?'#fbbf24':'#f87171';
-              return(
-                <div key={mat} style={{marginBottom:16,padding:'12px 13px',borderRadius:12,background:'var(--card)',border:'1px solid var(--border)'}}>
-                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
-                    <div style={{fontSize:13,fontWeight:800,color:'var(--text)'}}>{mat}</div>
-                    <span style={{fontSize:12,fontWeight:900,color:corMat,fontFamily:"'DM Mono',monospace"}}>{mediaAcerto}% média</span>
-                  </div>
-                  {assuntos.map((a,i)=>{
-                    const cor=corStatus[a.status];
-                    const largBarra=Math.max(a.relevancia/5*100,20); // largura relativa
-                    return(
-                      <div key={i} style={{marginBottom:7}}>
-                        <div style={{display:'flex',justifyContent:'space-between',marginBottom:2}}>
-                          <span style={{fontSize:10,color:'var(--text)',lineHeight:1.3,flex:1,paddingRight:8}}>{a.titulo.length>40?a.titulo.slice(0,38)+'…':a.titulo}</span>
-                          <span style={{fontSize:10,fontWeight:700,color:cor,fontFamily:"'DM Mono',monospace",flexShrink:0}}>{a.acertoComb}%</span>
-                        </div>
-                        {/* Barra dupla */}
-                        <div style={{height:8,borderRadius:4,background:'rgba(148,163,184,.15)',overflow:'hidden',position:'relative'}}>
-                          {/* Barra de relevância (cinza) */}
-                          <div style={{position:'absolute',left:0,top:0,bottom:0,width:`${largBarra}%`,background:'rgba(148,163,184,.25)',borderRadius:4}}/>
-                          {/* Barra de acerto (colorida) */}
-                          <div style={{position:'absolute',left:0,top:0,bottom:0,width:`${a.acertoComb}%`,background:cor,borderRadius:4,opacity:0.8,transition:'width .4s'}}/>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              );
-            })}
-          </div>
-        );
-      })()}
-
-      {/* MODO 4 — Painel por matéria com 3 seções */}
-      {aba==='painel'&&(()=>{
-        const mats=Object.keys(guruja);
-        const assuntosMat=(guruja[matSel]?.assuntos||[]).map(a=>{
-          const k=matSel+'|||'+a.titulo;
-          const reg=acertoPorAssunto[k];
-          const acertoApp=reg?Math.round(reg.a/reg.q*100):null;
-          const acertoComb=acertoApp!==null?Math.round((a.acerto*(a.questoes||20)+acertoApp*reg.q)/((a.questoes||20)+reg.q)):a.acerto;
-          const status=acertoComb>=85?'dominio':acertoComb>=75?'atencao':acertoComb>0?'critico':'nao_estudado';
-          const diasSem=reg?.lastDt?Math.floor((todayMs-reg.lastDt)/86400000):null;
-          return{...a,acertoComb,acertoApp,status,diasSem,reg};
-        });
-
-        const naoEst=assuntosMat.filter(a=>a.status==='nao_estudado').sort((a,b)=>b.relevancia-a.relevancia);
-        const comRisco=assuntosMat.filter(a=>a.status==='critico'||a.status==='atencao').sort((a,b)=>(1-a.acertoComb/100)*b.relevancia-(1-b.acertoComb/100)*a.relevancia);
-        const dominados=assuntosMat.filter(a=>a.status==='dominio').sort((a,b)=>(b.diasSem||0)-(a.diasSem||0));
-
-        const addTEC=(a)=>{
-          const difEstim=a.acertoComb<65?5:a.acertoComb<75?4:3;
-          const novo={id:Date.now()+Math.random(),mat:matSel,assunto:a.titulo,feitas:a.questoes||0,acertei:a.acertos||0,pct:a.acertoComb,dificuldade:difEstim,tentativas:1,dominado:false,dia:getDK(),obs:`Guruja: ${a.acertoComb}% · ⬇️${Math.abs(a.diffMedia||0)}% da média`,origem:'mapa',historico:[{data:getDK(),questoes:a.questoes||0,acertos:a.acertos||0,dificuldade:difEstim}]};
-          const cad=[...lsGet('rev_caderno',[]),novo];lsSet('rev_caderno',cad);
-        };
-
-        const ItemPainel=({a,mostrarBotao})=>{
-          const cor=corStatus[a.status];
-          return(
-            <div style={{padding:'9px 11px',borderRadius:10,background:`${cor}07`,border:`1px solid ${cor}22`,marginBottom:6}}>
-              <div style={{display:'flex',alignItems:'center',gap:8}}>
-                <div style={{flex:1,minWidth:0}}>
-                  <div style={{fontSize:11,fontWeight:700,color:'var(--text)',lineHeight:1.3}}>{a.titulo}</div>
-                  <div style={{display:'flex',gap:6,marginTop:3,flexWrap:'wrap'}}>
-                    <span style={{fontSize:9,color:'var(--text4)'}}>{'★'.repeat(a.relevancia)} · {a.tempoCump}</span>
-                    {a.diffMedia<0&&<span style={{fontSize:9,color:'#f87171'}}>⬇️{Math.abs(a.diffMedia).toFixed(1)}%</span>}
-                    {a.diasSem!==null&&<span style={{fontSize:9,color:'var(--text4)'}}>{a.diasSem}d atrás</span>}
-                  </div>
-                </div>
-                <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:4,flexShrink:0}}>
-                  <span style={{fontSize:14,fontWeight:900,color:cor,fontFamily:"'DM Mono',monospace"}}>{a.status==='nao_estudado'?'—':a.acertoComb+'%'}</span>
-                  {mostrarBotao&&<button onClick={()=>addTEC(a)} style={{padding:'3px 8px',borderRadius:6,border:'none',background:'#f87171',color:'#0f172a',fontSize:9,fontWeight:800,cursor:'pointer'}}>+ TEC</button>}
-                </div>
-              </div>
-            </div>
-          );
-        };
-
-        return(
-          <div>
-            {/* Seletor de matéria */}
-            <div style={{display:'flex',flexWrap:'wrap',gap:4,marginBottom:14}}>
-              {mats.map(m=>(
-                <button key={m} onClick={()=>setMatSel(m)} style={{padding:'6px 10px',borderRadius:8,border:`1px solid ${matSel===m?'#60a5fa':'var(--border)'}`,background:matSel===m?'rgba(96,165,250,.15)':'transparent',color:matSel===m?'#60a5fa':'var(--text4)',fontSize:10,cursor:'pointer',fontWeight:matSel===m?700:400}}>
-                  {m.length>14?m.slice(0,13)+'…':m}
-                </button>
-              ))}
-            </div>
-
-            {/* Resumo da matéria */}
-            {(()=>{
-              const media=assuntosMat.length?Math.round(assuntosMat.reduce((s,a)=>s+a.acertoComb,0)/assuntosMat.length):0;
-              const cor=media>=85?'#34d399':media>=75?'#fbbf24':'#f87171';
-              return(
-                <div style={{display:'flex',gap:8,marginBottom:14}}>
-                  {[['Média geral',`${media}%`,cor],['Não estudados',naoEst.length,'#64748b'],['Com risco',comRisco.length,'#f87171'],['Dominados',dominados.length,'#34d399']].map(([l,v,c])=>(
-                    <div key={l} style={{flex:1,padding:'8px',borderRadius:9,background:`${c}0d`,border:`1px solid ${c}22`,textAlign:'center'}}>
-                      <div style={{fontSize:14,fontWeight:900,color:c,fontFamily:"'DM Mono',monospace"}}>{v}</div>
-                      <div style={{fontSize:8,color:'var(--text4)',marginTop:2}}>{l}</div>
-                    </div>
-                  ))}
-                </div>
-              );
-            })()}
-
-            {naoEst.length>0&&<>
-              <div style={{fontSize:9,color:'#64748b',fontFamily:"'DM Mono',monospace",marginBottom:6}}>⬜ NÃO ESTUDADOS — por relevância</div>
-              {naoEst.map(a=><ItemPainel key={a.titulo} a={a} mostrarBotao={false}/>)}
-            </>}
-            {comRisco.length>0&&<>
-              <div style={{fontSize:9,color:'#f87171',fontFamily:"'DM Mono',monospace",marginBottom:6,marginTop:12}}>⚠️ COM RISCO — adicione ao TEC</div>
-              {comRisco.map(a=><ItemPainel key={a.titulo} a={a} mostrarBotao={true}/>)}
-            </>}
-            {dominados.length>0&&<>
-              <div style={{fontSize:9,color:'#34d399',fontFamily:"'DM Mono',monospace",marginBottom:6,marginTop:12}}>🟢 DOMINADOS — manutenção</div>
-              {dominados.map(a=><ItemPainel key={a.titulo} a={a} mostrarBotao={false}/>)}
-            </>}
-          </div>
-        );
-      })()}
-
-      {/* MODO 5 — Não estudados por prioridade */}
-      {aba==='nao_estudados'&&(()=>{
-        const naoEst=[...todosAssuntos]
-          .filter(a=>a.status==='nao_estudado')
-          .sort((a,b)=>b.relevancia-a.relevancia||a.mat.localeCompare(b.mat));
-        const porMat={};
-        naoEst.forEach(a=>{if(!porMat[a.mat])porMat[a.mat]=[];porMat[a.mat].push(a);});
-
-        return(
-          <div>
-            <div style={{padding:'10px 12px',borderRadius:10,background:'rgba(96,165,250,.06)',border:'1px solid rgba(96,165,250,.2)',marginBottom:14}}>
-              <div style={{fontSize:9,color:'#60a5fa',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:2}}>⬜ {naoEst.length} ASSUNTOS SEM ESTUDO REGISTRADO</div>
-              <div style={{fontSize:10,color:'var(--text4)'}}>Ordenados por relevância. Estes assuntos existem no Guruja mas você ainda não registrou questões específicas deles no app.</div>
-            </div>
-            {Object.entries(porMat).map(([mat,assuntos])=>(
-              <div key={mat} style={{marginBottom:14}}>
-                <div style={{fontSize:11,fontWeight:800,color:'var(--text)',marginBottom:6,padding:'4px 0',borderBottom:'1px solid var(--border)'}}>{mat} <span style={{fontSize:9,color:'var(--text4)',fontWeight:400}}>({assuntos.length} assuntos)</span></div>
-                {assuntos.map((a,i)=>(
-                  <div key={i} style={{display:'flex',alignItems:'center',gap:8,padding:'8px 10px',borderRadius:9,background:'rgba(148,163,184,.06)',border:'1px solid rgba(148,163,184,.15)',marginBottom:4}}>
-                    <span style={{fontSize:11,flexShrink:0}}>⬜</span>
-                    <div style={{flex:1,minWidth:0}}>
-                      <div style={{fontSize:11,color:'var(--text)',lineHeight:1.3}}>{a.titulo}</div>
-                      <div style={{display:'flex',gap:6,marginTop:2}}>
-                        <span style={{fontSize:9,color:'var(--text4)'}}>{'★'.repeat(a.relevancia)} · {a.tempoCump}</span>
-                        <span style={{fontSize:9,color:'var(--text4)'}}>Guruja base: {a.acertoGuruja}%</span>
-                      </div>
-                    </div>
-                    <div style={{textAlign:'right',flexShrink:0}}>
-                      <div style={{fontSize:9,color:'#64748b',fontFamily:"'DM Mono',monospace"}}>{'★'.repeat(a.relevancia)}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ))}
-            {naoEst.length===0&&(
-              <div style={{textAlign:'center',padding:'40px 20px',color:'var(--text4)'}}>
-                <div style={{fontSize:28,marginBottom:8}}>✅</div>
-                <div style={{fontSize:14,fontWeight:700,color:'#34d399'}}>Todos os assuntos têm registro!</div>
-                <div style={{fontSize:11,marginTop:4}}>Continue registrando questões por assunto no campo de registro de estudo.</div>
+            <Bloco titulo="⬜ NÃO VI" cor="#94a3b8" lista={naoVi} corAssunto={false} cap={4}/>
+            <Bloco titulo="🔴 CAINDO — precisa de atenção" cor="#f87171" lista={caindo} corAssunto={true} cap={4}/>
+            <Bloco titulo="🟢 DOMINO — de olho na poeira" cor="#34d399" lista={domino} corAssunto={false} cap={3} mostrarDias={true}/>
+            {naoVi.length===0&&caindo.length===0&&domino.length===0&&(
+              <div style={{textAlign:'center',padding:'30px 20px',color:'var(--text4)'}}>
+                <div style={{fontSize:24,marginBottom:6}}>🗺️</div>
+                <div style={{fontSize:11}}>Nenhum dado pra essa matéria ainda.</div>
               </div>
             )}
           </div>
