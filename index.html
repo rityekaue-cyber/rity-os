@@ -4447,7 +4447,7 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
                       <span style={{fontSize:14,flexShrink:0}}>{s.ic}</span>
                       <div style={{flex:1,minWidth:0}}>
                         <div style={{fontSize:12,fontWeight:700,color:done?'#1e3a2a':isAtivo?'#e8edf5':'#475569',textDecoration:done?'line-through':'none',lineHeight:1.3}}>{s.mat}</div>
-                        <div style={{fontSize:9,color:'#64748b',marginTop:1}}>{s.acao}</div>
+                        <div style={{fontSize:9,color:'#64748b',marginTop:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{s.conteudo}</div>
                       </div>
                       <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:3,flexShrink:0}}>
                         <Chip label={done?'✓ feito':tri?'🔺':s.tag.split(' ')[0]} cor={done?'#1e3a2a':tri?'#fbbf24':s.cor} sm/>
@@ -4456,6 +4456,11 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
                     </div>
                     {/* Expandido */}
                     {aberto&&<div style={{padding:'10px 12px 12px 43px',background:'rgba(0,0,0,.15)',borderTop:'1px solid rgba(255,255,255,.04)'}}>
+                      <div style={{fontSize:11,color:'#94a3b8',lineHeight:1.6,marginBottom:6}}>{s.conteudo}</div>
+                      <div style={{display:'flex',gap:6,marginBottom:4}}>
+                        {s.tipo&&<span style={{fontSize:9,padding:'2px 7px',borderRadius:5,background:'rgba(148,163,184,.1)',color:'#94a3b8'}}>{s.tipo}</span>}
+                        {s.ferramenta&&<span style={{fontSize:9,padding:'2px 7px',borderRadius:5,background:'rgba(148,163,184,.1)',color:'#94a3b8'}}>{s.ferramenta}</span>}
+                      </div>
                       {(s.dica||'').split('\n').map((l,j)=>(
                         <div key={j} style={{fontSize:11,color:'#94a3b8',lineHeight:1.8,marginBottom:j<(s.dica||'').split('\n').length-1?0:0}}>{l}</div>
                       ))}
