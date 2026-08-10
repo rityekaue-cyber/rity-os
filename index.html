@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <meta name="mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
-<meta name="theme-color" content="#050a14"/>
+<meta name="theme-color" content="#f7f2e6"/>
 <meta name="application-name" content="RITY OS"/>
 <meta name="apple-mobile-web-app-title" content="RITY OS"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<link rel="manifest" href="data:application/json,{%22name%22:%22RITY%20OS%20%C2%B7%20TCE-SP%22,%22short_name%22:%22RITY%20OS%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22%23050a14%22,%22theme_color%22:%22%23050a14%22,%22orientation%22:%22portrait%22}"/>
+<link rel="manifest" href="data:application/json,{%22name%22:%22RITY%20OS%20%C2%B7%20TCE-SP%22,%22short_name%22:%22RITY%20OS%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22%23f7f2e6%22,%22theme_color%22:%22%23f7f2e6%22,%22orientation%22:%22portrait%22}"/>
 <!-- Ícone Apple (inline SVG como data URI) -->
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%23050a14'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-size='300' font-family='serif'%3E⚖%3C/text%3E%3Ctext x='50%25' y='88%25' dominant-baseline='middle' text-anchor='middle' font-size='72' font-family='monospace' fill='%23fbbf24' font-weight='bold'%3ERTY OS%3C/text%3E%3C/svg%3E"/>
 <title>RITY OS · TCE-SP 2026</title>
@@ -43,30 +43,30 @@
   --scrollbar-thumb:#334155;
 }
 
-/* ── TEMA CLARO ── */
+/* ── TEMA CLARO — bege + azul claro ── */
 body.light{
-  --bg:#f1f5f9;
+  --bg:#f7f2e6;
   --bg2:#ffffff;
-  --bg3:#e8eef5;
+  --bg3:#efe6d3;
   --card:#ffffff;
-  --card2:#f8fafc;
-  --border:#e2e8f0;
-  --border2:#cbd5e1;
-  --text:#0f172a;
-  --text2:#1e293b;
-  --text3:#334155;
-  --text4:#475569;
-  --text5:#64748b;
+  --card2:#faf6ec;
+  --border:#e0d5ba;
+  --border2:#cbb98f;
+  --text:#1e2a3d;
+  --text2:#34455c;
+  --text3:#5c7089;
+  --text4:#8091a6;
+  --text5:#a3b0c0;
   --header-bg:#ffffff;
-  --header-border:#e2e8f0;
-  --input-bg:#f8fafc;
-  --input-border:#cbd5e1;
-  --tab-active-bg:rgba(59,130,246,.1);
+  --header-border:#e0d5ba;
+  --input-bg:#faf6ec;
+  --input-border:#cbb98f;
+  --tab-active-bg:rgba(59,130,246,.12);
   --tab-active-border:#3b82f6;
   --tab-active-color:#2563eb;
-  --tab-inactive-color:#64748b;
-  --scrollbar-bg:#e2e8f0;
-  --scrollbar-thumb:#94a3b8;
+  --tab-inactive-color:#8091a6;
+  --scrollbar-bg:#efe6d3;
+  --scrollbar-thumb:#cbb98f;
 }
 
 body{
@@ -115,9 +115,9 @@ body.light [data-mono]{
 }
 </style>
 <style id="theme-overrides">
-/* ─── LIGHT MODE COMPREHENSIVE OVERRIDES ─── */
+/* ─── LIGHT MODE COMPREHENSIVE OVERRIDES — bege + azul claro ─── */
 body.light {
-  background: #f1f5f9 !important;
+  background: #f7f2e6 !important;
 }
 
 /* All white/dark card backgrounds */
@@ -125,56 +125,100 @@ body.light div[style*="background:'#1e293b'"],
 body.light div[style*='background:"#1e293b"'],
 body.light div[style*="background: #1e293b"] {
   background: #ffffff !important;
-  border-color: #e2e8f0 !important;
+  border-color: #e0d5ba !important;
 }
 body.light div[style*="background:'#0f172a'"] {
-  background: #f1f5f9 !important;
+  background: #f7f2e6 !important;
 }
 body.light div[style*="background:'rgba(148,163,184,.22)'"],
 body.light div[style*="background:'rgba(148,163,184,.25)'"],
 body.light div[style*="background:'rgba(148,163,184,.28)'"] {
-  background: #e2e8f0 !important;
+  background: #efe6d3 !important;
 }
 
 /* Text colors */
 body.light div[style*="color:'#f1f5f9'"],
 body.light span[style*="color:'#f1f5f9'"] {
-  color: #0f172a !important;
+  color: #1e2a3d !important;
 }
 body.light div[style*="color:'#94a3b8'"],
 body.light span[style*="color:'#94a3b8'"] {
-  color: #334155 !important;
+  color: #34455c !important;
 }
 body.light div[style*="color:'#64748b'"],
 body.light span[style*="color:'#64748b'"] {
-  color: #475569 !important;
+  color: #5c7089 !important;
 }
 body.light div[style*="color:'#475569'"],
 body.light span[style*="color:'#475569'"] {
-  color: #64748b !important;
+  color: #5c7089 !important;
 }
 body.light div[style*="color:'#334155'"],
 body.light span[style*="color:'#334155'"] {
-  color: #64748b !important;
+  color: #34455c !important;
+}
+body.light div[style*="color:'#e8edf5'"],
+body.light span[style*="color:'#e8edf5'"] {
+  color: #1e2a3d !important;
+}
+body.light div[style*="color:'#c8d8f8'"],
+body.light span[style*="color:'#c8d8f8'"] {
+  color: #2563eb !important;
+}
+body.light div[style*="color:'#b8c0d0'"],
+body.light span[style*="color:'#b8c0d0'"] {
+  color: #34455c !important;
 }
 
 /* Borders */
 body.light div[style*="border:'1px solid rgba(255,255,255,.08)'"] {
-  border-color: #e2e8f0 !important;
+  border-color: #e0d5ba !important;
 }
 body.light div[style*="border:'1px solid rgba(255,255,255,.1)'"] {
-  border-color: #cbd5e1 !important;
+  border-color: #cbb98f !important;
 }
 
 /* Inputs */
 body.light input, body.light textarea, body.light select {
-  background: #f8fafc !important;
-  border-color: #cbd5e1 !important;
-  color: #0f172a !important;
+  background: #faf6ec !important;
+  border-color: #cbb98f !important;
+  color: #1e2a3d !important;
 }
 body.light button[style*="background:'rgba(148,163,184,.22)'"] {
-  background: #e2e8f0 !important;
-  color: #334155 !important;
+  background: #efe6d3 !important;
+  color: #34455c !important;
+}
+
+/* Brancos translúcidos (pensados pra clarear fundo escuro) viram escuros translúcidos em modo claro */
+body.light div[style*="background:'rgba(255,255,255,.02)'"],
+body.light div[style*="background:'rgba(255,255,255,.03)'"],
+body.light div[style*="background:'rgba(255,255,255,.04)'"],
+body.light div[style*="background:'rgba(255,255,255,.05)'"],
+body.light div[style*="background:'rgba(255,255,255,.06)'"],
+body.light div[style*="background:'rgba(255,255,255,.07)'"],
+body.light div[style*="background:'rgba(255,255,255,.08)'"] {
+  background: rgba(30,42,61,.035) !important;
+}
+body.light div[style*="border:'1px solid rgba(255,255,255,.02)'"],
+body.light div[style*="border:'1px solid rgba(255,255,255,.03)'"],
+body.light div[style*="border:'1px solid rgba(255,255,255,.04)'"],
+body.light div[style*="border:'1px solid rgba(255,255,255,.05)'"],
+body.light div[style*="border:'1px solid rgba(255,255,255,.06)'"],
+body.light div[style*="border:'1px solid rgba(255,255,255,.07)'"],
+body.light div[style*="border:'1px solid rgba(255,255,255,.08)'"],
+body.light div[style*="border:'1px solid rgba(255,255,255,.1)'"],
+body.light div[style*="border:'1px solid rgba(255,255,255,.12)'"],
+body.light div[style*="border:'1px solid rgba(255,255,255,.14)'"],
+body.light div[style*="border:'1px solid rgba(255,255,255,.2)'"] {
+  border-color: #e0d5ba !important;
+}
+body.light div[style*="borderTop:'1px solid rgba(255,255,255,.04)'"],
+body.light div[style*="borderTop:'1px solid rgba(255,255,255,.08)'"],
+body.light div[style*="borderTop:'1px solid rgba(255,255,255,.1)'"],
+body.light div[style*="borderBottom:'1px solid rgba(255,255,255,.04)'"],
+body.light div[style*="borderBottom:'1px solid rgba(255,255,255,.08)'"],
+body.light div[style*="borderBottom:'1px solid rgba(255,255,255,.1)'"] {
+  border-color: #e0d5ba !important;
 }
 
 /* ─── FONT SIZE GLOBAL INCREASE ─── */
@@ -199,46 +243,41 @@ const{useState,useEffect,useRef,useMemo,useCallback}=React;
 
 // ─── CONSTANTES ───────────────────────────────────────────────
 const CICLO=[
-  // ── CICLO ATUAL — 27/07 a 03/08/2026 ──────────────────────────
-  // 30 itens do Guruja (24 principais + 6 atrasados/reforços trazidos pra frente)
-  // 5 metas/dia · dificuldade real (não a estrela do Guruja) · RLM garantido em 2 dias, como combinado
-  // Semana de férias — sem distinção de dia de trabalho
-  // DIA 1 — 2 difíceis · 2 médios · 1 fácil
-  {id:1,  dia:1, mat:'Discursivas',             ic:'✍️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Questões Anteriores'},
-  {id:2,  dia:1, mat:'Raciocínio Lógico',       ic:'🔢', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Diagramas Lógicos'},
-  {id:3,  dia:1, mat:'Dir. Civil',              ic:'⚖️', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Resolução de Questões'},
-  {id:4,  dia:1, mat:'Direito Empresarial (Comercial)',ic:'🏢',cor:'#fbbf24',tag:'🟡 MÉDIO', h:0.75, tipo:'Teoria', ferramenta:'Guruja', conteudo:'Sociedade Simples'},
-  {id:5,  dia:1, mat:'Dir. Tributário',         ic:'💰', cor:'#94a3b8', tag:'🟢 FÁCIL',  h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Crédito Tributário'},
-  // DIA 2 — 2 difíceis · 1 médio · 2 fáceis
-  {id:6,  dia:2, mat:'Discursivas',             ic:'✍️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Revisão',  ferramenta:'Guruja', conteudo:'Revisão — Questões'},
-  {id:7,  dia:2, mat:'Discursivas',             ic:'✍️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Questões Anteriores'},
-  {id:8,  dia:2, mat:'Legislação TCE-SP',       ic:'📖', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Lei Seca', ferramenta:'Guruja', conteudo:'Regimento Interno'},
-  {id:9,  dia:2, mat:'Dir. Constitucional',     ic:'📜', cor:'#94a3b8', tag:'🟢 FÁCIL',  h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Fiscalização contábil, financeira'},
-  {id:10, dia:2, mat:'Dir. Administrativo',     ic:'🏛️', cor:'#94a3b8', tag:'🟢 FÁCIL',  h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Atos Administrativos'},
-  // DIA 3 — 1 difícil · 2 médios · 2 fáceis
-  {id:11, dia:3, mat:'Discursivas',             ic:'✍️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Questão 06'},
-  {id:12, dia:3, mat:'Ética Pública',           ic:'🤝', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Lei Seca', ferramenta:'Guruja', conteudo:'Lei de Conflito de Interesses'},
-  {id:13, dia:3, mat:'Dir. Civil',              ic:'⚖️', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Contratos — Parte Geral'},
-  {id:14, dia:3, mat:'Português',               ic:'📝', cor:'#94a3b8', tag:'🟢 FÁCIL',  h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Resolução de questões'},
-  {id:15, dia:3, mat:'Dir. Penal',              ic:'🚔', cor:'#94a3b8', tag:'🟢 FÁCIL',  h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Lei Federal nº 10...'},
-  // DIA 4 — 1 difícil · 2 médios · 2 fáceis
-  {id:16, dia:4, mat:'Discursivas',             ic:'✍️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Questão 04 — Parceria Público-Privada'},
-  {id:17, dia:4, mat:'Direito Empresarial (Comercial)',ic:'🏢',cor:'#fbbf24',tag:'🟡 MÉDIO', h:0.75, tipo:'Teoria', ferramenta:'Guruja', conteudo:'Sociedade Limitada'},
-  {id:18, dia:4, mat:'Dir. Financeiro / AFO',   ic:'📈', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Receita: Conceito'},
-  {id:19, dia:4, mat:'Português',               ic:'📝', cor:'#94a3b8', tag:'🟢 FÁCIL',  h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Resolução de prova'},
-  {id:20, dia:4, mat:'Dir. Constitucional',     ic:'📜', cor:'#94a3b8', tag:'🟢 FÁCIL',  h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Poder Executivo'},
-  // DIA 5 — 2 difíceis · 2 médios · 1 fácil (RLM garantido aqui também)
-  {id:21, dia:5, mat:'Raciocínio Lógico',       ic:'🔢', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Lógica de Argumentação'},
-  {id:22, dia:5, mat:'Discursivas',             ic:'✍️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Questões Anteriores'},
-  {id:23, dia:5, mat:'Legislação TCE-SP',       ic:'📖', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Revisão',  ferramenta:'Guruja', conteudo:'Revisão Parcial'},
-  {id:24, dia:5, mat:'Dir. Financeiro / AFO',   ic:'📈', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Despesa: conceito'},
-  {id:25, dia:5, mat:'Dir. Administrativo',     ic:'🏛️', cor:'#94a3b8', tag:'🟢 FÁCIL',  h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Bens Públicos'},
-  // DIA 6 — 1 difícil · 1 médio · 3 fáceis
-  {id:26, dia:6, mat:'Discursivas',             ic:'✍️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Questão 05 — Licitações'},
-  {id:27, dia:6, mat:'Dir. Civil',              ic:'⚖️', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Obrigações'},
-  {id:28, dia:6, mat:'Dir. Tributário',         ic:'💰', cor:'#94a3b8', tag:'🟢 FÁCIL',  h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Crédito Tributário'},
-  {id:29, dia:6, mat:'Dir. Constitucional',     ic:'📜', cor:'#94a3b8', tag:'🟢 FÁCIL',  h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Poder Legislativo'},
-  {id:30, dia:6, mat:'Qualquer matéria',        ic:'📋', cor:'#94a3b8', tag:'🟢 FÁCIL',  h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Orientações Gerais (Meta)'},
+  // ── CICLO ATUAL — 10/08 a 16/08/2026 ──────────────────────────
+  // 25 itens do Guruja (4 pendentes trazidos pra frente + 21 da semana)
+  // 4 metas/dia (dia 7 com 1 sobra) · dificuldade real · trabalho só quinta 13/08
+  // DIA 1 — Seg 10/08 · livre
+  {id:1,  dia:1, mat:'Discursivas',             ic:'✍️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Anteriores — Dir. Civil: Responsabilidade Civil'},
+  {id:2,  dia:1, mat:'Dir. Civil',              ic:'⚖️', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Contratos em Espécie'},
+  {id:3,  dia:1, mat:'Dir. Constitucional',     ic:'📜', cor:'#94a3b8', tag:'🟢 FÁCIL',  h:0.75, tipo:'Teste',    ferramenta:'Guruja', conteudo:'Resolução de questões favoritas'},
+  {id:4,  dia:1, mat:'Dir. Financeiro / AFO',   ic:'📈', cor:'#94a3b8', tag:'🟢 FÁCIL',  h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Despesa: conceito, classificação, estágio, RP/DEA/SF, dívida'},
+  // DIA 2 — Ter 11/08 · livre
+  {id:5,  dia:2, mat:'Discursivas',             ic:'✍️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Questão 06 — Processo Adm. de Contratação Direta'},
+  {id:6,  dia:2, mat:'Dir. Administrativo',     ic:'🏛️', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Atos Administrativos e Processo Administrativo'},
+  {id:7,  dia:2, mat:'Raciocínio Lógico',       ic:'🔢', cor:'#94a3b8', tag:'🟢 FÁCIL',  h:0.75, tipo:'Teste',    ferramenta:'Guruja', conteudo:'Resolução de Questões Favoritas'},
+  {id:8,  dia:2, mat:'Português',               ic:'📝', cor:'#94a3b8', tag:'🟢 FÁCIL',  h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Pontuação e Crase'},
+  // DIA 3 — Qua 12/08 · livre
+  {id:9,  dia:3, mat:'Discursivas',             ic:'✍️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Anteriores — Dir. Tributário: Administração Tributária'},
+  {id:10, dia:3, mat:'Dir. Administrativo',     ic:'🏛️', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Intervenção no Domínio Econômico e na Propriedade Privada'},
+  {id:11, dia:3, mat:'Ética Pública',           ic:'🤝', cor:'#94a3b8', tag:'🟢 FÁCIL',  h:0.75, tipo:'Revisão',  ferramenta:'Guruja', conteudo:'Revisão atividades 01 a 04'},
+  {id:12, dia:3, mat:'Dir. Tributário',         ic:'💰', cor:'#94a3b8', tag:'🟢 FÁCIL',  h:0.75, tipo:'Teste',    ferramenta:'Guruja', conteudo:'Resolução de questões favoritas'},
+  // DIA 4 — Qui 13/08 · TRABALHO
+  {id:13, dia:4, mat:'Direito Empresarial (Comercial)',ic:'🏢',cor:'#f87171',tag:'🔴 DIFÍCIL', h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Direito Societário'},
+  {id:14, dia:4, mat:'Legislação TCE-SP',       ic:'📖', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Lei Seca', ferramenta:'Guruja', conteudo:'Regimento Interno do TCE-SP'},
+  {id:15, dia:4, mat:'Dir. Financeiro / AFO',   ic:'📈', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Bloco A — Orçamento, leis, princípios, créditos adicionais, emendas'},
+  {id:16, dia:4, mat:'Português',               ic:'📝', cor:'#94a3b8', tag:'🟢 FÁCIL',  h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Resolução de prova — Agente Fiscal de Posturas (Pref. SJRP)'},
+  // DIA 5 — Sex 14/08 · livre
+  {id:17, dia:5, mat:'Discursivas',             ic:'✍️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Questão 07 — Execução orçamentária e financeira (PGE SP)'},
+  {id:18, dia:5, mat:'Dir. Penal',              ic:'🚔', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Teste',    ferramenta:'Guruja', conteudo:'Resolução das questões favoritas'},
+  {id:19, dia:5, mat:'Dir. Administrativo',     ic:'🏛️', cor:'#94a3b8', tag:'🟢 FÁCIL',  h:0.75, tipo:'Teste',    ferramenta:'Guruja', conteudo:'Resolução de questões favoritas'},
+  {id:20, dia:5, mat:'Dir. Financeiro / AFO',   ic:'📈', cor:'#94a3b8', tag:'🟢 FÁCIL',  h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Resolução de questões favoritas'},
+  // DIA 6 — Sáb 15/08 · livre (dia mais pesado — sem item fácil, avisar Ritchely)
+  {id:21, dia:6, mat:'Direito Empresarial (Comercial)',ic:'🏢',cor:'#f87171',tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teste',    ferramenta:'Guruja', conteudo:'Resolução de Questões Favoritas'},
+  {id:22, dia:6, mat:'Discursivas',             ic:'✍️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Anteriores — Controle Externo. LINDB: TCM/SP 2023'},
+  {id:23, dia:6, mat:'Dir. Civil',              ic:'⚖️', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Atos Unilaterais e Responsabilidade Civil'},
+  {id:24, dia:6, mat:'Legislação TCE-SP',       ic:'📖', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Lei Seca', ferramenta:'Guruja', conteudo:'Regimento Interno do TCE-SP'},
+  // DIA 7 — Dom 16/08 · livre, dia leve (1 item só)
+  {id:25, dia:7, mat:'Discursivas',             ic:'✍️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Questão 08 — Controle Externo e Sustação (inédito Vunesp)'},
 ];
 const N=CICLO.length;
 
@@ -327,7 +366,7 @@ function getAlertasAtivos(){
   const alertas=[];
   // Fim de ciclo — avisa no último dia e depois dele
   try{
-    const cicloIni=new Date(2026,6,27).setHours(0,0,0,0);
+    const cicloIni=new Date(2026,7,10).setHours(0,0,0,0);
     const diaCiclo=Math.round((new Date().setHours(0,0,0,0)-cicloIni)/86400000)+1;
     const maxDia=Math.max(...CICLO.map(s=>s.dia));
     if(diaCiclo===maxDia) alertas.push({tipo:'ciclo',msg:'📆 Último dia do ciclo — montar o ciclo da próxima semana',cor:'#fb923c'});
@@ -341,23 +380,6 @@ function getAlertasAtivos(){
   return alertas;
 }
 
-// ── PROTOCOLO ANTI-BURNOUT ───────────────────────────────────
-const PROTOCOLO_ANTIBURNOUT={
-  diagnostico:'Crash adrenal pós-viagem TCE-MG + esforço cognitivo brutal (8 metas/2 dias) + sono irregular. Taquicardia = SNS sobrecarregado. Quando o corpo grita, a mente não absorve.',
-  sinaisAlerta:['taquicardia','confusão mental','fadiga de decisão','não consegue começar','estuda mas não retém'],
-  cura:['Luz solar matinal antes de abrir o livro','Corrida no Aterro do Flamengo','Contato com a natureza — baixa cortisol e eleva dopamina'],
-  blocos:[
-    {nome:'Lei da Oxigenação',horario:'Antes das 09:00',regra:'Estudo denso SÓ após movimentar o corpo e ver luz solar. Você se paga primeiro com saúde.',cor:'#34d399'},
-    {nome:'Bloco Principal',horario:'09:15–11:30',regra:'Horário nobre. Pesados aqui: Mat. Financeira, Raciocínio Lógico, TI, questões complexas. Cérebro banhado de dopamina pelo treino.',cor:'#60a5fa'},
-    {nome:'Meta Passiva',horario:'18:30–20:00',regra:'Cérebro noturno ≠ cérebro matinal. Apenas: videoaulas, lei seca, revisão leve de caderno, matérias fáceis (Português, Dir. Administrativo).',cor:'#fbbf24'},
-    {nome:'Teto Inquebrável',horario:'20:00',regra:'FECHAMENTO RÍGIDO. Não importa se faltam 10 questões. SNP precisa assumir para dormir bem e acordar às 05h sem sofrimento.',cor:'#f87171'},
-  ],
-  dmv:{
-    nome:'Dia Mínimo Viável',
-    regra:'Em dias de energia 1-2: corte metas pela metade. Comece pela matéria MAIS FÁCIL para gerar vitória. Manter o hábito > volume.',
-    friccaoZero:'Ambiente preparado na noite anterior: caderno na mesa, Anki engatilhado. Se tiver que pensar no que estudar às 05h30, a fadiga de decisão te manda de volta para a cama.',
-  }
-};
 // A fila de Revisão Profunda agora é 100% dinâmica — ver getFilaRevProfunda() abaixo,
 // que deriva de calcProfunda80() e só considera as 12 matérias reais do EDITAL_MATS.
 
@@ -877,15 +899,31 @@ const isDecorebaHeuristico=titulo=>PADROES_DECOREBA.some(p=>p.test(titulo));
 
 // Peso de risco por gate — Gerais tem margem pequena (20q, corte 12 = 8 de folga);
 // Discursiva é eliminatória e sem chute; Específicos tem folga maior (60q, corte 36).
+// Peso por matéria — Específicos (60q/7 matérias, sem quebra oficial por matéria) e Discursiva
+// mantêm o peso anterior. Gerais foi CONFIRMADO pela VUNESP em 10/08/2026:
+// Português 12q · Raciocínio Lógico 4q · Ética 2q · Legislação 2q (de 20 no total).
+// Português passa a ser a matéria de maior peso individual de toda a prova objetiva.
+const PESO_GERAIS_REAL={
+  'Português':1.8,          // 12/20 — a maior questão isolada da prova inteira
+  'Raciocínio Lógico':1.1,  // 4/20 — segue relevante, mas não mais empatada com Português
+  'Ética Pública':0.6,      // 2/20 — baixo custo-benefício, confirmado pela banca
+  'Legislação TCE-SP':0.6,  // 2/20 — idem, inclui agora o conteúdo novo de NBASP
+};
 function pesoGate(mat){
   const g=EDITAL[mat];
   if(!g)return 1;
   if(g.bloco==='discursiva')return 1.4;
-  if(g.bloco==='gerais')return 1.5;
+  if(g.bloco==='gerais')return PESO_GERAIS_REAL[mat]??1.5;
   return 1;
 }
 
 // ═══ MOTOR DE DESTAQUE — "já vista" + "urgência", reaproveitado em Hoje e Revisão ═══
+// Verifica se um assunto (ou a matéria inteira) foi marcado como "descartar" manualmente.
+// Usado pra tirar de verdade da fila de Questões/Passiva/Profunda/Mapa — não é só cosmético.
+function isDescartado(mat,assunto){
+  const criticos=lsGet('criticos_manuais',[]);
+  return criticos.some(c=>c.prioridade==='descartar'&&c.mat===mat&&(!c.assunto||c.assunto===assunto));
+}
 // "Já vista": a matéria tem pelo menos 1 tópico com dado real (Guruja importado ou EDITAL)
 function jaVista(mat){
   const guruja=getGurujaAssuntos();
@@ -1026,7 +1064,7 @@ function calcQuestoesPrioridade(historico){
   for(let i=0;i<=7;i++){const diaMs=todayMs-i*86400000;const peso=i<=1?3:i<=3?2:1;janela.push({diaMs,peso});}
   const porMat={};
   historico.forEach(r=>{
-    if(!r.materia||!r.dt)return;
+    if(!r.materia||!r.dt||!EDITAL_MATS.includes(r.materia))return;
     const diaMs=new Date(r.dt).setHours(0,0,0,0);
     const j=janela.find(jj=>jj.diaMs===diaMs);
     if(!j)return;
@@ -1081,6 +1119,7 @@ function calcPassivaJuridica(){
       ?gurujaTopicos.map(a=>({titulo:a.titulo,acerto:a.acerto}))
       :(EDITAL[mat]?.top||[]).map(t=>({titulo:t.t,acerto:t.acerto}));
     fonte.forEach(t=>{
+      if(isDescartado(mat,t.titulo))return; // marcado como "não vale meu tempo" — some da fila
       const decoreba=isDecorebaHeuristico(t.titulo);
       const semDado=t.acerto==null;
       const acerto=semDado?55:t.acerto;
@@ -1097,6 +1136,7 @@ function calcProfunda80(){
   const guruja=getGurujaAssuntos();
   const abaixo=[];
   const push=(mat,titulo,acerto,fonte)=>{
+    if(isDescartado(mat,titulo))return; // marcado como "não vale meu tempo" — some da fila
     const distancia=80-acerto;
     const buracoFundo=acerto<50?1.8:acerto<60?1.3:1;
     const score=Math.round(distancia*pesoGate(mat)*buracoFundo);
@@ -1162,7 +1202,7 @@ function calcEstrategiaSemanal(){
   const porSemana=(ini,fim)=>{
     const porMat={};
     hist.forEach(r=>{
-      if(!r.materia||!r.dt||r.dt<ini||r.dt>=fim)return;
+      if(!r.materia||!r.dt||r.dt<ini||r.dt>=fim||!EDITAL_MATS.includes(r.materia))return;
       const q=parseInt(r.questoes)||0,a=parseInt(r.acertei)||0;
       if(q<=0)return;
       if(!porMat[r.materia])porMat[r.materia]={q:0,a:0};
@@ -1298,7 +1338,7 @@ function calcSaude(){
   const sete=todayMs-7*86400000;
   const porMat={};
   hist.forEach(r=>{
-    if(!r.materia||!parseInt(r.questoes))return;
+    if(!r.materia||!parseInt(r.questoes)||!EDITAL_MATS.includes(r.materia))return;
     if(!porMat[r.materia])porMat[r.materia]={q:0,a:0,lastDt:0};
     porMat[r.materia].q+=parseInt(r.questoes)||0;
     porMat[r.materia].a+=parseInt(r.acertei)||0;
@@ -1406,56 +1446,66 @@ function TabIA({appCtx,onMIT}){
 
   useEffect(()=>{
     const dk=getDK();
-    if(lsGet('ia_dk','')=== dk){setHist(lsGet('ia_hist',[])||[]);}
-    else{lsSet('ia_hist',[]);lsSet('ia_dk',dk);}
+    if(lsGet('ia_dk','')===dk){
+      const h=lsGet('ia_hist',[])||[];
+      setHist(h);
+      if(h.length===0)setTimeout(()=>iniciarDia(),0); // mesmo dia, mas nunca abriu — abre sozinha
+    }
+    else{
+      lsSet('ia_dk',dk);
+      setTimeout(()=>iniciarDia(),0); // dia novo — abre sozinha, sem esperar toque no botão
+    }
   },[]);
   useEffect(()=>{finalRef.current?.scrollIntoView({behavior:'smooth'});},[hist,carregando]);
 
   function buildSystem(){
     const d=new Date();
     const dw=d.getDay();
-    const treinos={0:'CORRIDA LONGA 60min + tarde livre',1:'CORRIDA LEVE 35min',2:'CORRIDA PESADA 50min',3:'CORRIDA LEVE 35min',4:'CORRIDA PESADA 50min',5:'CORRIDA LEVE 35min',6:'descanso'};
     const trabalha=ehDiaTrabalho(dw);
     const historico=lsGet('historico_diario',[]);
     const ultReg=historico.slice(-1)[0];
     const gurujaData=lsGet('guruja_data',null);
-    const urgentes=lsGet('rev_urgentes',[]);
-    const fila=lsGet('fila',[]).filter(f=>!f.feito&&f.quando==='Hoje');
-    const planoSem=lsGet('plano_semanal',null);
     const ausencias=lsGet('historico_ausencias',[]);
     const padraoAusencia=ausencias.length>=2
       ?`Padrão detectado: ${ausencias.length} episódios, média ${Math.round(ausencias.reduce((s,h)=>s+h.dias,0)/ausencias.length)}d fora. Último: ${ausencias.slice(-1)[0]?.dias}d (${ausencias.slice(-1)[0]?.motivo}).`
       :'Sem padrão de ausência detectado ainda.';
-    return `Você é a Assessora IA pessoal da Ritchely — mentora de alto desempenho para concursos fiscais.
 
-PERFIL: Ritchely, 38 anos, mãe solo do Kauê (13a, Colégio Naval). Acorda 05h00. Cetogênica/low carb. Corre 3x/semana no Aterro do Flamengo. Trabalha 3 dias/semana 13h-17h (dias configuráveis no app).
+    // Top 3 matérias mais urgentes agora, pela mesma régua usada no resto do app
+    const urgencias=EDITAL_MATS.filter(m=>m!=='Discursivas').map(mat=>({mat,...calcUrgenciaMateria(mat)}))
+      .sort((a,b)=>b.score-a.score).slice(0,3)
+      .map(u=>`${u.mat} (${u.nivel}${u.pct!=null?`, ${u.pct}%`:', sem dado'})`).join(' · ');
 
-DIAGNÓSTICO ATUAL — ANTI-BURNOUT:
-${PROTOCOLO_ANTIBURNOUT.diagnostico}
-Sinais de alerta: ${PROTOCOLO_ANTIBURNOUT.sinaisAlerta.join(' · ')}
-Cura natural: ${PROTOCOLO_ANTIBURNOUT.cura.join(' · ')}
+    // Projeção de nota — se a prova fosse hoje
+    const proj=calcProjecaoNotaFinal();
+    const projTxt=`Gerais ${proj.pontosGerais??'?'}/20 (corte 12) · Específicos ${proj.pontosEspec??'?'}/60 (corte 36) · Discursiva ${proj.pontosDiscursiva??0}/40 (corte 24) · TOTAL ${proj.notaFinal}/120${proj.correcoesRegistradas===0?' [discursiva sem correção registrada ainda — nota não é real]':''}`;
 
-NOVA GRADE DE BLOCOS (4 leis inegociáveis):
-${PROTOCOLO_ANTIBURNOUT.blocos.map(b=>`[${b.horario}] ${b.nome}: ${b.regra}`).join('\n')}
+    // Padrão de erro na discursiva, se houver correção registrada
+    const padraoErro=calcPadraoErroDiscursiva(lsGet('rev_discursiva',[]));
+    const padraoErroTxt=padraoErro.length?padraoErro.slice(0,2).map(p=>`${p.nome} (${p.n}x)`).join(' · '):'sem correção registrada ainda';
 
-DIA MÍNIMO VIÁVEL: ${PROTOCOLO_ANTIBURNOUT.dmv.regra}
-Fricção zero: ${PROTOCOLO_ANTIBURNOUT.dmv.friccaoZero}
+    // Memória de decisões — o que foi combinado nos últimos dias, pra IA não "esquecer" toda vez que o dia vira
+    const decLog=lsGet('ia_decisoes_historico',[]).slice(-4);
+    const decTxt=decLog.length?decLog.map(l=>`${l.data}: ${l.itens.join(' · ')}`).join(' | '):'nenhuma decisão registrada ainda';
 
-SITUAÇÃO ATUAL — CONCURSOS:
-- TCE-MG: TOP 1% (16.000 inscritos) · posição 58ª · objetiva 61,00 · discursiva 10,60 (aprovada após recurso)
-- Gap para nomeação: apenas 1,99 pts na discursiva para posição 35 · nomeação possível 2026
-- Diagnóstico: candidata em FINALIZAÇÃO. Gargalo = legislação específica + gestão de energia, NÃO conteúdo.
+    return `Você é a Assessora IA pessoal da Ritchely — mentora de alto desempenho para o concurso TCE-SP DIPE (Auditor de Controle Externo, especialidade Direito, banca VUNESP, prova 11/10/2026).
 
-CONCURSOS-ALVO:
-1. TCE-SP 2026 (PRINCIPAL) — Auditor Controle Externo DIPE/Direito · VUNESP · Prova 11/10/2026
-2. TCE-SP DIPE (principal) — 50 vagas · R$20.940 · Vunesp · jun/2026 · ⚠️ TEM INGLÊS (5 questões)
-3. ISS Niterói (estratégico) — R$30.468 · FGV · 2º sem/2026
+PERFIL: Ritchely, mãe solo do Kauê (Colégio Naval). Acorda cedo pro Bloco Ouro. Trabalha em dias configuráveis no app (varia por semana — confira ehDiaTrabalho, não presuma Ter/Qui/Sex fixo).
+
+⚠️ SUA PRIORIDADE REAL AGORA (score = peso do gate × distância da nota real):
+${urgencias||'sem dado suficiente ainda'}
+
+📊 SE A PROVA FOSSE HOJE:
+${projTxt}
+
+✍️ DISCURSIVA — padrão de erro mais recorrente:
+${padraoErroTxt}
+
+🧠 MEMÓRIA — decisões dos últimos dias (não repita pergunta já respondida, não contradiga sem avisar):
+${decTxt}
 
 ALERTAS ATIVOS: ${getAlertasAtivos().map(a=>a.msg).join(' | ')||'nenhum alerta crítico hoje'}
 
 PADRÃO DE AUSÊNCIA: ${padraoAusencia}
-
-LEGISLAÇÃO TCE-SP (Bloco 0 nivelamento): LC 709/93 · Regimento Interno · Instrução 01/2024
 
 REGRAS INEGOCIÁVEIS: ${REGRAS_INEGOCIAVEIS.map(r=>r.regra).join(' | ')}
 
@@ -1469,11 +1519,10 @@ DADOS DO APP AGORA:
 - Ciclo ${appCtx.cicloNum} | Blocos ${appCtx.feitosN}/${N}
 - Hoje: ${fmtMin(appCtx.minHoje)} | Semana: ${fmtMin(appCtx.minSemana)}
 - Próx. bloco: ${appCtx.pendentes[0]?.mat||'Ciclo completo!'} (${appCtx.pendentes[0]?.tag||''})
-- Treino hoje: ${treinos[dw]}
-- Trabalho hoje: ${trabalha?'SIM 13h-17h':'NÃO'}
+- Trabalho hoje: ${trabalha?'SIM':'NÃO'}
 - Último registro: ${ultReg?`${ultReg.materia}, dif ${ultReg.dificuldade}★, ${ultReg.questoes||0}Q`:'nenhum ainda'}
 - Aproveitamento: ${fmtRanking()}
-- MATÉRIAS URGENTES (registradas): ${lsGet('urgentes_ia',[]).map(u=>u.mat+(u.contexto?' ('+u.contexto+')':'')).join(', ')||'nenhuma'}
+- MATÉRIAS URGENTES (registradas manualmente): ${lsGet('urgentes_ia',[]).map(u=>u.mat+(u.contexto?' ('+u.contexto+')':'')).join(', ')||'nenhuma'}
 - Score Guruja: ${gurujaData?.alerta||'não analisado ainda'}
 - Revisão Profunda: ${deveRevisaoProfunda(appCtx.feitosN)?`🚨 HORA DE REVISAR — ${getFilaRevProfunda()[0]?.mat}`:'ok'}
 
@@ -1485,17 +1534,17 @@ TÓPICOS DE MAIOR PESO INTERNO POR MATÉRIA (proporção dentro da matéria, edi
 ${EDITAL_MATS.filter(m=>EDITAL[m]?.bloco==='especificos').map(m=>{const top=[...(EDITAL[m].top||[])].sort((a,b)=>b.p-a.p)[0];return top?`${m}: ${top.t} (${top.p}%)`:null;}).filter(Boolean).join(' · ')}
 
 SISTEMA DE REVISÃO:
-TEC = erros, questões erradas, 30min/dia · ANKI = conceitos, 75 cards/dia
-NLM = teoria profunda 1h30, janela bloco 12-13 ou 20-21
-REGRA: mesma matéria no TEC 3+ dias = lacuna teórica = sugerir NLM
+TEC = erros, questões erradas · ANKI = conceitos, fila fixa por dificuldade
+NLM/Passiva = teoria profunda, ouvir
+REGRA: mesma matéria travando 3+ dias seguidos = lacuna teórica = sugerir revisão profunda, não mais questão
 
-ANTI-BURNOUT — COMO AGIR:
-- Se energia 1-2: DMV, começa pela mais fácil, não force o pesado
-- Se taquicardia/confusão: parar. Luz solar + caminhada. Voltar depois.
-- Nunca estudar após 20h. Nunca pular a lei da oxigenação.
-- Bloco noturno (18h30-20h) = PASSIVO apenas. Pesado pela manhã.
+ANTI-BURNOUT — PRINCÍPIOS GERAIS (aplicar se ela relatar sinal, não presumir que está acontecendo agora):
+- Sinais de alerta: taquicardia, confusão mental, fadiga de decisão, não consegue começar, estuda mas não retém
+- Se relatar isso: parar, luz solar, caminhada curta, voltar depois — não empurrar o pesado
+- Em dia de pouca energia: Dia Mínimo Viável — corta metas pela metade, começa pela mais fácil pra gerar vitória
+- Bloco noturno = só passivo (ouvir, lei seca leve). Pesado sempre de manhã.
 
-ESTILO: Direta, calorosa, sem frases vazias. Máx 120 palavras. Uma ação concreta sempre.
+ESTILO: Direta, calorosa, sem frases vazias. Máx 120 palavras. Uma ação concreta sempre, ancorada nos dados reais acima — não em suposição genérica.
 Se mencionar MITs, inclua: MIT:["t1","t2","t3"]`;
   }
 
@@ -1503,38 +1552,33 @@ Se mencionar MITs, inclua: MIT:["t1","t2","t3"]`;
     const d=new Date();
     const dw=d.getDay();
     const trabalha=ehDiaTrabalho(dw);
-    const fimSem=[0,6].includes(dw);
     const historico=lsGet('historico_diario',[]);
     const ultReg=[...historico].sort((a,b)=>(b.dt||0)-(a.dt||0))[0];
-    const gurujaData=lsGet('guruja_data',null);
-    const piorMat=gurujaData?.prioridades?.find(p=>p.status==='critica')?.mat||null;
-    const planoSem2=lsGet('plano_semanal',null);
     const errosCad=lsGet('rev_caderno',[]).filter(e=>!e.dominado&&!e.feito).length;
     const urgIA2=lsGet('urgentes_ia',[]);
     const deveRP=deveRevisaoProfunda(appCtx.feitosN);
     const proximaRP=getFilaRevProfunda()[0];
     const ankiHoje=lsGet('anki_feito_'+getDK(),null);
+    const urgTop=EDITAL_MATS.filter(m=>m!=='Discursivas').map(mat=>({mat,...calcUrgenciaMateria(mat)})).sort((a,b)=>b.score-a.score)[0];
 
     const perguntas5=[
       `1. **ENERGIA E CORPO**\n   Nível de energia (1 a 5): ___ · Dormi bem? S/N · Taquicardia ou tensão? S/N\n   Se energia ≤ 2 → DMV: começa pela matéria mais fácil, metas pela metade.\n   Se taquicardia → luz solar + caminhada ANTES de abrir qualquer livro.`,
 
-      `2. **LEI DA OXIGENAÇÃO (antes das 09h)**\n   Treino feito? ${['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'][dw]} → treino: ${['CORRIDA LONGA 60min','CORRIDA LEVE 35min','CORRIDA PESADA 50min','CORRIDA LEVE 35min','CORRIDA PESADA 50min','CORRIDA LEVE 35min','descanso'][dw]}\n   Luz solar antes do livro? S/N · Ambiente preparado (caderno + Anki engatilhado)? S/N`,
+      `2. **BLOCO OURO — pesado aqui**\n   Próx. bloco do ciclo: ${appCtx.pendentes[0]?.mat||'?'} (${appCtx.pendentes[0]?.tag||''})\n   Prioridade real hoje: ${urgTop?`${urgTop.mat} (${urgTop.nivel}${urgTop.pct!=null?`, ${urgTop.pct}%`:''})`:'sem dado suficiente'}\n   ${deveRP?`🔄 REVISÃO PROFUNDA: ${proximaRP?.mat} — 2h. Adicionar ao Foco hoje?`:'Bloco pesado normal.'}\n   Qual tópico específico vai atacar?`,
 
-      `3. **BLOCO PRINCIPAL (09h15–11h30) — pesado aqui**\n   Próx. bloco do ciclo: ${appCtx.pendentes[0]?.mat||'?'} (${appCtx.pendentes[0]?.tag||''})\n   ${deveRP?`🔄 REVISÃO PROFUNDA: ${proximaRP?.mat} — 2h. Adicionar ao Foco hoje?`:'Bloco pesado normal.'}\n   Qual tópico específico vai atacar?`,
+      `3. **MEIO DO DIA / TEMPO MORTO**\n   ${trabalha?'Dia de trabalho — bloco leve/passivo cabe aqui.':'Dia livre — pode manter ritmo.'}\n   Anki hoje: ${ankiHoje?`✅ feito (${ankiHoje.cards} cards)`:'⚠️ pendente'}`,
 
-      `4. **META PASSIVA (18h30–20h) — leve apenas**\n   ${trabalha?'Você tem trabalho às 13h-17h. Bloco noturno disponível.':'Dia sem trabalho — foco total no matinal.'}\n   Para hoje à noite (SE for estudar): videoaula, lei seca ou ${piorMat?`revisão de ${piorMat}`:'matéria fácil'}\n   PROIBIDO: pesado, questões complexas, matéria nova após 18h30.`,
+      `4. **NOITE — leve apenas**\n   Passiva/revisão leve, nunca conteúdo novo ou questão complexa à noite.\n   ${errosCad>0?`${errosCad} erro(s) no caderno TEC esperando revisão.`:'Caderno de erros em dia.'}`,
 
-      `5. **FECHAMENTO RÍGIDO**\n   ${ultReg?`Ontem: ${ultReg.materia}, dif ${ultReg.dificuldade}★, ${ultReg.questoes||0}Q.`:'Sem registro de ontem.'}\n   Anki hoje: ${ankiHoje?`✅ feito (${ankiHoje.cards} cards)`:'⚠️ pendente — meta 75 cards'}\n   O que não pode faltar hoje mesmo que tudo dê errado?\n   Deu 20h → PARA. Sem negociação.`
+      `5. **FECHAMENTO**\n   ${ultReg?`Última sessão: ${ultReg.materia}, dif ${ultReg.dificuldade}★, ${ultReg.questoes||0}Q.`:'Sem registro recente.'}\n   O que não pode faltar hoje mesmo que tudo dê errado?`
     ];
 
     const diag=[
       `\n⚡ **MEU ESTADO AGORA**\n• Energia (1-5):\n• Dormi bem?\n• Taquicardia / tensão física?\n• Em uma palavra, como estou:`,
 
-      `\n🌅 **LEI DA OXIGENAÇÃO**\n• Treino feito ou planejado para quando:\n• Luz solar antes do estudo?\n• Ambiente preparado na noite anterior?`,
+      `\n📚 **BLOCO OURO**\n• Matéria pesada de hoje:\n• Tópico específico:\n• Algo me travando para começar:`,
 
-      `\n📚 **BLOCO PRINCIPAL 09h15–11h30**\n• Matéria pesada de hoje (Mat. Financeira / RLOG / TI / questões):\n• Tópico específico:\n• Algo me travando para começar:`,
-
-      `\n🌆 **META PASSIVA 18h30–20h**\n• O que vou fazer nesse bloco (LEVE): videoaula / lei seca / revisão / nada\n• ${trabalha?'Trabalho das 13h–17h. Energia restante estimada:':'Dia livre. Prioridade no matinal.'}`,
+      `\n🌆 **BLOCO LEVE (tempo morto / noite)**\n• O que vou fazer nesse bloco (LEVE): passiva / lei seca / revisão\n• ${trabalha?'Dia de trabalho hoje. Energia restante estimada:':'Dia livre. Prioridade no Bloco Ouro.'}`,
 
       `\n👦 **KAUÊ**\n• Kauê precisa de algo hoje?\n• Compromisso que impacta o horário:`,
     ];
@@ -1548,9 +1592,7 @@ Se mencionar MITs, inclua: MIT:["t1","t2","t3"]`;
 
     diag.push(`\n🚨 **MATÉRIAS CRÍTICAS**\n${criticos.length>0?criticos.map((c,i)=>`${i+1}. ${c}`).join('\n'):'Nenhuma crítica detectada.'}\n\n📊 **APROVEITAMENTO**\n${fmtRanking()}`);
 
-    if(deveRP) diag.push(`\n🔄 **REVISÃO PROFUNDA — HORA!**\nMatéria da vez: ${proximaRP?.mat||'?'} (${proximaRP?.jornada}% jornada · ${proximaRP?.ferramenta})\nAdicione ao Foco na aba Revisão → Rev. Prof.`);
-
-    if(planoSem2) diag.push(`\n📅 **PLANO DA SEMANA**\n${planoSem2.plano?.slice(0,3).map((p,i)=>`${i+1}. ${p.mat} — ${p.horasEditadas||p.horasSugeridas}h`).join('\n')||'sem detalhes'}`);
+    if(deveRP) diag.push(`\n🔄 **REVISÃO PROFUNDA — HORA!**\nMatéria da vez: ${proximaRP?.mat||'?'}${proximaRP?.maxScore?` (urgência ${proximaRP.maxScore})`:''}\nAdicione ao Foco na aba Revisão → Rev. Prof.`);
 
     if(errosCad>0) diag.push(`\n📕 **CADERNO DE ERROS**\n${errosCad} erro(s) para revisar hoje no TEC.`);
 
@@ -1558,7 +1600,7 @@ Se mencionar MITs, inclua: MIT:["t1","t2","t3"]`;
 
     const semStatus=appCtx.minSemana<26*60?`faltam ${fmtMin(26*60-appCtx.minSemana)} para a meta mínima (26h)`:appCtx.minSemana<30*60?`no caminho (${fmtMin(appCtx.minSemana)} de 30h)`:'meta batida! ✅';
 
-    return`✦ BOM DIA, RITCHELY!\n\n${['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'][dw]} · ${fH(d)} · Ciclo ${appCtx.cicloNum} · Semana: ${fmtMin(appCtx.minSemana)} · ${semStatus}\n\n${'─'.repeat(40)}\n🎯 5 PERGUNTAS DE IGNIÇÃO\n${'─'.repeat(40)}\n\n${perguntas5.join('\n\n')}\n\n${'─'.repeat(40)}\n📋 DIAGNÓSTICO DO DIA\n${'─'.repeat(40)}\n${diag.join('\n')}\n\n${'─'.repeat(40)}\n\n📝 *Responda o que quiser. A IA cruza com seus dados, checa sua energia e monta o plano respeitando os blocos da nova grade.*`;
+    return`✦ BOM DIA, RITCHELY!\n\n${['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'][dw]} · ${fH(d)} · Ciclo ${appCtx.cicloNum} · Semana: ${fmtMin(appCtx.minSemana)} · ${semStatus}\n\n${'─'.repeat(40)}\n🎯 5 PERGUNTAS DE IGNIÇÃO\n${'─'.repeat(40)}\n\n${perguntas5.join('\n\n')}\n\n${'─'.repeat(40)}\n📋 DIAGNÓSTICO DO DIA\n${'─'.repeat(40)}\n${diag.join('\n')}\n\n${'─'.repeat(40)}\n\n📝 *Responda o que quiser. A IA cruza com seus dados reais e monta o plano.*`;
   }
 
   async function enviar(texto){
@@ -1569,7 +1611,16 @@ Se mencionar MITs, inclua: MIT:["t1","t2","t3"]`;
     try{
       const resposta=await chamarClaude(buildSystem(),nova.slice(-18));
       const mitMatch=resposta.match(/MIT:\["([^"]+)","([^"]+)","([^"]+)"\]/);
-      if(mitMatch)onMIT([mitMatch[1],mitMatch[2],mitMatch[3]]);
+      if(mitMatch){
+        const itens=[mitMatch[1],mitMatch[2],mitMatch[3]];
+        onMIT(itens);
+        // Memória de decisões — persiste entre dias, diferente do MIT que só mostra o de hoje
+        const log=lsGet('ia_decisoes_historico',[]);
+        const dk2=getDK();
+        const semHoje=log.filter(l=>l.data!==dk2);
+        const novoLog=[...semHoje,{data:dk2,itens}].slice(-14);
+        lsSet('ia_decisoes_historico',novoLog);
+      }
       const limpo=resposta.replace(/MIT:\[.*?\]/g,'').trim();
       const nova2=[...nova,{role:'assistant',content:limpo}];
       setHist(nova2);lsSet('ia_hist',nova2);
@@ -3081,7 +3132,7 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
         const cor=verde?'#34d399':'#f87171';
         const feitosSet=new Set(feitos);
         // Bloco de HOJE, pela data real — cicloInicio = 13/07/2026 (dia 1)
-        const cicloInicio=new Date(2026,6,27).setHours(0,0,0,0);
+        const cicloInicio=new Date(2026,7,10).setHours(0,0,0,0);
         const hojeMs2=new Date().setHours(0,0,0,0);
         const diaHoje=Math.round((hojeMs2-cicloInicio)/86400000)+1;
         const blocosHoje=CICLO.filter(s=>s.dia===diaHoje&&!feitosSet.has(s.id));
@@ -3163,37 +3214,31 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
       {/* ── SUB-ABA: MISSÃO (Hoje sem pensar) ── */}
       {subAba==='hoje'&&(
         <div>
-          {/* PIRÂMIDE DE DIFICULDADE — Forma 2 + Forma 4 integradas */}
+          {/* PIRÂMIDE DE DIFICULDADE — críticos manuais (por assunto) + TEC + motor de urgência real */}
           {(()=>{
             const criticosManuais=lsGet('criticos_manuais',[]);
             const caderno=lsGet('rev_caderno',[]);
-            const hist=lsGet('historico_diario',[]);
-            const todayStr=new Date().toISOString().split('T')[0];
-            // Top 5 riscos: combina críticos manuais + TEC vencendo + assuntos Guruja críticos
+            // Top riscos: críticos manuais Alta (assunto específico quando existir) + TEC travando + urgência real
             const riscos=[];
-            criticosManuais.filter(c=>c.prioridade==='alta').slice(0,2).forEach(c=>{
-              riscos.push({label:c.mat,detalhe:c.motivo||'crítico manual',cor:'#f87171',icon:'🎯',fonte:'F2'});
+            criticosManuais.filter(c=>c.prioridade==='alta').forEach(c=>{
+              riscos.push({label:c.assunto?`${c.mat} — ${c.assunto}`:c.mat,detalhe:c.motivo||'crítico marcado por você',cor:'#f87171',icon:'🎯',fonte:'manual'});
             });
-            caderno.filter(t=>!t.dominado&&(t.dificuldade||3)>=4).slice(0,2).forEach(t=>{
-              riscos.push({label:t.mat,detalhe:`${t.assunto||''} · ${t.tentativas}x errou`,cor:'#fb923c',icon:'📕',fonte:'F1'});
+            caderno.filter(t=>!t.dominado&&(t.dificuldade||3)>=4&&!isDescartado(t.mat,t.assunto)).slice(0,2).forEach(t=>{
+              riscos.push({label:t.assunto?`${t.mat} — ${t.assunto}`:t.mat,detalhe:`${t.tentativas}x errou no TEC`,cor:'#fb923c',icon:'📕',fonte:'TEC'});
             });
-            // Assuntos Guruja críticos seedados
-            const seedCriticos=[
-              {label:'Raciocínio Lógico',detalhe:'76,4% — lacuna de base confirmada · gate Gerais tem só 8 de folga',cor:'#f87171',icon:'🔴',fonte:'TCE-SP'},
-              {label:'Discursivas',detalhe:'Gate 60% (24/40p) · Rotação de técnicas — ver aba Discursiva',cor:'#a78bfa',icon:'🔴',fonte:'TCE-SP'},
-              {label:'Dir. Tributário',detalhe:'76,1% (-8,3% vs média) · curva de esquecimento, não lacuna',cor:'#f87171',icon:'🔴',fonte:'TCE-SP'},
-              {label:'Dir. Financeiro/AFO',detalhe:'Mat. Financeira 26% · Precatórios 35% — buracos fundos',cor:'#fb923c',icon:'⚠️',fonte:'TCE-SP'},
-              {label:'Direito Empresarial',detalhe:'Zero base — sem dado real ainda',cor:'#fb923c',icon:'⚠️',fonte:'TCE-SP'},
-            ];
-            // só adiciona os seed se ainda não tiver crítico manual daquela matéria
-            const matsJa=new Set(riscos.map(r=>r.label));
-            seedCriticos.forEach(s=>{if(!matsJa.has(s.label))riscos.push(s);});
+            // Completa com o motor de urgência real — nunca texto fixo/antigo
+            if(riscos.length<5){
+              const jaTem=new Set(riscos.map(r=>r.label.split(' — ')[0]));
+              EDITAL_MATS.filter(m=>m!=='Discursivas'&&!jaTem.has(m)).map(mat=>({mat,...calcUrgenciaMateria(mat)}))
+                .sort((a,b)=>b.score-a.score).slice(0,5-riscos.length).forEach(u=>{
+                  riscos.push({label:u.mat,detalhe:u.pct!=null?`${u.pct}% — ${u.nivel}`:'sem dado ainda',cor:u.nivel==='alta'?'#f87171':u.nivel==='media'?'#fb923c':'#60a5fa',icon:'📊',fonte:'motor'});
+                });
+            }
             if(!riscos.length)return null;
             return(
               <div style={{marginBottom:12,padding:'12px 13px',borderRadius:12,background:'rgba(248,113,113,.05)',border:'1px solid rgba(248,113,113,.2)'}}>
                 <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
-                  <div style={{fontSize:9,color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px'}}>🔺 PIRÂMIDE DE DIFICULDADE — pontos críticos hoje</div>
-                  <span style={{fontSize:8,color:'#475569',fontFamily:"'DM Mono',monospace"}}>Formas 1+2+4</span>
+                  <div style={{fontSize:9,color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px'}}>🔺 PONTOS CRÍTICOS — hoje</div>
                 </div>
                 {riscos.slice(0,5).map((r,i)=>(
                   <div key={i} style={{display:'flex',alignItems:'center',gap:8,padding:'6px 9px',borderRadius:8,background:`${r.cor}08`,border:`1px solid ${r.cor}22`,marginBottom:4}}>
@@ -3205,7 +3250,7 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
                     <span style={{fontSize:8,padding:'1px 5px',borderRadius:3,background:`${r.cor}18`,color:r.cor,fontFamily:"'DM Mono',monospace",flexShrink:0}}>{r.fonte}</span>
                   </div>
                 ))}
-                <div style={{fontSize:9,color:'#475569',marginTop:6}}>💡 Pontos Críticos Alta → vão automaticamente para o Bloco 1 abaixo</div>
+                <div style={{fontSize:9,color:'#475569',marginTop:6}}>💡 Marca "🔴 Alta" em Estratégia → Críticos e aparece aqui automaticamente</div>
               </div>
             );
           })()}
@@ -4406,7 +4451,7 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
         </div>
         {/* Blocos agrupados por dia */}
         {(()=>{
-          const DIAS_CICLO11={1:'Seg 27/07 · férias',2:'Ter 28/07 · férias',3:'Qua 29/07 · férias',4:'Qui 30/07 · férias',5:'Sex 31/07 · férias',6:'Sáb 01/08 · férias'};
+          const DIAS_CICLO11={1:'Seg 10/08 · livre',2:'Ter 11/08 · livre',3:'Qua 12/08 · livre',4:'Qui 13/08 · trabalho',5:'Sex 14/08 · livre',6:'Sáb 15/08 · livre',7:'Dom 16/08 · livre'};
           const diasUnicos=[...new Set(CICLO.map(s=>s.dia))].sort((a,b)=>a-b);
           return diasUnicos.map(dia=>{
           const blocosDia=CICLO.filter(s=>s.dia===dia);
@@ -5198,7 +5243,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
   const[editalMatSel,setEditalMatSel]=useState(EDITAL_MATS[0]||'Português');
   const[topicoForm,setTopicoForm]=useState('');
   const[criticosManuais,setCriticosManuais]=useState(()=>lsGet('criticos_manuais',[]));
-  const[critForm,setCritForm]=useState({mat:'',motivo:'',prioridade:'alta'});
+  const[critForm,setCritForm]=useState({mat:'',assunto:'',motivo:'',prioridade:'alta'});
   const[critSalvo,setCritSalvo]=useState(false);
   const[criticoIALoad,setCriticoIALoad]=useState(false);
   const[ankiForm,setAnkiForm]=useState({mat:'',tempo:'',cards:'',questoes:'',dif:0});
@@ -5259,7 +5304,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
     if(!critForm.mat)return;
     const n=[...criticosManuais,{...critForm,id:Date.now(),dt:Date.now()}];
     setCriticosManuais(n);lsSet('criticos_manuais',n);
-    setCritForm({mat:'',motivo:'',prioridade:'alta'});
+    setCritForm({mat:'',assunto:'',motivo:'',prioridade:'alta'});
     setCritSalvo(true);setTimeout(()=>setCritSalvo(false),1500);
   };
   const delCritico=id=>{const n=criticosManuais.filter(x=>x.id!==id);setCriticosManuais(n);lsSet('criticos_manuais',n);};
@@ -5859,59 +5904,11 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
       })()}
 
       {aba==='estrategia'&&subEstrategia==='criticos'&&<div>
-        {/* F2 — Header e seed automático dos dados da análise */}
+        {/* Header */}
         <div style={{padding:'10px 13px',borderRadius:11,background:'rgba(248,113,113,.06)',border:'1px solid rgba(248,113,113,.25)',marginBottom:10}}>
-          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:4}}>
-            <div style={{fontSize:9,color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px'}}>F2 · FILA DE DIFICULDADE → alimenta Bloco 1 do Hoje</div>
-            <span style={{fontSize:8,color:'#475569',fontFamily:"'DM Mono',monospace"}}>Alta = Bloco 1 automático</span>
-          </div>
-          <div style={{fontSize:10,color:'var(--text4)'}}>Tudo marcado como Alta aparece no topo do "Hoje sem pensar" como Bloco 1. Sem precisar decidir toda manhã.</div>
+          <div style={{fontSize:9,color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px'}}>PONTOS CRÍTICOS — por assunto específico</div>
+          <div style={{fontSize:10,color:'var(--text4)',marginTop:4}}>🔴 Alta vira Bloco 1 do "Hoje sem pensar" · 🚫 Descartar some de verdade da fila em todo o app — não é só cosmético.</div>
         </div>
-
-        {/* Seed dos dados da análise — aparece só se ainda não tiver críticos */}
-        {(()=>{
-          const criticos=lsGet('criticos_manuais',[]);
-          if(criticos.length>0)return null;
-          const seeds=[
-            {mat:'Português',motivo:'🔴 #1 VUNESP: Interpretação Textual 63.6% (-8.5%) — cobra 40-50% das questões de Português. Semântica 64.2% · Ortografia 64%',prioridade:'alta'},
-            {mat:'Discursivas',motivo:'🔴 #1 Gate: 60% mínimo (24/40p) · Gap de 1,99pt no TCE-MG foi aqui · rotação de técnicas 6x/semana',prioridade:'alta'},
-            {mat:'Dir. Constitucional',motivo:'🟡 Intervenção Federal 69.2% · Poder Judiciário 69.2% · Ctrl.Const.Estadual 69.2% — 3 tópicos críticos juntos',prioridade:'media'},
-            {mat:'Dir. Financeiro / AFO',motivo:'🟡 Controle Financeiro Externo 72% · Receita 73.1% · LRF Arts.15-24 73.3% · Precatórios sem dado · MatFi 26%',prioridade:'media'},
-            {mat:'Dir. Tributário',motivo:'🟡 Reforma Tributária EC132 Pt.II 75% (-12.7% maior queda) · Simples Nacional LC123 71.4% · CGSN 70%',prioridade:'media'},
-            {mat:'Dir. Civil',motivo:'🟡 Espécies de Contratos 70.6% · Contratos em Geral 73% · Obrigações Pt1 70.3% — tópicos frequentes VUNESP',prioridade:'media'},
-          ];
-          return(
-            <div style={{padding:'11px 13px',borderRadius:11,background:'rgba(251,191,36,.06)',border:'1px solid rgba(251,191,36,.25)',marginBottom:10}}>
-              <div style={{fontSize:9,color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:8}}>⚡ PONTO DE PARTIDA — baseado na análise dos seus dados</div>
-              {seeds.map((s,i)=>(
-                <div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'6px 8px',borderRadius:8,background:s.prioridade==='alta'?'rgba(248,113,113,.07)':'rgba(251,191,36,.06)',border:`1px solid ${s.prioridade==='alta'?'rgba(248,113,113,.25)':'rgba(251,191,36,.2)'}`,marginBottom:5}}>
-                  <div style={{flex:1}}>
-                    <div style={{fontSize:11,fontWeight:700,color:'var(--text)'}}>{s.mat}</div>
-                    <div style={{fontSize:9,color:'var(--text4)',lineHeight:1.4}}>{s.motivo}</div>
-                  </div>
-                  <button onClick={()=>{const n=[...lsGet('criticos_manuais',[]),{...s,id:Date.now()+i,dt:Date.now()}];lsSet('criticos_manuais',n);setCriticosManuais(n);}}
-                    style={{padding:'5px 10px',borderRadius:7,border:'none',background:s.prioridade==='alta'?'#f87171':'#fbbf24',color:'#0f172a',fontSize:10,fontWeight:800,cursor:'pointer',flexShrink:0,marginLeft:8}}>
-                    + Adicionar
-                  </button>
-                </div>
-              ))}
-              <button onClick={()=>{
-                const seeds2=[
-                  {mat:'Português',motivo:'Interpretação 63.6% · Semântica 64.2% · Ortografia 64% — críticos VUNESP',prioridade:'alta'},
-                  {mat:'Discursivas',motivo:'Gate 60% mínimo · Estrutura e gestão de tempo documentada',prioridade:'alta'},
-                  {mat:'Dir. Constitucional',motivo:'Intervenção 69.2% · Poder Judiciário 69.2% · Ctrl.Const.Estadual 69.2%',prioridade:'media'},
-                  {mat:'Dir. Financeiro / AFO',motivo:'Controle Financeiro Externo 72% · Receita 73.1% · LRF-pessoal 73.3%',prioridade:'media'},
-                  {mat:'Dir. Tributário',motivo:'Reforma Tributária EC132 Pt.II 75% (-12.7%) · Simples Nacional 71.4%',prioridade:'media'},
-                  {mat:'Dir. Civil',motivo:'Espécies Contratos 70.6% · Obrigações Pt1 70.3%',prioridade:'media'},
-                ];
-                const todos=seeds2.map((s,i)=>({...s,id:Date.now()+i,dt:Date.now()}));
-                lsSet('criticos_manuais',todos);setCriticosManuais(todos);
-              }} style={{width:'100%',marginTop:6,padding:'9px',borderRadius:9,border:'none',background:'rgba(248,113,113,.15)',color:'#f87171',fontSize:11,fontWeight:800,cursor:'pointer'}}>
-                ⚡ Importar todos os 5 de uma vez
-              </button>
-            </div>
-          );
-        })()}
         {/* Dificuldade Base — matérias sem questões */}
         <div style={{background:'rgba(96,165,250,.05)',border:'1px solid rgba(96,165,250,.2)',borderRadius:13,padding:'13px',marginBottom:12}}>
           <div style={{fontSize:9,letterSpacing:'2px',color:'#60a5fa',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:8}}>⭐ DIFICULDADE BASE — matérias sem questões ainda</div>
@@ -5948,14 +5945,18 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
 
         {/* Manual input */}
         <div style={{background:'rgba(248,113,113,.05)',border:'1px solid rgba(248,113,113,.2)',borderRadius:13,padding:'13px',marginBottom:12}}>
-          <div style={{fontSize:9,letterSpacing:'2px',color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:10}}>✍️ ADICIONAR PONTO CRÍTICO MANUAL</div>
+          <div style={{fontSize:9,letterSpacing:'2px',color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:10}}>✍️ ADICIONAR PONTO CRÍTICO</div>
+          <div style={{fontSize:9,color:'#64748b',marginBottom:4}}>MATÉRIA</div>
           <MatBtn value={critForm.mat} onChange={v=>setCritForm(f=>({...f,mat:v}))}/>
-          <textarea value={critForm.motivo} onChange={e=>setCritForm(f=>({...f,motivo:e.target.value}))} rows={2} placeholder="Por que é crítico? ex: 72% aproveitamento, trava nas questões da banca, conceito mal fixado..." style={{width:'100%',padding:'8px 10px',borderRadius:8,border:'1px solid rgba(248,113,113,.2)',background:'rgba(248,113,113,.04)',color:'#f1f5f9',fontSize:12,outline:'none',resize:'vertical',boxSizing:'border-box',marginTop:8,marginBottom:8}}/>
-          <div style={{display:'flex',gap:6,marginBottom:10}}>
-            {['alta','media','baixa'].map(p=>(
-              <button key={p} onClick={()=>setCritForm(f=>({...f,prioridade:p}))} style={{flex:1,padding:'7px',borderRadius:7,border:`1px solid ${critForm.prioridade===p?(p==='alta'?'#f87171':p==='media'?'#fbbf24':'#34d399'):'rgba(255,255,255,.1)'}`,background:critForm.prioridade===p?(p==='alta'?'rgba(248,113,113,.18)':p==='media'?'rgba(251,191,36,.18)':'rgba(52,211,153,.18)'):'transparent',color:critForm.prioridade===p?(p==='alta'?'#f87171':p==='media'?'#fbbf24':'#34d399'):'#475569',fontSize:10,fontWeight:700,cursor:'pointer'}}>{p==='alta'?'🔴 Alta':p==='media'?'🟡 Média':'🟢 Baixa'}</button>
+          <div style={{fontSize:9,color:'#64748b',marginBottom:4,marginTop:8}}>ASSUNTO <span style={{color:'#475569'}}>(opcional — em branco vale pra matéria inteira)</span></div>
+          <input value={critForm.assunto||''} onChange={e=>setCritForm(f=>({...f,assunto:e.target.value}))} placeholder="ex: Garantias e Privilégios do Crédito Tributário" style={{width:'100%',padding:'8px 10px',borderRadius:8,border:'1px solid rgba(248,113,113,.2)',background:'rgba(248,113,113,.04)',color:'#f1f5f9',fontSize:12,outline:'none',boxSizing:'border-box'}}/>
+          <textarea value={critForm.motivo} onChange={e=>setCritForm(f=>({...f,motivo:e.target.value}))} rows={2} placeholder="Por que? ex: conhecimento raso, preciso revisar..." style={{width:'100%',padding:'8px 10px',borderRadius:8,border:'1px solid rgba(248,113,113,.2)',background:'rgba(248,113,113,.04)',color:'#f1f5f9',fontSize:12,outline:'none',resize:'vertical',boxSizing:'border-box',marginTop:8,marginBottom:8}}/>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:6,marginBottom:10}}>
+            {[['alta','🔴 Alta','#f87171'],['media','🟡 Média','#fbbf24'],['baixa','🟢 Baixa','#34d399'],['descartar','🚫 Descartar','#94a3b8']].map(([p,label,cor])=>(
+              <button key={p} onClick={()=>setCritForm(f=>({...f,prioridade:p}))} style={{padding:'7px',borderRadius:7,border:`1px solid ${critForm.prioridade===p?cor:'rgba(255,255,255,.1)'}`,background:critForm.prioridade===p?`${cor}25`:'transparent',color:critForm.prioridade===p?cor:'#475569',fontSize:10,fontWeight:700,cursor:'pointer'}}>{label}</button>
             ))}
           </div>
+          {critForm.prioridade==='descartar'&&<div style={{fontSize:9,color:'#8091a6',marginBottom:8,lineHeight:1.5}}>⚠️ Isso remove de verdade da fila de Questões, Passiva, Profunda e do Mapa — não é só visual.</div>}
           <div style={{display:'flex',gap:7}}>
             <button onClick={salvarCritico} disabled={!critForm.mat} style={{flex:2,padding:'11px',borderRadius:9,border:'none',background:critForm.mat?'#f87171':'rgba(148,163,184,.2)',color:critForm.mat?'#0f172a':'#334155',fontSize:12,fontWeight:800,cursor:'pointer'}}>{critSalvo?'✅ Salvo!':'+ Adicionar'}</button>
             <button onClick={pedirIaCriticos} disabled={criticoIALoad} style={{flex:1,padding:'11px',borderRadius:9,border:'1px solid rgba(251,191,36,.3)',background:'rgba(251,191,36,.07)',color:'#fbbf24',fontSize:11,fontWeight:700,cursor:'pointer'}}>{criticoIALoad?'⏳...':'🤖 IA sugere'}</button>
@@ -5964,16 +5965,19 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
         {/* Lista manuais */}
         {criticosManuais.length>0&&<div style={{marginBottom:14}}>
           <div style={{fontSize:9,color:'#f87171',fontFamily:"'DM Mono',monospace",letterSpacing:'2px',marginBottom:8}}>SUA LISTA ({criticosManuais.length})</div>
-          {criticosManuais.map(item=>{
-            const cor=item.prioridade==='alta'?'#f87171':item.prioridade==='media'?'#fbbf24':'#34d399';
+          {[...criticosManuais].sort((a,b)=>{const ordem={alta:0,media:1,baixa:2,descartar:3};return(ordem[a.prioridade]??1)-(ordem[b.prioridade]??1);}).map(item=>{
+            const cor=item.prioridade==='alta'?'#f87171':item.prioridade==='media'?'#fbbf24':item.prioridade==='descartar'?'#94a3b8':'#34d399';
+            const icone=item.prioridade==='descartar'?'🚫':item.prioridade==='alta'?'🔴':item.prioridade==='media'?'🟡':'🟢';
             return(
               <div key={item.id} style={{padding:'10px 12px',borderRadius:11,background:`${cor}07`,border:`1px solid ${cor}28`,marginBottom:6}}>
                 <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:item.motivo?4:0}}>
                   <div style={{flex:1}}>
                     <div style={{display:'flex',gap:6,alignItems:'center',marginBottom:2}}>
+                      <span style={{fontSize:10}}>{icone}</span>
                       <span style={{fontSize:12,fontWeight:800,color:'#f1f5f9'}}>{item.mat}</span>
                       {item.iaGerado&&<span style={{fontSize:8,padding:'1px 5px',borderRadius:3,background:'rgba(251,191,36,.2)',color:'#fbbf24',fontFamily:"'DM Mono',monospace"}}>🤖 IA</span>}
                     </div>
+                    {item.assunto&&<div style={{fontSize:11,color:cor,fontWeight:600,marginBottom:1}}>{item.assunto}</div>}
                     {item.motivo&&<div style={{fontSize:11,color:'#64748b',lineHeight:1.5}}>{item.motivo}</div>}
                   </div>
                   <button onClick={()=>delCritico(item.id)} style={{padding:'2px 7px',borderRadius:4,border:'none',background:'transparent',color:'#475569',fontSize:10,cursor:'pointer',flexShrink:0,marginLeft:8}}>×</button>
@@ -5990,6 +5994,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
           const porItem={};
           hist.forEach(r=>{
             if(!r.materia)return;
+            if(isDescartado(r.materia,r.assunto))return; // marcado como "não vale meu tempo" — não detecta de novo
             const q=parseInt(r.questoes)||0;const a=parseInt(r.acertei)||0;
             const key=r.assunto?`${r.materia} — ${r.assunto}`:r.materia;
             if(!porItem[key])porItem[key]={mat:r.materia,assunto:r.assunto||'',q:0,a:0,difs:[],lastDt:0,travouCount:0};
@@ -6296,6 +6301,7 @@ function TabMapa(){
     Object.entries(guruja).forEach(([mat,dados])=>{
       if(!dados.assuntos)return;
       dados.assuntos.forEach(a=>{
+        if(isDescartado(mat,a.titulo))return; // marcado como "não vale meu tempo" — some do Mapa
         const k=mat+'|||'+a.titulo;
         const reg=acertoPorAssunto[k]||null;
         const acertoApp=reg?Math.round(reg.a/reg.q*100):null;
@@ -6327,6 +6333,7 @@ function TabMapa(){
     // Matérias sem nenhuma chave no Guruja (ex: Empresarial) não apareceriam — completa com o EDITAL
     EDITAL_MATS.filter(m=>m!=='Discursivas'&&!guruja[m]).forEach(mat=>{
       (EDITAL[mat]?.top||[]).forEach(t=>{
+        if(isDescartado(mat,t.t))return; // marcado como "não vale meu tempo" — some do Mapa
         const k=mat+'|||'+t.t;
         const reg=acertoPorAssunto[k]||null;
         const acertoApp=reg?Math.round(reg.a/reg.q*100):null;
@@ -7205,7 +7212,7 @@ function ModalConfig({fechar}){
             {/* Info do app */}
             <div style={{padding:'12px',borderRadius:11,background:'rgba(148,163,184,.06)',border:'1px solid rgba(148,163,184,.15)'}}>
               <div style={{fontSize:9,color:'#64748b',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:8}}>⚙️ APP</div>
-              {[['Versão','RITY OS'],['Ciclo atual',`${N} blocos · 45min cada · ${Math.round(N*0.75)}h total`],['Período','27/07→01/08/2026'],['Meta semanal',`${lsGet('meta_horas_sem',35)}h`],['Formato','Pt1 = teoria 45min · Pt2 = questões 45min'],['Método','Ciclo Meirelles + Anki + Estudo Reverso'],['Dieta','Low carb · Cetogênico'],['Kauê','Preparatório Colégio Naval — processo separado'],['Atualizado','31/07/2026']].map(([k,v])=>(
+              {[['Versão','RITY OS'],['Ciclo atual',`${N} blocos · 45min cada · ${Math.round(N*0.75)}h total`],['Período','10→16/08/2026'],['Meta semanal',`${lsGet('meta_horas_sem',35)}h`],['Formato','Pt1 = teoria 45min · Pt2 = questões 45min'],['Método','Ciclo Meirelles + Anki + Estudo Reverso'],['Dieta','Low carb · Cetogênico'],['Kauê','Preparatório Colégio Naval — processo separado'],['Atualizado','10/08/2026']].map(([k,v])=>(
                 <div key={k} style={{display:'flex',justifyContent:'space-between',padding:'6px 8px',borderRadius:6,background:'rgba(148,163,184,.06)',marginBottom:3}}>
                   <span style={{fontSize:9,color:'#64748b',fontFamily:"'DM Mono',monospace",fontWeight:700}}>{k}</span>
                   <span style={{fontSize:10,color:'#94a3b8',textAlign:'right',maxWidth:'65%'}}>{v}</span>
@@ -7660,7 +7667,7 @@ function App(){
   const[tmIA,setTmIA]=useState(()=>lsGet('tm_ia_cache',null));
   const[darkMode,setDarkMode]=useState(()=>{
     const saved=localStorage.getItem('theme_mode');
-    return saved!=='light'; // padrão escuro
+    return saved==='dark'; // padrão claro agora — bege + azul
   });
 
   useEffect(()=>{
@@ -7727,10 +7734,76 @@ function App(){
         }catch(e){}
       }
     })();
+    // ── Limpeza única: datas impossíveis (ex: "2026-2-30") em registros antigos ──
+    // Achado no export de 07/08 — Anki e NLM tinham "último: 2026-2-30"/"2026-2-31",
+    // resquício de uma versão anterior do app. getDK() atual não produz mais isso.
+    (()=>{
+      const KEY='rity_fix_datas_invalidas_v1';
+      if(!localStorage.getItem(KEY)){
+        try{
+          const dataValida=dk=>{
+            if(!dk||typeof dk!=='string')return false;
+            const m=dk.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+            if(!m)return false;
+            const y=+m[1],mo=+m[2],d=+m[3];
+            const dt=new Date(y,mo-1,d);
+            return dt.getFullYear()===y&&dt.getMonth()===mo-1&&dt.getDate()===d;
+          };
+          const corrigeLista=nome=>{
+            const lista=JSON.parse(localStorage.getItem(nome)||'[]');
+            let corrigidos=0;
+            const nova=lista.map(r=>{
+              if(dataValida(r.dia))return r;
+              corrigidos++;
+              if(r.dt){const d=new Date(r.dt);const dk=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;return{...r,dia:dk};}
+              return{...r,dia:null};
+            });
+            if(corrigidos>0)localStorage.setItem(nome,JSON.stringify(nova));
+            return corrigidos;
+          };
+          corrigeLista('rev_anki');corrigeLista('rev_nlm');
+          localStorage.setItem(KEY,'done');
+        }catch(e){}
+      }
+    })();
+    // ── Seed único: 6 pontos críticos por assunto, confirmados em conversa 08/08 ──
+    (()=>{
+      const KEY='rity_seed_criticos_assunto_20260808';
+      if(!localStorage.getItem(KEY)){
+        try{
+          const atuais=JSON.parse(localStorage.getItem('criticos_manuais')||'[]');
+          const novos=[
+            {mat:'Dir. Tributário',assunto:'Garantias e Privilégios do Crédito Tributário (arts. 183 a 193 do CTN)',motivo:'Conhecimento raso — precisa revisar',prioridade:'alta',id:Date.now()+1,dt:Date.now()},
+            {mat:'Dir. Administrativo',assunto:'Domínio Público',motivo:'Precisa revisar',prioridade:'alta',id:Date.now()+2,dt:Date.now()},
+            {mat:'Direito Empresarial (Comercial)',assunto:'',motivo:'Base ainda fraca — matéria inteira',prioridade:'alta',id:Date.now()+3,dt:Date.now()},
+            {mat:'Dir. Civil',assunto:'Contratos — Parte Geral',motivo:'Gargalo confirmado — caiu pra 72,7% no teste de 08/08',prioridade:'media',id:Date.now()+4,dt:Date.now()},
+            {mat:'Legislação TCE-SP',assunto:'',motivo:'Só estudei teoria — nunca testei com questão',prioridade:'media',id:Date.now()+5,dt:Date.now()},
+            {mat:'Ética Pública',assunto:'Lei de Conflito de Interesses',motivo:'Avaliação da Ritchely: nunca caiu na VUNESP, extremamente difícil de cair (não confirmado de forma independente)',prioridade:'descartar',id:Date.now()+6,dt:Date.now()},
+          ];
+          localStorage.setItem('criticos_manuais',JSON.stringify([...atuais,...novos]));
+          localStorage.setItem(KEY,'done');
+        }catch(e){}
+      }
+    })();
+    // ── Seed único: Competência do Poder Judiciário — crítico, confirmado 10/08 ──
+    (()=>{
+      const KEY='rity_seed_critico_pj_20260810';
+      if(!localStorage.getItem(KEY)){
+        try{
+          const atuais=JSON.parse(localStorage.getItem('criticos_manuais')||'[]');
+          const novo={mat:'Dir. Constitucional',assunto:'Competência do Poder Judiciário',motivo:'Situação crítica — precisa revisar',prioridade:'alta',id:Date.now(),dt:Date.now()};
+          localStorage.setItem('criticos_manuais',JSON.stringify([...atuais,novo]));
+          localStorage.setItem(KEY,'done');
+        }catch(e){}
+      }
+    })();
+    // ── Dias de trabalho da semana 10-16/08: só quinta (13/08) ──
+    // Sem botão na tela ainda pra isso — atualiza direto toda vez que muda de semana.
+    localStorage.setItem('dias_trabalho', JSON.stringify([4]));
     const _f=lsGet('feitos',[]);
-    if(lsGet('ciclo_versao','')!=='v40'){
+    if(lsGet('ciclo_versao','')!=='v41'){
       if(_f.length>0)lsSet('feitos',[]);
-      lsSet('cicloNum',22);lsSet('ciclo_versao','v40');
+      lsSet('cicloNum',23);lsSet('ciclo_versao','v41');
     }
     setFeitos(lsGet('feitos',[]));setCicloNum(lsGet('cicloNum',1));setHoras(lsGet('horas',[]));setMit(lsGet('mit',[]));
     const tick=setInterval(()=>setClock(new Date()),1000);
@@ -7897,7 +7970,7 @@ function App(){
             <div style={{textAlign:'right'}}>
               <div style={{fontSize:16,fontWeight:900,fontFamily:"'DM Mono',monospace",color:'var(--text)',lineHeight:1}}>{fH(clock)}</div>
               <div style={{fontSize:8,color:'var(--text4)',lineHeight:1,marginTop:2}}>{fmtMin(minHoje)} hoje · {fmtMin(minSemana)}/{metaHoras}h</div>
-              <div style={{fontSize:7,color:'var(--text4)',lineHeight:1,marginTop:2,opacity:.7,fontFamily:"'DM Mono',monospace"}}>build 31/07 · ciclo 27/07→01/08</div>
+              <div style={{fontSize:7,color:'var(--text4)',lineHeight:1,marginTop:2,opacity:.7,fontFamily:"'DM Mono',monospace"}}>build 10/08 · ciclo 10→16/08</div>
             </div>
             <button onClick={()=>setDarkMode(v=>!v)} title={darkMode?'Modo claro':'Modo escuro'} style={{width:32,height:32,borderRadius:'50%',border:'1px solid var(--border2)',background:'var(--card2)',color:'var(--text3)',fontSize:15,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>{darkMode?'☀️':'🌙'}</button>
             <button onClick={()=>setShowCfg(true)} style={{width:32,height:32,borderRadius:'50%',border:'1px solid var(--border2)',background:'var(--card2)',color:'var(--text3)',fontSize:14,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>⚙️</button>
