@@ -7858,9 +7858,9 @@ function App(){
       }
     })();
     const _f=lsGet('feitos',[]);
-    if(lsGet('ciclo_versao','')!=='v41'){
+    if(lsGet('ciclo_versao','')!=='v42'){
       if(_f.length>0)lsSet('feitos',[]);
-      lsSet('cicloNum',23);lsSet('ciclo_versao','v41');
+      lsSet('cicloNum',24);lsSet('ciclo_versao','v42');
     }
     setFeitos(lsGet('feitos',[]));setCicloNum(lsGet('cicloNum',1));setHoras(lsGet('horas',[]));setMit(lsGet('mit',[]));
     const tick=setInterval(()=>setClock(new Date()),1000);
