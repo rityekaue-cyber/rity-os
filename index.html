@@ -243,41 +243,40 @@ const{useState,useEffect,useRef,useMemo,useCallback}=React;
 
 // ─── CONSTANTES ───────────────────────────────────────────────
 const CICLO=[
-  // ── CICLO ATUAL — 10/08 a 16/08/2026 ──────────────────────────
-  // 25 itens do Guruja (4 pendentes trazidos pra frente + 21 da semana)
-  // 4 metas/dia (dia 7 com 1 sobra) · dificuldade real · trabalho só quinta 13/08
-  // DIA 1 — Seg 10/08 · livre
-  {id:1,  dia:1, mat:'Discursivas',             ic:'✍️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Anteriores — Dir. Civil: Responsabilidade Civil'},
-  {id:2,  dia:1, mat:'Dir. Civil',              ic:'⚖️', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Contratos em Espécie'},
-  {id:3,  dia:1, mat:'Dir. Constitucional',     ic:'📜', cor:'#94a3b8', tag:'🟢 FÁCIL',  h:0.75, tipo:'Teste',    ferramenta:'Guruja', conteudo:'Resolução de questões favoritas'},
-  {id:4,  dia:1, mat:'Dir. Financeiro / AFO',   ic:'📈', cor:'#94a3b8', tag:'🟢 FÁCIL',  h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Despesa: conceito, classificação, estágio, RP/DEA/SF, dívida'},
-  // DIA 2 — Ter 11/08 · livre
-  {id:5,  dia:2, mat:'Discursivas',             ic:'✍️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Questão 06 — Processo Adm. de Contratação Direta'},
-  {id:6,  dia:2, mat:'Dir. Administrativo',     ic:'🏛️', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Atos Administrativos e Processo Administrativo'},
-  {id:7,  dia:2, mat:'Raciocínio Lógico',       ic:'🔢', cor:'#94a3b8', tag:'🟢 FÁCIL',  h:0.75, tipo:'Teste',    ferramenta:'Guruja', conteudo:'Resolução de Questões Favoritas'},
-  {id:8,  dia:2, mat:'Português',               ic:'📝', cor:'#94a3b8', tag:'🟢 FÁCIL',  h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Pontuação e Crase'},
-  // DIA 3 — Qua 12/08 · livre
-  {id:9,  dia:3, mat:'Discursivas',             ic:'✍️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Anteriores — Dir. Tributário: Administração Tributária'},
-  {id:10, dia:3, mat:'Dir. Administrativo',     ic:'🏛️', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Intervenção no Domínio Econômico e na Propriedade Privada'},
-  {id:11, dia:3, mat:'Ética Pública',           ic:'🤝', cor:'#94a3b8', tag:'🟢 FÁCIL',  h:0.75, tipo:'Revisão',  ferramenta:'Guruja', conteudo:'Revisão atividades 01 a 04'},
-  {id:12, dia:3, mat:'Dir. Tributário',         ic:'💰', cor:'#94a3b8', tag:'🟢 FÁCIL',  h:0.75, tipo:'Teste',    ferramenta:'Guruja', conteudo:'Resolução de questões favoritas'},
-  // DIA 4 — Qui 13/08 · TRABALHO
-  {id:13, dia:4, mat:'Direito Empresarial (Comercial)',ic:'🏢',cor:'#f87171',tag:'🔴 DIFÍCIL', h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Direito Societário'},
-  {id:14, dia:4, mat:'Legislação TCE-SP',       ic:'📖', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Lei Seca', ferramenta:'Guruja', conteudo:'Regimento Interno do TCE-SP'},
-  {id:15, dia:4, mat:'Dir. Financeiro / AFO',   ic:'📈', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Bloco A — Orçamento, leis, princípios, créditos adicionais, emendas'},
-  {id:16, dia:4, mat:'Português',               ic:'📝', cor:'#94a3b8', tag:'🟢 FÁCIL',  h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Resolução de prova — Agente Fiscal de Posturas (Pref. SJRP)'},
-  // DIA 5 — Sex 14/08 · livre
-  {id:17, dia:5, mat:'Discursivas',             ic:'✍️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Questão 07 — Execução orçamentária e financeira (PGE SP)'},
-  {id:18, dia:5, mat:'Dir. Penal',              ic:'🚔', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Teste',    ferramenta:'Guruja', conteudo:'Resolução das questões favoritas'},
-  {id:19, dia:5, mat:'Dir. Administrativo',     ic:'🏛️', cor:'#94a3b8', tag:'🟢 FÁCIL',  h:0.75, tipo:'Teste',    ferramenta:'Guruja', conteudo:'Resolução de questões favoritas'},
-  {id:20, dia:5, mat:'Dir. Financeiro / AFO',   ic:'📈', cor:'#94a3b8', tag:'🟢 FÁCIL',  h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Resolução de questões favoritas'},
-  // DIA 6 — Sáb 15/08 · livre (dia mais pesado — sem item fácil, avisar Ritchely)
-  {id:21, dia:6, mat:'Direito Empresarial (Comercial)',ic:'🏢',cor:'#f87171',tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teste',    ferramenta:'Guruja', conteudo:'Resolução de Questões Favoritas'},
-  {id:22, dia:6, mat:'Discursivas',             ic:'✍️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Anteriores — Controle Externo. LINDB: TCM/SP 2023'},
-  {id:23, dia:6, mat:'Dir. Civil',              ic:'⚖️', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Atos Unilaterais e Responsabilidade Civil'},
-  {id:24, dia:6, mat:'Legislação TCE-SP',       ic:'📖', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Lei Seca', ferramenta:'Guruja', conteudo:'Regimento Interno do TCE-SP'},
-  // DIA 7 — Dom 16/08 · livre, dia leve (1 item só)
-  {id:25, dia:7, mat:'Discursivas',             ic:'✍️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Questão 08 — Controle Externo e Sustação (inédito Vunesp)'},
+  // ── CICLO — 25/08 a 30/08/2026 (Ter a Dom, 6 dias) ───────────────
+  // 16 metas, montado por pontuação real: Score = pesoGate(matéria) × Gap(1-5)
+  // Gap ancorado nos dados reais já carregados (pior ponto conhecido, dado
+  // zero em subtema de peso alto, ou relevância declarada pelo Guruja como
+  // desempate). Ranking mecânico puro dava 6 Discursivas + 4 Empresarial e
+  // zerava 6 matérias — ajustado pra 3 Discursivas (as inéditas, maior valor
+  // de exposição) e reintroduzido Legislação/Tributário/RLM, que o ranking
+  // puro deixava de fora só por causa do peso 1.4 da Discursiva ser Teoria
+  // (leitura), não prática escrita corrigida.
+  // ⚠️ Matemática Financeira e Precatórios (os 2 maiores gaps do sistema)
+  // continuam fora — não têm nenhum bloco correspondente no Guruja essa
+  // semana (nem atrasados, nem Meta 7).
+  // DIA 1 — Ter 25/08 · TRABALHO
+  {id:1,  dia:1, mat:'Direito Empresarial (Comercial)',ic:'🏢',cor:'#f87171',tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Falência I'},
+  {id:2,  dia:1, mat:'Direito Empresarial (Comercial)',ic:'🏢',cor:'#f87171',tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Recuperação Judicial e Extrajudicial I'},
+  // DIA 2 — Qua 26/08 · livre
+  {id:3,  dia:2, mat:'Direito Empresarial (Comercial)',ic:'🏢',cor:'#fbbf24',tag:'🟡 MÉDIO',   h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Falência II'},
+  {id:4,  dia:2, mat:'Direito Empresarial (Comercial)',ic:'🏢',cor:'#fbbf24',tag:'🟡 MÉDIO',   h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Recuperação Judicial e Extrajudicial II'},
+  // DIA 3 — Qui 27/08 · TRABALHO
+  {id:5,  dia:3, mat:'Discursivas',             ic:'✍️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Questão 09 — Contratos, Prorrogação e Reequilíbrio (Inédita)'},
+  {id:6,  dia:3, mat:'Dir. Constitucional',     ic:'📜', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teste',    ferramenta:'Guruja', conteudo:'Bloco B — Poder Legislativo, Poder Executivo e Poder Judiciário'},
+  // DIA 4 — Sex 28/08 · TRABALHO
+  {id:7,  dia:4, mat:'Discursivas',             ic:'✍️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Questão 10 — Licitações (Lei 14.133/21) — Inédita'},
+  {id:8,  dia:4, mat:'Português',               ic:'📝', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teste',    ferramenta:'Guruja', conteudo:'Resolução de questões favoritas'},
+  // DIA 5 — Sáb 29/08 · livre
+  {id:9,  dia:5, mat:'Discursivas',             ic:'✍️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Questão 11 — Concurso Público e Preterição — Inédito'},
+  {id:10, dia:5, mat:'Dir. Administrativo',     ic:'🏛️', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Contratos Administrativos'},
+  {id:11, dia:5, mat:'Dir. Financeiro / AFO',   ic:'📈', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'LC nº 101/2000 — Capítulo I: Disposições preliminares'},
+  {id:12, dia:5, mat:'Dir. Tributário',         ic:'💰', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Bloco A — Espécies, Limitações, Impostos, Competência e Repartição'},
+  // DIA 6 — Dom 30/08 · livre
+  {id:13, dia:6, mat:'Português',               ic:'📝', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Classes de Palavras I'},
+  {id:14, dia:6, mat:'Dir. Financeiro / AFO',   ic:'📈', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'LC nº 101/2000 — Capítulo IV: Da Despesa pública; Capítulo V'},
+  {id:15, dia:6, mat:'Legislação TCE-SP',       ic:'📖', cor:'#94a3b8', tag:'🟢 FÁCIL',  h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Lei Orgânica e Regimento Interno do TCE-SP'},
+  {id:16, dia:6, mat:'Raciocínio Lógico',       ic:'🔢', cor:'#94a3b8', tag:'🟢 FÁCIL',  h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Associação de Informações'},
 ];
 const N=CICLO.length;
 
@@ -366,7 +365,7 @@ function getAlertasAtivos(){
   const alertas=[];
   // Fim de ciclo — avisa no último dia e depois dele
   try{
-    const cicloIni=new Date(2026,7,10).setHours(0,0,0,0);
+    const cicloIni=new Date(2026,7,25).setHours(0,0,0,0);
     const diaCiclo=Math.round((new Date().setHours(0,0,0,0)-cicloIni)/86400000)+1;
     const maxDia=Math.max(...CICLO.map(s=>s.dia));
     if(diaCiclo===maxDia) alertas.push({tipo:'ciclo',msg:'📆 Último dia do ciclo — montar o ciclo da próxima semana',cor:'#fb923c'});
@@ -3165,7 +3164,7 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
         const cor=verde?'#34d399':'#f87171';
         const feitosSet=new Set(feitos);
         // Bloco de HOJE, pela data real — cicloInicio = 13/07/2026 (dia 1)
-        const cicloInicio=new Date(2026,7,10).setHours(0,0,0,0);
+        const cicloInicio=new Date(2026,7,25).setHours(0,0,0,0);
         const hojeMs2=new Date().setHours(0,0,0,0);
         const diaHoje=Math.round((hojeMs2-cicloInicio)/86400000)+1;
         const blocosHoje=CICLO.filter(s=>s.dia===diaHoje&&!feitosSet.has(s.id));
@@ -7845,9 +7844,9 @@ function App(){
         }catch(e){}
       }
     })();
-    // ── Dias de trabalho da semana 10-16/08: só quinta (13/08) ──
+    // ── Dias de trabalho da semana 25-30/08: Ter(1)/Qui(3)/Sex(4) ──
     // Sem botão na tela ainda pra isso — atualiza direto toda vez que muda de semana.
-    localStorage.setItem('dias_trabalho', JSON.stringify([4]));
+    localStorage.setItem('dias_trabalho', JSON.stringify([1,3,4]));
     // ── Seed único: volta pro modo escuro — o claro ficou ruim ──
     (()=>{
       const KEY='rity_seed_volta_escuro_20260810';
