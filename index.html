@@ -4474,7 +4474,7 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
           <span style={{fontSize:14,color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:700,flexShrink:0}}>{feitos.length}/{N}</span>
         </div>
         <div style={{display:'flex',gap:6,marginBottom:14}}>
-          {[[N,'blocos · 45min'],[`${Math.round(N*0.75)}h`,'total ciclo'],['27/07→02/08','período'],[`#${cicloNum}`,'ciclo atual']].map(([v,l],i)=>(
+          {[[N,'blocos · 45min'],[`${Math.round(N*0.75)}h`,'total ciclo'],[`#${cicloNum}`,'ciclo atual']].map(([v,l],i)=>(
             <div key={i} style={{flex:1,padding:'8px 4px',borderRadius:9,textAlign:'center',background:'rgba(251,191,36,.04)',border:'1px solid rgba(251,191,36,.1)'}}>
               <div style={{fontSize:15,fontWeight:900,color:'#fbbf24',fontFamily:"'DM Mono',monospace",lineHeight:1}}>{v}</div>
               <div style={{fontSize:13,color:'#aab6c6',marginTop:2}}>{l}</div>
@@ -4483,7 +4483,11 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
         </div>
         {/* Blocos agrupados por dia */}
         {(()=>{
-          const DIAS_CICLO11={1:'Seg 10/08 · livre',2:'Ter 11/08 · livre',3:'Qua 12/08 · livre',4:'Qui 13/08 · trabalho',5:'Sex 14/08 · livre',6:'Sáb 15/08 · livre',7:'Dom 16/08 · livre'};
+          const diasTrabalhoCiclo=getDiasTrabalho();
+          const DIAS_CICLO11={};
+          [...new Set(CICLO.map(s=>s.dia))].forEach(dd=>{
+            DIAS_CICLO11[dd]=`Dia ${dd} · ${diasTrabalhoCiclo.includes(dd)?'trabalho':'livre'}`;
+          });
           const diasUnicos=[...new Set(CICLO.map(s=>s.dia))].sort((a,b)=>a-b);
           return diasUnicos.map(dia=>{
           const blocosDia=CICLO.filter(s=>s.dia===dia);
@@ -7244,7 +7248,7 @@ function ModalConfig({fechar}){
             {/* Info do app */}
             <div style={{padding:'12px',borderRadius:11,background:'rgba(148,163,184,.06)',border:'1px solid rgba(148,163,184,.15)'}}>
               <div style={{fontSize:13,color:'#c2ccd8',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:8}}>⚙️ APP</div>
-              {[['Versão','RITY OS'],['Ciclo atual',`${N} blocos · 45min cada · ${Math.round(N*0.75)}h total`],['Período','10→16/08/2026'],['Meta semanal',`${lsGet('meta_horas_sem',35)}h`],['Formato','Pt1 = teoria 45min · Pt2 = questões 45min'],['Método','Ciclo Meirelles + Anki + Estudo Reverso'],['Dieta','Low carb · Cetogênico'],['Kauê','Preparatório Colégio Naval — processo separado'],['Atualizado','10/08/2026']].map(([k,v])=>(
+              {[['Versão','RITY OS'],['Ciclo atual',`${N} blocos · 45min cada · ${Math.round(N*0.75)}h total`],['Meta semanal',`${lsGet('meta_horas_sem',35)}h`],['Formato','Pt1 = teoria 45min · Pt2 = questões 45min'],['Método','Ciclo Meirelles + Anki + Estudo Reverso'],['Dieta','Low carb · Cetogênico'],['Kauê','Preparatório Colégio Naval — processo separado']].map(([k,v])=>(
                 <div key={k} style={{display:'flex',justifyContent:'space-between',padding:'6px 8px',borderRadius:6,background:'rgba(148,163,184,.06)',marginBottom:3}}>
                   <span style={{fontSize:13,color:'#c2ccd8',fontFamily:"'DM Mono',monospace",fontWeight:700}}>{k}</span>
                   <span style={{fontSize:13,color:'#b4c0d1',textAlign:'right',maxWidth:'65%'}}>{v}</span>
@@ -8027,7 +8031,6 @@ function App(){
             <div style={{textAlign:'right'}}>
               <div style={{fontSize:18,fontWeight:900,fontFamily:"'DM Mono',monospace",color:'var(--text)',lineHeight:1}}>{fH(clock)}</div>
               <div style={{fontSize:13,color:'var(--text4)',lineHeight:1,marginTop:2}}>{fmtMin(minHoje)} hoje · {fmtMin(minSemana)}/{metaHoras}h</div>
-              <div style={{fontSize:13,color:'var(--text4)',lineHeight:1,marginTop:2,opacity:.7,fontFamily:"'DM Mono',monospace"}}>build 10/08 · ciclo 10→16/08</div>
             </div>
             <button onClick={()=>setDarkMode(v=>!v)} title={darkMode?'Modo claro':'Modo escuro'} style={{width:32,height:32,borderRadius:'50%',border:'1px solid var(--border2)',background:'var(--card2)',color:'var(--text3)',fontSize:17,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>{darkMode?'☀️':'🌙'}</button>
             <button onClick={()=>setShowCfg(true)} style={{width:32,height:32,borderRadius:'50%',border:'1px solid var(--border2)',background:'var(--card2)',color:'var(--text3)',fontSize:16,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>⚙️</button>
