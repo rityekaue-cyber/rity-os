@@ -243,40 +243,34 @@ const{useState,useEffect,useRef,useMemo,useCallback}=React;
 
 // ─── CONSTANTES ───────────────────────────────────────────────
 const CICLO=[
-  // ── CICLO — 25/08 a 30/08/2026 (Ter a Dom, 6 dias) ───────────────
-  // 16 metas, montado por pontuação real: Score = pesoGate(matéria) × Gap(1-5)
-  // Gap ancorado nos dados reais já carregados (pior ponto conhecido, dado
-  // zero em subtema de peso alto, ou relevância declarada pelo Guruja como
-  // desempate). Ranking mecânico puro dava 6 Discursivas + 4 Empresarial e
-  // zerava 6 matérias — ajustado pra 3 Discursivas (as inéditas, maior valor
-  // de exposição) e reintroduzido Legislação/Tributário/RLM, que o ranking
-  // puro deixava de fora só por causa do peso 1.4 da Discursiva ser Teoria
-  // (leitura), não prática escrita corrigida.
-  // ⚠️ Matemática Financeira e Precatórios (os 2 maiores gaps do sistema)
-  // continuam fora — não têm nenhum bloco correspondente no Guruja essa
-  // semana (nem atrasados, nem Meta 7).
-  // DIA 1 — Ter 25/08 · TRABALHO
-  {id:1,  dia:1, mat:'Direito Empresarial (Comercial)',ic:'🏢',cor:'#f87171',tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Falência I'},
-  {id:2,  dia:1, mat:'Direito Empresarial (Comercial)',ic:'🏢',cor:'#f87171',tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Recuperação Judicial e Extrajudicial I'},
-  // DIA 2 — Qua 26/08 · livre
-  {id:3,  dia:2, mat:'Direito Empresarial (Comercial)',ic:'🏢',cor:'#fbbf24',tag:'🟡 MÉDIO',   h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Falência II'},
-  {id:4,  dia:2, mat:'Direito Empresarial (Comercial)',ic:'🏢',cor:'#fbbf24',tag:'🟡 MÉDIO',   h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Recuperação Judicial e Extrajudicial II'},
-  // DIA 3 — Qui 27/08 · TRABALHO
-  {id:5,  dia:3, mat:'Discursivas',             ic:'✍️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Questão 09 — Contratos, Prorrogação e Reequilíbrio (Inédita)'},
-  {id:6,  dia:3, mat:'Dir. Constitucional',     ic:'📜', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teste',    ferramenta:'Guruja', conteudo:'Bloco B — Poder Legislativo, Poder Executivo e Poder Judiciário'},
-  // DIA 4 — Sex 28/08 · TRABALHO
-  {id:7,  dia:4, mat:'Discursivas',             ic:'✍️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Questão 10 — Licitações (Lei 14.133/21) — Inédita'},
-  {id:8,  dia:4, mat:'Português',               ic:'📝', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teste',    ferramenta:'Guruja', conteudo:'Resolução de questões favoritas'},
-  // DIA 5 — Sáb 29/08 · livre
-  {id:9,  dia:5, mat:'Discursivas',             ic:'✍️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Questão 11 — Concurso Público e Preterição — Inédito'},
-  {id:10, dia:5, mat:'Dir. Administrativo',     ic:'🏛️', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Contratos Administrativos'},
-  {id:11, dia:5, mat:'Dir. Financeiro / AFO',   ic:'📈', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'LC nº 101/2000 — Capítulo I: Disposições preliminares'},
-  {id:12, dia:5, mat:'Dir. Tributário',         ic:'💰', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Bloco A — Espécies, Limitações, Impostos, Competência e Repartição'},
-  // DIA 6 — Dom 30/08 · livre
-  {id:13, dia:6, mat:'Português',               ic:'📝', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Classes de Palavras I'},
-  {id:14, dia:6, mat:'Dir. Financeiro / AFO',   ic:'📈', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'LC nº 101/2000 — Capítulo IV: Da Despesa pública; Capítulo V'},
-  {id:15, dia:6, mat:'Legislação TCE-SP',       ic:'📖', cor:'#94a3b8', tag:'🟢 FÁCIL',  h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Lei Orgânica e Regimento Interno do TCE-SP'},
-  {id:16, dia:6, mat:'Raciocínio Lógico',       ic:'🔢', cor:'#94a3b8', tag:'🟢 FÁCIL',  h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Associação de Informações'},
+  // ── CICLO — Meta 8, 31/08 a 06/09/2026 (7 dias) ──────────────────
+  // 14 metas, 2/dia. Priorização: relevância do Guruja (★) × dificuldade
+  // real dela (1-3, ancorada em dado já carregado no app) — critério
+  // pedido nesta sessão, diferente do ciclo anterior (peso do gate).
+  // Cortado 1 item redundante: "Recuperação Judicial II" (Teoria, atrasado)
+  // — supérfluo agora que a versão em Questões apareceu na Meta 8 e vale
+  // mais (gera nota real, não só leitura).
+  // DIA 1 — Seg 31/08 · livre
+  {id:1,  dia:1, mat:'Discursivas',             ic:'✍️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Questão 11 — Concurso Público e Preterição — Inédito'},
+  {id:2,  dia:1, mat:'Dir. Constitucional',     ic:'📜', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teste',    ferramenta:'Guruja', conteudo:'Bloco B — Poder Legislativo, Poder Executivo e Poder Judiciário'},
+  // DIA 2 — Ter 01/09 · trabalho
+  {id:3,  dia:2, mat:'Dir. Tributário',         ic:'💰', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'IBS e CBS'},
+  {id:4,  dia:2, mat:'Discursivas',             ic:'✍️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Questão 13 — Improbidade Administrativa — Inédita — Vunesp'},
+  // DIA 3 — Qua 02/09 · livre
+  {id:5,  dia:3, mat:'Dir. Constitucional',     ic:'📜', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teste',    ferramenta:'Guruja', conteudo:'Toda a Ementa do Edital'},
+  {id:6,  dia:3, mat:'Direito Empresarial (Comercial)',ic:'🏢',cor:'#f87171',tag:'🔴 DIFÍCIL', h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Recuperação Judicial, Extrajudicial e Falência'},
+  // DIA 4 — Qui 03/09 · trabalho
+  {id:7,  dia:4, mat:'Direito Empresarial (Comercial)',ic:'🏢',cor:'#f87171',tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Lei Complementar nº 123 de 2006'},
+  {id:8,  dia:4, mat:'Ética Pública',           ic:'🤝', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Convenção da ONU contra a Corrupção e Princípios de integridade'},
+  // DIA 5 — Sex 04/09 · trabalho
+  {id:9,  dia:5, mat:'Dir. Financeiro / AFO',   ic:'📈', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Toda Ementa'},
+  {id:10, dia:5, mat:'Discursivas',             ic:'✍️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Questões Anteriores — Direito Civil: Obrigações, Pessoas Jurídicas'},
+  // DIA 6 — Sáb 05/09 · livre
+  {id:11, dia:6, mat:'Dir. Administrativo',     ic:'🏛️', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Teste',    ferramenta:'Guruja', conteudo:'Simulado Parcial I'},
+  {id:12, dia:6, mat:'Legislação TCE-SP',       ic:'📖', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Instruções nº 1/2024 do TCE-SP'},
+  // DIA 7 — Dom 06/09 · livre
+  {id:13, dia:7, mat:'Raciocínio Lógico',       ic:'🔢', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Bloco A — Estruturas e Equivalências Lógicas, Lógica de Argumentação'},
+  {id:14, dia:7, mat:'Português',               ic:'📝', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Resolução de prova: Auditor Fiscal da Receita Municipal'},
 ];
 const N=CICLO.length;
 
@@ -365,7 +359,7 @@ function getAlertasAtivos(){
   const alertas=[];
   // Fim de ciclo — avisa no último dia e depois dele
   try{
-    const cicloIni=new Date(2026,7,25).setHours(0,0,0,0);
+    const cicloIni=new Date(2026,7,31).setHours(0,0,0,0);
     const diaCiclo=Math.round((new Date().setHours(0,0,0,0)-cicloIni)/86400000)+1;
     const maxDia=Math.max(...CICLO.map(s=>s.dia));
     if(diaCiclo===maxDia) alertas.push({tipo:'ciclo',msg:'📆 Último dia do ciclo — montar o ciclo da próxima semana',cor:'#fb923c'});
@@ -436,8 +430,8 @@ const MATRIZ_MEIRELLES={
   'Dir. Civil':            {prioridade:'manutencao',estrelas:3,pctAcerto:85,  jornada:29, nivel:'Expert',   ferramenta:'TecConcursos',      motivo:'🟡 85% — exceto Obrigações Pt1 70%, Contratos Geral 69% e Atos Unilaterais/Resp. Civil 64% (novo, 10-16/08)'},
   // ── NIVELAMENTO (só Bloco 0) ──
   'Dir. Penal':            {prioridade:'manutencao',estrelas:3,pctAcerto:89,  jornada:18, nivel:'Bom',      ferramenta:'TecConcursos',      motivo:'🟢 89% — primeiro dado real (simulado 13-19/07), bloco pequeno e fechado'},
-  'Legislação TCE-SP':     {prioridade:'nivelamento',estrelas:3,pctAcerto:null,jornada:0,  nivel:'Zero Base',ferramenta:'Gran Cursos',       motivo:'🟠 Zero base — norma local, só no Bloco 0'},
-  'Ética Pública':         {prioridade:'nivelamento',estrelas:3,pctAcerto:null,jornada:0,  nivel:'Zero Base',ferramenta:'Gran Cursos',       motivo:'🟠 Zero base — Bloco 0, depois manutenção leve'},
+  'Legislação TCE-SP':     {prioridade:'manutencao',estrelas:3,pctAcerto:81.8,jornada:6,  nivel:'Intermediário',ferramenta:'Gran Cursos',       motivo:'🟡 81,8% — só Instrução 01/2024 do TCE-SP segue sem dado nenhum, resto já testado com questão real'},
+  'Ética Pública':         {prioridade:'manutencao',estrelas:3,pctAcerto:80.9,jornada:4,  nivel:'Intermediário',ferramenta:'Gran Cursos',       motivo:'🟡 80,9% — não é mais zero base; Conflito de Interesses (74%) e OCDE (73,9%) são os pontos mais fracos'},
   'Raciocínio Lógico':     {prioridade:'urgente',   estrelas:5,pctAcerto:76,  jornada:17, nivel:'Aprendiz', ferramenta:'Gran Cursos',       motivo:'🔴 76% — primeiro dado real (simulado 13-19/07). Pior nota confirmada da semana, gate Gerais apertado'},
   'Direito Empresarial (Comercial)':{prioridade:'urgente',estrelas:4,pctAcerto:76.7,jornada:3,  nivel:'Diagnóstico',ferramenta:'Guruja',           motivo:'🔴 76,7% (46/60) — 3 atividades, todas abaixo da média da plataforma. Recuperação Judicial/Falência (40% do peso) e Estatuto ME/EPP seguem zerados'},
   // ── HIBERNAÇÃO (2h/semana total, só tempo morto) ──
@@ -2095,6 +2089,8 @@ const GURUJA_SEED={
       {titulo:'Resolução de prova: Agente Fiscal de Posturas — Pref. SJRP (semana 10-16/08)',acerto:90,diffMedia:16,relevancia:2,tempoCump:'1h',questoes:0,acertos:0},
       {titulo:'Resolução de prova: Auditor de Controle Externo — TCM/SP (semana 17-23/08)',acerto:85,diffMedia:11,relevancia:2,tempoCump:'1h30m',questoes:0,acertos:0},
       {titulo:'Regência Verbal e Nominal (semana 17-23/08)',acerto:77.7,diffMedia:3.7,relevancia:4,tempoCump:'1h',questoes:0,acertos:0},
+      {titulo:'Resolução de questões favoritas — Teste (semana 24-30/08)',acerto:75,diffMedia:1,relevancia:4,tempoCump:'1h30m',questoes:0,acertos:0},
+      {titulo:'Classes de Palavras I (semana 24-30/08)',acerto:85,diffMedia:11,relevancia:4,tempoCump:'1h',questoes:0,acertos:0},
     ]},
   'Dir. Constitucional':{
     importadoEm:'2026-07-09',jornada:27,nivel:'Expert',ferramenta:'TecConcursos',
@@ -2123,6 +2119,7 @@ const GURUJA_SEED={
       {titulo:'Bloco A — Teoria Geral, Eficácia e Aplicabilidade, Direitos e Garantias (semana 10-16/08)',acerto:86.3,diffMedia:3.3,relevancia:4,tempoCump:'2h',questoes:0,acertos:0},
       {titulo:'Resolução de questões favoritas — Teste (semana 10-16/08)',acerto:96,diffMedia:13,relevancia:3,tempoCump:'1h',questoes:0,acertos:0},
       {titulo:'Controle de Constitucionalidade (semana 17-23/08)',acerto:81.8,diffMedia:-1.2,relevancia:4,tempoCump:'2h',questoes:0,acertos:0},
+      {titulo:'Ordem Econômica e Financeira (semana 17-23/08)',acerto:95.4,diffMedia:12.4,relevancia:3,tempoCump:'2h',questoes:0,acertos:0},
     ]},
   'Dir. Administrativo':{
     importadoEm:'2026-07-09',jornada:29,nivel:'Expert',ferramenta:'TecConcursos',
@@ -2149,6 +2146,7 @@ const GURUJA_SEED={
       {titulo:'Resolução de questões favoritas — Teste (semana 10-16/08)',acerto:85,diffMedia:-2,relevancia:3,tempoCump:'1h',questoes:0,acertos:0},
       {titulo:'Licitações Públicas — Parte 1 (semana 17-23/08)',acerto:90,diffMedia:3,relevancia:5,tempoCump:'2h',questoes:0,acertos:0},
       {titulo:'Licitações Públicas — Parte 2 (semana 17-23/08)',acerto:75,diffMedia:-12,relevancia:4,tempoCump:'1h30m',questoes:0,acertos:0},
+      {titulo:'Controle da Administração, Lei Anticorrupção e DL 201/67 — Teste (semana 24-30/08)',acerto:90,diffMedia:3,relevancia:5,tempoCump:'2h',questoes:0,acertos:0},
     ]},
   'Dir. Tributário':{
     importadoEm:'2026-07-09',jornada:27,nivel:'Expert',ferramenta:'TecConcursos FGV',
@@ -2171,6 +2169,7 @@ const GURUJA_SEED={
       {titulo:'Conceito de Tributo e Espécies Tributárias (simulado 13-19/07)',acerto:76,diffMedia:-4,relevancia:5,tempoCump:'2h',questoes:21,acertos:16},
       {titulo:'Resolução de questões favoritas — Teste (semana 10-16/08)',acerto:85.7,diffMedia:5.7,relevancia:5,tempoCump:'1h',questoes:0,acertos:0},
       {titulo:'Toda a ementa do edital — Teste (semana 17-23/08)',acerto:85.7,diffMedia:5.7,relevancia:5,tempoCump:'1h30m',questoes:0,acertos:0},
+      {titulo:'Bloco A — Espécies, Limitações, Impostos, Competência e Repartição — Teste (semana 24-30/08)',acerto:70,diffMedia:-10,relevancia:4,tempoCump:'2h',questoes:0,acertos:0},
     ]},
   'Dir. Financeiro / AFO':{
     importadoEm:'2026-07-09',jornada:35,nivel:'Expert',ferramenta:'TecConcursos',
@@ -2197,6 +2196,8 @@ const GURUJA_SEED={
       {titulo:'Princípios orçamentários, vedações orçamentárias CF/88 (simulado 13-19/07)',acerto:86,diffMedia:5,relevancia:4,tempoCump:'1h',questoes:15,acertos:13},
       {titulo:'Bloco A — Orçamento, leis, princípios, créditos adicionais, emendas (semana 10-16/08)',acerto:83.3,diffMedia:2.3,relevancia:4,tempoCump:'1h30m',questoes:0,acertos:0},
       {titulo:'Resolução de questões favoritas — Teste (semana 10-16/08)',acerto:90.4,diffMedia:9.4,relevancia:3,tempoCump:'1h',questoes:0,acertos:0},
+      {titulo:'LC nº 101/2000 — Capítulo I: Disposições preliminares (semana 17-23/08)',acerto:86.9,diffMedia:5.9,relevancia:5,tempoCump:'1h30m',questoes:0,acertos:0},
+      {titulo:'LC nº 101/2000 — Capítulo IV: Da Despesa pública; Capítulo V (semana 24-30/08)',acerto:90.9,diffMedia:9.9,relevancia:5,tempoCump:'1h',questoes:0,acertos:0},
     ]},
   'Dir. Civil':{
     importadoEm:'2026-07-09',jornada:29,nivel:'Expert',ferramenta:'TecConcursos',
@@ -2233,7 +2234,7 @@ const GURUJA_SEED={
     ]},
   'Ética Pública':{
     importadoEm:'2026-07-09',jornada:0,nivel:'Zero Base',ferramenta:'Gran Cursos',
-    desempenhoHistorico:{acertos:null,questoes:null,pctAcerto:null,tempoMedio:null,reforcoPendente:'ZERO BASE — nivelamento no Bloco 0'},
+    desempenhoHistorico:{acertos:null,questoes:null,pctAcerto:80.9,tempoMedio:null,reforcoPendente:'Código de Ética TCE-SP/Conflito de Interesses (74%) e Compliance/OCDE (73,9%) são os pontos mais fracos — resto da matéria já sólido, não é zero base'},
     assuntos:[
       {titulo:'Ética no Serviço Público — Decreto Estadual 69.328/2025',acerto:85.7,diffMedia:5,relevancia:4,tempoCump:'1h',questoes:25,acertos:22},
       {titulo:'Código de Ética TCE-SP · Lei Conflito de Interesses (12.813/2013) · UNCAC',acerto:74.0,diffMedia:-6,relevancia:4,tempoCump:'1h',questoes:25,acertos:19},
@@ -2242,7 +2243,7 @@ const GURUJA_SEED={
     ]},
   'Legislação TCE-SP':{
     importadoEm:'2026-07-09',jornada:0,nivel:'Zero Base',ferramenta:'Gran Cursos',
-    desempenhoHistorico:{acertos:null,questoes:null,pctAcerto:null,tempoMedio:null,reforcoPendente:'ZERO BASE — nivelamento no Bloco 0'},
+    desempenhoHistorico:{acertos:null,questoes:null,pctAcerto:81.8,tempoMedio:null,reforcoPendente:'Instrução 01/2024 do TCE-SP ainda sem nenhum dado — resto da matéria com base real ~82%, não é mais zero base'},
     assuntos:[
       {titulo:'LC 709/93 — Lei Orgânica do TCE-SP',acerto:86.9,diffMedia:6,relevancia:5,tempoCump:'2h',questoes:30,acertos:26},
       {titulo:'Regimento Interno do TCE-SP + Sistema Controle CF/88',acerto:85.3,diffMedia:5,relevancia:5,tempoCump:'2h',questoes:30,acertos:26},
@@ -2250,6 +2251,8 @@ const GURUJA_SEED={
       {titulo:'Instrução 01/2024 do TCE-SP',acerto:null,diffMedia:0,relevancia:5,tempoCump:'1h',questoes:0,acertos:0},
       {titulo:'Bloco A — Lei Orgânica e Regimento Interno (semana 20-26/07)',acerto:70,diffMedia:-15,relevancia:3,tempoCump:'1h',questoes:0,acertos:0},
       {titulo:'Lei Orgânica do TCE-SP — Questões (semana 20-26/07)',acerto:85,diffMedia:0,relevancia:4,tempoCump:'1h',questoes:12,acertos:10},
+      {titulo:'Lei Orgânica e Regimento Interno do TCE-SP — Questões (semana 17-23/08)',acerto:80,diffMedia:-1.8,relevancia:4,tempoCump:'1h30m',questoes:0,acertos:0},
+      {titulo:'Bloco A — Lei Orgânica e Regimento Interno — Extras (semana 17-23/08)',acerto:85,diffMedia:3.2,relevancia:2,tempoCump:'1h30m',questoes:0,acertos:0},
     ]},
   'Dir. Penal':{
     importadoEm:'2026-07-19',jornada:18,nivel:'Bom',ferramenta:'TecConcursos',
@@ -3164,7 +3167,7 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
         const cor=verde?'#34d399':'#f87171';
         const feitosSet=new Set(feitos);
         // Bloco de HOJE, pela data real — cicloInicio = 13/07/2026 (dia 1)
-        const cicloInicio=new Date(2026,7,25).setHours(0,0,0,0);
+        const cicloInicio=new Date(2026,7,31).setHours(0,0,0,0);
         const hojeMs2=new Date().setHours(0,0,0,0);
         const diaHoje=Math.round((hojeMs2-cicloInicio)/86400000)+1;
         const blocosHoje=CICLO.filter(s=>s.dia===diaHoje&&!feitosSet.has(s.id));
@@ -7848,9 +7851,9 @@ function App(){
         }catch(e){}
       }
     })();
-    // ── Dias de trabalho da semana 25-30/08: Ter(1)/Qui(3)/Sex(4) ──
+    // ── Dias de trabalho da semana 31/08-06/09: Ter(2)/Qui(4)/Sex(5) ──
     // Sem botão na tela ainda pra isso — atualiza direto toda vez que muda de semana.
-    localStorage.setItem('dias_trabalho', JSON.stringify([1,3,4]));
+    localStorage.setItem('dias_trabalho', JSON.stringify([2,4,5]));
     // ── Seed único: volta pro modo escuro — o claro ficou ruim ──
     (()=>{
       const KEY='rity_seed_volta_escuro_20260810';
@@ -7862,9 +7865,9 @@ function App(){
       }
     })();
     const _f=lsGet('feitos',[]);
-    if(lsGet('ciclo_versao','')!=='v42'){
+    if(lsGet('ciclo_versao','')!=='v43'){
       if(_f.length>0)lsSet('feitos',[]);
-      lsSet('cicloNum',24);lsSet('ciclo_versao','v42');
+      lsSet('cicloNum',25);lsSet('ciclo_versao','v43');
     }
     setFeitos(lsGet('feitos',[]));setCicloNum(lsGet('cicloNum',1));setHoras(lsGet('horas',[]));setMit(lsGet('mit',[]));
     const tick=setInterval(()=>setClock(new Date()),1000);
