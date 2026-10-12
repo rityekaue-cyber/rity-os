@@ -9,10 +9,10 @@
 <meta name="application-name" content="RITY OS"/>
 <meta name="apple-mobile-web-app-title" content="RITY OS"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<link rel="manifest" href="data:application/json,{%22name%22:%22RITY%20OS%20%C2%B7%20TCE-SP%22,%22short_name%22:%22RITY%20OS%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22%23f7f2e6%22,%22theme_color%22:%22%23f7f2e6%22,%22orientation%22:%22portrait%22}"/>
+<link rel="manifest" href="data:application/json,{%22name%22:%22RITY%20OS%20%C2%B7%20SEFAZ-SC%22,%22short_name%22:%22RITY%20OS%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22%23f7f2e6%22,%22theme_color%22:%22%23f7f2e6%22,%22orientation%22:%22portrait%22}"/>
 <!-- Ícone Apple (inline SVG como data URI) -->
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%23050a14'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-size='300' font-family='serif'%3E⚖%3C/text%3E%3Ctext x='50%25' y='88%25' dominant-baseline='middle' text-anchor='middle' font-size='72' font-family='monospace' fill='%23fbbf24' font-weight='bold'%3ERTY OS%3C/text%3E%3C/svg%3E"/>
-<title>RITY OS · TCE-SP 2026</title>
+<title>RITY OS · SEFAZ-SC 2026</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Mono:wght@400;500;700&family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -242,53 +242,127 @@ const _w=console.warn;console.warn=(...a)=>{if(String(a[0]||'').includes('Babel'
 const{useState,useEffect,useRef,useMemo,useCallback}=React;
 
 // ─── CONSTANTES ───────────────────────────────────────────────
-const CICLO=[
-  // ── CICLO — Meta 8, 31/08 a 06/09/2026 (7 dias) ──────────────────
-  // 14 metas, 2/dia. Priorização: relevância do Guruja (★) × dificuldade
-  // real dela (1-3, ancorada em dado já carregado no app) — critério
-  // pedido nesta sessão, diferente do ciclo anterior (peso do gate).
-  // Cortado 1 item redundante: "Recuperação Judicial II" (Teoria, atrasado)
-  // — supérfluo agora que a versão em Questões apareceu na Meta 8 e vale
-  // mais (gera nota real, não só leitura).
-  // DIA 1 — Seg 31/08 · livre
-  {id:1,  dia:1, mat:'Discursivas',             ic:'✍️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Questão 11 — Concurso Público e Preterição — Inédito'},
-  {id:2,  dia:1, mat:'Dir. Constitucional',     ic:'📜', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teste',    ferramenta:'Guruja', conteudo:'Bloco B — Poder Legislativo, Poder Executivo e Poder Judiciário'},
-  // DIA 2 — Ter 01/09 · trabalho
-  {id:3,  dia:2, mat:'Dir. Tributário',         ic:'💰', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'IBS e CBS'},
-  {id:4,  dia:2, mat:'Discursivas',             ic:'✍️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Questão 13 — Improbidade Administrativa — Inédita — Vunesp'},
-  // DIA 3 — Qua 02/09 · livre
-  {id:5,  dia:3, mat:'Dir. Constitucional',     ic:'📜', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teste',    ferramenta:'Guruja', conteudo:'Toda a Ementa do Edital'},
-  {id:6,  dia:3, mat:'Direito Empresarial (Comercial)',ic:'🏢',cor:'#f87171',tag:'🔴 DIFÍCIL', h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Recuperação Judicial, Extrajudicial e Falência'},
-  // DIA 4 — Qui 03/09 · trabalho
-  {id:7,  dia:4, mat:'Direito Empresarial (Comercial)',ic:'🏢',cor:'#f87171',tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Lei Complementar nº 123 de 2006'},
-  {id:8,  dia:4, mat:'Ética Pública',           ic:'🤝', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Convenção da ONU contra a Corrupção e Princípios de integridade'},
-  // DIA 5 — Sex 04/09 · trabalho
-  {id:9,  dia:5, mat:'Dir. Financeiro / AFO',   ic:'📈', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Toda Ementa'},
-  {id:10, dia:5, mat:'Discursivas',             ic:'✍️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Teoria',   ferramenta:'Guruja', conteudo:'Questões Anteriores — Direito Civil: Obrigações, Pessoas Jurídicas'},
-  // DIA 6 — Sáb 05/09 · livre
-  {id:11, dia:6, mat:'Dir. Administrativo',     ic:'🏛️', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Teste',    ferramenta:'Guruja', conteudo:'Simulado Parcial I'},
-  {id:12, dia:6, mat:'Legislação TCE-SP',       ic:'📖', cor:'#f87171', tag:'🔴 DIFÍCIL', h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Instruções nº 1/2024 do TCE-SP'},
-  // DIA 7 — Dom 06/09 · livre
-  {id:13, dia:7, mat:'Raciocínio Lógico',       ic:'🔢', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Bloco A — Estruturas e Equivalências Lógicas, Lógica de Argumentação'},
-  {id:14, dia:7, mat:'Português',               ic:'📝', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:0.75, tipo:'Questões', ferramenta:'Guruja', conteudo:'Resolução de prova: Auditor Fiscal da Receita Municipal'},
+const CICLO_INI_MS=new Date(2026,9,12).setHours(0,0,0,0); // Meta 1 SEFAZ-SC — dia 1 = seg 12/10/2026
+// ── CICLO — Meta 1 do Guruja (trilha SEFAZ-SC) · 31 atividades · 7 dias (12/10 a 18/10/2026) ──
+// Regras desta meta (combinadas com a Ritchely): máximo 1h por atividade · dia de trabalho = 4 atividades,
+// dia livre = 5. A distribuição por dia NÃO é fixa: é recalculada a cada abertura do app a partir do que
+// já foi feito, dos dias de trabalho (botões na aba Estudo › Ciclo) e dos dias que restam na meta.
+// `est` = estrelas de relevância mostradas pelo Guruja (lidas do print — podem ter erro de leitura).
+const CICLO_BASE=[
+  {id:1,  mat:'Orientações Gerais',          ic:'🧭', cor:'#94a3b8', tag:'🟢 LEVE',    h:0.33, tipo:'Teoria',   ferramenta:'Guruja', est:5, conteudo:'Orientações Gerais sobre a Meta 1'},
+  {id:2,  mat:'Conhecimentos Regionais de SC',ic:'🗺️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:1, tipo:'Teoria',   ferramenta:'Guruja', est:3, conteudo:'Geografia de SC — população, produção agropecuária, exportação, desempenho'},
+  {id:3,  mat:'Dir. Financeiro / AFO',       ic:'📈', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:1, tipo:'Questões', ferramenta:'Guruja', est:4, conteudo:'PPA e LDO'},
+  {id:4,  mat:'Ética Pública',               ic:'🤝', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:1, tipo:'Lei Seca', ferramenta:'Guruja', est:3, conteudo:'Código de Ética e Disciplina dos Servidores Fazendários de SC'},
+  {id:5,  mat:'Dir. Civil',                  ic:'📘', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:1, tipo:'Questões', ferramenta:'Guruja', est:5, conteudo:'LINDB — Lei de Introdução às Normas do Direito Brasileiro'},
+  {id:6,  mat:'Dir. Penal',                  ic:'⚖️', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:1, tipo:'Questões', ferramenta:'Guruja', est:5, conteudo:'Princípios e Crimes contra a Fé Pública'},
+  {id:7,  mat:'Dir. Financeiro / AFO',       ic:'📈', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:1, tipo:'Questões', ferramenta:'Guruja', est:4, conteudo:'LOA, emendas, ciclo orçamentário, DREM'},
+  {id:8,  mat:'Conhecimentos Regionais de SC',ic:'🗺️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:1, tipo:'Teoria',   ferramenta:'Guruja', est:3, conteudo:'Desempenho da agropecuária e do agronegócio de SC (parte 1)'},
+  {id:9,  mat:'Português',                   ic:'📝', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:1, tipo:'Questões', ferramenta:'Guruja', est:4, conteudo:'Interpretação de textos e Redação Oficial'},
+  {id:10, mat:'Ciência e Análise de Dados',  ic:'📊', cor:'#f87171', tag:'🔴 DIFÍCIL', h:1, tipo:'Questões', ferramenta:'Guruja', est:4, conteudo:'LGPD — Lei 13.709/2018'},
+  {id:11, mat:'Ética Pública',               ic:'🤝', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:1, tipo:'Questões', ferramenta:'Guruja', est:2, conteudo:'Decreto 1.171/1994'},
+  {id:12, mat:'Reforma Tributária',          ic:'🧾', cor:'#f87171', tag:'🔴 DIFÍCIL', h:1, tipo:'Questões', ferramenta:'Guruja', est:4, conteudo:'Aspectos gerais e novos princípios'},
+  {id:13, mat:'Dir. Previdenciário',         ic:'🛡️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:1, tipo:'Questões', ferramenta:'Guruja', est:5, conteudo:'RGPS: segurados e benefícios'},
+  {id:14, mat:'Conhecimentos Regionais de SC',ic:'🗺️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:1, tipo:'Teoria',   ferramenta:'Guruja', est:3, conteudo:'Desempenho da agropecuária e do agronegócio de SC (parte 2)'},
+  {id:15, mat:'Dir. Civil',                  ic:'📘', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:1, tipo:'Questões', ferramenta:'Guruja', est:5, conteudo:'Pessoas Naturais'},
+  {id:16, mat:'Dir. Penal',                  ic:'⚖️', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:1, tipo:'Questões', ferramenta:'Guruja', est:4, conteudo:'Crimes contra a Administração Pública — Parte I'},
+  {id:17, mat:'Dir. Financeiro / AFO',       ic:'📈', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:1, tipo:'Lei Seca', ferramenta:'Guruja', est:4, conteudo:'LC 898/2026 — execução de emendas parlamentares em SC'},
+  {id:18, mat:'Dir. Constitucional',         ic:'📜', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:1, tipo:'Questões', ferramenta:'Guruja', est:3, conteudo:'Constituição do Estado de Santa Catarina'},
+  {id:19, mat:'Dir. Administrativo',         ic:'🏛️', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:1, tipo:'Questões', ferramenta:'Guruja', est:3, conteudo:'LC 741/2019 (parte 1)'},
+  {id:20, mat:'Conhecimentos Regionais de SC',ic:'🗺️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:1, tipo:'Teoria',   ferramenta:'Guruja', est:3, conteudo:'Símbolos de SC, clima e notícias recentes'},
+  {id:21, mat:'Português',                   ic:'📝', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:1, tipo:'Questões', ferramenta:'Guruja', est:3, conteudo:'Resolução de prova: Auditor Fiscal da Fazenda Estadual (SEF/SC)'},
+  {id:22, mat:'Ciência e Análise de Dados',  ic:'📊', cor:'#f87171', tag:'🔴 DIFÍCIL', h:1, tipo:'Questões', ferramenta:'Guruja', est:4, conteudo:'Conceitos fundamentais de Ciência de Dados — dados estruturados e não estruturados'},
+  {id:23, mat:'Ética Pública',               ic:'🤝', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:1, tipo:'Questões', ferramenta:'Guruja', est:2, conteudo:'Ética no setor público'},
+  {id:24, mat:'Reforma Tributária',          ic:'🧾', cor:'#f87171', tag:'🔴 DIFÍCIL', h:1, tipo:'Questões', ferramenta:'Guruja', est:4, conteudo:'IBS, CBS e Comitê Gestor'},
+  {id:25, mat:'Dir. Previdenciário',         ic:'🛡️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:1, tipo:'Questões', ferramenta:'Guruja', est:5, conteudo:'RGPS: dependentes e seus benefícios'},
+  {id:26, mat:'Conhecimentos Regionais de SC',ic:'🗺️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:1, tipo:'Questões', ferramenta:'Guruja', est:3, conteudo:'Conhecimentos de SC'},
+  {id:27, mat:'Dir. Civil',                  ic:'📘', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:1, tipo:'Questões', ferramenta:'Guruja', est:4, conteudo:'Pessoas Jurídicas e Domicílio'},
+  {id:28, mat:'Dir. Penal',                  ic:'⚖️', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:1, tipo:'Questões', ferramenta:'Guruja', est:5, conteudo:'Crimes contra a Administração Pública — Parte II'},
+  {id:29, mat:'Dir. Financeiro / AFO',       ic:'📈', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:1, tipo:'Questões', ferramenta:'Guruja', est:4, conteudo:'Lei 7.541/1988 (Lei das taxas)'},
+  {id:30, mat:'Dir. Constitucional',         ic:'📜', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:1, tipo:'Questões', ferramenta:'Guruja', est:5, conteudo:'Bloco A — Direitos e Garantias Fundamentais; Organização do Estado'},
+  {id:31, mat:'Dir. Administrativo',         ic:'🏛️', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:1, tipo:'Questões', ferramenta:'Guruja', est:3, conteudo:'LC 741/2019 (parte 2)'},
 ];
+
+// Distribui as atividades pelos dias (1..7 = seg..dom, a partir de CICLO_INI_MS).
+// Concluídas ficam no dia em que foram feitas; as pendentes são redistribuídas dos dias que restam em
+// proporção à capacidade de cada um (trabalho = 4, livre = 5), descontando o que já foi feito hoje.
+function distribuirCiclo(base,feitos,feitosDt,diasTrab,hojeMs){
+  const done=new Set(feitos);
+  const diaHoje=Math.min(7,Math.max(1,Math.round((hojeMs-CICLO_INI_MS)/86400000)+1));
+  const cap=d=>diasTrab.includes(d%7)?4:5;
+  const dia=new Map();
+  let doneToday=0;
+  base.forEach(i=>{
+    if(!done.has(i.id))return;
+    const t=feitosDt&&feitosDt[i.id];
+    let d=t?Math.round((t-CICLO_INI_MS)/86400000)+1:diaHoje;
+    d=Math.min(7,Math.max(1,d));
+    dia.set(i.id,d);
+    if(d===diaHoje)doneToday++;
+  });
+  const pend=base.filter(i=>!done.has(i.id));
+  const dias=[];for(let d=diaHoje;d<=7;d++)dias.push(d);
+  const caps=dias.map(d=>Math.max(0,cap(d)-(d===diaHoje?doneToday:0)));
+  const tot=caps.reduce((s,v)=>s+v,0);
+  const counts=caps.map(()=>0);
+  if(pend.length>0){
+    if(tot>0){
+      const raw=caps.map(c=>pend.length*c/tot);
+      raw.forEach((r,i)=>{counts[i]=Math.floor(r);});
+      const left=pend.length-counts.reduce((s,v)=>s+v,0);
+      const ord=raw.map((r,i)=>({i,f:r-Math.floor(r),c:caps[i]})).filter(o=>o.c>0).sort((a,b)=>b.f-a.f||a.i-b.i);
+      for(let k=0;k<left;k++)counts[ord[k%ord.length].i]++;
+    }else counts[counts.length-1]=pend.length;
+  }
+  let p=0;
+  counts.forEach((n,i)=>{for(let k=0;k<n;k++){dia.set(pend[p].id,dias[i]);p++;}});
+  return base.map(i=>({...i,dia:dia.get(i.id)||diaHoje}));
+}
+
+const CICLO=(()=>{
+  const lsj=(k,d)=>{try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v);}catch(e){return d;}};
+  const hojeMs=new Date().setHours(0,0,0,0);
+  // Migração única para a trilha SEFAZ-SC: zera o ciclo antigo (Meta 8 do TCE-SP) e marca a atividade 1 (já feita no Guruja).
+  try{
+    if(lsj('ciclo_versao','')!=='v44'){
+      localStorage.setItem('feitos',JSON.stringify([1]));
+      localStorage.setItem('feitos_dt',JSON.stringify({1:hojeMs}));
+      localStorage.setItem('cicloNum',JSON.stringify(1));
+      localStorage.setItem('ciclo_versao',JSON.stringify('v44'));
+      if(localStorage.getItem('dias_trabalho')===null)localStorage.setItem('dias_trabalho',JSON.stringify([2,4,5]));
+    }
+  }catch(e){}
+  let dw=lsj('dias_trabalho',[2,4,5]);
+  if(!Array.isArray(dw)||!dw.length)dw=[2,4,5];
+  return distribuirCiclo(CICLO_BASE,lsj('feitos',[]),lsj('feitos_dt',{}),dw,hojeMs);
+})();
 const N=CICLO.length;
+const CICLO_H=CICLO.reduce((s,c)=>s+c.h,0);
 
 // ── PAINEL ESTRATÉGICO ───────────────────────────────────────
 
 const CONCURSOS_ALVO=[
+  {
+    codigo:'SEFAZ-SC',prioridade:'principal',status:'Prova 22/11/2026 · Florianópolis · inscrição confirmada',
+    banca:'FCC',vagas:8,cargo:'Auditor Estadual de Finanças Públicas — Direito (E05)',salario:25337.61,edital:'01/2026',
+    estrutura:'180 questões em dia único: manhã 80 Gerais (peso 1, 4h) + tarde 100 Específicos (peso 2, 5h) · sem discursiva',
+    alerta:'Corte = soma das notas padronizadas ≥ 150 · desempate: maior nota em Específicos · resultado final previsto 14/01/2027'
+  },
+  {
+    codigo:'TCE-SP',prioridade:'finalizado',status:'Prova realizada em 11/10/2026 — aguardando gabarito e resultado',
+    banca:'Vunesp',alerta:'Quando o gabarito sair, conferir contra o que você marcou'
+  },
+  {
+    codigo:'PGM Jundiaí',prioridade:'estrategico',status:'Prova 01/11/2026 — ir "a frio", sem preparo específico',
+    banca:'Vunesp',alerta:'Usar como treino de resistência. Não estudar o que não cai na SEFAZ-SC (Processo Civil, Trabalho, Difusos)'
+  },
   {
     codigo:'TCE-MG',prioridade:'finalizado',status:'Heteroidentificação concluída — nomeação possível 2026',
     banca:'Cebraspe',vagas:'aprovada',salario:null,edital:'finalizado',
     alerta:'Monitorar convocação'
   },
   {
-    codigo:'TCE-SP',prioridade:'principal',status:'Edital 001/2026 publicado 03/07 · Inscrições 13/07 a 11/08',
-    banca:'Vunesp',vagas:10,cargo:'Auditor de Controle Externo — DIPE — Especialidade Direito',salario:20940.20,edital:'001/2026',
-    estrutura:'80 questões: 20 Gerais (Português+RL+Ética+Legislação) + 60 Específicas (6 blocos de Direito)',
-    corteMinimoGerais:'12/20',corteMinimoespecificas:'36/60',
-    discursiva:'Prova Escrita — Estudo de Caso, 2 questões, 40 pontos, mínimo 24',
-    alerta:'Prova 11/10/2026 · Sem histórico de edição anterior — cargo novo criado pela LC 1.423/2025'
+    codigo:'TCE-RJ',prioridade:'estrategico',status:'Alvo de longo prazo — sem edital/banca definidos',
+    banca:'a definir',alerta:'Matérias correlatas à SEFAZ-SC e ao TCE-SP; minuta de edital já lida'
   },
   {
     codigo:'ISS-Niterói',prioridade:'estrategico',status:'Edital previsto 2º sem/2026',
@@ -297,79 +371,71 @@ const CONCURSOS_ALVO=[
     salarioObservacao:'Maior salário dos alvos'
   },
   {
-    codigo:'TCE-SC',prioridade:'descartado',status:'Descartado',
-    banca:'FGV',alerta:'Descartado — foco nos outros'
+    codigo:'PGM Curitiba',prioridade:'descartado',status:'Descartado — não vai fazer',banca:'—',alerta:'Descartado'
   },
 ];
 
-const LEGISLACAO_TCE_SP=[
-  {codigo:'LC 709/1993',nome:'Lei Orgânica do TCE-SP',prioridade:1,anki:true,obs:'Base do concurso'},
-  {codigo:'Reg. Interno TCE-SP',nome:'Regimento Interno do TCE-SP',prioridade:1,anki:true,obs:'Procedimentos e competências'},
-  {codigo:'CF/88 arts.70-75',nome:'Constituição Federal — Controle Externo',prioridade:1,anki:true,obs:'Fundamento constitucional'},
-  {codigo:'Instrução 01/2024',nome:'Instrução TCE-SP e normas correlatas',prioridade:2,anki:true,obs:'Normas de procedimento'},
-  {codigo:'Lei 4.320/64',nome:'Normas Gerais de Direito Financeiro',prioridade:2,anki:true,obs:'Orçamento público'},
-  {codigo:'LC 101/2000',nome:'LRF — Lei de Responsabilidade Fiscal',prioridade:2,anki:true,obs:'Já no ciclo — reforçar lei seca'},
+const LEGISLACAO_ALVO=[
+  {codigo:'CE/SC',nome:'Constituição do Estado de Santa Catarina',prioridade:1},
+  {codigo:'LC 741/2019',nome:'Estrutura organizacional do Estado de SC',prioridade:1},
+  {codigo:'Lei 6.745/1985',nome:'Estatuto do Servidor Público Civil de SC',prioridade:1},
+  {codigo:'Dec. 2.094/2022',nome:'Regimento Interno da SEF/SC',prioridade:1},
+  {codigo:'LC 898/2026',nome:'Execução de emendas parlamentares em SC',prioridade:1},
+  {codigo:'LC 412/2008',nome:'RPPS/SC',prioridade:1},
+  {codigo:'EC 103/2019',nome:'Reforma da Previdência',prioridade:1},
+  {codigo:'Lei 7.541/1988',nome:'Lei das taxas (SC)',prioridade:2},
+  {codigo:'Lei 4.320/64 · LC 101/2000',nome:'Orçamento público · LRF',prioridade:2},
+  {codigo:'Lei 8.137/90 · Lei 13.869/19',nome:'Crimes contra a ordem tributária · Abuso de autoridade',prioridade:2},
+  {codigo:'Lei 14.133/21 · 8.429/92 · 12.846/13',nome:'Licitações · Improbidade · Anticorrupção',prioridade:2},
+  {codigo:'Lei 12.527/11 · Lei 13.709/18',nome:'LAI · LGPD',prioridade:2},
 ];
 
-const PROTOCOLO_DISCURSIVA={
-  diagnostico:'Carro-chefe. Gate eliminatório independente (mínimo 24/40). No TCE-MG a discursiva foi o ponto mais frágil (10,60 vs 15,86 média do top-20) — tratar como prioridade de treino ativo, não manutenção.',
-  treinos:[
-    {tipo:'Rotação de técnicas (aba Discursiva)',frequencia:'6x/semana — Sáb livre',formato:'Seg Blurting · Ter Esqueleto · Qua Simulado · Qui Micro-parágrafo · Sex Feynman · Dom Revisão',recurso:'Provas anteriores TCE-SP / TCE-MG / TCE-RS'},
-    {tipo:'Correção externa',frequencia:'Idealmente 1x/semana',formato:'Professor/mentoria — quebrar teto da autocorreção'},
-    {tipo:'Revisão com gabarito comentado',frequencia:'Após cada treino',formato:'Identificar padrão de perda de ponto'},
-  ]
-};
-
 const CRONOGRAMA_MACRO=[
-  {periodo:'JUL/2026 — Diagnóstico (05→19/07)',eventos:[
-    {data:'05-19/07',acao:'Baseline RL/Ética/Legislação TCE-SP + causa-raiz da discursiva',tipo:'estudo'},
-    {data:'03/07',acao:'📋 Edital 001/2026 publicado — DIPE Direito, 10 vagas, R$20.940,20',tipo:'edital',alerta:'alto'},
-    {data:'13/07-11/08',acao:'📋 Inscrições abertas — Vunesp',tipo:'edital',alerta:'alto'},
-    {data:'20-22/07',acao:'Preparação — ajuste de rotina, pauta do Bloco 0',tipo:'estudo'},
+  {periodo:'OUT/2026 — Metas 1 a 3 do Guruja',eventos:[
+    {data:'12-18/10',acao:'Meta 1 — 31 atividades em 7 dias (máx. 1h cada)',tipo:'estudo'},
+    {data:'19/10-01/11',acao:'Metas 2 e 3 — Previdenciário e legislação de SC sempre antes de Gerais',tipo:'estudo'},
+    {data:'01/11',acao:'🧪 PGM Jundiaí — "a frio", treino de resistência',tipo:'prova',alerta:'alto'},
   ]},
-  {periodo:'JUL-SET/2026 — Blocos de férias + Pontes',eventos:[
-    {data:'23-31/07',acao:'Bloco 0: sprint nivelamento — Penal, Legislação TCE-SP, Ética, Civil residual',tipo:'estudo'},
-    {data:'01-23/08',acao:'Ponte 1 — 1 simulado VUNESP/semana',tipo:'estudo'},
-    {data:'24/08-04/09',acao:'Bloco 1: 2 simulados, intensificação por erro',tipo:'estudo'},
-    {data:'05-20/09',acao:'Ponte 2 — 2-3 simulados/semana',tipo:'estudo'},
-    {data:'21/09-01/10',acao:'Bloco 2: ajuste fino, últimos simulados',tipo:'estudo'},
+  {periodo:'NOV/2026 — Reta final',eventos:[
+    {data:'02-08/11',acao:'Meta 4 — núcleo de Estatística/Mat. Financeira só se sobrar tempo',tipo:'estudo'},
+    {data:'13/11',acao:'📋 Edital de Convocação — confirmar local da prova',tipo:'edital',alerta:'alto'},
+    {data:'~14-15/11',acao:'Simulado completo de 180q em dia único (80 Gerais + 100 Específicos), cronometrado',tipo:'estudo'},
+    {data:'16-19/11',acao:'Revisão por erro — Específicos primeiro',tipo:'estudo'},
+    {data:'20-21/11',acao:'Viagem a Florianópolis + descanso (sem conteúdo novo)',tipo:'descanso'},
+    {data:'22/11',acao:'📋 PROVA SEFAZ-SC — manhã Gerais (4h) · tarde Específicos (5h)',tipo:'prova',alerta:'alto'},
   ]},
-  {periodo:'OUT/2026 — Reta final',eventos:[
-    {data:'02-06/10',acao:'Transição — manutenção leve, zero conteúdo novo',tipo:'estudo'},
-    {data:'07-10/10',acao:'Taper — descanso + logística da prova',tipo:'descanso'},
-    {data:'11/10',acao:'📋 PROVA TCE-SP — objetivo principal',tipo:'prova',alerta:'alto'},
-  ]},
-  {periodo:'2º SEM/2026 — Monitoramento paralelo',eventos:[
-    {data:'2sem',acao:'Edital ISS Niterói — quando sair, 3-4 semanas para MATFI + RLOG + tributário municipal',tipo:'edital'},
+  {periodo:'DEPOIS DA PROVA',eventos:[
+    {data:'23/11',acao:'Gabarito a partir das 17h · recursos 24-25/11',tipo:'edital'},
+    {data:'04/01/2027',acao:'Resultado preliminar · resultado final 14/01/2027',tipo:'edital'},
   ]},
 ];
 
 const REGRAS_INEGOCIAVEIS=[
-  {regra:'Anki + TEC todo dia — sem negociação',categoria:'diario'},
-  {regra:'Discursiva 6x/semana por rotação de técnicas — Sábado livre de escrita',categoria:'discursiva'},
-  {regra:'Nunca mesma disciplina em dias consecutivos',categoria:'ciclo'},
-  {regra:'Sem Inglês, sem Auditoria Governamental — fora do escopo Direito/DIPE',categoria:'escopo'},
-  {regra:'Hibernação (Adm.Pública/Contabilidade/Proc.Civil/TI): máx. 2h/semana, só tempo morto',categoria:'escopo'},
-  {regra:'ISS Niterói: quando edital sair, 3-4 semanas para MATFI e RLOG',categoria:'futuro'},
+  {regra:'Anki + questões todo dia — sem negociação',categoria:'diario'},
+  {regra:'Máximo 1 hora por atividade do Guruja — passou, vira para a próxima',categoria:'ciclo'},
+  {regra:'Específicos (peso 2) nunca são cortados antes de Gerais — veja a aba ⚖️ Decisão',categoria:'ciclo'},
+  {regra:'Fora do edital SEFAZ-SC (Direito): Discursiva, Empresarial, Tributário isolado, Processo Civil, Trabalho, Legislação TCE-SP',categoria:'escopo'},
+  {regra:'PGM Jundiaí (01/11): ir a frio, sem conteúdo extra',categoria:'escopo'},
+  {regra:'FCC não desconta erro: nunca deixar questão em branco',categoria:'prova'},
 ];
 
 // Função auxiliar: retorna alertas ativos baseados na data atual
 function getAlertasAtivos(){
   const hoje=new Date().toISOString().split('T')[0];
   const alertas=[];
-  // Fim de ciclo — avisa no último dia e depois dele
+  // Fim da meta — avisa no último dia e depois dele
   try{
-    const cicloIni=new Date(2026,7,31).setHours(0,0,0,0);
+    const cicloIni=CICLO_INI_MS;
     const diaCiclo=Math.round((new Date().setHours(0,0,0,0)-cicloIni)/86400000)+1;
     const maxDia=Math.max(...CICLO.map(s=>s.dia));
-    if(diaCiclo===maxDia) alertas.push({tipo:'ciclo',msg:'📆 Último dia do ciclo — montar o ciclo da próxima semana',cor:'#fb923c'});
-    else if(diaCiclo>maxDia) alertas.push({tipo:'ciclo',msg:`⚠️ Ciclo encerrado há ${diaCiclo-maxDia} dia(s) — montar ciclo novo`,cor:'#f87171'});
+    if(diaCiclo===maxDia) alertas.push({tipo:'ciclo',msg:'📆 Último dia da meta — mande a próxima meta do Guruja para montar o ciclo',cor:'#fb923c'});
+    else if(diaCiclo>maxDia) alertas.push({tipo:'ciclo',msg:`⚠️ Meta encerrada há ${diaCiclo-maxDia} dia(s) — mande a meta nova do Guruja`,cor:'#f87171'});
   }catch(e){}
-  if(hoje>='2026-07-13'&&hoje<='2026-08-11') alertas.push({tipo:'inscricao',msg:'📋 Inscrições TCE-SP abertas até 11/08 — R$95,00',cor:'#60a5fa'});
-  if(hoje>='2026-07-20'&&hoje<'2026-07-23') alertas.push({tipo:'prep',msg:'🔧 Preparação — ajustar rotina pro Bloco 0 (23-31/07)',cor:'#a78bfa'});
-  if(hoje>='2026-07-23'&&hoje<='2026-07-31') alertas.push({tipo:'bloco0',msg:'🎯 Bloco 0 ativo — nivelamento Penal/Legislação/Ética/Civil',cor:'#fb923c'});
-  const diasProva=Math.ceil((new Date('2026-10-11')-new Date(hoje))/86400000);
-  if(diasProva>0) alertas.push({tipo:'prova',msg:`📋 TCE-SP · Prova 11/10/2026 · ${diasProva} dias restantes`,cor:'#fbbf24'});
+  if(hoje>='2026-10-12'&&hoje<='2026-11-01') alertas.push({tipo:'jundiai',msg:'🧪 PGM Jundiaí 01/11 — vá "a frio" (treino de resistência), sem estudar conteúdo extra',cor:'#a78bfa'});
+  if(hoje>='2026-10-26'&&hoje<='2026-11-15') alertas.push({tipo:'logistica',msg:'✈️ Prova em Florianópolis: passagem e hospedagem para 21/11',cor:'#60a5fa'});
+  if(hoje>='2026-11-13'&&hoje<='2026-11-22') alertas.push({tipo:'convocacao',msg:'📋 Edital de Convocação (13/11) — confirme local e horário da prova',cor:'#fb923c'});
+  const diasProva=Math.ceil((new Date('2026-11-22T00:00:00')-new Date(hoje+'T00:00:00'))/86400000);
+  if(diasProva>0) alertas.push({tipo:'prova',msg:`📋 SEFAZ-SC · Prova 22/11/2026 (Florianópolis) · ${diasProva} dias restantes`,cor:'#fbbf24'});
   return alertas;
 }
 
@@ -420,20 +486,26 @@ function deveRevisaoProfunda(totalBlocosFoco){
 // prioridade = estrelas × déficit × jornada
 const MATRIZ_MEIRELLES={
   // ── TCE-SP — CARRO-CHEFE (bloco ativo) ──
-  'Discursivas':           {prioridade:'urgente', estrelas:5, pctAcerto:null, jornada:36, nivel:'Expert',   ferramenta:'Papel + caneta',    motivo:'🔴 Habilidade estrutural — 3 sessões/semana fixas'},
-  'Português':             {prioridade:'urgente', estrelas:5, pctAcerto:74,   jornada:28, nivel:'Expert',   ferramenta:'TecConcursos VUNESP',motivo:'🔴 3 pontos fracos críticos: Interpretação 64% · Semântica 64% · Ortografia 64%'},
+  'Discursivas':           {prioridade:'hibernacao', estrelas:1,pctAcerto:null, jornada:0, nivel:'—', ferramenta:'—', motivo:'⚫ SEFAZ-SC não tem discursiva — fora do escopo'},
+  'Português':             {prioridade:'urgente', estrelas:5, pctAcerto:85.6,   jornada:28, nivel:'Expert',   ferramenta:'TecConcursos VUNESP',motivo:'🔴 Agregado real 85,6% (299q) mascara 3 pontos fracos críticos parados: Interpretação 64% · Semântica 64% · Ortografia 64%'},
   // ── MANUTENÇÃO (Anki/Guruja apenas) ──
-  'Dir. Administrativo':   {prioridade:'manutencao',estrelas:4,pctAcerto:87,  jornada:29, nivel:'Expert',   ferramenta:'TecConcursos',      motivo:'🟡 87% — manutenção pura, sem bloco novo'},
-  'Dir. Constitucional':   {prioridade:'manutencao',estrelas:4,pctAcerto:83,  jornada:27, nivel:'Expert',   ferramenta:'TecConcursos',      motivo:'🟡 83% — inclui Controle Externo/TCs'},
-  'Dir. Tributário':       {prioridade:'manutencao',estrelas:4,pctAcerto:80,  jornada:27, nivel:'Expert',   ferramenta:'TecConcursos FGV',  motivo:'🟡 80% — manutenção, 4 pontos fracos residuais'},
-  'Dir. Financeiro / AFO': {prioridade:'manutencao',estrelas:4,pctAcerto:81,  jornada:35, nivel:'Expert',   ferramenta:'TecConcursos',      motivo:'🟡 81% — saiu do carro-chefe, exceto Precatórios/Receita/MatFi'},
-  'Dir. Civil':            {prioridade:'manutencao',estrelas:3,pctAcerto:85,  jornada:29, nivel:'Expert',   ferramenta:'TecConcursos',      motivo:'🟡 85% — exceto Obrigações Pt1 70%, Contratos Geral 69% e Atos Unilaterais/Resp. Civil 64% (novo, 10-16/08)'},
+  'Dir. Administrativo':   {prioridade:'manutencao',estrelas:4,pctAcerto:85.3,  jornada:29, nivel:'Expert',   ferramenta:'TecConcursos',      motivo:'🟢 85,3% (389q) — 7,3pp acima da média, maior vantagem relativa do sistema'},
+  'Dir. Constitucional':   {prioridade:'manutencao',estrelas:4,pctAcerto:88.3,  jornada:27, nivel:'Expert',   ferramenta:'TecConcursos',      motivo:'🟢 88,3% (361q) — 5,7pp acima da média, inclui Controle Externo/TCs'},
+  'Dir. Tributário':       {prioridade:'hibernacao', estrelas:1,pctAcerto:84.6, jornada:27, nivel:'Expert', ferramenta:'TecConcursos FGV', motivo:'⚫ Tributário isolado não cai na SEFAZ-SC (só Reforma Tributária, em Financeiro)'},
+  'Dir. Financeiro / AFO': {prioridade:'manutencao',estrelas:4,pctAcerto:87.0,  jornada:35, nivel:'Expert',   ferramenta:'TecConcursos',      motivo:'🟡 87,0% (316q) — 2,8pp acima da média, exceto Precatórios/Receita/MatFi'},
+  'Dir. Civil':            {prioridade:'manutencao',estrelas:3,pctAcerto:78.0,  jornada:29, nivel:'Expert',   ferramenta:'TecConcursos',      motivo:'🟡 78,0% (291q) — só 2,6pp acima da média, a menor folga das matérias fortes. Obrigações Pt1 70%, Contratos Geral 69%, Atos Unilaterais 64%'},
   // ── NIVELAMENTO (só Bloco 0) ──
-  'Dir. Penal':            {prioridade:'manutencao',estrelas:3,pctAcerto:89,  jornada:18, nivel:'Bom',      ferramenta:'TecConcursos',      motivo:'🟢 89% — primeiro dado real (simulado 13-19/07), bloco pequeno e fechado'},
-  'Legislação TCE-SP':     {prioridade:'manutencao',estrelas:3,pctAcerto:81.8,jornada:6,  nivel:'Intermediário',ferramenta:'Gran Cursos',       motivo:'🟡 81,8% — só Instrução 01/2024 do TCE-SP segue sem dado nenhum, resto já testado com questão real'},
-  'Ética Pública':         {prioridade:'manutencao',estrelas:3,pctAcerto:80.9,jornada:4,  nivel:'Intermediário',ferramenta:'Gran Cursos',       motivo:'🟡 80,9% — não é mais zero base; Conflito de Interesses (74%) e OCDE (73,9%) são os pontos mais fracos'},
-  'Raciocínio Lógico':     {prioridade:'urgente',   estrelas:5,pctAcerto:76,  jornada:17, nivel:'Aprendiz', ferramenta:'Gran Cursos',       motivo:'🔴 76% — primeiro dado real (simulado 13-19/07). Pior nota confirmada da semana, gate Gerais apertado'},
-  'Direito Empresarial (Comercial)':{prioridade:'urgente',estrelas:4,pctAcerto:76.7,jornada:3,  nivel:'Diagnóstico',ferramenta:'Guruja',           motivo:'🔴 76,7% (46/60) — 3 atividades, todas abaixo da média da plataforma. Recuperação Judicial/Falência (40% do peso) e Estatuto ME/EPP seguem zerados'},
+  'Dir. Penal':            {prioridade:'manutencao',estrelas:3,pctAcerto:84.2,  jornada:18, nivel:'Bom',      ferramenta:'TecConcursos',      motivo:'⚪ 84,2% (114q) — exatamente na média da plataforma, nem vantagem nem desvantagem'},
+  'Legislação TCE-SP':     {prioridade:'hibernacao', estrelas:1,pctAcerto:76.0, jornada:6, nivel:'Intermediário', ferramenta:'Gran Cursos', motivo:'⚫ Fora do edital SEFAZ-SC (era do TCE-SP)'},
+  'Ética Pública':         {prioridade:'manutencao',estrelas:3,pctAcerto:88.0,jornada:4,  nivel:'Intermediário',ferramenta:'Gran Cursos',       motivo:'🟢 88,0% (42q) — 0,6pp acima da média; Conflito de Interesses (74%) e OCDE (73,9%) são os pontos mais fracos'},
+  'Raciocínio Lógico':     {prioridade:'manutencao',   estrelas:5,pctAcerto:81.9,  jornada:17, nivel:'Aprendiz', ferramenta:'Gran Cursos',       motivo:'🟢 81,9% (105q) — 2,7pp acima da média. Reclassificado de urgente pra manutenção: trajetória confirmada desde o diagnóstico inicial (76%)'},
+  'Direito Empresarial (Comercial)':{prioridade:'hibernacao',estrelas:1,pctAcerto:75.6,jornada:3,nivel:'Diagnóstico',ferramenta:'Guruja',motivo:'⚫ Empresarial não cai na SEFAZ-SC'},
+  // ── SEFAZ-SC — matérias novas ──
+  'Dir. Previdenciário':   {prioridade:'urgente',   estrelas:5,pctAcerto:null,jornada:0,  nivel:'Aprendiz', ferramenta:'Guruja', motivo:'🔴 Dificuldade real — maior volume de pontos em jogo no bloco de peso 2 (RGPS, RPPS, EC 103, LC 412/2008)'},
+  'Matemática Financeira e Estatística':{prioridade:'nivelamento',estrelas:3,pctAcerto:26,jornada:0,nivel:'Zero Base',ferramenta:'Guruja',motivo:'🟠 26% em Mat. Financeira, Estatística do zero — só o núcleo; menor custo-benefício'},
+  'Ciência e Análise de Dados':{prioridade:'nivelamento',estrelas:4,pctAcerto:null,jornada:0,nivel:'Zero Base',ferramenta:'Guruja',motivo:'🟠 Cai (BI, IA, LGPD) — conceitual, retorno razoável'},
+  'Conhecimentos Regionais de SC':{prioridade:'nivelamento',estrelas:3,pctAcerto:null,jornada:0,nivel:'Zero Base',ferramenta:'Guruja',motivo:'🟠 Memorização de conteúdo regional — retorno baixo por hora'},
+  'Reforma Tributária':    {prioridade:'nivelamento',estrelas:4,pctAcerto:78,jornada:0,nivel:'Intermediário',ferramenta:'Guruja',motivo:'🟠 Poucas questões (dentro de Financeiro); Guruja vai além do texto literal do edital'},
   // ── HIBERNAÇÃO (2h/semana total, só tempo morto) ──
   'Adm. Pública':          {prioridade:'hibernacao', estrelas:2,pctAcerto:76,  jornada:4,  nivel:'Aprendiz', ferramenta:'NotebookLM',        motivo:'⚫ Fora escopo TCE-SP — 2h/semana máx, só tempo morto'},
   'Contabilidade Pública': {prioridade:'hibernacao', estrelas:2,pctAcerto:84,  jornada:11, nivel:'Aprendiz', ferramenta:'NotebookLM',        motivo:'⚫ Fora escopo TCE-SP — hibernação'},
@@ -659,7 +731,7 @@ function beep(tipo){
 
 function Pomodoro({cor,onFase}){
   const c=cor||'#fbbf24';
-  const FASES=[{l:'1ª METADE',d:45*60,e:'📖'},{l:'PAUSA',d:10*60,e:'🚶'},{l:'2ª METADE',d:45*60,e:'✏️'}];
+  const FASES=[{l:'1ª METADE',d:30*60,e:'📖'},{l:'PAUSA',d:5*60,e:'🚶'},{l:'2ª METADE',d:25*60,e:'✏️'}];
   const[fase,setFase]=useState(0);
   const[secs,setSecs]=useState(FASES[0].d);
   const[rodando,setRodando]=useState(false);
@@ -683,7 +755,7 @@ function Pomodoro({cor,onFase}){
         setRodando(false);
         setFeito(true);
         beep(fase===1?'pausa':'done');
-        if(fase!==1&&onFase)onFase(45);
+        if(fase!==1&&onFase)onFase(fase===0?30:25);
       }
     },400);
     return limparTimer;
@@ -701,7 +773,7 @@ function Pomodoro({cor,onFase}){
   return(
     <div style={{padding:'13px',borderRadius:13,background:`${c}08`,border:`1px solid ${c}22`,marginBottom:12}}>
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10,flexWrap:'wrap',gap:4}}>
-        <span style={{fontSize:13,letterSpacing:'2px',color:c,fontFamily:"'DM Mono',monospace",fontWeight:800}}>⏱ POMODORO 45·10·45</span>
+        <span style={{fontSize:13,letterSpacing:'2px',color:c,fontFamily:"'DM Mono',monospace",fontWeight:800}}>⏱ POMODORO 30·5·25 (1h)</span>
         <div style={{display:'flex',gap:4}}>
           {FASES.map((f,i)=>(
             <button key={i} onClick={()=>irFase(i)} style={{padding:'2px 7px',borderRadius:4,cursor:'pointer',fontSize:13,fontFamily:"'DM Mono',monospace",fontWeight:700,background:fase===i?`${c}22`:'transparent',color:fase===i?c:'#aab6c8',border:`1px solid ${fase===i?c+'44':'rgba(148,163,184,.25)'}`,transition:'all .15s'}}>
@@ -746,10 +818,10 @@ function Pomodoro({cor,onFase}){
 }
 
 const EDITAL={
-  // TCE-SP — VUNESP — Auditor de Controle Externo (DIPE/Direito) — Prova 11/10/2026
-  // Gates eliminatórios: Gerais 60% (12/20q) · Específicos 60% (36/60q) · Discursiva 60% (24/40p)
-  '_meta':{concurso:'TCE-SP',cargo:'Auditor de Controle Externo — DIPE/Direito',banca:'VUNESP',prova:'11/10/2026',
-    gates:{gerais:{questoes:20,minimo:12,pct:60},especificos:{questoes:60,minimo:36,pct:60},discursiva:{pontos:40,minimo:24,pct:60}}},
+  // SEFAZ-SC — FCC — Auditor Estadual de Finanças Públicas (Direito) — Prova 22/11/2026
+  // Sem mínimo por prova: nota padronizada (média 50, desvio 10); Gerais peso 1 (80q) + Específicos peso 2 (100q); corte: soma ≥ 150.
+  '_meta':{concurso:'SEFAZ-SC',cargo:'Auditor Estadual de Finanças Públicas — Direito (E05)',banca:'FCC',prova:'22/11/2026',
+    nota:{tipo:'padronizada',media:50,desvio:10,corte:150,gerais:{questoes:80,peso:1},especificos:{questoes:100,peso:2}}},
 
   // ── CONHECIMENTOS GERAIS ─────────────────────────────────────────────────
   'Português':{bloco:'gerais',
@@ -774,20 +846,40 @@ const EDITAL={
     ]},
   'Ética Pública':{bloco:'gerais',
     top:[
-      {t:'Ética, Moral e Função Pública',p:40,acerto:null,status:'nivelamento'},
-      {t:'Código de Ética do Servidor Público',p:30,acerto:null,status:'nivelamento'},
-      {t:'Integridade e Transparência',p:30,acerto:null,status:'nivelamento'},
+      {t:'Ética, Moral e Função Pública — princípios, deveres e vedações',p:25,acerto:null,status:'nivelamento'},
+      {t:'Código de Ética dos Servidores Fazendários de SC · Decreto 1.171/94',p:25,acerto:null,status:'nivelamento'},
+      {t:'Integridade e compliance — riscos de fraude e corrupção',p:20,acerto:null,status:'nivelamento'},
+      {t:'Prevenção ao assédio moral/sexual e à discriminação',p:15,acerto:null,status:'nivelamento'},
+      {t:'Lei Anticorrupção — Lei 12.846/2013',p:15,acerto:null,status:'nivelamento'},
     ]},
-  'Legislação TCE-SP':{bloco:'gerais',
+  'Matemática Financeira e Estatística':{bloco:'gerais',
     top:[
-      {t:'LC 709/93 (Lei Orgânica do TCE-SP)',p:40,acerto:null,status:'nivelamento'},
-      {t:'Regimento Interno do TCE-SP',p:30,acerto:null,status:'nivelamento'},
-      {t:'Instrução 01/2024 e normas correlatas',p:30,acerto:null,status:'nivelamento'},
+      {t:'Juros simples e compostos · taxas equivalentes, real e efetiva',p:25,acerto:26,status:'ponto-fraco'},
+      {t:'Descontos e amortizações (SAC, Price, misto)',p:20,acerto:null,status:'diagnostico'},
+      {t:'Fluxo de caixa, valor atual e TIR',p:10,acerto:null,status:'diagnostico'},
+      {t:'Estatística descritiva (média, mediana, variância, desvio-padrão)',p:15,acerto:null,status:'diagnostico'},
+      {t:'Probabilidade e distribuições (binomial, normal, Poisson, qui-quadrado, t)',p:15,acerto:null,status:'diagnostico'},
+      {t:'Inferência: amostragem, intervalos de confiança, testes de hipótese, regressão',p:15,acerto:null,status:'diagnostico'},
+    ]},
+  'Ciência e Análise de Dados':{bloco:'gerais',
+    top:[
+      {t:'Conceitos de Ciência de Dados · dados estruturados e não estruturados',p:20,acerto:null,status:'diagnostico'},
+      {t:'Business Intelligence e visualização (dashboards, indicadores)',p:25,acerto:null,status:'diagnostico'},
+      {t:'Governo digital e Inteligência Artificial (ML, IA generativa, LLMs)',p:30,acerto:null,status:'diagnostico'},
+      {t:'LGPD — Lei 13.709/2018 aplicada ao Poder Público',p:25,acerto:null,status:'diagnostico'},
+    ]},
+  'Conhecimentos Regionais de SC':{bloco:'gerais',
+    top:[
+      {t:'Economia: agropecuária, agronegócio e exportações',p:35,acerto:null,status:'diagnostico'},
+      {t:'Geografia física, clima e população',p:25,acerto:null,status:'diagnostico'},
+      {t:'História e cultura',p:20,acerto:null,status:'diagnostico'},
+      {t:'Política e símbolos de SC',p:20,acerto:null,status:'diagnostico'},
     ]},
 
   // ── CONHECIMENTOS ESPECÍFICOS ────────────────────────────────────────────
   'Dir. Constitucional':{bloco:'especificos',
     top:[
+      {t:'Constituição do Estado de Santa Catarina',p:6,acerto:null,status:'nivelamento'},
       {t:'Organização do Estado (arts. 18-43 CF)',p:22.3,acerto:83,status:'manutencao'},
       {t:'Organização dos Poderes (arts. 44-135 CF)',p:20.9,acerto:81,status:'manutencao'},
       {t:'Tributação e Orçamento (arts. 145-169 CF)',p:14.7,acerto:83,status:'manutencao'},
@@ -799,6 +891,8 @@ const EDITAL={
     ]},
   'Dir. Administrativo':{bloco:'especificos',
     top:[
+      {t:'Legislação de SC: LC 741/2019, Lei 6.745/1985, Decreto 2.094/2022 (RI da SEF)',p:8,acerto:null,status:'nivelamento'},
+      {t:'LGPD (Lei 13.709/18) e LAI (Lei 12.527/11)',p:5,acerto:null,status:'nivelamento'},
       {t:'Regime Jurídico, Princípios, Poderes e Deveres',p:15,acerto:93,status:'manutencao'},
       {t:'Licitações e Contratos (Lei 14.133/21)',p:15,acerto:85,status:'manutencao'},
       {t:'Improbidade Administrativa (Lei 8.429/92)',p:10,acerto:85,status:'manutencao'},
@@ -812,22 +906,10 @@ const EDITAL={
       {t:'Intervenção na Propriedade / Bens Públicos',p:4,acerto:75,status:'manutencao'},
       {t:'Processo Administrativo (Lei 9.784/99)',p:2,acerto:89,status:'manutencao'},
     ]},
-  'Dir. Tributário':{bloco:'especificos',
-    top:[
-      {t:'Conceito e Classificação dos Tributos',p:10,acerto:75,status:'manutencao'},
-      {t:'Limitações Constitucionais ao Poder de Tributar',p:10,acerto:75,status:'manutencao'},
-      {t:'Competência Tributária',p:8,acerto:86,status:'manutencao'},
-      {t:'Crédito Tributário',p:10,acerto:84,status:'manutencao'},
-      {t:'Obrigação Tributária',p:8,acerto:87,status:'manutencao'},
-      {t:'Impostos Federais e Municipais',p:8,acerto:86,status:'manutencao'},
-      {t:'Impostos Estaduais — Repartição Constitucional',p:8,acerto:80,status:'manutencao'},
-      {t:'Reforma Tributária — EC 132/2023 Pt I',p:5,acerto:82,status:'manutencao'},
-      {t:'Reforma Tributária — EC 132/2023 Pt II',p:5,acerto:75,status:'ponto-fraco'},
-      {t:'Simples Nacional — LC 123/2006',p:5,acerto:71,status:'ponto-fraco'},
-      {t:'Simples Nacional — CGSN 140/2018',p:5,acerto:70,status:'ponto-fraco'},
-    ]},
   'Dir. Financeiro / AFO':{bloco:'especificos',
     top:[
+      {t:'LC 898/2026 — execução de emendas parlamentares em SC · emendas impositivas',p:5,acerto:null,status:'nivelamento'},
+      {t:'Lei 7.541/1988 (Lei das taxas) · DREM',p:5,acerto:null,status:'nivelamento'},
       {t:'LRF — Arts. 1º a 14',p:10,acerto:89,status:'manutencao'},
       {t:'LRF — Arts. 15º a 24 (despesa pessoal)',p:8,acerto:73,status:'ponto-fraco'},
       {t:'LRF — Arts. 25º a 42 (dívida)',p:8,acerto:90,status:'manutencao'},
@@ -859,23 +941,30 @@ const EDITAL={
     ]},
   'Dir. Penal':{bloco:'especificos',
     top:[
-      {t:'Crimes contra a Administração Pública (arts. 312 a 337-A CP)',p:55,acerto:null,status:'nivelamento'},
-      {t:'Crimes contra as Finanças Públicas (arts. 359-A a 359-H CP) + infrações da Lei 10.028/2001',p:45,acerto:null,status:'nivelamento'},
+      {t:'Princípios da legalidade e da anterioridade',p:8,acerto:null,status:'nivelamento'},
+      {t:'Crimes contra a Fé Pública (falsidade de títulos e documental)',p:20,acerto:null,status:'nivelamento'},
+      {t:'Crimes contra a Administração Pública (arts. 312 a 337-A CP)',p:35,acerto:null,status:'nivelamento'},
+      {t:'Crimes contra as Finanças Públicas (arts. 359-A a 359-H CP)',p:12,acerto:null,status:'nivelamento'},
+      {t:'Lei 8.137/1990 — crimes contra a ordem tributária',p:15,acerto:null,status:'nivelamento'},
+      {t:'Lei 13.869/2019 — abuso de autoridade',p:10,acerto:null,status:'nivelamento'},
     ]},
-  'Direito Empresarial (Comercial)':{bloco:'especificos',
+  'Reforma Tributária':{bloco:'especificos',
     top:[
-      {t:'Recuperação Judicial, Extrajudicial e Falência — LREF (Lei 11.101/2005)',p:40,acerto:null,status:'nivelamento'},
-      {t:'Direito de Empresa — disposições do Código Civil (arts. 966 e ss.)',p:35,acerto:80,status:'ponto-fraco'},
-      {t:'Estatuto Nacional da ME/EPP (LC 123/2006)',p:25,acerto:null,status:'nivelamento'},
+      {t:'Aspectos gerais e novos princípios (EC 132/2023)',p:50,acerto:82,status:'manutencao'},
+      {t:'IBS, CBS e Comitê Gestor',p:50,acerto:75,status:'ponto-fraco'},
+    ]},
+  'Dir. Previdenciário':{bloco:'especificos',
+    top:[
+      {t:'RGPS — segurados e benefícios',p:20,acerto:null,status:'diagnostico'},
+      {t:'RGPS — dependentes e benefícios',p:12,acerto:null,status:'diagnostico'},
+      {t:'EC 103/2019 — regras gerais e de transição',p:18,acerto:null,status:'diagnostico'},
+      {t:'RPPS — custeio, equilíbrio financeiro e atuarial',p:18,acerto:null,status:'diagnostico'},
+      {t:'Certificado de Regularidade Previdenciária (CRP)',p:5,acerto:null,status:'diagnostico'},
+      {t:'Contagem recíproca e compensação previdenciária',p:7,acerto:null,status:'diagnostico'},
+      {t:'Regime de Previdência Complementar (RPC) e relação RPPS×RGPS',p:7,acerto:null,status:'diagnostico'},
+      {t:'LC 412/2008 — RPPS/SC',p:13,acerto:null,status:'diagnostico'},
     ]},
 
-  // ── DISCURSIVA ───────────────────────────────────────────────────────────
-  'Discursivas':{bloco:'discursiva',
-    top:[
-      {t:'Estudo de Caso — área fiscal/orçamentária',p:50,acerto:null,status:'carro-chefe'},
-      {t:'Estudo de Caso — controle externo',p:30,acerto:null,status:'carro-chefe'},
-      {t:'Estrutura e gestão de tempo da resposta',p:20,acerto:null,status:'carro-chefe'},
-    ]},
 };
 // Lista de matérias reais do edital, excluindo a chave '_meta' (metadados da prova).
 // Usar SEMPRE isto (e não Object.keys(EDITAL) direto) ao iterar matérias.
@@ -890,24 +979,123 @@ const PADROES_DECOREBA=[/\bLei\b/i,/\bLC\b/,/\bDecreto\b/i,/\bInstrução\b/i,/\
   /LREF/,/Espécies de/i,/Impostos/i,/Crimes contra/i,/Precatórios/i,/Regimento Interno/i,/UNCAC/,/OCDE/];
 const isDecorebaHeuristico=titulo=>PADROES_DECOREBA.some(p=>p.test(titulo));
 
-// Peso de risco por gate — Gerais tem margem pequena (20q, corte 12 = 8 de folga);
-// Discursiva é eliminatória e sem chute; Específicos tem folga maior (60q, corte 36).
-// Peso por matéria — Específicos (60q/7 matérias, sem quebra oficial por matéria) e Discursiva
-// mantêm o peso anterior. Gerais foi CONFIRMADO pela VUNESP em 10/08/2026:
-// Português 12q · Raciocínio Lógico 4q · Ética 2q · Legislação 2q (de 20 no total).
-// Português passa a ser a matéria de maior peso individual de toda a prova objetiva.
-const PESO_GERAIS_REAL={
-  'Português':1.8,          // 12/20 — a maior questão isolada da prova inteira
-  'Raciocínio Lógico':1.1,  // 4/20 — segue relevante, mas não mais empatada com Português
-  'Ética Pública':0.6,      // 2/20 — baixo custo-benefício, confirmado pela banca
-  'Legislação TCE-SP':0.6,  // 2/20 — idem, inclui agora o conteúdo novo de NBASP
+// ═══ MOTOR DE DECISÃO — peso × nível × custo-benefício (SEFAZ-SC / FCC) ═══
+// Edital NÃO publica quantas questões vão para cada matéria: q = hipótese neutra (editável na aba).
+// teto = meta realista de acerto até a prova · hpp = horas de estudo por ponto percentual a recuperar
+// nivel0 = estimativa usada só enquanto não existe dado real (Guruja/registro) da matéria.
+const DECISAO_PADRAO={
+  'Dir. Constitucional':             {q:17,teto:92,hpp:0.25,nivel0:null,tipo:'revisão de base forte'},
+  'Dir. Administrativo':             {q:17,teto:92,hpp:0.25,nivel0:null,tipo:'revisão + legislação SC nova'},
+  'Dir. Financeiro / AFO':           {q:14,teto:92,hpp:0.30,nivel0:null,tipo:'revisão + lei seca SC (LC 898, Lei 7.541)'},
+  'Reforma Tributária':              {q:3, teto:80,hpp:0.45,nivel0:60,  tipo:'tema novo (EC 132) — poucas questões'},
+  'Dir. Previdenciário':             {q:17,teto:82,hpp:0.80,nivel0:45,  tipo:'matéria difícil + lei seca (EC 103, RPPS, LC 412)'},
+  'Dir. Civil':                      {q:16,teto:88,hpp:0.35,nivel0:null,tipo:'revisão com buracos pontuais'},
+  'Dir. Penal':                      {q:16,teto:92,hpp:0.30,nivel0:null,tipo:'revisão + leis especiais (8.137, 13.869)'},
+  'Português':                       {q:16,teto:90,hpp:0.30,nivel0:null,tipo:'manutenção'},
+  'Raciocínio Lógico':               {q:6, teto:90,hpp:0.35,nivel0:null,tipo:'manutenção'},
+  'Matemática Financeira e Estatística':{q:10,teto:60,hpp:0.80,nivel0:25,tipo:'exatas do zero — só o núcleo (juros, descontos, SAC/Price)'},
+  'Ciência e Análise de Dados':      {q:16,teto:78,hpp:0.30,nivel0:30,  tipo:'conceitual novo (BI, IA, LGPD)'},
+  'Ética Pública':                   {q:16,teto:92,hpp:0.20,nivel0:null,tipo:'manutenção + assédio e anticorrupção'},
+  'Conhecimentos Regionais de SC':   {q:16,teto:72,hpp:0.45,nivel0:30,  tipo:'memorização de conteúdo regional'},
 };
+
+// Núcleo puro (testável): recebe linhas já com nível/estrelas e devolve ranking com veredito e porquê.
+function calcDecisaoCore(rows){
+  const out=rows.map(r=>{
+    const peso=r.bloco==='especificos'?2:1;
+    const nivel=r.nivel;
+    const gap=Math.max(0,r.teto-nivel);
+    const fRel=r.estrelas!=null?Math.min(1.6,Math.max(0.7,r.estrelas/3)):1;
+    const pts=r.q*(gap/100)*peso*fRel;
+    const horas=gap>0?Math.max(0.5,gap*r.hpp*(nivel<40?1.3:1)):0;
+    const cb=horas>0?pts/horas:0;
+    return{...r,peso,gap,fRel,pts,horas,cb};
+  });
+  const ptsMax=Math.max(1,...out.map(o=>o.pts));
+  out.forEach(o=>{
+    const grande=o.pts>=ptsMax*0.45;           // muito volume de pontos em jogo
+    const esp=o.bloco==='especificos';
+    let v,cor;
+    if(esp&&(grande||(o.nivel<70&&o.q>=8))){v='NUNCA CORTAR';cor='#34d399';}
+    else if(o.cb>=0.9||(esp&&o.cb>=0.5)){v='FAZER';cor='#60a5fa';}
+    else if(o.cb>=0.35){v='SE SOBRAR TEMPO';cor='#fbbf24';}
+    else{v='CORTAR PRIMEIRO';cor='#f87171';}
+    o.veredito=v;o.corV=cor;
+  });
+  out.forEach(o=>{
+    const blocoTxt=o.bloco==='especificos'?'Específicos (peso 2×)':'Gerais (peso 1×)';
+    const tail=o.veredito==='NUNCA CORTAR'?(o.nivel<70?'nível abaixo de 70% num bloco de peso 2 — cada ponto vale dobrado':'muitos pontos em jogo num bloco de peso 2')
+      :o.veredito==='FAZER'?'retorno bom por hora gasta'
+      :o.veredito==='SE SOBRAR TEMPO'?'retorno médio — faça depois das matérias de cima'
+      :(o.bloco==='gerais'?'peso 1× e retorno baixo por hora — é onde cortar sai mais barato':'retorno baixo por hora');
+    o.porque=`${blocoTxt} · ~${o.q}q (hipótese) · nível ${Math.round(o.nivel)}% → meta ${o.teto}% (${Math.round(o.gap)}pp) · ~${o.horas.toFixed(1)}h (${o.tipo}) → ${o.cb.toFixed(2)} pts/h · ${tail}`;
+  });
+  return out.sort((a,b)=>b.cb-a.cb);
+}
+
+// ── Config editável da aba Decisão (questões estimadas e nível manual) ──
+let _dcRaw=null,_dcVal={q:{},nivel:{}};
+function getDecisaoCfg(){
+  try{
+    const raw=localStorage.getItem('decisao_cfg');
+    if(raw!==_dcRaw){_dcRaw=raw;_dcVal=raw?(JSON.parse(raw)||{q:{},nivel:{}}):{q:{},nivel:{}};}
+  }catch(e){}
+  return _dcVal;
+}
+function decisaoQ(mat){
+  const c=getDecisaoCfg();
+  if(c.q&&c.q[mat]!=null&&!isNaN(c.q[mat]))return +c.q[mat];
+  return DECISAO_PADRAO[mat]?DECISAO_PADRAO[mat].q:16;
+}
+// Nível atual de uma matéria: manual > (Guruja/histórico + registros desde 12/10) > estimativa
+function nivelRealMat(mat){
+  const cfg=getDecisaoCfg();
+  if(cfg.nivel&&cfg.nivel[mat]!=null&&!isNaN(cfg.nivel[mat]))return{pct:+cfg.nivel[mat],origem:'manual'};
+  const guruja=getGurujaAssuntos();
+  let base=null,orig=null;
+  if(guruja[mat]){
+    const cd=(guruja[mat].assuntos||[]).filter(a=>a.acerto!=null);
+    if(cd.length){base=cd.reduce((s,a)=>s+a.acerto,0)/cd.length;orig='Guruja';}
+  }
+  if(base==null){
+    const tops=(EDITAL[mat]?.top||[]).filter(t=>t.acerto!=null);
+    if(tops.length){base=tops.reduce((s,t)=>s+t.acerto,0)/tops.length;orig='histórico';}
+  }
+  const hist=lsGet('historico_diario',[]).filter(r=>r.materia===mat&&(r.dt||0)>=CICLO_INI_MS);
+  const q=hist.reduce((s,r)=>s+(parseInt(r.questoes)||0),0);
+  const a=hist.reduce((s,r)=>s+(parseInt(r.acertei)||0),0);
+  const rec=q>=10?a/q*100:null;
+  if(rec!=null)return base!=null?{pct:(base+rec)/2,origem:`${orig} + ${q}q desta meta`}:{pct:rec,origem:`${q}q desta meta`};
+  if(base!=null)return{pct:base,origem:orig};
+  const n0=DECISAO_PADRAO[mat]?.nivel0;
+  return{pct:n0!=null?n0:50,origem:'estimado'};
+}
+function calcDecisaoMaterias(){
+  const rows=EDITAL_MATS.map(mat=>{
+    const d=DECISAO_PADRAO[mat]||{q:10,teto:90,hpp:0.4,nivel0:null,tipo:'—'};
+    const nv=nivelRealMat(mat);
+    const itens=CICLO.filter(c=>c.mat===mat&&c.est!=null);
+    const estrelas=itens.length?itens.reduce((s,c)=>s+c.est,0)/itens.length:null;
+    return{mat,bloco:EDITAL[mat].bloco,q:decisaoQ(mat),qPadrao:d.q,teto:d.teto,hpp:d.hpp,tipo:d.tipo,
+      nivel:nv.pct,nivelOrigem:nv.origem,estrelas,nAtividades:itens.length};
+  });
+  return calcDecisaoCore(rows);
+}
+// Ordem de corte das atividades PENDENTES da meta: o 1º da lista é o primeiro a sacrificar.
+function calcOrdemCorte(){
+  const dec=calcDecisaoMaterias();
+  const por={};dec.forEach(d=>{por[d.mat]=d;});
+  const feitos=new Set(lsGet('feitos',[]));
+  const rank={'CORTAR PRIMEIRO':0,'SE SOBRAR TEMPO':1,'FAZER':2,'NUNCA CORTAR':3};
+  return CICLO.filter(c=>!feitos.has(c.id)&&por[c.mat]).map(c=>({...c,dec:por[c.mat]}))
+    .sort((a,b)=>(rank[a.dec.veredito]-rank[b.dec.veredito])||(a.dec.cb-b.dec.cb)||((a.est||3)-(b.est||3))||(b.id-a.id));
+}
+
 function pesoGate(mat){
   const g=EDITAL[mat];
   if(!g)return 1;
-  if(g.bloco==='discursiva')return 1.4;
-  if(g.bloco==='gerais')return PESO_GERAIS_REAL[mat]??1.5;
-  return 1;
+  const base=g.bloco==='especificos'?2:1;
+  return base*Math.min(1.2,Math.max(0.5,decisaoQ(mat)/16));
 }
 
 // ═══ MOTOR DE DESTAQUE — "já vista" + "urgência", reaproveitado em Hoje e Revisão ═══
@@ -1148,40 +1336,21 @@ function calcProfunda80(){
 
 // ── PROJEÇÃO DE NOTA FINAL — se a prova fosse hoje, quantos pontos você faria ──
 function calcProjecaoNotaFinal(){
-  const guruja=getGurujaAssuntos();
-  const pctMat=mat=>{
-    if(guruja[mat]){
-      const comDado=(guruja[mat].assuntos||[]).filter(a=>a.acerto!=null);
-      if(comDado.length)return comDado.reduce((s,a)=>s+a.acerto,0)/comDado.length;
-    }
-    const tops=(EDITAL[mat]?.top||[]).filter(t=>t.acerto!=null);
-    if(tops.length)return tops.reduce((s,t)=>s+t.acerto,0)/tops.length;
-    return null;
-  };
-  const matsGerais=EDITAL_MATS.filter(m=>EDITAL[m]?.bloco==='gerais');
-  const matsEspec=EDITAL_MATS.filter(m=>EDITAL[m]?.bloco==='especificos');
-  const pctsGerais=matsGerais.map(pctMat).filter(v=>v!=null);
-  const pctsEspec=matsEspec.map(pctMat).filter(v=>v!=null);
-  const mediaGerais=pctsGerais.length?pctsGerais.reduce((s,v)=>s+v,0)/pctsGerais.length:null;
-  const mediaEspec=pctsEspec.length?pctsEspec.reduce((s,v)=>s+v,0)/pctsEspec.length:null;
-  const pontosGerais=mediaGerais!=null?Math.round(mediaGerais/100*20):null;
-  const pontosEspec=mediaEspec!=null?Math.round(mediaEspec/100*60):null;
-  const pontosObjetiva=(pontosGerais||0)+(pontosEspec||0);
-
-  const discRegs=lsGet('rev_discursiva',[]);
-  const corrigidas=discRegs.filter(r=>r.foiCorrigida&&r.nota!==''&&r.nota!=null&&!isNaN(parseFloat(r.nota)));
-  const mediaNota=corrigidas.length?corrigidas.reduce((s,r)=>s+parseFloat(r.nota),0)/corrigidas.length:null;
-  const pontosDiscursiva=mediaNota!=null?Math.round(mediaNota/10*40):null;
-
-  const notaFinal=pontosObjetiva+(pontosDiscursiva||0);
+  // Soma, por matéria, (questões estimadas × nível atual). Matérias sem dado real entram com a estimativa
+  // (marcada como 'estimado' na aba Decisão) — ignorá-las inflaria a nota.
+  const dec=calcDecisaoMaterias();
+  const soma=b=>dec.filter(d=>d.bloco===b).reduce((s,d)=>s+d.q*d.nivel/100,0);
+  const totalQ=b=>dec.filter(d=>d.bloco===b).reduce((s,d)=>s+d.q,0);
+  const reais=b=>dec.filter(d=>d.bloco===b&&d.nivelOrigem!=='estimado').length;
+  const tot=b=>dec.filter(d=>d.bloco===b).length;
+  const pontosGerais=Math.round(soma('gerais')/Math.max(1,totalQ('gerais'))*80);
+  const pontosEspec=Math.round(soma('especificos')/Math.max(1,totalQ('especificos'))*100);
   return{
-    pontosGerais,pontosEspec,pontosObjetiva,pontosDiscursiva,notaFinal,
-    passaGerais:pontosGerais!=null?pontosGerais>=12:null,
-    passaEspec:pontosEspec!=null?pontosEspec>=36:null,
-    passaDiscursiva:pontosDiscursiva!=null?pontosDiscursiva>=24:null,
-    cobGerais:pctsGerais.length,totalGerais:matsGerais.length,
-    cobEspec:pctsEspec.length,totalEspec:matsEspec.length,
-    correcoesRegistradas:corrigidas.length,
+    pontosGerais,pontosEspec,pontosObjetiva:pontosGerais+pontosEspec,pontosDiscursiva:null,
+    notaFinal:pontosGerais+pontosEspec*2, // acertos ponderados (máx. 280) — não é a nota padronizada
+    passaGerais:pontosGerais>=56,passaEspec:pontosEspec>=85,passaDiscursiva:null,
+    cobGerais:reais('gerais'),totalGerais:tot('gerais'),cobEspec:reais('especificos'),totalEspec:tot('especificos'),
+    correcoesRegistradas:0,
   };
 }
 
@@ -1476,7 +1645,7 @@ function TabIA({appCtx,onMIT}){
 
     // Projeção de nota — se a prova fosse hoje
     const proj=calcProjecaoNotaFinal();
-    const projTxt=`Gerais ${proj.pontosGerais??'?'}/20 (corte 12) · Específicos ${proj.pontosEspec??'?'}/60 (corte 36) · Discursiva ${proj.pontosDiscursiva??0}/40 (corte 24) · TOTAL ${proj.notaFinal}/120${proj.correcoesRegistradas===0?' [discursiva sem correção registrada ainda — nota não é real]':''}`;
+    const projTxt=`Gerais ~${proj.pontosGerais??'?'}/80 (meta interna 56) · Específicos ~${proj.pontosEspec??'?'}/100 (meta interna 85) · estimativa inclui matérias ainda sem dado real (marcadas como estimadas na aba Decisão)`;
 
     // Padrão de erro na discursiva, se houver correção registrada
     const padraoErro=calcPadraoErroDiscursiva(lsGet('rev_discursiva',[]));
@@ -1486,7 +1655,7 @@ function TabIA({appCtx,onMIT}){
     const decLog=lsGet('ia_decisoes_historico',[]).slice(-4);
     const decTxt=decLog.length?decLog.map(l=>`${l.data}: ${l.itens.join(' · ')}`).join(' | '):'nenhuma decisão registrada ainda';
 
-    return `Você é a Assessora IA pessoal da Ritchely — mentora de alto desempenho para o concurso TCE-SP DIPE (Auditor de Controle Externo, especialidade Direito, banca VUNESP, prova 11/10/2026).
+    return `Você é a Assessora IA pessoal da Ritchely — mentora de alto desempenho para o concurso SEFAZ-SC (Auditor Estadual de Finanças Públicas — Direito, banca FCC, prova 22/11/2026, Florianópolis). Estrutura: 180 questões em dia único — 80 Gerais (peso 1) + 100 Específicos (peso 2), sem discursiva; corte = soma das notas padronizadas ≥ 150 (sem mínimo por prova); desempate pela maior nota em Específicos. Não existem mais os 3 gates do TCE-SP.
 
 PERFIL: Ritchely, mãe solo do Kauê (Colégio Naval). Acorda cedo pro Bloco Ouro. Trabalha em dias configuráveis no app (varia por semana — confira ehDiaTrabalho, não presuma Ter/Qui/Sex fixo).
 
@@ -1495,9 +1664,6 @@ ${urgencias||'sem dado suficiente ainda'}
 
 📊 SE A PROVA FOSSE HOJE:
 ${projTxt}
-
-✍️ DISCURSIVA — padrão de erro mais recorrente:
-${padraoErroTxt}
 
 🧠 MEMÓRIA — decisões dos últimos dias (não repita pergunta já respondida, não contradiga sem avisar):
 ${decTxt}
@@ -1529,7 +1695,7 @@ ESCALA DE APROVEITAMENTO:
 ≥85% = SÓLIDO · 70-84% = ATENÇÃO · <70% = CRÍTICO
 NUNCA chame de ruim algo ≥85%. NUNCA chame de bom algo <70%.
 
-TÓPICOS DE MAIOR PESO INTERNO POR MATÉRIA (proporção dentro da matéria, edital DIPE 2026 é inédito — sem histórico de provas anteriores pra estatística real):
+TÓPICOS DE MAIOR PESO INTERNO POR MATÉRIA (proporção dentro da matéria, edital SEFAZ-SC 2026 (FCC) — proporções internas são estimativas):
 ${EDITAL_MATS.filter(m=>EDITAL[m]?.bloco==='especificos').map(m=>{const top=[...(EDITAL[m].top||[])].sort((a,b)=>b.p-a.p)[0];return top?`${m}: ${top.t} (${top.p}%)`:null;}).filter(Boolean).join(' · ')}
 
 SISTEMA DE REVISÃO:
@@ -1929,7 +2095,7 @@ Cole este texto no Claude.ai para análise completa.
     <div style={{display:'flex',flexDirection:'column',height:'calc(100dvh - 155px)'}}>
       <div style={{background:'linear-gradient(135deg,rgba(30,20,10,.95),rgba(10,7,3,.98))',border:'1px solid rgba(251,191,36,.15)',borderRadius:13,padding:'11px 13px',marginBottom:8,display:'flex',justifyContent:'space-between',alignItems:'center',flexShrink:0}}>
         <div>
-          <div style={{fontSize:13,color:'rgba(251,191,36,.5)',letterSpacing:'3px',fontFamily:"'DM Mono',monospace",fontWeight:700}}>ASSESSORA IA · TCE-SP</div>
+          <div style={{fontSize:13,color:'rgba(251,191,36,.5)',letterSpacing:'3px',fontFamily:"'DM Mono',monospace",fontWeight:700}}>ASSESSORA IA · SEFAZ-SC</div>
           <div style={{fontFamily:"'DM Serif Display',serif",color:'#f0e6d0',fontSize:17,marginTop:2}}>Perguntas · Plano · Suporte</div>
         </div>
         <div style={{display:'flex',gap:6}}>
@@ -2070,7 +2236,7 @@ const GURUJA_SEED={
   // TCE-SP — dados reais julho/2026 — substituído de abril/2026 (TCE-RJ)
   'Português':{
     importadoEm:'2026-07-09',jornada:28,nivel:'Expert',ferramenta:'TecConcursos VUNESP',
-    desempenhoHistorico:{acertos:null,questoes:null,pctAcerto:74,tempoMedio:null,reforcoPendente:'Interpretação+Semântica+Ortografia'},
+    desempenhoHistorico:{acertos:256,questoes:299,pctAcerto:85.6,tempoMedio:null,reforcoPendente:'Interpretação+Semântica+Ortografia — bloco antigo travado em 64%, nunca retestado. Agregado real: 85,6% (299q), 1,0pp acima da média da plataforma'},
     assuntos:[
       {titulo:'Interpretação Textual',acerto:64,diffMedia:-10,relevancia:5,tempoCump:'2h',questoes:22,acertos:14},
       {titulo:'Semântica, Tipos de Discurso e Tipologia/Gênero Textual',acerto:64,diffMedia:-10,relevancia:5,tempoCump:'2h',questoes:28,acertos:18},
@@ -2094,7 +2260,7 @@ const GURUJA_SEED={
     ]},
   'Dir. Constitucional':{
     importadoEm:'2026-07-09',jornada:27,nivel:'Expert',ferramenta:'TecConcursos',
-    desempenhoHistorico:{acertos:null,questoes:null,pctAcerto:83,tempoMedio:'1h20m',reforcoPendente:'Intervenção 69% · Poder Judiciário 69%'},
+    desempenhoHistorico:{acertos:319,questoes:361,pctAcerto:88.3,tempoMedio:'1h20m',reforcoPendente:'Intervenção 69% · Poder Judiciário 69% — pontos fracos pontuais numa matéria forte no agregado (88,3%, 5,7pp acima da média)'},
     assuntos:[
       {titulo:'Teoria Geral do Direito Constitucional',acerto:89,diffMedia:6,relevancia:4,tempoCump:'1h',questoes:27,acertos:24},
       {titulo:'Princípios e Direitos Fundamentais',acerto:93,diffMedia:10,relevancia:5,tempoCump:'1h',questoes:28,acertos:26},
@@ -2123,7 +2289,7 @@ const GURUJA_SEED={
     ]},
   'Dir. Administrativo':{
     importadoEm:'2026-07-09',jornada:29,nivel:'Expert',ferramenta:'TecConcursos',
-    desempenhoHistorico:{acertos:null,questoes:null,pctAcerto:87,tempoMedio:'1h10m',reforcoPendente:null},
+    desempenhoHistorico:{acertos:332,questoes:389,pctAcerto:85.3,tempoMedio:'1h10m',reforcoPendente:'Agregado real: 85,3% (389q), 7,3pp acima da média — maior vantagem relativa do sistema'},
     assuntos:[
       {titulo:'Regime Jurídico, Princípios, Poderes e Deveres',acerto:93,diffMedia:6,relevancia:5,tempoCump:'1h',questoes:28,acertos:26},
       {titulo:'Lei das Estatais (13.303/2016), Consórcios Públicos (semana 20-26/07)',acerto:70,diffMedia:-23,relevancia:4,tempoCump:'4h',questoes:0,acertos:0},
@@ -2150,7 +2316,7 @@ const GURUJA_SEED={
     ]},
   'Dir. Tributário':{
     importadoEm:'2026-07-09',jornada:27,nivel:'Expert',ferramenta:'TecConcursos FGV',
-    desempenhoHistorico:{acertos:232,questoes:280,pctAcerto:80,tempoMedio:'1h27m',reforcoPendente:'Reforma Trib. 75% · Simples Nacional 70%'},
+    desempenhoHistorico:{acertos:182,questoes:215,pctAcerto:84.6,tempoMedio:'1h27m',reforcoPendente:'Reforma Trib. 75% · Simples Nacional 70% — agregado real 84,6% (215q), 5,7pp acima da média'},
     assuntos:[
       {titulo:'Conceito, Classificação e Natureza Jurídica dos Tributos',acerto:75,diffMedia:-5,relevancia:4,tempoCump:'1h30m',questoes:28,acertos:21},
       {titulo:'Limitações Constitucionais ao Poder de Tributar',acerto:75,diffMedia:-5,relevancia:5,tempoCump:'1h',questoes:28,acertos:21},
@@ -2173,7 +2339,7 @@ const GURUJA_SEED={
     ]},
   'Dir. Financeiro / AFO':{
     importadoEm:'2026-07-09',jornada:35,nivel:'Expert',ferramenta:'TecConcursos',
-    desempenhoHistorico:{acertos:null,questoes:null,pctAcerto:81,tempoMedio:'1h30m',reforcoPendente:'Precatórios 35% · MatFi 26% · Receita 70% · LRF-pessoal 73%'},
+    desempenhoHistorico:{acertos:275,questoes:316,pctAcerto:87.0,tempoMedio:'1h30m',reforcoPendente:'Precatórios teve revisão profunda (2h) — ainda sem teste novo pra confirmar se subiu do 35%. MatFi 26% · Receita 70% · LRF-pessoal 73% seguem parados. Agregado real 87,0% (316q), 2,8pp acima da média — os 2 pontos fracos são isolados, não puxam a matéria'},
     assuntos:[
       {titulo:'Princípios, Vedações Orçamentárias e Créditos Adicionais',acerto:87,diffMedia:6,relevancia:4,tempoCump:'1h',questoes:27,acertos:23},
       {titulo:'Técnicas Orçamentárias e Funções de Governo',acerto:76,diffMedia:-5,relevancia:3,tempoCump:'1h',questoes:25,acertos:19},
@@ -2188,6 +2354,7 @@ const GURUJA_SEED={
       {titulo:'LRF — Arts. 43º a 73-C',acerto:83,diffMedia:2,relevancia:4,tempoCump:'1h',questoes:27,acertos:22},
       {titulo:'Manual de Demonstrativos Fiscais (MDF)',acerto:76,diffMedia:-5,relevancia:4,tempoCump:'1h',questoes:25,acertos:19},
       {titulo:'Precatórios (art. 100 CF)',acerto:35,diffMedia:-46,relevancia:4,tempoCump:'1h',questoes:0,acertos:0},
+      {titulo:'Precatórios (art. 100 CF) — Revisão Profunda',acerto:null,diffMedia:0,relevancia:4,tempoCump:'2h',questoes:0,acertos:0},
       {titulo:'PPA, LDO, fundos na Lei 4.320 (semana 20-26/07)',acerto:82,diffMedia:0,relevancia:5,tempoCump:'1h',questoes:0,acertos:0},
       {titulo:'LOA, emendas, ciclo orçamentário (semana 20-26/07)',acerto:83,diffMedia:0,relevancia:5,tempoCump:'2h',questoes:0,acertos:0},
       {titulo:'Controle Financeiro (interno/externo) — Controle pelos TCs',acerto:72,diffMedia:-7,relevancia:4,tempoCump:'1h',questoes:20,acertos:11},
@@ -2201,7 +2368,7 @@ const GURUJA_SEED={
     ]},
   'Dir. Civil':{
     importadoEm:'2026-07-09',jornada:29,nivel:'Expert',ferramenta:'TecConcursos',
-    desempenhoHistorico:{acertos:null,questoes:null,pctAcerto:85,tempoMedio:'1h18m',reforcoPendente:'Obrigações Pt1 70% · Contratos Geral 69%'},
+    desempenhoHistorico:{acertos:227,questoes:291,pctAcerto:78.0,tempoMedio:'1h18m',reforcoPendente:'Obrigações Pt1 70% · Contratos Geral 69% — agregado real 78,0% (291q), só 2,6pp acima da média, a menor folga entre as matérias fortes'},
     assuntos:[
       {titulo:'LINDB',acerto:93,diffMedia:8,relevancia:4,tempoCump:'1h',questoes:28,acertos:26},
       {titulo:'Pessoas (naturais e jurídicas; domicílio)',acerto:89,diffMedia:4,relevancia:5,tempoCump:'1h',questoes:28,acertos:25},
@@ -2224,17 +2391,18 @@ const GURUJA_SEED={
     ]},
   'Raciocínio Lógico':{
     importadoEm:'2026-07-19',jornada:17,nivel:'Aprendiz',ferramenta:'Gran Cursos',
-    desempenhoHistorico:{acertos:13,questoes:17,pctAcerto:76,tempoMedio:'1h30m',reforcoPendente:'Primeiro diagnóstico real — pior nota confirmada da semana (simulado 13-19/07). Teoria estruturada antes de cronometrado.'},
+    desempenhoHistorico:{acertos:86,questoes:105,pctAcerto:81.9,tempoMedio:'1h30m',reforcoPendente:'Agregado real 81,9% (105q), 2,7pp acima da média — trajetória consistente desde o diagnóstico inicial (76%)'},
     assuntos:[
       {titulo:'Proposições, Conectivos e Tabela-Verdade',acerto:null,diffMedia:0,relevancia:5,tempoCump:'2h',questoes:0,acertos:0},
       {titulo:'Equivalências Lógicas e Negação',acerto:null,diffMedia:0,relevancia:5,tempoCump:'2h',questoes:0,acertos:0},
       {titulo:'Equivalências Lógicas (semana 20-26/07)',acerto:85,diffMedia:0,relevancia:4,tempoCump:'2h',questoes:0,acertos:0},
       {titulo:'Silogismos e Inferências',acerto:null,diffMedia:0,relevancia:4,tempoCump:'2h',questoes:0,acertos:0},
       {titulo:'Estruturas Lógicas (simulado 13-19/07) — PRIMEIRO DADO REAL',acerto:76,diffMedia:0,relevancia:5,tempoCump:'1h30m',questoes:17,acertos:13},
+      {titulo:'Associação de Informações (semana 24-30/08)',acerto:75,diffMedia:-6.9,relevancia:4,tempoCump:'1h',questoes:0,acertos:0},
     ]},
   'Ética Pública':{
     importadoEm:'2026-07-09',jornada:0,nivel:'Zero Base',ferramenta:'Gran Cursos',
-    desempenhoHistorico:{acertos:null,questoes:null,pctAcerto:80.9,tempoMedio:null,reforcoPendente:'Código de Ética TCE-SP/Conflito de Interesses (74%) e Compliance/OCDE (73,9%) são os pontos mais fracos — resto da matéria já sólido, não é zero base'},
+    desempenhoHistorico:{acertos:37,questoes:42,pctAcerto:88.0,tempoMedio:null,reforcoPendente:'Código de Ética TCE-SP/Conflito de Interesses (74%) e Compliance/OCDE (73,9%) são os pontos mais fracos — agregado real 88,0% (42q), 0,6pp acima da média, matéria já sólida'},
     assuntos:[
       {titulo:'Ética no Serviço Público — Decreto Estadual 69.328/2025',acerto:85.7,diffMedia:5,relevancia:4,tempoCump:'1h',questoes:25,acertos:22},
       {titulo:'Código de Ética TCE-SP · Lei Conflito de Interesses (12.813/2013) · UNCAC',acerto:74.0,diffMedia:-6,relevancia:4,tempoCump:'1h',questoes:25,acertos:19},
@@ -2243,7 +2411,7 @@ const GURUJA_SEED={
     ]},
   'Legislação TCE-SP':{
     importadoEm:'2026-07-09',jornada:0,nivel:'Zero Base',ferramenta:'Gran Cursos',
-    desempenhoHistorico:{acertos:null,questoes:null,pctAcerto:81.8,tempoMedio:null,reforcoPendente:'Instrução 01/2024 do TCE-SP ainda sem nenhum dado — resto da matéria com base real ~82%, não é mais zero base'},
+    desempenhoHistorico:{acertos:76,questoes:100,pctAcerto:76.0,tempoMedio:null,reforcoPendente:'Agregado real do Guruja (100q): 76,0% — ABAIXO da média da plataforma (78,4%, diff -2,4%). Minha estimativa anterior de 81,8% foi calculada só com os pontos de amostra que eu tinha, não com o agregado completo — corrigido agora. Instrução 01/2024 do TCE-SP segue sem nenhum dado específico'},
     assuntos:[
       {titulo:'LC 709/93 — Lei Orgânica do TCE-SP',acerto:86.9,diffMedia:6,relevancia:5,tempoCump:'2h',questoes:30,acertos:26},
       {titulo:'Regimento Interno do TCE-SP + Sistema Controle CF/88',acerto:85.3,diffMedia:5,relevancia:5,tempoCump:'2h',questoes:30,acertos:26},
@@ -2256,7 +2424,7 @@ const GURUJA_SEED={
     ]},
   'Dir. Penal':{
     importadoEm:'2026-07-19',jornada:18,nivel:'Bom',ferramenta:'TecConcursos',
-    desempenhoHistorico:{acertos:16,questoes:18,pctAcerto:89,tempoMedio:'2h',reforcoPendente:'Primeiro diagnóstico real (simulado 13-19/07) — bem acima da meta, manutenção leve'},
+    desempenhoHistorico:{acertos:96,questoes:114,pctAcerto:84.2,tempoMedio:'2h',reforcoPendente:'Agregado real 84,2% (114q) — exatamente na média da plataforma (0,0pp), nem vantagem nem desvantagem relativa'},
     assuntos:[
       {titulo:'Crimes contra a Administração Pública (arts. 312 a 337-A CP)',acerto:null,diffMedia:0,relevancia:5,tempoCump:'2h',questoes:0,acertos:0},
       {titulo:'Crimes contra as Finanças Públicas (arts. 359-A a 359-H CP) e Lei 10.028/2001',acerto:null,diffMedia:0,relevancia:5,tempoCump:'1h30m',questoes:0,acertos:0},
@@ -2265,7 +2433,7 @@ const GURUJA_SEED={
     ]},
   'Direito Empresarial (Comercial)':{
     importadoEm:'2026-08-18',jornada:1,nivel:'Diagnóstico',ferramenta:'Guruja',
-    desempenhoHistorico:{acertos:46,questoes:60,pctAcerto:76.7,tempoMedio:'1h30m',reforcoPendente:'3 atividades reais, todas abaixo da média da plataforma (-3,9% a -6,6%) — padrão consistente, não é 1 ponto isolado. Recuperação Judicial/Falência (maior peso, 40%) e Estatuto ME/EPP seguem sem nenhum dado.'},
+    desempenhoHistorico:{acertos:59,questoes:78,pctAcerto:75.6,tempoMedio:'1h30m',reforcoPendente:'Agregado real 75,6% (78q) — ABAIXO da média da plataforma (78,6%, diff -3,0%), a pior posição relativa do sistema. Recuperação Judicial/Falência (maior peso, 40%) e Estatuto ME/EPP seguem sem nenhum dado além das sessões de Teoria'},
     assuntos:[
       {titulo:'Direito de Empresa',acerto:80,diffMedia:-3.9,relevancia:4,tempoCump:'1h',questoes:20,acertos:16},
       {titulo:'Direito Societário',acerto:70,diffMedia:-5.9,relevancia:4,tempoCump:'2h',questoes:20,acertos:14},
@@ -2879,7 +3047,7 @@ Anki: ${ankiMaterias.map(m=>`${m.mat}(${m.cards}cards)`).join(', ')}.
 TEC hoje: ${tecHoje.d3.length} itens vencendo, ${tecHoje.d15.length} próximos.
 NLM urgente: ${nlmSugerido?.mat||'-'} (${nlmSugerido?.pct||'?'}%, ${nlmSugerido?.diasNlm||0}d sem NLM).
 ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
-      const res=await chamarClaude(`Você é assessora de estudos da Ritchely para TCE-SP 2026 (VUNESP · Prova 11/10/2026 · Cargo Auditor Controle Externo DIPE/Direito). Carro-chefe: Discursiva + Raciocínio Lógico (76,4%, lacuna de base) + Dir. Tributário (76,1%, esquecimento). Gates eliminatórios: Gerais 60% (12/20q) · Específicos 60% (36/60q) · Discursiva 60% (24/40p). TEC=caderno sem datas, só dificuldade. ANKI=75 cards/dia em 3 matérias. Rev.1h30=Obsidian+TEC+Anki. Responda em 3 linhas diretas. ${cobrar?'Cobre o que não foi feito ontem.':''}` ,
+      const res=await chamarClaude(`Você é assessora de estudos da Ritchely para SEFAZ-SC 2026 (FCC · Prova 22/11/2026 · Auditor Estadual de Finanças Públicas — Direito). Prioridade: Específicos (peso 2) — Previdenciário é o maior buraco; depois legislação de SC e Ciência de Dados. Sem discursiva; corte = nota padronizada ≥150. TEC=caderno sem datas, só dificuldade. ANKI=75 cards/dia em 3 matérias. Rev.1h30=Obsidian+TEC+Anki. Responda em 3 linhas diretas. ${cobrar?'Cobre o que não foi feito ontem.':''}` ,
         [{role:'user',content:ctx}],120);
       lsSet(`despacho_ia_${hoje}`,res);setDespacho(res);
     }catch(e){console.log(e);}
@@ -2995,71 +3163,45 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
         </div>
       </div>
 
-      {/* ── GATES TCE-SP — 3 cortes eliminatórios independentes ── */}
+      {/* ── SEFAZ-SC · FCC — nota padronizada (sem mínimo por prova; corte = soma ponderada ≥ 150) ── */}
       {(()=>{
-        const fase='Diagnóstico';
+        const dataMeta='22/11/2026';
+        const diasRestantes=Math.ceil((new Date('2026-11-22T00:00:00')-new Date())/86400000);
+        const proj=calcProjecaoNotaFinal();
         const faseColor='#fb923c';
-        const dataMeta='11/10/2026';
-        const hoje=new Date();
-        const prova=new Date('2026-10-11');
-        const diasRestantes=Math.ceil((prova-hoje)/86400000);
-        const hist=lsGet('historico_diario',[]);
-        // Estimativas dinâmicas — média real por matéria (Guruja > EDITAL), só entre quem tem dado
-        const guruja=getGurujaAssuntos();
-        const pctMat=mat=>{
-          if(guruja[mat]){
-            const comDado=(guruja[mat].assuntos||[]).filter(a=>a.acerto!=null);
-            if(comDado.length)return Math.round(comDado.reduce((s,a)=>s+a.acerto,0)/comDado.length);
-          }
-          const tops=(EDITAL[mat]?.top||[]).filter(t=>t.acerto!=null);
-          if(tops.length)return Math.round(tops.reduce((s,t)=>s+t.acerto,0)/tops.length);
-          return null;
-        };
-        const matsGerais=EDITAL_MATS.filter(m=>EDITAL[m]?.bloco==='gerais');
-        const matsEspec=EDITAL_MATS.filter(m=>EDITAL[m]?.bloco==='especificos');
-        const pctsGerais=matsGerais.map(pctMat).filter(v=>v!=null);
-        const pctsEspec=matsEspec.map(pctMat).filter(v=>v!=null);
-        const estimGerais=pctsGerais.length?Math.round(pctsGerais.reduce((s,v)=>s+v,0)/pctsGerais.length):null;
-        const estimEspec=pctsEspec.length?Math.round(pctsEspec.reduce((s,v)=>s+v,0)/pctsEspec.length):null;
-        const gates=[
-          {nome:'Conhecimentos Gerais',q:20,min:12,est:estimGerais,cor:'#60a5fa',ic:'📝'},
-          {nome:'Conhecimentos Específicos',q:60,min:36,est:estimEspec,cor:'#a78bfa',ic:'⚖️'},
-          {nome:'Discursiva',q:40,min:24,est:null,cor:'#34d399',ic:'✍️',pontos:true},
+        const caixas=[
+          {nome:'Gerais',ic:'📝',cor:'#60a5fa',q:80,peso:'peso 1',est:proj.pontosGerais,meta:56,metaTxt:'meta interna 70%'},
+          {nome:'Específicos',ic:'⚖️',cor:'#a78bfa',q:100,peso:'peso 2',est:proj.pontosEspec,meta:85,metaTxt:'meta interna 85%'},
         ];
         return(
           <div style={{borderRadius:12,background:'rgba(15,23,42,.6)',border:'1px solid rgba(255,255,255,.08)',marginBottom:12,overflow:'hidden'}}>
-            {/* Header */}
             <div style={{padding:'10px 14px',background:'rgba(255,255,255,.03)',borderBottom:'1px solid rgba(255,255,255,.06)',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
               <div>
-                <div style={{fontSize:13,fontWeight:800,color:'var(--text)',fontFamily:"'DM Mono',monospace",letterSpacing:'1px'}}>TCE-SP · VUNESP · {dataMeta}</div>
-                <div style={{fontSize:13,color:faseColor,marginTop:1}}>📍 Fase: {fase} — {diasRestantes} dias para a prova</div>
+                <div style={{fontSize:13,fontWeight:800,color:'var(--text)',fontFamily:"'DM Mono',monospace",letterSpacing:'1px'}}>SEFAZ-SC · FCC · {dataMeta}</div>
+                <div style={{fontSize:13,color:faseColor,marginTop:1}}>📍 Auditor Estadual de Finanças Públicas — Direito · 180 questões em dia único</div>
               </div>
               <div style={{textAlign:'right'}}>
                 <div style={{fontSize:21,fontWeight:900,color:'#f87171',fontFamily:"'DM Mono',monospace",lineHeight:1}}>{diasRestantes}</div>
                 <div style={{fontSize:13,color:'var(--text4)'}}>dias</div>
               </div>
             </div>
-            {/* 3 Gates */}
-            <div style={{padding:'10px 14px',display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8}}>
-              {gates.map(g=>{
-                const pctEst=g.est?Math.round(g.est/100*g.q):null;
-                const passa=pctEst&&pctEst>=g.min;
-                const cor=pctEst===null?'#aab6c8':passa?'#34d399':'#f87171';
+            <div style={{padding:'10px 14px',display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
+              {caixas.map(g=>{
+                const ok=g.est!=null&&g.est>=g.meta;
+                const cor=g.est==null?'#aab6c8':ok?'#34d399':'#f87171';
                 return(
                   <div key={g.nome} style={{textAlign:'center',padding:'8px 4px',borderRadius:8,background:`${g.cor}08`,border:`1px solid ${g.cor}20`}}>
                     <div style={{fontSize:16}}>{g.ic}</div>
-                    <div style={{fontSize:13,color:g.cor,fontFamily:"'DM Mono',monospace",fontWeight:700,marginTop:3,lineHeight:1.3}}>{g.nome.replace('Conhecimentos ','')}</div>
-                    <div style={{fontSize:13,color:'var(--text4)',marginTop:2}}>mín. {g.min}{g.pontos?'pts':'/'+g.q+'q'}</div>
-                    <div style={{fontSize:15,fontWeight:900,color:cor,fontFamily:"'DM Mono',monospace",marginTop:2}}>
-                      {pctEst!==null?`~${pctEst}/${g.q}`:'—'}
-                    </div>
-                    <div style={{fontSize:13,color:cor,fontWeight:700}}>{pctEst===null?'sem dado':passa?'✅ OK':'⚠️ risco'}</div>
+                    <div style={{fontSize:13,color:g.cor,fontFamily:"'DM Mono',monospace",fontWeight:700,marginTop:3}}>{g.nome} · {g.peso}</div>
+                    <div style={{fontSize:13,color:'var(--text4)',marginTop:2}}>{g.metaTxt} = {g.meta}/{g.q}q</div>
+                    <div style={{fontSize:16,fontWeight:900,color:cor,fontFamily:"'DM Mono',monospace",marginTop:2}}>{g.est!=null?`~${g.est}/${g.q}`:'—'}</div>
+                    <div style={{fontSize:13,color:cor,fontWeight:700}}>{g.est==null?'sem dado':ok?'✅ na meta':'⚠️ abaixo da meta'}</div>
                   </div>
                 );
               })}
             </div>
-            <div style={{padding:'6px 14px 10px',fontSize:13,color:'#aab6c6',textAlign:'center'}}>
-              Corte: 60% em cada bloco independente · estimativas baseadas no Guruja atual
+            <div style={{padding:'6px 14px 10px',fontSize:13,color:'#aab6c6',textAlign:'center',lineHeight:1.5}}>
+              Sem mínimo por prova. Corte = soma das notas padronizadas ≥ 150 (= ficar acima da média ponderada do grupo) · desempate: maior nota em Específicos · estimativa inclui matérias ainda sem dado real (veja a aba ⚖️ Decisão)
             </div>
           </div>
         );
@@ -3111,30 +3253,24 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
         );
       })()}
 
-      {/* ── DISCURSIVA DO DIA — técnica da rotação semanal ── */}
+      {/* ── META 1 SEFAZ-SC — cota do dia e candidata a corte (substitui o card da discursiva) ── */}
       {(()=>{
-        const dw=new Date().getDay();
-        const tecId=DISCURSIVA_SEMANA[dw];
-        const regsDisc=lsGet('rev_discursiva',[]);
-        const feitoHoje=regsDisc.some(r=>r.dia===getDK());
-        if(!tecId)return(
-          <div style={{padding:'11px 14px',borderRadius:12,background:'rgba(52,211,153,.06)',border:'1px solid rgba(52,211,153,.22)',marginBottom:12,display:'flex',alignItems:'center',gap:10}}>
-            <span style={{fontSize:20}}>🌴</span>
-            <div style={{flex:1}}>
-              <div style={{fontSize:14,fontWeight:800,color:'#34d399'}}>Discursiva — dia livre</div>
-              <div style={{fontSize:13,color:'var(--text4)'}}>Sábado sem escrita. Descanso real.</div>
-            </div>
-          </div>
-        );
-        const t=DISCURSIVA_TECNICAS[tecId];
+        const fs=new Set(feitos);
+        const diaHoje=Math.min(7,Math.max(1,Math.round((new Date().setHours(0,0,0,0)-CICLO_INI_MS)/86400000)+1));
+        const hojeLista=CICLO.filter(c=>c.dia===diaHoje);
+        const feitasHoje=hojeLista.filter(c=>fs.has(c.id)).length;
+        const trab=ehDiaTrabalho(new Date().getDay());
+        const corteTop=calcOrdemCorte().find(c=>c.dec.veredito!=='NUNCA CORTAR');
+        const cor=feitasHoje>=hojeLista.length&&hojeLista.length>0?'#34d399':'#fbbf24';
         return(
-          <div style={{padding:'11px 14px',borderRadius:12,background:feitoHoje?'rgba(52,211,153,.09)':`${t.cor}0d`,border:`1px solid ${feitoHoje?'rgba(52,211,153,.3)':t.cor+'35'}`,marginBottom:12,display:'flex',alignItems:'center',gap:10}}>
-            <span style={{fontSize:20}}>{feitoHoje?'✅':t.ic}</span>
+          <div style={{padding:'11px 14px',borderRadius:12,background:`${cor}0d`,border:`1px solid ${cor}35`,marginBottom:12,display:'flex',alignItems:'center',gap:10}}>
+            <span style={{fontSize:20}}>{feitasHoje>=hojeLista.length&&hojeLista.length>0?'✅':'📋'}</span>
             <div style={{flex:1,minWidth:0}}>
-              <div style={{fontSize:13,color:feitoHoje?'#34d399':t.cor,fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px'}}>DISCURSIVA DE HOJE</div>
-              <div style={{fontSize:15,fontWeight:800,color:'var(--text)'}}>{t.nome}</div>
+              <div style={{fontSize:13,color:cor,fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px'}}>META 1 · HOJE {feitasHoje}/{hojeLista.length} · máx. 1h cada · {trab?'💼 dia de trabalho':'🌴 dia livre'}</div>
+              {corteTop&&<div style={{fontSize:14,fontWeight:700,color:'var(--text)'}}>Se apertar, corte primeiro: #{corteTop.id} {corteTop.mat}</div>}
+              {corteTop&&<div style={{fontSize:13,color:'var(--text4)'}}>{corteTop.conteudo}</div>}
             </div>
-            <button onClick={()=>onSetTab&&onSetTab('discursiva')} style={{padding:'8px 12px',borderRadius:9,border:`1px solid ${t.cor}40`,background:`${t.cor}12`,color:t.cor,fontSize:14,fontWeight:800,cursor:'pointer',flexShrink:0}}>→ Ir</button>
+            <button onClick={()=>onSetTab&&onSetTab('discursiva')} style={{padding:'8px 12px',borderRadius:9,border:`1px solid ${cor}40`,background:`${cor}12`,color:cor,fontSize:14,fontWeight:800,cursor:'pointer',flexShrink:0}}>Decisão ›</button>
           </div>
         );
       })()}
@@ -3167,7 +3303,7 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
         const cor=verde?'#34d399':'#f87171';
         const feitosSet=new Set(feitos);
         // Bloco de HOJE, pela data real — cicloInicio = 13/07/2026 (dia 1)
-        const cicloInicio=new Date(2026,7,31).setHours(0,0,0,0);
+        const cicloInicio=CICLO_INI_MS;
         const hojeMs2=new Date().setHours(0,0,0,0);
         const diaHoje=Math.round((hojeMs2-cicloInicio)/86400000)+1;
         const blocosHoje=CICLO.filter(s=>s.dia===diaHoje&&!feitosSet.has(s.id));
@@ -4049,8 +4185,8 @@ function TabEstudo({feitos,cicloNum,horas,onConcluir,onIrPara,onDesmarcar,onAddH
     setGurujaLoad(true);
     try{
       const r=await chamarClaude(
-        `Coach de concursos especializada em TCE-SP 2026 (VUNESP). Analise os dados do Guruja e monte plano inteligente considerando os 3 gates eliminatórios e o foco em Discursiva + Português + Auditoria.
-Pesos: AFO=5,Contabilidade=5,Auditoria=5,Controle Externo=5,Dir.Adm=4,Dir.Const=4,Dir.Tributário=3,Português=3,RL=3,TI=2,Adm.Pública=2,Dir.Civil=2,Dir.Processual=2,Dir.Penal=2.
+        `Coach de concursos especializada em SEFAZ-SC 2026 (FCC). Analise os dados do Guruja e monte plano inteligente: Específicos valem peso 2 (Const, Adm, Financeiro/AFO, Previdenciário, Civil, Penal) e Gerais peso 1 (Português, RL/Mat.Fin/Estatística, Ciência de Dados, Ética, Regionais SC). Sem discursiva; sem mínimo por prova.
+Relevâncias (peso×incidência estimada): Previdenciário=5, Civil=5, Penal=5, Const=5, AFO=4, Adm=4, Português=3, Ciência de Dados=3, Ética=2, Regionais SC=2, RL/Mat.Fin/Estatística=2.
 Ciclo atual: bloco ${ativo?.mat||'indefinido'}. Meta: ${metaHoras}h/semana. Contexto: ${contextSem||'semana normal'}.
 APENAS JSON sem markdown: {"diagnostico":"2 frases","plano":[{"mat":"nome","horasSugeridas":2.5,"prioridade":1,"motivo":"por que","taxa":82.0,"status":"critica|atencao|ok"}],"alerta":"materia mais urgente"}`,
         [{role:'user',content:`Dados Guruja:\n${gurujaTxt.slice(0,6000)}`}],1500
@@ -4126,8 +4262,8 @@ APENAS JSON sem markdown: {"diagnostico":"2 frases","plano":[{"mat":"nome","hora
     setGurujaLoad(true);
     try{
       const r=await chamarClaude(
-        `Coach de concursos especializada em Guruja/TCE-SP (VUNESP). Analise desempenho da Ritchely e cruze taxa de acerto com relevância para os gates do TCE-SP: Gerais (Português+RL+Ética+Legislação) e Específicos (6 disciplinas jurídicas).
-Relevâncias: AFO=5, Contabilidade=5, Auditoria=5, Controle Externo=5, Dir.Adm=4, Dir.Const=4, Dir.Tributário=3, Português=3, RL=3, TI=2, Adm.Pública=2, Dir.Civil=2, Dir.Processual=2, Dir.Penal=2.
+        `Coach de concursos especializada em Guruja/SEFAZ-SC (FCC). Analise desempenho da Ritchely e cruze taxa de acerto com relevância: Específicos (peso 2: Const, Adm, Financeiro/AFO, Previdenciário, Civil, Penal) e Gerais (peso 1: Português, RL/Mat.Fin/Estatística, Ciência de Dados, Ética, Regionais SC).
+Relevâncias: Previdenciário=5, Civil=5, Penal=5, Const=5, AFO=4, Adm=4, Português=3, Ciência de Dados=3, Ética=2, Regionais SC=2, RL/Mat.Fin/Estatística=2.
 APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia":5,"status":"critica|atencao|ok","acao":"o que fazer"}],"resumo":"2 frases diretas","alerta":"materia mais critica"}`,
         [{role:'user',content:`Dados Guruja:\n${gurujaTxt.slice(0,6000)}`}],1200
       );
@@ -4477,19 +4613,37 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
           <span style={{fontSize:14,color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:700,flexShrink:0}}>{feitos.length}/{N}</span>
         </div>
         <div style={{display:'flex',gap:6,marginBottom:14}}>
-          {[[N,'blocos · 45min'],[`${Math.round(N*0.75)}h`,'total ciclo'],[`#${cicloNum}`,'ciclo atual']].map(([v,l],i)=>(
+          {[[N,'atividades · máx 1h'],[`${Math.round(CICLO_H)}h`,'total da meta'],[`#${cicloNum}`,'meta atual']].map(([v,l],i)=>(
             <div key={i} style={{flex:1,padding:'8px 4px',borderRadius:9,textAlign:'center',background:'rgba(251,191,36,.04)',border:'1px solid rgba(251,191,36,.1)'}}>
               <div style={{fontSize:15,fontWeight:900,color:'#fbbf24',fontFamily:"'DM Mono',monospace",lineHeight:1}}>{v}</div>
               <div style={{fontSize:13,color:'#aab6c6',marginTop:2}}>{l}</div>
             </div>
           ))}
         </div>
+        {/* Dias de trabalho — a fila da Meta redistribui (4 atividades em dia de trabalho, 5 em dia livre) */}
+        {(()=>{
+          const dias=getDiasTrabalho();
+          const nomes=[[1,'Seg'],[2,'Ter'],[3,'Qua'],[4,'Qui'],[5,'Sex'],[6,'Sáb'],[0,'Dom']];
+          const tog=d=>{const n=dias.includes(d)?dias.filter(x=>x!==d):[...dias,d];lsSet('dias_trabalho',n.length?n:[d]);window.location.reload();};
+          return(
+            <div style={{padding:'10px 12px',borderRadius:11,background:'rgba(96,165,250,.06)',border:'1px solid rgba(96,165,250,.25)',marginBottom:12}}>
+              <div style={{fontSize:13,color:'#60a5fa',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:6}}>💼 DIAS DE TRABALHO DESTA SEMANA (toque para marcar)</div>
+              <div style={{display:'flex',gap:6}}>
+                {nomes.map(([d,l])=>{
+                  const on=dias.includes(d);
+                  return(<button key={d} onClick={()=>tog(d)} style={{flex:1,padding:'8px 0',borderRadius:8,cursor:'pointer',fontSize:14,fontWeight:800,border:`1px solid ${on?'#60a5fa':'rgba(148,163,184,.3)'}`,background:on?'rgba(96,165,250,.2)':'transparent',color:on?'#60a5fa':'var(--text4)'}}>{l}</button>);
+                })}
+              </div>
+              <div style={{fontSize:13,color:'var(--text4)',marginTop:6}}>Dia de trabalho = 4 atividades (até 09:30) · dia livre = 5. A fila se redistribui sozinha pelos dias que restam.</div>
+            </div>
+          );
+        })()}
         {/* Blocos agrupados por dia */}
         {(()=>{
           const diasTrabalhoCiclo=getDiasTrabalho();
           const DIAS_CICLO11={};
           [...new Set(CICLO.map(s=>s.dia))].forEach(dd=>{
-            DIAS_CICLO11[dd]=`Dia ${dd} · ${diasTrabalhoCiclo.includes(dd)?'trabalho':'livre'}`;
+            DIAS_CICLO11[dd]=`Dia ${dd} · ${diasTrabalhoCiclo.includes(dd%7)?'trabalho':'livre'}`;
           });
           const diasUnicos=[...new Set(CICLO.map(s=>s.dia))].sort((a,b)=>a-b);
           return diasUnicos.map(dia=>{
@@ -4577,7 +4731,7 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
 
       {aba==='stats'&&<div>
         <div style={{display:'flex',gap:8,marginBottom:14}}>
-          {[['Hoje',fmtMin(minHoje),'#60a5fa'],['Semana',fmtMin(minSem),'#fbbf24'],['Meta ciclo',`${Math.round(N*0.75)}h`,'#34d399']].map(([l,v,c])=>(
+          {[['Hoje',fmtMin(minHoje),'#60a5fa'],['Semana',fmtMin(minSem),'#fbbf24'],['Meta ciclo',`${Math.round(CICLO_H)}h`,'#34d399']].map(([l,v,c])=>(
             <div key={l} style={{flex:1,padding:'14px 8px',borderRadius:12,background:`${c}08`,border:`1px solid ${c}20`,textAlign:'center'}}>
               <div style={{fontSize:18,fontWeight:900,color:c,fontFamily:"'DM Mono',monospace"}}>{v}</div>
               <div style={{fontSize:13,color:'#c2ccd8',marginTop:4}}>{l}</div>
@@ -5302,7 +5456,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
   const LABELS_DIF=['FÁCIL','TRANQUILO','MÉDIO','DIFÍCIL','MUITO DIFÍCIL'];
 
   // Tempo Morto calculado no App e passado como prop tmSugestao
-  const tempoMorto=tmSugestao||{anki:{mat:'Dir. Financeiro / AFO',difMedia:0,diasSem:0},nlm:{mat:'Discursivas',difMedia:0,diasSem:0},ranking:[],travouRecente:[]};
+  const tempoMorto=tmSugestao||{anki:{mat:'Dir. Financeiro / AFO',difMedia:0,diasSem:0},nlm:{mat:'Dir. Previdenciário',difMedia:0,diasSem:0},ranking:[],travouRecente:[]};
 
   // Fix 1h30 — conta blocos desde última revisão
   const ultimaRev=rev1h30Regs.length>0?rev1h30Regs[rev1h30Regs.length-1]:null;
@@ -5321,7 +5475,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
       const historico2=lsGet('historico_diario',[]);
       const ranking=Object.entries(historico2.reduce((acc,r)=>{if(r.materia&&r.questoes){acc[r.materia]=acc[r.materia]||{q:0,a:0};acc[r.materia].q+=parseInt(r.questoes)||0;acc[r.materia].a+=parseInt(r.acertei)||0;}return acc;},{})).map(([m,v])=>({m,pct:v.q>0?Math.round(v.a/v.q*100):null})).sort((a,b)=>(a.pct||100)-(b.pct||100));
       const ctx=`Ciclo atual: bloco ${totalBlocos}/${N}. Motor local sugere Anki: ${tempoMorto.anki.mat} e NLM: ${tempoMorto.nlm.mat}. ${fmtRanking()}. Travou recentemente: ${tempoMorto.travouRecente.join('; ')||'nada'}. Guruja: ${lsGet('guruja_data',null)?.alerta||'sem dado'}.`;
-      const res=await chamarClaude('Você é assistente de estudos para concurso TCE-SP (VUNESP). Responda APENAS JSON sem markdown: {"anki":"nome_materia","nlm":"nome_materia","motivo":"1 frase explicando por que essas matérias agora"}',
+      const res=await chamarClaude('Você é assistente de estudos para concurso SEFAZ-SC (FCC). Responda APENAS JSON sem markdown: {"anki":"nome_materia","nlm":"nome_materia","motivo":"1 frase explicando por que essas matérias agora"}',
         [{role:'user',content:ctx}],200);
       const parsed=JSON.parse(res.replace(/```json|```/g,'').trim());
       const cache={...parsed,dia:dk};
@@ -5354,8 +5508,8 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
       const hist=lsGet('historico_diario',[]);
       const por={};hist.forEach(r=>{if(r.materia&&r.questoes){por[r.materia]=por[r.materia]||{q:0,a:0};por[r.materia].q+=parseInt(r.questoes)||0;por[r.materia].a+=parseInt(r.acertei)||0;}});
       const ranking=Object.entries(por).map(([m,v])=>({m,pct:v.q>0?Math.round(v.a/v.q*100):null,q:v.q})).sort((a,b)=>(a.pct||100)-(b.pct||100));
-      const ctx=`Pesos TCE-SP VUNESP: Discursiva=MAX, Português=MAX (Interpretação 64%), Auditoria=MAX (estimativa 40%), Dir.Financeiro/AFO=MAX, Dir.Adm=MAX, Dir.Tributário=MAX, Dir.Constitucional=MAX, Dir.Civil=MÉDIA, RL=ALTA (sem dado). Aproveitamento atual (pior→melhor): ${ranking.slice(0,8).map(r=>`${r.m}:${r.pct!==null?r.pct+'%':'sem dado'}(${r.q}Q)`).join(', ')}. Ciclo atual: bloco ${totalBlocos}/${N}. Manuais já marcados: ${criticosManuais.map(x=>x.mat).join(', ')||'nenhum'}.`;
-      const res=await chamarClaude('Você é mentor de TCE-SP (VUNESP). Analise e retorne JSON: {"sugestoes":[{"mat":"nome","motivo":"1 frase objetiva","prioridade":"alta|media"}]} — máximo 4 sugestões que complementem os manuais. Sem markdown.',
+      const ctx=`Pesos SEFAZ-SC FCC: Específicos (peso 2) = Previdenciário=MAX (maior buraco), Civil, Penal, Const, Adm, AFO; Gerais (peso 1) = Português, Ciência de Dados, Ética, Regionais SC, RL/Mat.Fin/Estatística (menor retorno por hora). Sem discursiva. Aproveitamento atual (pior→melhor): ${ranking.slice(0,8).map(r=>`${r.m}:${r.pct!==null?r.pct+'%':'sem dado'}(${r.q}Q)`).join(', ')}. Ciclo atual: bloco ${totalBlocos}/${N}. Manuais já marcados: ${criticosManuais.map(x=>x.mat).join(', ')||'nenhum'}.`;
+      const res=await chamarClaude('Você é mentor de SEFAZ-SC (FCC). Analise e retorne JSON: {"sugestoes":[{"mat":"nome","motivo":"1 frase objetiva","prioridade":"alta|media"}]} — máximo 4 sugestões que complementem os manuais. Sem markdown.',
         [{role:'user',content:ctx}],400);
       const parsed=JSON.parse(res.replace(/```json|```/g,'').trim());
       const novas=parsed.sugestoes?.filter(s=>s.mat&&!criticosManuais.find(m=>m.mat===s.mat))||[];
@@ -5531,7 +5685,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
             )}
             {foraEscopoN>0&&(
               <div style={{padding:'8px 12px',borderRadius:9,background:'rgba(148,163,184,.06)',border:'1px solid rgba(148,163,184,.18)',marginBottom:10,fontSize:13,color:'var(--text4)'}}>
-                🗂️ {foraEscopoN} item(ns) de matéria fora do edital TCE-SP estão ocultos aqui (não apagados) — foco só no que cai na sua prova.
+                🗂️ {foraEscopoN} item(ns) de matéria fora do edital SEFAZ-SC estão ocultos aqui (não apagados) — foco só no que cai na sua prova.
               </div>
             )}
             <div style={{padding:'12px 14px',borderRadius:12,background:'rgba(96,165,250,.06)',border:'1px solid rgba(96,165,250,.2)',marginBottom:14}}>
@@ -6121,191 +6275,132 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
 
 // ─── TAB: AGENDA ─────────────────────────────────────────────
 // ─── ABA: MAPA DA PROVA ──────────────────────────────────────
+// ═══ ABA DECISÃO (id 'discursiva' preservado) — peso × nível × custo-benefício por matéria ═══
 function TabDiscursiva(){
-  const hoje=getDK();
-  const diaSemanaNum=new Date().getDay();
-  const tecnicaHojeId=DISCURSIVA_SEMANA[diaSemanaNum];
-  const tecnicaHoje=tecnicaHojeId?DISCURSIVA_TECNICAS[tecnicaHojeId]:null;
-  const[discRegs,setDiscRegs]=useState(()=>lsGet('rev_discursiva',[]));
-  const[discForm,setDiscForm]=useState({mat:'',topico:'',tecnica:tecnicaHojeId||'blurting',tempo:'',foiCorrigida:false,nota:'',erros:[]});
-  const[discSalvo,setDiscSalvo]=useState(false);
-
-  const prioridade=discForm.mat?calcPrioridadeDiscursiva(discForm.mat):null;
-  const toggleErro=id=>setDiscForm(f=>({...f,erros:f.erros.includes(id)?f.erros.filter(e=>e!==id):[...f.erros,id]}));
-
-  const salvarDisc=()=>{
-    if(!discForm.mat||!discForm.tecnica)return;
-    const novo={...discForm,prioridade:prioridade?.label||null,id:Date.now(),dt:Date.now(),dia:hoje};
-    const n=[...discRegs,novo];setDiscRegs(n);lsSet('rev_discursiva',n);
-    const mins=parseInt(discForm.tempo)||0;
-    if(mins>0){const h=lsGet('horas',[]);lsSet('horas',[...h,{mat:`Discursiva — ${discForm.mat}`,min:mins,dt:Date.now()}]);}
-    setDiscForm({mat:'',topico:'',tecnica:tecnicaHojeId||'blurting',tempo:'',foiCorrigida:false,nota:'',erros:[]});
-    setDiscSalvo(true);setTimeout(()=>setDiscSalvo(false),2000);
+  const[ver,setVer]=useState(0);
+  const[editando,setEditando]=useState(false);
+  const[sub,setSub]=useState('materias');
+  const dec=useMemo(()=>calcDecisaoMaterias(),[ver]);
+  const corte=useMemo(()=>calcOrdemCorte(),[ver]);
+  const salvarCfg=(campo,mat,valor)=>{
+    const c=JSON.parse(JSON.stringify(getDecisaoCfg()||{q:{},nivel:{}}));
+    if(!c.q)c.q={};if(!c.nivel)c.nivel={};
+    const v=parseFloat(String(valor).replace(',','.'));
+    if(isNaN(v))delete c[campo][mat];else c[campo][mat]=v;
+    lsSet('decisao_cfg',c);setVer(x=>x+1);
   };
-
-  const inicioSemana=new Date();inicioSemana.setDate(inicioSemana.getDate()-inicioSemana.getDay());inicioSemana.setHours(0,0,0,0);
-  const diasSemanaLabels=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
-  const feitoNoDia={};
-  discRegs.forEach(r=>{
-    if((r.dt||0)>=inicioSemana.getTime()){
-      const d=new Date(r.dt).getDay();
-      feitoNoDia[d]=(feitoNoDia[d]||0)+1;
-    }
-  });
-  const regsSemana=discRegs.filter(r=>(r.dt||0)>=inicioSemana.getTime());
-  const minutosSemana=regsSemana.reduce((s,r)=>s+(parseInt(r.tempo)||0),0);
-  const tecnicasTocadas=new Set(regsSemana.map(r=>r.tecnica));
-
+  const limparCfg=()=>{lsSet('decisao_cfg',{q:{},nivel:{}});setVer(x=>x+1);};
+  const CORV={'NUNCA CORTAR':'#34d399','FAZER':'#60a5fa','SE SOBRAR TEMPO':'#fbbf24','CORTAR PRIMEIRO':'#f87171'};
+  const ICV={'NUNCA CORTAR':'🔒','FAZER':'✅','SE SOBRAR TEMPO':'🟡','CORTAR PRIMEIRO':'✂️'};
+  const totQ={gerais:0,especificos:0};dec.forEach(d=>{totQ[d.bloco]+=d.q;});
+  const chip=(txt,cor)=>(<span style={{fontSize:13,padding:'1px 6px',borderRadius:4,background:`${cor}20`,color:cor,fontFamily:"'DM Mono',monospace",fontWeight:700,whiteSpace:'nowrap'}}>{txt}</span>);
+  const Subtab=({id,l})=>(
+    <button onClick={()=>setSub(id)} style={{flex:1,padding:'8px 6px',borderRadius:9,cursor:'pointer',fontSize:14,fontWeight:800,border:`1px solid ${sub===id?'#fbbf24':'rgba(148,163,184,.3)'}`,background:sub===id?'rgba(251,191,36,.12)':'transparent',color:sub===id?'#fbbf24':'var(--text4)'}}>{l}</button>
+  );
   return(
     <div>
-      {tecnicaHoje?(
-        <div style={{padding:'14px 16px',borderRadius:14,background:`${tecnicaHoje.cor}10`,border:`2px solid ${tecnicaHoje.cor}40`,marginBottom:14}}>
-          <div style={{fontSize:13,color:tecnicaHoje.cor,fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:4}}>✍️ TÉCNICA DE HOJE</div>
-          <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:8}}>
-            <span style={{fontSize:23}}>{tecnicaHoje.ic}</span>
-            <div style={{fontSize:18,fontWeight:900,color:'var(--text)'}}>{tecnicaHoje.nome}</div>
-          </div>
-          <div style={{fontSize:14,color:'var(--text3)',lineHeight:1.6}}>{tecnicaHoje.como}</div>
+      <div style={{padding:'13px 15px',borderRadius:13,background:'rgba(251,191,36,.07)',border:'1px solid rgba(251,191,36,.28)',marginBottom:12}}>
+        <div style={{fontSize:13,color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:5}}>⚖️ DECISÃO — PESO × SEU NÍVEL × CUSTO-BENEFÍCIO</div>
+        <div style={{fontSize:14,color:'var(--text3)',lineHeight:1.6}}>
+          Específicos valem <b>2×</b> e Gerais <b>1×</b>. <b>pts</b> = pontos-peso que você ainda pode ganhar na matéria · <b>h</b> = horas estimadas para chegar na meta · <b>pts/h</b> = custo-benefício.
+          Sem mínimo por prova: o corte é a nota padronizada (≥150), então cada desvio perdido em Gerais se compensa com meio desvio em Específicos.
         </div>
-      ):(
-        <div style={{padding:'14px 16px',borderRadius:14,background:'rgba(52,211,153,.08)',border:'2px solid rgba(52,211,153,.3)',marginBottom:14,textAlign:'center'}}>
-          <div style={{fontSize:23}}>🌴</div>
-          <div style={{fontSize:15,fontWeight:800,color:'#34d399',marginTop:4}}>Sábado é seu dia livre de discursiva</div>
-          <div style={{fontSize:13,color:'var(--text4)',marginTop:2}}>Descanso real — sem escrever hoje.</div>
+        <div style={{fontSize:13,color:'var(--text4)',marginTop:6,lineHeight:1.5}}>
+          ⚠️ O edital NÃO publica quantas questões vão para cada matéria. Os números de questões abaixo são hipótese neutra (Gerais {totQ.gerais}/80 · Específicos {totQ.especificos}/100) — edite se tiver informação melhor.
+        </div>
+      </div>
+
+      <div style={{display:'flex',gap:6,marginBottom:12}}>
+        <Subtab id="materias" l="📋 Por matéria"/>
+        <Subtab id="corte" l="✂️ Se atrasar"/>
+      </div>
+
+      {sub==='materias'&&(
+        <div>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+            <div style={{fontSize:13,color:'var(--text4)',fontFamily:"'DM Mono',monospace",fontWeight:700,letterSpacing:'1px'}}>ORDENADO POR pts/h</div>
+            <div style={{display:'flex',gap:6}}>
+              <button onClick={()=>setEditando(e=>!e)} style={{padding:'5px 10px',borderRadius:8,fontSize:13,fontWeight:800,cursor:'pointer',border:'1px solid rgba(96,165,250,.4)',background:editando?'rgba(96,165,250,.18)':'transparent',color:'#60a5fa'}}>{editando?'✔ fechar edição':'✏️ editar questões/nível'}</button>
+              {editando&&<button onClick={limparCfg} style={{padding:'5px 10px',borderRadius:8,fontSize:13,fontWeight:800,cursor:'pointer',border:'1px solid rgba(248,113,113,.4)',background:'transparent',color:'#f87171'}}>voltar ao padrão</button>}
+            </div>
+          </div>
+          {dec.map(d=>{
+            const c=CORV[d.veredito];
+            const nivCor=d.nivel>=85?'#34d399':d.nivel>=70?'#fbbf24':'#f87171';
+            return(
+              <div key={d.mat} style={{marginBottom:8,borderRadius:12,border:`1px solid ${c}35`,background:`${c}07`,overflow:'hidden'}}>
+                <div style={{padding:'10px 12px'}}>
+                  <div style={{display:'flex',alignItems:'center',gap:6,flexWrap:'wrap',marginBottom:6}}>
+                    <span style={{fontSize:15,fontWeight:900,color:'var(--text)'}}>{ICV[d.veredito]} {d.mat}</span>
+                    {chip(d.bloco==='especificos'?'Específicos ×2':'Gerais ×1',d.bloco==='especificos'?'#a78bfa':'#60a5fa')}
+                    <span style={{marginLeft:'auto'}}>{chip(d.veredito,c)}</span>
+                  </div>
+                  <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
+                    <div style={{flex:1,height:7,borderRadius:4,background:'rgba(148,163,184,.2)',position:'relative',overflow:'hidden'}}>
+                      <div style={{position:'absolute',left:0,top:0,bottom:0,width:`${Math.min(100,d.nivel)}%`,background:nivCor,borderRadius:4}}/>
+                      <div style={{position:'absolute',left:`${d.teto}%`,top:0,bottom:0,width:2,background:'#e2e8f0'}}/>
+                    </div>
+                    <span style={{fontSize:14,fontWeight:900,color:nivCor,fontFamily:"'DM Mono',monospace",minWidth:46,textAlign:'right'}}>{Math.round(d.nivel)}%</span>
+                  </div>
+                  <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:6}}>
+                    {chip(`nível: ${d.nivelOrigem}`,d.nivelOrigem==='estimado'?'#fb923c':'#94a3b8')}
+                    {chip(`meta ${d.teto}%`,'#94a3b8')}
+                    {chip(`~${d.q}q`,'#94a3b8')}
+                    {d.estrelas!=null&&chip(`Guruja ★${d.estrelas.toFixed(1)}`,'#fbbf24')}
+                  </div>
+                  <div style={{display:'flex',gap:14,marginBottom:6}}>
+                    {[['pts',d.pts.toFixed(1)],['h',d.horas.toFixed(1)],['pts/h',d.cb.toFixed(2)]].map(([l,v])=>(
+                      <div key={l}><span style={{fontSize:17,fontWeight:900,color:c,fontFamily:"'DM Mono',monospace"}}>{v}</span><span style={{fontSize:13,color:'var(--text4)',marginLeft:4}}>{l}</span></div>
+                    ))}
+                  </div>
+                  <div style={{fontSize:13,color:'var(--text4)',lineHeight:1.5}}>{d.porque}</div>
+                  {editando&&(
+                    <div style={{display:'flex',gap:10,marginTop:8,flexWrap:'wrap'}}>
+                      <label style={{fontSize:13,color:'var(--text3)'}}>questões estimadas{' '}
+                        <input type="number" defaultValue={d.q} onBlur={e=>salvarCfg('q',d.mat,e.target.value)} style={{width:64,padding:'4px 6px',borderRadius:6,border:'1px solid rgba(148,163,184,.4)',background:'transparent',color:'var(--text)',fontSize:14}}/>
+                      </label>
+                      <label style={{fontSize:13,color:'var(--text3)'}}>nível manual (%){' '}
+                        <input type="number" placeholder={String(Math.round(d.nivel))} onBlur={e=>salvarCfg('nivel',d.mat,e.target.value)} style={{width:64,padding:'4px 6px',borderRadius:6,border:'1px solid rgba(148,163,184,.4)',background:'transparent',color:'var(--text)',fontSize:14}}/>
+                      </label>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+          <div style={{padding:'10px 12px',borderRadius:10,background:'rgba(148,163,184,.07)',border:'1px solid rgba(148,163,184,.2)',fontSize:13,color:'var(--text4)',lineHeight:1.6}}>
+            <b>Como o veredito sai:</b> 🔒 Específicos com muitos pontos em jogo ou nível &lt;70% (com ≥8 questões) nunca é cortado · ✅ pts/h alto ou Específicos com pts/h ≥0,5 · 🟡 pts/h ≥0,35 · ✂️ abaixo disso.
+            Nível "estimado" = ainda sem dado real (laranja): troca sozinho quando o Guruja/registros trouxerem acerto. A linha branca na barra é a meta.
+          </div>
         </div>
       )}
 
-      <div style={{marginBottom:16}}>
-        <div style={{fontSize:13,color:'var(--text4)',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:8,letterSpacing:'1px'}}>MAPA DA SEMANA</div>
-        <div style={{display:'flex',gap:4}}>
-          {[1,2,3,4,5,6,0].map(d=>{
-            const tec=DISCURSIVA_SEMANA[d];
-            const info=tec?DISCURSIVA_TECNICAS[tec]:null;
-            const feito=(feitoNoDia[d]||0)>0;
-            const ehHoje=d===diaSemanaNum;
+      {sub==='corte'&&(
+        <div>
+          <div style={{fontSize:14,color:'var(--text3)',lineHeight:1.6,marginBottom:10}}>
+            Se não der para bater a meta, <b>sacrifique de cima para baixo</b>. A ordem cruza o veredito da matéria (peso × seu nível × custo-benefício) e, no empate, as estrelas do Guruja. 🔒 = não corte.
+          </div>
+          {corte.length===0&&<div style={{padding:14,textAlign:'center',color:'var(--text4)'}}>Nenhuma atividade pendente.</div>}
+          {corte.map((c,i)=>{
+            const col=CORV[c.dec.veredito];
             return(
-              <div key={d} style={{flex:1,textAlign:'center',padding:'8px 3px',borderRadius:9,background:feito?'rgba(52,211,153,.15)':ehHoje?`${info?.cor||'#94a3b8'}15`:'rgba(255,255,255,.02)',border:ehHoje?`1px solid ${info?.cor||'#94a3b8'}50`:'1px solid transparent'}}>
-                <div style={{fontSize:13,color:'var(--text4)',fontWeight:700}}>{diasSemanaLabels[d]}</div>
-                <div style={{fontSize:16,marginTop:2}}>{feito?'✅':info?info.ic:'🌴'}</div>
+              <div key={c.id} style={{display:'flex',gap:10,alignItems:'flex-start',padding:'9px 11px',borderRadius:10,marginBottom:6,border:`1px solid ${col}30`,background:`${col}07`}}>
+                <div style={{width:26,height:26,borderRadius:'50%',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',background:`${col}25`,color:col,fontSize:13,fontWeight:900,fontFamily:"'DM Mono',monospace"}}>{c.dec.veredito==='NUNCA CORTAR'?'🔒':i+1}</div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:14,fontWeight:800,color:'var(--text)'}}>{c.ic} {c.mat} <span style={{fontSize:13,color:'var(--text4)',fontFamily:"'DM Mono',monospace",fontWeight:600}}>· #{c.id} · {c.tipo}</span></div>
+                  <div style={{fontSize:13,color:'var(--text4)',marginTop:1}}>{c.conteudo}</div>
+                  <div style={{display:'flex',gap:6,marginTop:4,flexWrap:'wrap'}}>
+                    {chip(c.dec.veredito,col)}
+                    {chip(`pts/h ${c.dec.cb.toFixed(2)}`,'#94a3b8')}
+                    {chip(`Guruja ★${c.est}`,'#fbbf24')}
+                    {chip(`nível ${Math.round(c.dec.nivel)}%`,'#94a3b8')}
+                  </div>
+                </div>
               </div>
             );
           })}
         </div>
-      </div>
-
-      <div style={{padding:'12px',borderRadius:12,background:'rgba(167,139,250,.05)',border:'1px solid rgba(167,139,250,.2)',marginBottom:16}}>
-        <div style={{fontSize:13,letterSpacing:'2px',color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:10}}>✍️ REGISTRAR SESSÃO</div>
-
-        <div style={{marginBottom:8}}>
-          <div style={{fontSize:13,color:'#c2ccd8',marginBottom:5}}>TÉCNICA</div>
-          <div style={{display:'flex',gap:5,flexWrap:'wrap'}}>
-            {Object.entries(DISCURSIVA_TECNICAS).map(([id,t])=>(
-              <button key={id} onClick={()=>setDiscForm(f=>({...f,tecnica:id}))}
-                style={{padding:'7px 10px',borderRadius:7,border:`1px solid ${discForm.tecnica===id?t.cor:'var(--border)'}`,background:discForm.tecnica===id?`${t.cor}18`:'transparent',color:discForm.tecnica===id?t.cor:'var(--text4)',fontSize:13,fontWeight:700,cursor:'pointer'}}>
-                {t.ic} {t.nome}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div style={{marginBottom:8}}>
-          <div style={{fontSize:13,color:'#c2ccd8',marginBottom:4}}>MATÉRIA (conteúdo da peça)</div>
-          <MatBtn value={discForm.mat} onChange={v=>setDiscForm(f=>({...f,mat:v}))} placeholder="Ou digitar matéria..."/>
-          {prioridade&&(
-            <div style={{marginTop:6,fontSize:13,color:prioridade.cor,fontWeight:700}}>
-              Prioridade pra prova: {prioridade.label} {prioridade.pct!=null?`(matéria em ${prioridade.pct}%)`:'(sem dado ainda)'}
-            </div>
-          )}
-        </div>
-
-        <div style={{marginBottom:8}}>
-          <div style={{fontSize:13,color:'#c2ccd8',marginBottom:4}}>TÓPICO</div>
-          <input value={discForm.topico||''} onChange={e=>setDiscForm(f=>({...f,topico:e.target.value}))} placeholder="ex: Improbidade Administrativa" style={{width:'100%',padding:'9px 10px',borderRadius:7,border:'1px solid rgba(167,139,250,.2)',background:'rgba(167,139,250,.04)',color:'#f1f5f9',fontSize:14,outline:'none',boxSizing:'border-box'}}/>
-        </div>
-
-        <div style={{marginBottom:12}}>
-          <div style={{fontSize:13,color:'#c2ccd8',marginBottom:4}}>⏱ TEMPO (min)</div>
-          <input type="number" value={discForm.tempo||''} onChange={e=>setDiscForm(f=>({...f,tempo:e.target.value}))} placeholder="ex: 30" style={{width:'100%',padding:'13px',borderRadius:8,border:'1px solid rgba(167,139,250,.3)',background:'rgba(167,139,250,.06)',color:'#a78bfa',fontSize:21,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
-        </div>
-
-        <div style={{marginBottom:12,padding:'10px',borderRadius:9,background:discForm.foiCorrigida?'rgba(248,113,113,.06)':'transparent',border:discForm.foiCorrigida?'1px solid rgba(248,113,113,.25)':'1px solid transparent'}}>
-          <label style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer'}}>
-            <input type="checkbox" checked={discForm.foiCorrigida} onChange={e=>setDiscForm(f=>({...f,foiCorrigida:e.target.checked}))} style={{width:16,height:16}}/>
-            <span style={{fontSize:13,color:'#c2ccd8',fontWeight:700}}>📝 Essa peça voltou corrigida (registrar nota + tipo de erro)</span>
-          </label>
-          {discForm.foiCorrigida&&(
-            <div style={{marginTop:10}}>
-              <div style={{fontSize:13,color:'#c2ccd8',marginBottom:4}}>NOTA RECEBIDA (0-10)</div>
-              <input type="number" min="0" max="10" step="0.5" value={discForm.nota||''} onChange={e=>setDiscForm(f=>({...f,nota:e.target.value}))} placeholder="ex: 6" style={{width:'100%',padding:'9px',borderRadius:7,border:'1px solid rgba(248,113,113,.25)',background:'rgba(248,113,113,.04)',color:'#f87171',fontSize:18,fontWeight:800,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box',marginBottom:8}}/>
-              <div style={{fontSize:13,color:'#c2ccd8',marginBottom:5}}>TIPO(S) DE ERRO — marque todos que se aplicam</div>
-              <div style={{display:'flex',flexDirection:'column',gap:4}}>
-                {Object.entries(TIPOS_ERRO_DISCURSIVA).map(([id,t])=>(
-                  <label key={id} style={{display:'flex',alignItems:'center',gap:7,padding:'6px 8px',borderRadius:7,background:discForm.erros.includes(id)?'rgba(248,113,113,.12)':'rgba(255,255,255,.02)',cursor:'pointer'}}>
-                    <input type="checkbox" checked={discForm.erros.includes(id)} onChange={()=>toggleErro(id)} style={{width:14,height:14}}/>
-                    <span style={{fontSize:13,color:discForm.erros.includes(id)?'#f87171':'var(--text3)'}}>{t.ic} {t.nome}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        <button onClick={salvarDisc} disabled={!discForm.mat} style={{width:'100%',padding:'13px',borderRadius:9,border:'none',background:discForm.mat?'#a78bfa':'rgba(148,163,184,.2)',color:discForm.mat?'#0f172a':'#aab6c8',fontSize:15,fontWeight:800,cursor:discForm.mat?'pointer':'default'}}>
-          {discSalvo?'✅ SALVO!':'💾 REGISTRAR'}
-        </button>
-      </div>
-
-      {/* PADRÃO DE ERRO — só aparece se houver correções registradas */}
-      {(()=>{
-        const padrao=calcPadraoErroDiscursiva(discRegs);
-        if(padrao.length===0)return null;
-        return(
-          <div style={{padding:'12px 14px',borderRadius:12,background:'rgba(248,113,113,.05)',border:'1px solid rgba(248,113,113,.2)',marginBottom:16}}>
-            <div style={{fontSize:13,color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:8}}>🎯 PADRÃO DE ERRO — o que mais se repete nas correções</div>
-            {padrao.map(p=>(
-              <div key={p.id} style={{display:'flex',alignItems:'center',gap:8,marginBottom:5}}>
-                <span style={{fontSize:15}}>{p.ic}</span>
-                <span style={{fontSize:14,color:'var(--text)',flex:1}}>{p.nome}</span>
-                <span style={{fontSize:14,fontWeight:900,color:'#f87171',fontFamily:"'DM Mono',monospace"}}>{p.n}x</span>
-              </div>
-            ))}
-            <div style={{fontSize:13,color:'var(--text4)',marginTop:6}}>Se o mesmo tipo se repetir por 3+ semanas, é sinal de treinar especificamente ele — não discursiva em geral.</div>
-          </div>
-        );
-      })()}
-
-      <div style={{padding:'12px 14px',borderRadius:12,background:'rgba(96,165,250,.06)',border:'1px solid rgba(96,165,250,.2)',marginBottom:16}}>
-        <div style={{display:'flex',gap:16}}>
-          <div>
-            <div style={{fontSize:21,fontWeight:900,color:'#60a5fa',fontFamily:"'DM Mono',monospace",lineHeight:1}}>{minutosSemana}</div>
-            <div style={{fontSize:13,color:'var(--text4)',marginTop:2}}>min essa semana</div>
-          </div>
-          <div>
-            <div style={{fontSize:21,fontWeight:900,color:'#a78bfa',fontFamily:"'DM Mono',monospace",lineHeight:1}}>{regsSemana.length}</div>
-            <div style={{fontSize:13,color:'var(--text4)',marginTop:2}}>sessões</div>
-          </div>
-          <div>
-            <div style={{fontSize:21,fontWeight:900,color:'#34d399',fontFamily:"'DM Mono',monospace",lineHeight:1}}>{tecnicasTocadas.size}/6</div>
-            <div style={{fontSize:13,color:'var(--text4)',marginTop:2}}>técnicas tocadas</div>
-          </div>
-        </div>
-      </div>
-
-      <div style={{fontSize:13,color:'var(--text4)',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:8,letterSpacing:'1px'}}>HISTÓRICO RECENTE</div>
-      {discRegs.length===0&&<div style={{padding:'14px',textAlign:'center',fontSize:14,color:'var(--text4)'}}>Nenhuma sessão registrada ainda.</div>}
-      {[...discRegs].sort((a,b)=>(b.dt||0)-(a.dt||0)).slice(0,12).map(r=>{
-        const t=DISCURSIVA_TECNICAS[r.tecnica];
-        return(
-          <div key={r.id} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'9px 12px',borderRadius:9,background:r.dia===hoje?'rgba(167,139,250,.08)':'rgba(255,255,255,.02)',border:'1px solid rgba(148,163,184,.1)',marginBottom:5}}>
-            <div>
-              <div style={{fontSize:14,color:'var(--text)',fontWeight:700}}>{t?.ic} {t?.nome||r.tecnica} — {r.mat}</div>
-              {r.topico&&<div style={{fontSize:13,color:'#a78bfa',marginTop:1}}>{r.topico}</div>}
-              <div style={{fontSize:13,color:'#c2ccd8'}}>{r.tempo?`${r.tempo}min`:'—'}{r.prioridade?` · prioridade ${r.prioridade}`:''}</div>
-            </div>
-            <div style={{fontSize:13,color:'var(--text4)',fontFamily:"'DM Mono',monospace",flexShrink:0}}>{r.dia===hoje?'hoje':r.dia}</div>
-          </div>
-        );
-      })}
+      )}
     </div>
   );
 }
@@ -7169,7 +7264,7 @@ function ModalConfig({fechar}){
                   </div>
                 ))}
               </div>
-              <div style={{marginTop:8,fontSize:13,color:'#b4c0d1',lineHeight:1.5}}>Top 1% · 16.000 inscritos · Nomeação possível 2026. Lição: o gap de 1,99pt foi na discursiva — por isso ela é carro-chefe no TCE-SP.</div>
+              <div style={{marginTop:8,fontSize:13,color:'#b4c0d1',lineHeight:1.5}}>Top 1% · 16.000 inscritos · Nomeação possível 2026. Lição: o gap de 1,99pt foi na discursiva — lição registrada para provas com discursiva (a SEFAZ-SC não tem).</div>
             </div>
 
             {/* Concursos-alvo */}
@@ -7193,8 +7288,8 @@ function ModalConfig({fechar}){
 
             {/* Legislação específica TCE-SP */}
             <div style={{padding:'12px',borderRadius:11,background:'rgba(251,191,36,.06)',border:'1px solid rgba(251,191,36,.2)'}}>
-              <div style={{fontSize:13,color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:8}}>📖 LEGISLAÇÃO TCE-SP — 30min/dia Anki</div>
-              {LEGISLACAO_TCE_SP.map((l,i)=>(
+              <div style={{fontSize:13,color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:8}}>📖 LEGISLAÇÃO SC / LEI SECA — Anki</div>
+              {LEGISLACAO_ALVO.map((l,i)=>(
                 <div key={i} style={{display:'flex',justifyContent:'space-between',padding:'5px 8px',borderRadius:6,background:'rgba(251,191,36,.06)',marginBottom:4}}>
                   <div>
                     <span style={{fontSize:13,color:'#fbbf24',fontWeight:700,fontFamily:"'DM Mono',monospace"}}>{l.codigo}</span>
@@ -7235,23 +7330,10 @@ function ModalConfig({fechar}){
               ))}
             </div>
 
-            {/* Protocolo discursiva */}
-            <div style={{padding:'12px',borderRadius:11,background:'rgba(251,146,60,.06)',border:'1px solid rgba(251,146,60,.2)'}}>
-              <div style={{fontSize:13,color:'#fb923c',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:6}}>✍️ PROTOCOLO DISCURSIVA</div>
-              <div style={{fontSize:13,color:'#34d399',marginBottom:8,lineHeight:1.5}}>{PROTOCOLO_DISCURSIVA.diagnostico}</div>
-              {PROTOCOLO_DISCURSIVA.treinos.map((t,i)=>(
-                <div key={i} style={{padding:'7px 9px',borderRadius:8,background:'rgba(251,146,60,.06)',border:'1px solid rgba(251,146,60,.18)',marginBottom:5}}>
-                  <div style={{fontSize:13,color:'#fb923c',fontWeight:700}}>{t.tipo}</div>
-                  <div style={{fontSize:13,color:'var(--text4)',marginTop:2}}>{t.frequencia} · {t.formato}</div>
-                  {t.recurso&&<div style={{fontSize:13,color:'#60a5fa',marginTop:2}}>🔗 {t.recurso}</div>}
-                </div>
-              ))}
-            </div>
-
             {/* Info do app */}
             <div style={{padding:'12px',borderRadius:11,background:'rgba(148,163,184,.06)',border:'1px solid rgba(148,163,184,.15)'}}>
               <div style={{fontSize:13,color:'#c2ccd8',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:8}}>⚙️ APP</div>
-              {[['Versão','RITY OS'],['Ciclo atual',`${N} blocos · 45min cada · ${Math.round(N*0.75)}h total`],['Meta semanal',`${lsGet('meta_horas_sem',35)}h`],['Formato','Pt1 = teoria 45min · Pt2 = questões 45min'],['Método','Ciclo Meirelles + Anki + Estudo Reverso'],['Dieta','Low carb · Cetogênico'],['Kauê','Preparatório Colégio Naval — processo separado']].map(([k,v])=>(
+              {[['Versão','RITY OS'],['Meta atual',`${N} atividades · máx. 1h cada · ~${Math.round(CICLO_H)}h`],['Meta semanal',`${lsGet('meta_horas_sem',35)}h`],['Formato','1 atividade do Guruja = máx. 1h (pomodoro 30·5·25)'],['Método','Ciclo Meirelles + Anki + Estudo Reverso'],['Dieta','Low carb · Cetogênico'],['Kauê','Preparatório Colégio Naval — processo separado']].map(([k,v])=>(
                 <div key={k} style={{display:'flex',justifyContent:'space-between',padding:'6px 8px',borderRadius:6,background:'rgba(148,163,184,.06)',marginBottom:3}}>
                   <span style={{fontSize:13,color:'#c2ccd8',fontFamily:"'DM Mono',monospace",fontWeight:700}}>{k}</span>
                   <span style={{fontSize:13,color:'#b4c0d1',textAlign:'right',maxWidth:'65%'}}>{v}</span>
@@ -7851,9 +7933,8 @@ function App(){
         }catch(e){}
       }
     })();
-    // ── Dias de trabalho da semana 31/08-06/09: Ter(2)/Qui(4)/Sex(5) ──
-    // Sem botão na tela ainda pra isso — atualiza direto toda vez que muda de semana.
-    localStorage.setItem('dias_trabalho', JSON.stringify([2,4,5]));
+    // ── Dias de trabalho: agora editáveis pelos botões da aba Estudo › Ciclo (só cria o padrão se não existir) ──
+    if(localStorage.getItem('dias_trabalho')===null)localStorage.setItem('dias_trabalho', JSON.stringify([2,4,5]));
     // ── Seed único: volta pro modo escuro — o claro ficou ruim ──
     (()=>{
       const KEY='rity_seed_volta_escuro_20260810';
@@ -7865,10 +7946,6 @@ function App(){
       }
     })();
     const _f=lsGet('feitos',[]);
-    if(lsGet('ciclo_versao','')!=='v43'){
-      if(_f.length>0)lsSet('feitos',[]);
-      lsSet('cicloNum',25);lsSet('ciclo_versao','v43');
-    }
     setFeitos(lsGet('feitos',[]));setCicloNum(lsGet('cicloNum',1));setHoras(lsGet('horas',[]));setMit(lsGet('mit',[]));
     const tick=setInterval(()=>setClock(new Date()),1000);
     return()=>clearInterval(tick);
@@ -7876,6 +7953,15 @@ function App(){
 
   const feitosSet=useMemo(()=>new Set(feitos),[feitos]);
   const pendentes=useMemo(()=>CICLO.filter(s=>!feitosSet.has(s.id)),[feitosSet]);
+  // Carimba o dia em que cada atividade foi concluída (usado pela fila dinâmica da Meta)
+  useEffect(()=>{
+    try{
+      const dt={...lsGet('feitos_dt',{})};let ch=false;const hojeMs=new Date().setHours(0,0,0,0);
+      feitos.forEach(id=>{if(!dt[id]){dt[id]=hojeMs;ch=true;}});
+      Object.keys(dt).forEach(k=>{if(!feitos.includes(+k)){delete dt[k];ch=true;}});
+      if(ch)lsSet('feitos_dt',dt);
+    }catch(e){}
+  },[feitos]);
   const todayStart=useMemo(()=>{const d=new Date();d.setHours(0,0,0,0);return d.getTime();},[clock.toDateString()]);
   const semStart=todayStart-6*86400000;
   const tmSugestao=useMemo(()=>calcTempoMorto(feitos,horas,historico),[feitos,horas,historico,clock.toDateString()]);
@@ -7928,7 +8014,7 @@ function App(){
     {id:'ia',e:'🤖',l:'IA'},
     {id:'estudo',e:'📚',l:'Estudo'},
     {id:'hoje',e:'📅',l:'Hoje'},
-    {id:'discursiva',e:'✍️',l:'Discursiva'},
+    {id:'discursiva',e:'⚖️',l:'Decisão'},
     {id:'revisao',e:'🧠',l:'Revisão'},
     {id:'dados',e:'📓',l:'Dados'},
     {id:'mapa',e:'📊',l:'Mapa'},
@@ -8025,7 +8111,7 @@ function App(){
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:6}}>
           <div style={{display:'flex',alignItems:'center',gap:7,flexWrap:'wrap'}}>
             <div style={{fontFamily:"'DM Serif Display',serif",fontSize:19,color:'#fbbf24',letterSpacing:'1px',fontWeight:700}}>RITY OS</div>
-            <span style={{fontSize:13,fontWeight:800,letterSpacing:'2px',padding:'2px 6px',borderRadius:3,background:'rgba(251,191,36,.1)',color:'rgba(251,191,36,.6)',border:'1px solid rgba(251,191,36,.2)',fontFamily:"'DM Mono',monospace"}}>TCE-SP</span>
+            <span style={{fontSize:13,fontWeight:800,letterSpacing:'2px',padding:'2px 6px',borderRadius:3,background:'rgba(251,191,36,.1)',color:'rgba(251,191,36,.6)',border:'1px solid rgba(251,191,36,.2)',fontFamily:"'DM Mono',monospace"}}>SEFAZ-SC</span>
             <div style={{width:7,height:7,borderRadius:'50%',background:syncSt==='ok'?'#34d399':syncSt==='syncing'?'#fbbf24':syncSt==='error'?'#f87171':'#aab6c8',transition:'background .4s'}}/>
             {!chaveOK&&<span onClick={()=>setShowCfg(true)} style={{fontSize:13,padding:'2px 6px',borderRadius:3,background:'rgba(248,113,113,.12)',color:'#f87171',border:'1px solid rgba(248,113,113,.3)',cursor:'pointer',fontFamily:"'DM Mono',monospace"}}>⚠️ SEM CHAVE IA</span>}
             {urgentes.length>0&&<span onClick={()=>setTab('revisao')} style={{fontSize:13,padding:'2px 6px',borderRadius:3,background:'rgba(248,113,113,.1)',color:'#f87171',border:'1px solid rgba(248,113,113,.25)',cursor:'pointer',fontFamily:"'DM Mono',monospace"}}>🚨 {urgentes.length} urgente{urgentes.length>1?'s':''}</span>}
@@ -8078,6 +8164,39 @@ function App(){
           <div style={{fontSize:64}}>🏆</div>
           <div style={{fontFamily:"'DM Serif Display',serif",color:'#fbbf24',fontSize:27}}>Ciclo {cicloNum-1} completo!</div>
         </div>
+      )}
+      {showCfg&&<ModalConfig fechar={()=>setShowCfg(false)}/>}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <ErrorBoundary><App/></ErrorBoundary>
+);
+</script>
+
+<script>
+// Service Worker removido — o registro anterior usava URL.createObjectURL(blob),
+// que gera uma URL nova e efêmera a cada carregamento de página. O navegador não
+// consegue comparar/atualizar um Service Worker registrado assim (a checagem de
+// atualização depende de re-buscar a MESMA URL), então uma versão antiga podia
+// ficar presa servindo conteúdo desatualizado — provavelmente a causa do ciclo
+// errado aparecendo mesmo com o arquivo novo já publicado.
+// Limpeza ativa: remove qualquer Service Worker e cache antigos de sessões passadas.
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.getRegistrations().then(regs=>{
+    regs.forEach(r=>r.unregister());
+  }).catch(()=>{});
+}
+if('caches' in window){
+  caches.keys().then(keys=>{
+    keys.forEach(k=>caches.delete(k));
+  }).catch(()=>{});
+}
+</script>
+</body>
+</html>
+  </div>
       )}
       {showCfg&&<ModalConfig fechar={()=>setShowCfg(false)}/>}
     </div>
