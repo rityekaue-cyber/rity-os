@@ -2819,6 +2819,7 @@ function TabHoje({feitos,onAddHoras,onSetTab}){
   const totalH=trabalha?4:6;
 
   // ── Estados colapsáveis ──────────────────────────────────────
+  const[revManual,setRevManual]=useState(()=>lsGet('rev_manual',[]));
   const[abertos,setAbertos]=useState({despacho:true,anki:false,tec:false,nlm:false});
   const toggle=k=>setAbertos(p=>({...p,[k]:!p[k]}));
 
@@ -3162,6 +3163,31 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
           </button>
         </div>
       </div>
+
+      {/* ── PRIORIDADE — revisões que EU escrevi na aba Revisão › Profunda ── */}
+      {(()=>{
+        const pend=revManual.filter(x=>!x.feito);
+        if(pend.length===0)return null;
+        const marcar=id=>{const n=revManual.map(x=>x.id===id?{...x,feito:true,feitoEm:Date.now()}:x);lsSet('rev_manual',n);setRevManual(n);};
+        return(
+          <div style={{padding:'12px 14px',borderRadius:13,background:'rgba(248,113,113,.08)',border:'2px solid rgba(248,113,113,.45)',marginBottom:12}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+              <div style={{fontSize:13,color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px'}}>🔴 PRIORIDADE — REVISAR ({pend.length})</div>
+              <button onClick={()=>onSetTab&&onSetTab('revisao')} style={{padding:'4px 9px',borderRadius:7,border:'1px solid rgba(248,113,113,.4)',background:'transparent',color:'#f87171',fontSize:13,fontWeight:800,cursor:'pointer'}}>Editar ›</button>
+            </div>
+            {pend.map((it,i)=>(
+              <div key={it.id} style={{display:'flex',alignItems:'center',gap:8,padding:'7px 0',borderTop:i>0?'1px solid rgba(248,113,113,.15)':'none'}}>
+                <span style={{fontSize:13,fontWeight:900,color:'#f87171',width:14,flexShrink:0,fontFamily:"'DM Mono',monospace"}}>{i+1}</span>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:15,fontWeight:800,color:'var(--text)'}}>{it.mat}</div>
+                  {it.assunto&&<div style={{fontSize:13,color:'var(--text4)'}}>{it.assunto}</div>}
+                </div>
+                <button onClick={()=>marcar(it.id)} style={{padding:'6px 10px',borderRadius:8,border:'1px solid rgba(52,211,153,.4)',background:'rgba(52,211,153,.1)',color:'#34d399',fontSize:13,fontWeight:800,cursor:'pointer',flexShrink:0}}>✓ Revisei</button>
+              </div>
+            ))}
+          </div>
+        );
+      })()}
 
       {/* ── SEFAZ-SC · FCC — nota padronizada (sem mínimo por prova; corte = soma ponderada ≥ 150) ── */}
       {(()=>{
@@ -5217,29 +5243,28 @@ function TabRevProfunda({totalBlocos}){
   const CORS_DIF=['#34d399','#a3e635','#fbbf24','#fb923c','#f87171'];
   const mats=CICLO.map(s=>s.mat).filter((v,i,a)=>a.indexOf(v)===i);
 
-  // Fila priorizada — motor novo: matérias/tópicos que fecharam abaixo de 80% (Guruja real, senão EDITAL)
-  const abaixo80=calcProfunda80();
-  const porMatAbaixo={};
-  abaixo80.forEach(it=>{
-    if(!porMatAbaixo[it.mat])porMatAbaixo[it.mat]={itens:[],maxScore:0,temCritico:false};
-    porMatAbaixo[it.mat].itens.push(it);
-    porMatAbaixo[it.mat].maxScore=Math.max(porMatAbaixo[it.mat].maxScore,it.score);
-    if(it.critico)porMatAbaixo[it.mat].temCritico=true;
-  });
-  const CORES_MAT=['#f472b6','#a78bfa','#fb923c','#fbbf24','#94a3b8','#60a5fa','#f87171','#34d399'];
-  const FILA_PRIORI=Object.entries(porMatAbaixo)
-    .map(([mat,v],idx)=>({
-      mat,
-      // itens já vêm ordenados por score dentro de abaixo80; mostra os piores primeiro
-      motivo:v.itens.sort((a,b)=>b.score-a.score).slice(0,3).map(it=>`${it.titulo} ${it.acerto}%${it.critico?' 🔴':''}`).join(' · '),
-      ic:v.temCritico?'🚨':'📉',
-      cor:v.temCritico?'#f87171':CORES_MAT[idx%CORES_MAT.length],
-      maxScore:v.maxScore,
-      temCritico:v.temCritico,
-    }))
-    .sort((a,b)=>b.maxScore-a.maxScore);
+  // Lista MANUAL de revisão — escrita pela Ritchely (rev_manual). Vai para o topo da aba Hoje.
+  const[manual,setManual]=useState(()=>lsGet('rev_manual',[]));
+  const[novoMat,setNovoMat]=useState('');
+  const[novoAss,setNovoAss]=useState('');
+  const[itemSel,setItemSel]=useState(null);
+  const gravaManual=n=>{lsSet('rev_manual',n);setManual(n);};
+  const addManual=()=>{
+    const m=novoMat.trim();if(!m)return;
+    gravaManual([...manual,{id:'rm_'+Date.now(),mat:m,assunto:novoAss.trim(),dt:Date.now(),feito:false}]);
+    setNovoMat('');setNovoAss('');
+  };
+  const pendManual=manual.filter(x=>!x.feito);
+  const feitosManual=manual.filter(x=>x.feito);
+  const toggleManual=id=>gravaManual(manual.map(x=>x.id===id?{...x,feito:!x.feito,feitoEm:!x.feito?Date.now():null}:x));
+  const delManual=id=>gravaManual(manual.filter(x=>x.id!==id));
+  const subirManual=id=>{const i=manual.findIndex(x=>x.id===id);if(i<=0)return;const n=[...manual];
+    // sobe até o item pendente anterior
+    let k=i-1;while(k>=0&&n[k].feito)k--;if(k<0)return;[n[k],n[i]]=[n[i],n[k]];gravaManual(n);};
+  const iniciarItem=it=>{setItemSel(it.id);setMatSel(it.mat);setSlot1(s=>({...s,assunto:it.assunto||''}));};
 
   const salvarSessao=()=>{
+
     if(!matSel)return;
     const novo={
       id:'rp_'+Date.now(),mat:matSel,
@@ -5250,6 +5275,7 @@ function TabRevProfunda({totalBlocos}){
     };
     const n=[...hist,novo];
     lsSet('rev_profunda_hist',n);setHist(n);
+    if(itemSel){gravaManual(manual.map(x=>x.id===itemSel?{...x,feito:true,feitoEm:Date.now()}:x));setItemSel(null);}
     // Adiciona os cards Anki ao registro de sessão do dia
     if(parseInt(slot3cards)>0){
       const ankiRegs=lsGet('rev_anki',[]);
@@ -5263,54 +5289,54 @@ function TabRevProfunda({totalBlocos}){
 
   return(
     <div>
-      {/* Status — contador simples */}
-      <div style={{display:'flex',gap:8,alignItems:'center',padding:'10px 14px',borderRadius:11,background:deveAgora?'rgba(167,139,250,.12)':'rgba(167,139,250,.05)',border:`1px solid ${deveAgora?'rgba(167,139,250,.5)':'rgba(167,139,250,.2)'}`,marginBottom:14}}>
-        <div style={{flex:1}}>
-          <div style={{fontSize:15,fontWeight:800,color:'#a78bfa'}}>🔄 Revisão 1h30 {deveAgora?'— HORA DE FAZER! 🚨':''}</div>
-          <div style={{fontSize:13,color:'var(--text4)',marginTop:2}}>
-            {deveAgora?'Você completou 7+ blocos. Reserve 1h30 hoje.':
-            `Faltam ${blocosFaltam} bloco(s) para a próxima revisão.`}
-          </div>
+      {/* Lista manual — o que EU preciso revisar */}
+      <div style={{padding:'12px 14px',borderRadius:12,background:'rgba(167,139,250,.07)',border:'1px solid rgba(167,139,250,.3)',marginBottom:14}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+          <div style={{fontSize:13,color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px'}}>✍️ O QUE PRECISO REVISAR — vai para o topo da aba Hoje</div>
+          <div style={{fontSize:13,color:'var(--text4)',fontFamily:"'DM Mono',monospace"}}>{pendManual.length} pend. · {hist.length} sessões</div>
         </div>
-        <div style={{textAlign:'center',flexShrink:0}}>
-          <div style={{fontSize:23,fontWeight:900,color:'#a78bfa',fontFamily:"'DM Mono',monospace"}}>{hist.length}</div>
-          <div style={{fontSize:13,color:'var(--text4)'}}>sessões</div>
+        <input list="rev-mats" value={novoMat} onChange={e=>setNovoMat(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')addManual();}} placeholder="Matéria (digite ou escolha)…"
+          style={{width:'100%',padding:'10px 12px',borderRadius:9,border:'1px solid rgba(167,139,250,.3)',background:'rgba(167,139,250,.05)',color:'var(--text)',fontSize:15,outline:'none',boxSizing:'border-box',marginBottom:6}}/>
+        <datalist id="rev-mats">{mats.map(m=><option key={m} value={m}/>)}</datalist>
+        <div style={{display:'flex',gap:6}}>
+          <input value={novoAss} onChange={e=>setNovoAss(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')addManual();}} placeholder="Assunto (opcional)…"
+            style={{flex:1,minWidth:0,padding:'10px 12px',borderRadius:9,border:'1px solid rgba(167,139,250,.3)',background:'rgba(167,139,250,.05)',color:'var(--text)',fontSize:15,outline:'none',boxSizing:'border-box'}}/>
+          <button onClick={addManual} disabled={!novoMat.trim()}
+            style={{padding:'10px 16px',borderRadius:9,border:'none',background:novoMat.trim()?'#a78bfa':'var(--border)',color:novoMat.trim()?'#0f172a':'var(--text4)',fontSize:15,fontWeight:900,cursor:'pointer',flexShrink:0}}>+ Add</button>
         </div>
       </div>
 
-      {/* Fila priorizada */}
-      <div style={{marginBottom:14}}>
-        <div style={{fontSize:13,color:'var(--text4)',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:8,letterSpacing:'1px'}}>FILA DO FIM DE SEMANA — urgência real (buraco fundo + gate apertado primeiro) · verde = já revisado neste ciclo</div>
-        {FILA_PRIORI.length===0&&<div style={{padding:'10px 12px',borderRadius:9,background:'rgba(52,211,153,.08)',border:'1px solid rgba(52,211,153,.25)',fontSize:14,color:'#34d399',marginBottom:8}}>✅ Nada com dado real abaixo de 80% no momento. Use a lista completa abaixo.</div>}
-        {FILA_PRIORI.map((f,i)=>{
-          const jaFez=hist.filter(h=>h.mat===f.mat).length;
-          const feitoNoCiclo=hist.some(h=>h.mat===f.mat&&(h.cicloRef||0)>(totalBlocos-7));
-          const sel=matSel===f.mat;
-          const corBase=feitoNoCiclo?'#34d399':f.cor;
-          return(
-            <button key={f.mat} onClick={()=>setMatSel(f.mat)}
-              style={{width:'100%',display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:10,border:`2px solid ${sel?corBase:feitoNoCiclo?'rgba(52,211,153,.3)':'var(--border)'}`,background:sel?`${corBase}10`:feitoNoCiclo?'rgba(52,211,153,.07)':'transparent',cursor:'pointer',marginBottom:6,textAlign:'left'}}>
-              <span style={{fontSize:13,fontWeight:900,color:sel?corBase:'#aab6c8',width:16,flexShrink:0,fontFamily:"'DM Mono',monospace"}}>{i+1}</span>
-              <span style={{fontSize:18,flexShrink:0}}>{feitoNoCiclo?'✅':f.ic}</span>
-              <div style={{flex:1,minWidth:0}}>
-                <div style={{fontSize:15,fontWeight:700,color:sel||feitoNoCiclo?corBase:'var(--text)',display:'flex',alignItems:'center'}}>{f.mat}<BadgeMateria mat={f.mat} tamanho={8}/></div>
-                <div style={{fontSize:13,color:'var(--text4)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{f.motivo}</div>
-              </div>
-              {jaFez>0&&<span style={{fontSize:13,padding:'1px 6px',borderRadius:4,background:'rgba(52,211,153,.12)',color:'#34d399',fontFamily:"'DM Mono',monospace",flexShrink:0}}>{jaFez}x</span>}
-              {sel&&<span style={{fontSize:16,color:corBase,flexShrink:0}}>✓</span>}
-            </button>
-          );
-        })}
-        {/* Outras matérias */}
-        <div style={{display:'flex',flexWrap:'wrap',gap:4,marginTop:4}}>
-          {mats.filter(m=>!FILA_PRIORI.find(f=>f.mat===m)).map(m=>(
-            <button key={m} onClick={()=>setMatSel(m)}
-              style={{padding:'5px 9px',borderRadius:7,border:`1px solid ${matSel===m?'#a78bfa':'var(--border)'}`,background:matSel===m?'rgba(167,139,250,.15)':'transparent',color:matSel===m?'#a78bfa':'var(--text4)',fontSize:13,cursor:'pointer'}}>
-              {m.replace('Dir. ','').replace('/ Análise de Dados','').slice(0,14)}
-            </button>
+      {pendManual.length===0&&<div style={{padding:'12px 14px',borderRadius:10,background:'rgba(255,255,255,.03)',border:'1px dashed var(--border)',fontSize:14,color:'var(--text4)',marginBottom:14,lineHeight:1.6}}>Lista vazia. Escreva acima a matéria que precisa revisar — ela aparece na aba Hoje como prioridade.</div>}
+      {pendManual.map((it,i)=>{
+        const sel=itemSel===it.id;
+        return(
+          <div key={it.id} style={{display:'flex',alignItems:'center',gap:8,padding:'10px 12px',borderRadius:10,border:`2px solid ${sel?'#a78bfa':'var(--border)'}`,background:sel?'rgba(167,139,250,.1)':'transparent',marginBottom:6}}>
+            <span style={{fontSize:13,fontWeight:900,color:'#a78bfa',width:16,flexShrink:0,fontFamily:"'DM Mono',monospace"}}>{i+1}</span>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontSize:15,fontWeight:700,color:'var(--text)',display:'flex',alignItems:'center'}}>{it.mat}<BadgeMateria mat={it.mat} tamanho={8}/></div>
+              {it.assunto&&<div style={{fontSize:13,color:'var(--text4)'}}>{it.assunto}</div>}
+            </div>
+            {i>0&&<button onClick={()=>subirManual(it.id)} title="Subir prioridade" style={{padding:'6px 8px',borderRadius:7,border:'1px solid var(--border)',background:'transparent',color:'var(--text4)',fontSize:13,cursor:'pointer',flexShrink:0}}>▲</button>}
+            <button onClick={()=>iniciarItem(it)} style={{padding:'6px 9px',borderRadius:7,border:'1px solid rgba(167,139,250,.4)',background:'rgba(167,139,250,.12)',color:'#a78bfa',fontSize:13,fontWeight:800,cursor:'pointer',flexShrink:0}}>▶ Sessão</button>
+            <button onClick={()=>toggleManual(it.id)} title="Marcar como revisada" style={{padding:'6px 9px',borderRadius:7,border:'1px solid rgba(52,211,153,.4)',background:'rgba(52,211,153,.1)',color:'#34d399',fontSize:13,fontWeight:800,cursor:'pointer',flexShrink:0}}>✓</button>
+            <button onClick={()=>delManual(it.id)} title="Remover" style={{padding:'6px 9px',borderRadius:7,border:'1px solid rgba(248,113,113,.3)',background:'transparent',color:'#f87171',fontSize:13,cursor:'pointer',flexShrink:0}}>✕</button>
+          </div>
+        );
+      })}
+      {feitosManual.length>0&&(
+        <div style={{marginBottom:14,marginTop:4}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:4}}>
+            <div style={{fontSize:13,color:'var(--text4)',fontFamily:"'DM Mono',monospace",letterSpacing:'1px'}}>✅ REVISADAS ({feitosManual.length})</div>
+            <button onClick={()=>gravaManual(manual.filter(x=>!x.feito))} style={{padding:'3px 8px',borderRadius:6,border:'1px solid var(--border)',background:'transparent',color:'var(--text4)',fontSize:13,cursor:'pointer'}}>limpar</button>
+          </div>
+          {feitosManual.map(it=>(
+            <div key={it.id} style={{display:'flex',alignItems:'center',gap:8,padding:'6px 10px',fontSize:14,color:'#34d399'}}>
+              <span style={{flex:1,minWidth:0,textDecoration:'line-through',opacity:.75}}>{it.mat}{it.assunto?` — ${it.assunto}`:''}</span>
+              <button onClick={()=>toggleManual(it.id)} title="Reabrir" style={{padding:'3px 8px',borderRadius:6,border:'1px solid var(--border)',background:'transparent',color:'var(--text4)',fontSize:13,cursor:'pointer'}}>↺</button>
+            </div>
           ))}
         </div>
-      </div>
+      )}
 
       {/* 3 SLOTS — só aparece se escolheu matéria */}
       {matSel&&(
@@ -5638,7 +5664,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
     {id:'caderno',l:`📕 Questões${(()=>{const n=lsGet('rev_caderno',[]).filter(x=>!x.dominado).length;return n>0?` (${n})`:'';})()}`},
     {id:'anki',   l:'🃏 Memorização'},
     {id:'passiva',l:'🎧 Passiva'},
-    {id:'rev1h30',l:`🔄 Profunda${deveRevisaoProfunda(totalBlocos)?' 🚨':''}`},
+    {id:'rev1h30',l:`🔄 Profunda${(()=>{const n=lsGet('rev_manual',[]).filter(x=>!x.feito).length;return n>0?` (${n})`:'';})()}`},
     {id:'estrategia',l:`🎯 Estratégia${criticosManuais.length>0?` (${criticosManuais.length})`:''}`},
   ];
   // Sub-navegação fina dentro de Passiva e Estratégia
@@ -8164,39 +8190,6 @@ function App(){
           <div style={{fontSize:64}}>🏆</div>
           <div style={{fontFamily:"'DM Serif Display',serif",color:'#fbbf24',fontSize:27}}>Ciclo {cicloNum-1} completo!</div>
         </div>
-      )}
-      {showCfg&&<ModalConfig fechar={()=>setShowCfg(false)}/>}
-    </div>
-  );
-}
-
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <ErrorBoundary><App/></ErrorBoundary>
-);
-</script>
-
-<script>
-// Service Worker removido — o registro anterior usava URL.createObjectURL(blob),
-// que gera uma URL nova e efêmera a cada carregamento de página. O navegador não
-// consegue comparar/atualizar um Service Worker registrado assim (a checagem de
-// atualização depende de re-buscar a MESMA URL), então uma versão antiga podia
-// ficar presa servindo conteúdo desatualizado — provavelmente a causa do ciclo
-// errado aparecendo mesmo com o arquivo novo já publicado.
-// Limpeza ativa: remove qualquer Service Worker e cache antigos de sessões passadas.
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.getRegistrations().then(regs=>{
-    regs.forEach(r=>r.unregister());
-  }).catch(()=>{});
-}
-if('caches' in window){
-  caches.keys().then(keys=>{
-    keys.forEach(k=>caches.delete(k));
-  }).catch(()=>{});
-}
-</script>
-</body>
-</html>
-  </div>
       )}
       {showCfg&&<ModalConfig fechar={()=>setShowCfg(false)}/>}
     </div>
