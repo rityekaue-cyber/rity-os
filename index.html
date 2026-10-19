@@ -242,101 +242,158 @@ const _w=console.warn;console.warn=(...a)=>{if(String(a[0]||'').includes('Babel'
 const{useState,useEffect,useRef,useMemo,useCallback}=React;
 
 // ─── CONSTANTES ───────────────────────────────────────────────
-const CICLO_INI_MS=new Date(2026,9,12).setHours(0,0,0,0); // Meta 1 SEFAZ-SC — dia 1 = seg 12/10/2026
-// ── CICLO — Meta 1 do Guruja (trilha SEFAZ-SC) · 31 atividades · 7 dias (12/10 a 18/10/2026) ──
-// Regras desta meta (combinadas com a Ritchely): máximo 1h por atividade · dia de trabalho = 4 atividades,
-// dia livre = 5. A distribuição por dia NÃO é fixa: é recalculada a cada abertura do app a partir do que
-// já foi feito, dos dias de trabalho (botões na aba Estudo › Ciclo) e dos dias que restam na meta.
-// `est` = estrelas de relevância mostradas pelo Guruja (lidas do print — podem ter erro de leitura).
-const CICLO_BASE=[
-  {id:1,  mat:'Orientações Gerais',          ic:'🧭', cor:'#94a3b8', tag:'🟢 LEVE',    h:0.33, tipo:'Teoria',   ferramenta:'Guruja', est:5, conteudo:'Orientações Gerais sobre a Meta 1'},
-  {id:2,  mat:'Conhecimentos Regionais de SC',ic:'🗺️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:1, tipo:'Teoria',   ferramenta:'Guruja', est:3, conteudo:'Geografia de SC — população, produção agropecuária, exportação, desempenho'},
-  {id:3,  mat:'Dir. Financeiro / AFO',       ic:'📈', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:1, tipo:'Questões', ferramenta:'Guruja', est:4, conteudo:'PPA e LDO'},
-  {id:4,  mat:'Ética Pública',               ic:'🤝', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:1, tipo:'Lei Seca', ferramenta:'Guruja', est:3, conteudo:'Código de Ética e Disciplina dos Servidores Fazendários de SC'},
-  {id:5,  mat:'Dir. Civil',                  ic:'📘', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:1, tipo:'Questões', ferramenta:'Guruja', est:5, conteudo:'LINDB — Lei de Introdução às Normas do Direito Brasileiro'},
-  {id:6,  mat:'Dir. Penal',                  ic:'⚖️', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:1, tipo:'Questões', ferramenta:'Guruja', est:5, conteudo:'Princípios e Crimes contra a Fé Pública'},
-  {id:7,  mat:'Dir. Financeiro / AFO',       ic:'📈', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:1, tipo:'Questões', ferramenta:'Guruja', est:4, conteudo:'LOA, emendas, ciclo orçamentário, DREM'},
-  {id:8,  mat:'Conhecimentos Regionais de SC',ic:'🗺️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:1, tipo:'Teoria',   ferramenta:'Guruja', est:3, conteudo:'Desempenho da agropecuária e do agronegócio de SC (parte 1)'},
-  {id:9,  mat:'Português',                   ic:'📝', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:1, tipo:'Questões', ferramenta:'Guruja', est:4, conteudo:'Interpretação de textos e Redação Oficial'},
-  {id:10, mat:'Ciência e Análise de Dados',  ic:'📊', cor:'#f87171', tag:'🔴 DIFÍCIL', h:1, tipo:'Questões', ferramenta:'Guruja', est:4, conteudo:'LGPD — Lei 13.709/2018'},
-  {id:11, mat:'Ética Pública',               ic:'🤝', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:1, tipo:'Questões', ferramenta:'Guruja', est:2, conteudo:'Decreto 1.171/1994'},
-  {id:12, mat:'Reforma Tributária',          ic:'🧾', cor:'#f87171', tag:'🔴 DIFÍCIL', h:1, tipo:'Questões', ferramenta:'Guruja', est:4, conteudo:'Aspectos gerais e novos princípios'},
-  {id:13, mat:'Dir. Previdenciário',         ic:'🛡️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:1, tipo:'Questões', ferramenta:'Guruja', est:5, conteudo:'RGPS: segurados e benefícios'},
-  {id:14, mat:'Conhecimentos Regionais de SC',ic:'🗺️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:1, tipo:'Teoria',   ferramenta:'Guruja', est:3, conteudo:'Desempenho da agropecuária e do agronegócio de SC (parte 2)'},
-  {id:15, mat:'Dir. Civil',                  ic:'📘', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:1, tipo:'Questões', ferramenta:'Guruja', est:5, conteudo:'Pessoas Naturais'},
-  {id:16, mat:'Dir. Penal',                  ic:'⚖️', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:1, tipo:'Questões', ferramenta:'Guruja', est:4, conteudo:'Crimes contra a Administração Pública — Parte I'},
-  {id:17, mat:'Dir. Financeiro / AFO',       ic:'📈', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:1, tipo:'Lei Seca', ferramenta:'Guruja', est:4, conteudo:'LC 898/2026 — execução de emendas parlamentares em SC'},
-  {id:18, mat:'Dir. Constitucional',         ic:'📜', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:1, tipo:'Questões', ferramenta:'Guruja', est:3, conteudo:'Constituição do Estado de Santa Catarina'},
-  {id:19, mat:'Dir. Administrativo',         ic:'🏛️', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:1, tipo:'Questões', ferramenta:'Guruja', est:3, conteudo:'LC 741/2019 (parte 1)'},
-  {id:20, mat:'Conhecimentos Regionais de SC',ic:'🗺️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:1, tipo:'Teoria',   ferramenta:'Guruja', est:3, conteudo:'Símbolos de SC, clima e notícias recentes'},
-  {id:21, mat:'Português',                   ic:'📝', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:1, tipo:'Questões', ferramenta:'Guruja', est:3, conteudo:'Resolução de prova: Auditor Fiscal da Fazenda Estadual (SEF/SC)'},
-  {id:22, mat:'Ciência e Análise de Dados',  ic:'📊', cor:'#f87171', tag:'🔴 DIFÍCIL', h:1, tipo:'Questões', ferramenta:'Guruja', est:4, conteudo:'Conceitos fundamentais de Ciência de Dados — dados estruturados e não estruturados'},
-  {id:23, mat:'Ética Pública',               ic:'🤝', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:1, tipo:'Questões', ferramenta:'Guruja', est:2, conteudo:'Ética no setor público'},
-  {id:24, mat:'Reforma Tributária',          ic:'🧾', cor:'#f87171', tag:'🔴 DIFÍCIL', h:1, tipo:'Questões', ferramenta:'Guruja', est:4, conteudo:'IBS, CBS e Comitê Gestor'},
-  {id:25, mat:'Dir. Previdenciário',         ic:'🛡️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:1, tipo:'Questões', ferramenta:'Guruja', est:5, conteudo:'RGPS: dependentes e seus benefícios'},
-  {id:26, mat:'Conhecimentos Regionais de SC',ic:'🗺️', cor:'#f87171', tag:'🔴 DIFÍCIL', h:1, tipo:'Questões', ferramenta:'Guruja', est:3, conteudo:'Conhecimentos de SC'},
-  {id:27, mat:'Dir. Civil',                  ic:'📘', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:1, tipo:'Questões', ferramenta:'Guruja', est:4, conteudo:'Pessoas Jurídicas e Domicílio'},
-  {id:28, mat:'Dir. Penal',                  ic:'⚖️', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:1, tipo:'Questões', ferramenta:'Guruja', est:5, conteudo:'Crimes contra a Administração Pública — Parte II'},
-  {id:29, mat:'Dir. Financeiro / AFO',       ic:'📈', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:1, tipo:'Questões', ferramenta:'Guruja', est:4, conteudo:'Lei 7.541/1988 (Lei das taxas)'},
-  {id:30, mat:'Dir. Constitucional',         ic:'📜', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:1, tipo:'Questões', ferramenta:'Guruja', est:5, conteudo:'Bloco A — Direitos e Garantias Fundamentais; Organização do Estado'},
-  {id:31, mat:'Dir. Administrativo',         ic:'🏛️', cor:'#fbbf24', tag:'🟡 MÉDIO',   h:1, tipo:'Questões', ferramenta:'Guruja', est:3, conteudo:'LC 741/2019 (parte 2)'},
+const CICLO_INI_MS=new Date(2026,9,19).setHours(0,0,0,0); // Meta 2 SEFAZ-SC — dia 1 = seg 19/10/2026 (dia 7 = dom 25/10)
+const NIVEL_INI_MS=new Date(2026,9,12).setHours(0,0,0,0); // registros de questões contam desde a Meta 1 (12/10)
+// ── CICLO — PLANO 19–25/10/2026 · 32 atividades (9 que sobraram da Meta 1 + 23 da Meta 2) · ~4h por dia ──
+// Regras (combinadas com a Ritchely): 1h30 = matéria difícil e de peso (Previdenciário) · 1h = bom peso e facilidade,
+// ou mediana com dificuldade · 30–45 min = pouco peso, não vale focar. Ordem fixa por dia (a mais pesada primeiro).
+// A distribuição por dia NÃO é fixa: é recalculada a cada abertura do app, em MINUTOS, a partir do que já foi feito,
+// da capacidade de cada dia (padrão 4h, editável na aba Estudo › Ciclo) e do que resta da semana.
+// `corte` = ordem de corte se apertar (1 = corta primeiro; 99 = nunca corta). `est` = estrelas do Guruja (lidas do print).
+const CAP_DIA_PADRAO=240, TOL_DIA=15;
+const MAT_INFO={
+  'Dir. Constitucional':{ic:'📜'},'Dir. Administrativo':{ic:'🏛️'},'Dir. Financeiro / AFO':{ic:'📈'},
+  'Dir. Previdenciário':{ic:'🛡️'},'Dir. Civil':{ic:'📘'},'Dir. Penal':{ic:'⚖️'},'Reforma Tributária':{ic:'🧾'},
+  'Português':{ic:'📝'},'Ciência e Análise de Dados':{ic:'📊'},'Ética Pública':{ic:'🤝'},
+  'Conhecimentos Regionais de SC':{ic:'🗺️'},'Raciocínio Lógico':{ic:'🧩'},
+  'Matemática Financeira e Estatística':{ic:'🧮'},'Orientações Gerais':{ic:'🧭'}
+};
+const fmtMinG=m=>m<=0?'0min':m>=60?`${Math.floor(m/60)}h${m%60?String(m%60).padStart(2,'0'):''}`:`${m}min`;
+const faixaMin=m=>m>=90?{cor:'#f87171',tag:'🔴 PESADA'}:m>=60?{cor:'#fbbf24',tag:'🟡 MÉDIA'}:{cor:'#34d399',tag:'🟢 LEVE'};
+// [id, matéria, assunto, min, estrelas, dia planejado, corte, tipo, origem, por quê]
+const PLANO_RAW=[
+  [107,'Dir. Previdenciário','RGPS: dependentes e seus benefícios',90,5,1,99,'Questões','Meta 1','Difícil e de peso: 1h30, primeiro do dia, com a cabeça mais fresca.'],
+  [104,'Ciência e Análise de Dados','Conceitos fundamentais de Ciência de Dados',60,3,1,15,'Questões','Meta 1','Matéria nova com pouca medição: 1h para fechar o conceito.'],
+  [101,'Dir. Constitucional','Imersão na Constituição do Estado de SC',60,3,1,99,'Questões','Meta 1','Específica de peso: 1h.'],
+  [106,'Reforma Tributária','IBS, CBS e Comitê Gestor',30,4,1,13,'Questões','Meta 1','Você já está em ~90% e o peso é pequeno (2%): 30 min só para fechar.'],
+  [204,'Dir. Previdenciário','Custeio I',90,4,2,99,'Questões','Meta 2','Difícil e de peso: 1h30.'],
+  [206,'Dir. Financeiro / AFO','Receita',60,5,2,99,'Questões','Meta 2','AFO é a matéria de maior custo-benefício e reforço crítico: 1h.'],
+  [111,'Dir. Administrativo','LC 741/2019 (parte 2)',60,3,2,99,'Questões','Meta 1','Específica de peso: 1h.'],
+  [108,'Conhecimentos Regionais de SC','Conhecimentos de SC',30,3,2,12,'Questões','Meta 1','Regionais rende pouco por hora: 30 min.'],
+  [211,'Dir. Previdenciário','Custeio II',90,4,3,99,'Questões','Meta 2','Difícil e de peso: 1h30.'],
+  [214,'Dir. Penal','Crimes contra as Finanças Públicas',60,4,3,99,'Questões','Meta 2','Tema típico de prova fiscal: 1h.'],
+  [110,'Dir. Constitucional','Bloco A — Direitos e Garantias Fundamentais; Organização do Estado',60,5,3,99,'Questões','Meta 1','Específica de peso, 5★: 1h.'],
+  [209,'Reforma Tributária','Imposto Seletivo',30,4,3,9,'Questões','Meta 2','Peso pequeno e nível bom: 30 min.'],
+  [109,'Dir. Financeiro / AFO','Lei 7.541/1988 (Lei das taxas)',60,4,4,99,'Questões','Meta 1','AFO: 1h.'],
+  [217,'Dir. Constitucional','Bloco B',60,5,4,99,'Questões','Meta 2','Específica de peso, 5★: 1h.'],
+  [216,'Dir. Administrativo','Toda a Ementa',60,3,4,99,'Questões','Meta 2','Específica de peso: 1h.'],
+  [203,'Ciência e Análise de Dados','Análise e interpretação de dados',45,3,4,14,'Questões','Meta 2','Peso geral de 5,7%: 45 min.'],
+  [219,'Dir. Financeiro / AFO','Despesa',60,5,5,99,'Questões','Meta 2','AFO é reforço crítico: 1h.'],
+  [227,'Dir. Penal','Lei 8.137/1990 — crimes contra a ordem tributária',60,4,5,99,'Questões','Meta 2','Tema típico de prova fiscal: 1h.'],
+  [223,'Dir. Previdenciário','Resolução de Questões Favoritas',60,4,5,99,'Questões','Meta 2','Questões fixam Previdenciário depois do Custeio: 1h.'],
+  [208,'Ciência e Análise de Dados','Teste Bloco A',45,4,5,10,'Questões','Meta 2','Teste curto: 45 min.'],
+  [231,'Dir. Constitucional','Bloco C',60,4,6,99,'Questões','Meta 2','Específica de peso: 1h.'],
+  [229,'Dir. Administrativo','Bloco A',60,4,6,99,'Questões','Meta 2','Específica de peso: 1h.'],
+  [232,'Dir. Financeiro / AFO','Dívida ativa e estágios da despesa',60,4,6,99,'Questões','Meta 2','AFO: 1h.'],
+  [213,'Dir. Civil','Bens',60,4,6,11,'Questões','Meta 2','Civil está em ~89%: sobe pouco, mas é específica (peso 2).'],
+  [103,'Português','Resolução de prova: Auditor Fiscal da Fazenda Estadual (SEF/SC)',30,3,7,8,'Questões','Meta 1','Prova da própria banca/órgão: 30 min.'],
+  [210,'Conhecimentos Regionais de SC','Aspectos naturais (teoria)',30,3,7,6,'Teoria','Meta 2','Pouco retorno: 30 min.'],
+  [207,'Português','Semântica',30,4,7,7,'Questões','Meta 2','Reforço do Guruja: 30 min.'],
+  [218,'Conhecimentos Regionais de SC','Aspectos naturais (questões)',30,3,7,5,'Questões','Meta 2','Pouco retorno: 30 min.'],
+  [224,'Ética Pública','Decreto 2.234/2022',30,2,7,4,'Lei Seca','Meta 2','Ética já está em ~94%: só lei seca, 30 min.'],
+  [220,'Português','Sintaxe, regência e crase',30,4,7,3,'Questões','Meta 2','Reforço do Guruja: 30 min.'],
+  [205,'Ética Pública','Lei 17.715/2019',30,2,7,2,'Lei Seca','Meta 2','Ética já está em ~94%: só lei seca, 30 min.'],
+  [230,'Raciocínio Lógico','Imersão FCC',30,3,7,1,'Questões','Meta 2','Peso pequeno: primeira a cortar.'],
 ];
+const CICLO_BASE=PLANO_RAW.map(([id,mat,conteudo,min,est,diaPlano,corte,tipo,origem,por],idx)=>{
+  const f=faixaMin(min);
+  const dica=`⏱ ${fmtMinG(min)} · ${tipo} · ${origem==='Meta 1'?'sobrou da Meta 1':'Meta 2'}\n${por}\n${corte<99?`✂️ Se apertar, esta é a nº ${corte} a cortar.`:'🔒 Não corta: é matéria de peso.'}`;
+  return{id,mat,ic:(MAT_INFO[mat]||{}).ic||'📚',cor:f.cor,tag:f.tag,min,h:min/60,tipo,ferramenta:'Guruja',est,conteudo,diaPlano,corte,origem,por,dica,ord:idx};
+});
+// ── FORA DO PLANO (11) — dispensadas desta semana · "ordem" = ordem de volta se sobrar tempo ──
+// [id, matéria, assunto, min, origem, ordem, motivo, alternativa]
+const CICLO_DISP_RAW=[
+  [225,'Dir. Civil','Resolução de Questões Favoritas',30,'Meta 2',1,'Civil já está em ~89% e as questões favoritas não geram ganho marginal.','Se sobrar tempo, é a 1ª a voltar. Senão, 5 questões de Civil no tempo morto.'],
+  [221,'Ciência e Análise de Dados','Favoritas A',30,'Meta 2',2,'Dados já tem 3 atividades no plano (104, 203, 208); esta repete o assunto.','Volta depois de 208. Senão, Anki rápido de Dados.'],
+  [105,'Ética Pública','Ética no setor público',30,'Meta 1',3,'Ética está em ~94% e vale só 2★: retorno quase zero por hora.','Anki rápido de Ética no tempo morto.'],
+  [226,'Conhecimentos Regionais de SC','História de SC (Teoria)',30,'Meta 2',4,'Memorização pura; Regionais rende só ~0,27 ponto por hora.','Cards de Anki rápido no ônibus/fila.'],
+  [215,'Matemática Financeira e Estatística','Bloco A — Estatística Descritiva',30,'Meta 2',5,'Estatística tem 2★ e o pior custo-benefício (~0,10; ~36h para ganhar uns poucos pontos).','Só volta se tudo o mais estiver fechado.'],
+  [102,'Conhecimentos Regionais de SC','Símbolos, clima e Treze Tílias (Teoria)',30,'Meta 1',6,'Memorização de baixo retorno (Regionais cb ~0,27).','Anki rápido; 3 questões de Regionais se sobrar.'],
+  [202,'Conhecimentos Regionais de SC','Revisão — agropecuária',30,'Meta 2',7,'É revisão de teoria que a Meta 1 já cobriu; memorização.','Anki rápido.'],
+  [212,'Ética Pública','Revisão — Código de Ética SEF/SC',30,'Meta 2',8,'Ética em ~94%: revisar de novo não muda a nota.','Passada rápida na semana da prova.'],
+  [228,'Matemática Financeira e Estatística','Toda a Ementa',30,'Meta 2',9,'Estatística com pior custo-benefício e 2★.','Só depois de fechar o resto; considerar zerar o tópico.'],
+  [222,'Reforma Tributária','Aspectos gerais, IBS, CBS e Comitê',30,'Meta 2',10,'Repete a 106 (já no plano); Reforma está em ~90% e vale 2% da prova.','Já coberta pela atividade 106.'],
+  [201,'Orientações Gerais','Orientações Gerais da Meta 2',20,'Meta 2',11,'Não gera ponto: é só leitura da orientação.','Leia em 5 min no tempo morto.'],
+];
+const CICLO_DISP=CICLO_DISP_RAW.map(([id,mat,conteudo,min,origem,ordem,motivo,alternativa])=>{
+  const f=faixaMin(min);
+  return{id,mat,ic:(MAT_INFO[mat]||{}).ic||'📚',cor:f.cor,tag:'🟢 LEVE',min,h:min/60,tipo:'Questões',ferramenta:'Guruja',est:2,conteudo,diaPlano:7,corte:0,origem,motivo,alternativa,ordem,por:motivo,dica:`↩ Voltou da lista de dispensadas · ⏱ ${fmtMinG(min)}\n${motivo}\n✂️ Entra por último: é a 1ª a cortar se apertar.`,ord:100+ordem};
+});
+const IDS_CICLO_VALIDOS=new Set([...CICLO_BASE,...CICLO_DISP].map(i=>i.id));
 
-// Distribui as atividades pelos dias (1..7 = seg..dom, a partir de CICLO_INI_MS).
-// Concluídas ficam no dia em que foram feitas; as pendentes são redistribuídas dos dias que restam em
-// proporção à capacidade de cada um (trabalho = 4, livre = 5), descontando o que já foi feito hoje.
-function distribuirCiclo(base,feitos,feitosDt,diasTrab,hojeMs){
+const NOMES_DIA3=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+const diaCicloLabel=d=>{const dt=new Date(CICLO_INI_MS);dt.setDate(dt.getDate()+d-1);return `${NOMES_DIA3[dt.getDay()]} ${String(dt.getDate()).padStart(2,'0')}/${String(dt.getMonth()+1).padStart(2,'0')}`;};
+// Quantos minutos o app deve planejar para cada dia (1..7). Padrão 4h; a Ritchely pode mudar em Estudo › Ciclo.
+function getCapDia(d){
+  try{const o=JSON.parse(localStorage.getItem('horas_dia')||'{}');const v=+o[d];if(v>0)return v;}catch(e){}
+  return CAP_DIA_PADRAO;
+}
+
+// Distribui as atividades pelos dias (1..7 = seg..dom, a partir de CICLO_INI_MS), em MINUTOS.
+// Concluídas ficam no dia em que foram feitas. As pendentes mantêm a ordem do plano e são empacotadas nos dias
+// que restam (capacidade do dia, com tolerância de 15 min). Se não couber tudo, as de menor `corte` viram "estouro".
+function distribuirCiclo(base,feitos,feitosDt,diasTrab,hojeMs,capFn){
   const done=new Set(feitos);
   const diaHoje=Math.min(7,Math.max(1,Math.round((hojeMs-CICLO_INI_MS)/86400000)+1));
-  const cap=d=>diasTrab.includes(d%7)?4:5;
-  const dia=new Map();
-  let doneToday=0;
+  const cap=capFn||(()=>CAP_DIA_PADRAO);
+  const dia=new Map();const estouro=new Set();
+  let minHoje=0;
   base.forEach(i=>{
     if(!done.has(i.id))return;
     const t=feitosDt&&feitosDt[i.id];
     let d=t?Math.round((t-CICLO_INI_MS)/86400000)+1:diaHoje;
     d=Math.min(7,Math.max(1,d));
     dia.set(i.id,d);
-    if(d===diaHoje)doneToday++;
+    if(d===diaHoje)minHoje+=i.min;
   });
   const pend=base.filter(i=>!done.has(i.id));
   const dias=[];for(let d=diaHoje;d<=7;d++)dias.push(d);
-  const caps=dias.map(d=>Math.max(0,cap(d)-(d===diaHoje?doneToday:0)));
-  const tot=caps.reduce((s,v)=>s+v,0);
-  const counts=caps.map(()=>0);
-  if(pend.length>0){
-    if(tot>0){
-      const raw=caps.map(c=>pend.length*c/tot);
-      raw.forEach((r,i)=>{counts[i]=Math.floor(r);});
-      const left=pend.length-counts.reduce((s,v)=>s+v,0);
-      const ord=raw.map((r,i)=>({i,f:r-Math.floor(r),c:caps[i]})).filter(o=>o.c>0).sort((a,b)=>b.f-a.f||a.i-b.i);
-      for(let k=0;k<left;k++)counts[ord[k%ord.length].i]++;
-    }else counts[counts.length-1]=pend.length;
+  const caps=dias.map(d=>Math.max(0,cap(d)-(d===diaHoje?minHoje:0)));
+  const totCap=caps.reduce((s,v)=>s+v,0);
+  let totPend=pend.reduce((s,i)=>s+i.min,0);
+  if(totPend>totCap){
+    const cand=pend.filter(i=>i.corte<99).sort((a,b)=>a.corte-b.corte||b.ord-a.ord);
+    for(const i of cand){if(totPend<=totCap)break;estouro.add(i.id);totPend-=i.min;}
   }
-  let p=0;
-  counts.forEach((n,i)=>{for(let k=0;k<n;k++){dia.set(pend[p].id,dias[i]);p++;}});
-  return base.map(i=>({...i,dia:dia.get(i.id)||diaHoje}));
+  let k=0,used=0;
+  pend.filter(i=>!estouro.has(i.id)).forEach(i=>{
+    while(k<dias.length-1&&used+i.min>caps[k]+TOL_DIA){k++;used=0;}
+    dia.set(i.id,dias[k]);used+=i.min;
+  });
+  pend.filter(i=>estouro.has(i.id)).forEach(i=>dia.set(i.id,dias[dias.length-1]));
+  return base.map(i=>({...i,dia:dia.get(i.id)||diaHoje,estouro:estouro.has(i.id)}))
+    .sort((a,b)=>a.dia-b.dia||(a.estouro?1:0)-(b.estouro?1:0)||a.ord-b.ord);
 }
+
+const CICLO_VOLTA=(()=>{try{const v=JSON.parse(localStorage.getItem('ciclo_volta')||'[]');return Array.isArray(v)?v.filter(id=>CICLO_DISP.some(d=>d.id===id)):[];}catch(e){return [];}})();
+const CICLO_FORA=CICLO_DISP.filter(d=>!CICLO_VOLTA.includes(d.id)).sort((a,b)=>a.ordem-b.ordem);
 
 const CICLO=(()=>{
   const lsj=(k,d)=>{try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v);}catch(e){return d;}};
   const hojeMs=new Date().setHours(0,0,0,0);
-  // Migração única para a trilha SEFAZ-SC: zera o ciclo antigo (Meta 8 do TCE-SP) e marca a atividade 1 (já feita no Guruja).
+  // Migração única para o plano de 19–25/10 (v45): guarda o feitos da Meta 1 em backup e começa o plano do zero.
   try{
-    if(lsj('ciclo_versao','')!=='v44'){
-      localStorage.setItem('feitos',JSON.stringify([1]));
-      localStorage.setItem('feitos_dt',JSON.stringify({1:hojeMs}));
-      localStorage.setItem('cicloNum',JSON.stringify(1));
-      localStorage.setItem('ciclo_versao',JSON.stringify('v44'));
+    if(lsj('ciclo_versao','')!=='v45'){
+      localStorage.setItem('feitos_meta1_bkp',JSON.stringify({feitos:lsj('feitos',[]),feitos_dt:lsj('feitos_dt',{}),em:Date.now()}));
+      localStorage.setItem('feitos',JSON.stringify([]));
+      localStorage.setItem('feitos_dt',JSON.stringify({}));
+      localStorage.setItem('cicloNum',JSON.stringify(2));
+      localStorage.setItem('ciclo_versao',JSON.stringify('v45'));
       if(localStorage.getItem('dias_trabalho')===null)localStorage.setItem('dias_trabalho',JSON.stringify([2,4,5]));
     }
   }catch(e){}
   let dw=lsj('dias_trabalho',[2,4,5]);
   if(!Array.isArray(dw)||!dw.length)dw=[2,4,5];
-  return distribuirCiclo(CICLO_BASE,lsj('feitos',[]),lsj('feitos_dt',{}),dw,hojeMs);
+  const volta=CICLO_DISP.filter(d=>CICLO_VOLTA.includes(d.id));
+  const base=[...CICLO_BASE,...volta];
+  const feitos=lsj('feitos',[]).filter(id=>IDS_CICLO_VALIDOS.has(id));
+  return distribuirCiclo(base,feitos,lsj('feitos_dt',{}),dw,hojeMs,getCapDia);
 })();
 const N=CICLO.length;
 const CICLO_H=CICLO.reduce((s,c)=>s+c.h,0);
+const CICLO_MIN=CICLO.reduce((s,c)=>s+c.min,0);
+const lerFeitosValidos=()=>{try{const v=JSON.parse(localStorage.getItem('feitos')||'[]');return Array.isArray(v)?v.filter(id=>IDS_CICLO_VALIDOS.has(id)):[];}catch(e){return [];}};
+const lerCicloNum=()=>{try{return Math.max(2,JSON.parse(localStorage.getItem('cicloNum')||'2')||2);}catch(e){return 2;}};
 
 // ── PAINEL ESTRATÉGICO ───────────────────────────────────────
 
@@ -393,7 +450,8 @@ const LEGISLACAO_ALVO=[
 const CRONOGRAMA_MACRO=[
   {periodo:'OUT/2026 — Metas 1 a 3 do Guruja',eventos:[
     {data:'12-18/10',acao:'Meta 1 — 31 atividades em 7 dias (máx. 1h cada)',tipo:'estudo'},
-    {data:'19/10-01/11',acao:'Metas 2 e 3 — Previdenciário e legislação de SC sempre antes de Gerais',tipo:'estudo'},
+    {data:'19-25/10',acao:'Meta 2 + sobras da Meta 1 — 32 atividades em ~4h por dia (30/45/60/90 min cada)',tipo:'estudo'},
+    {data:'26/10-01/11',acao:'Meta 3 — Previdenciário e legislação de SC sempre antes de Gerais',tipo:'estudo'},
     {data:'01/11',acao:'🧪 PGM Jundiaí — "a frio", treino de resistência',tipo:'prova',alerta:'alto'},
   ]},
   {periodo:'NOV/2026 — Reta final',eventos:[
@@ -729,9 +787,17 @@ function beep(tipo){
   }catch(e){}
 }
 
-function Pomodoro({cor,onFase}){
+// Fases do pomodoro conforme o tempo da atividade: ≤30 min = 1 bloco só; senão estuda (min−5), pausa de 5 e estuda o resto.
+// 60 → 30·5·25 · 90 → 45·5·40 · 45 → 20·5·20
+function fasesPomo(min){
+  if(!min||min<=0)min=60;
+  if(min<=30)return[{l:'FOCO',d:min*60,e:'📖',m:min}];
+  const est=min-5;const a=Math.round(est*0.55/5)*5;const b=est-a;
+  return[{l:'1ª METADE',d:a*60,e:'📖',m:a},{l:'PAUSA',d:5*60,e:'🚶',m:5},{l:'2ª METADE',d:b*60,e:'✏️',m:b}];
+}
+function Pomodoro({cor,onFase,min}){
   const c=cor||'#fbbf24';
-  const FASES=[{l:'1ª METADE',d:30*60,e:'📖'},{l:'PAUSA',d:5*60,e:'🚶'},{l:'2ª METADE',d:25*60,e:'✏️'}];
+  const FASES=useMemo(()=>fasesPomo(min),[min]);
   const[fase,setFase]=useState(0);
   const[secs,setSecs]=useState(FASES[0].d);
   const[rodando,setRodando]=useState(false);
@@ -754,8 +820,8 @@ function Pomodoro({cor,onFase}){
         limparTimer();
         setRodando(false);
         setFeito(true);
-        beep(fase===1?'pausa':'done');
-        if(fase!==1&&onFase)onFase(fase===0?30:25);
+        beep(cur.l==='PAUSA'?'pausa':'done');
+        if(cur.l!=='PAUSA'&&onFase)onFase(cur.m);
       }
     },400);
     return limparTimer;
@@ -763,7 +829,7 @@ function Pomodoro({cor,onFase}){
 
   const iniciar=()=>{endRef.current=Date.now()+secs*1000;setRodando(true);setFeito(false);disparouRef.current=false;};
   const pausar=()=>{limparTimer();setSecs(Math.max(0,Math.round((endRef.current-Date.now())/1000)));endRef.current=null;setRodando(false);};
-  const proxFase=()=>{limparTimer();const n=(fase+1)%3;setFase(n);setSecs(FASES[n].d);setRodando(false);setFeito(false);disparouRef.current=false;};
+  const proxFase=()=>{limparTimer();const n=(fase+1)%FASES.length;setFase(n);setSecs(FASES[n].d);setRodando(false);setFeito(false);disparouRef.current=false;};
   const irFase=i=>{limparTimer();setFase(i);setSecs(FASES[i].d);setRodando(false);setFeito(false);};
   const reiniciar=()=>{limparTimer();setSecs(cur.d);setRodando(false);setFeito(false);};
 
@@ -773,7 +839,7 @@ function Pomodoro({cor,onFase}){
   return(
     <div style={{padding:'13px',borderRadius:13,background:`${c}08`,border:`1px solid ${c}22`,marginBottom:12}}>
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10,flexWrap:'wrap',gap:4}}>
-        <span style={{fontSize:13,letterSpacing:'2px',color:c,fontFamily:"'DM Mono',monospace",fontWeight:800}}>⏱ POMODORO 30·5·25 (1h)</span>
+        <span style={{fontSize:13,letterSpacing:'2px',color:c,fontFamily:"'DM Mono',monospace",fontWeight:800}}>⏱ POMODORO {FASES.length===1?`${FASES[0].m}min`:FASES.map(f=>f.m).join('·')} ({fmtMinG(min||60)})</span>
         <div style={{display:'flex',gap:4}}>
           {FASES.map((f,i)=>(
             <button key={i} onClick={()=>irFase(i)} style={{padding:'2px 7px',borderRadius:4,cursor:'pointer',fontSize:13,fontFamily:"'DM Mono',monospace",fontWeight:700,background:fase===i?`${c}22`:'transparent',color:fase===i?c:'#aab6c8',border:`1px solid ${fase===i?c+'44':'rgba(148,163,184,.25)'}`,transition:'all .15s'}}>
@@ -802,7 +868,7 @@ function Pomodoro({cor,onFase}){
           <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
             {feito?(
               <button onClick={proxFase} style={{padding:'8px 14px',borderRadius:8,border:'none',cursor:'pointer',background:'linear-gradient(135deg,#34d399,#34d399)',color:'#050a14',fontSize:14,fontWeight:800,fontFamily:"'DM Mono',monospace"}}>
-                {fase<2?'PRÓXIMA →':'🏆 FEITO'}
+                {fase<FASES.length-1?'PRÓXIMA →':'🏆 FEITO'}
               </button>
             ):(
               <button onClick={rodando?pausar:iniciar} style={{padding:'8px 14px',borderRadius:8,border:'none',cursor:'pointer',background:rodando?`${c}18`:`linear-gradient(135deg,${c},${c})`,color:rodando?c:'#050a14',fontSize:14,fontWeight:800,fontFamily:"'DM Mono',monospace"}}>
@@ -980,24 +1046,32 @@ const PADROES_DECOREBA=[/\bLei\b/i,/\bLC\b/,/\bDecreto\b/i,/\bInstrução\b/i,/\
 const isDecorebaHeuristico=titulo=>PADROES_DECOREBA.some(p=>p.test(titulo));
 
 // ═══ MOTOR DE DECISÃO — peso × nível × custo-benefício (SEFAZ-SC / FCC) ═══
-// Edital NÃO publica quantas questões vão para cada matéria: q = hipótese neutra (editável na aba).
+// Edital NÃO publica quantas questões vão para cada matéria: q vem da coluna "Peso na prova" do Guruja (estimativa da plataforma, editável na aba).
 // teto = meta realista de acerto até a prova · hpp = horas de estudo por ponto percentual a recuperar
 // nivel0 = estimativa usada só enquanto não existe dado real (Guruja/registro) da matéria.
 const DECISAO_PADRAO={
-  'Dir. Constitucional':             {q:17,teto:92,hpp:0.25,nivel0:null,tipo:'revisão de base forte'},
-  'Dir. Administrativo':             {q:17,teto:92,hpp:0.25,nivel0:null,tipo:'revisão + legislação SC nova'},
-  'Dir. Financeiro / AFO':           {q:14,teto:92,hpp:0.30,nivel0:null,tipo:'revisão + lei seca SC (LC 898, Lei 7.541)'},
-  'Reforma Tributária':              {q:3, teto:80,hpp:0.45,nivel0:60,  tipo:'tema novo (EC 132) — poucas questões'},
-  'Dir. Previdenciário':             {q:17,teto:82,hpp:0.80,nivel0:45,  tipo:'matéria difícil + lei seca (EC 103, RPPS, LC 412)'},
-  'Dir. Civil':                      {q:16,teto:88,hpp:0.35,nivel0:null,tipo:'revisão com buracos pontuais'},
-  'Dir. Penal':                      {q:16,teto:92,hpp:0.30,nivel0:null,tipo:'revisão + leis especiais (8.137, 13.869)'},
+  'Dir. Constitucional':             {q:16.7,teto:92,hpp:0.25,nivel0:null,tipo:'revisão de base forte'},
+  'Dir. Administrativo':             {q:16.7,teto:92,hpp:0.25,nivel0:null,tipo:'revisão + legislação SC nova'},
+  'Dir. Financeiro / AFO':           {q:13.9,teto:92,hpp:0.30,nivel0:null,tipo:'revisão + lei seca SC (LC 898, Lei 7.541)'},
+  'Reforma Tributária':              {q:2.8,teto:92,hpp:0.45,nivel0:60,  tipo:'tema novo (EC 132) — poucas questões'},
+  'Dir. Previdenciário':             {q:16.7,teto:82,hpp:0.80,nivel0:45,  tipo:'matéria difícil + lei seca (EC 103, RPPS, LC 412)'},
+  'Dir. Civil':                      {q:16.7,teto:92,hpp:0.35,nivel0:null,tipo:'revisão com buracos pontuais'},
+  'Dir. Penal':                      {q:16.7,teto:92,hpp:0.30,nivel0:null,tipo:'revisão + leis especiais (8.137, 13.869)'},
   'Português':                       {q:16,teto:90,hpp:0.30,nivel0:null,tipo:'manutenção'},
   'Raciocínio Lógico':               {q:6, teto:90,hpp:0.35,nivel0:null,tipo:'manutenção'},
   'Matemática Financeira e Estatística':{q:10,teto:60,hpp:0.80,nivel0:25,tipo:'exatas do zero — só o núcleo (juros, descontos, SAC/Price)'},
-  'Ciência e Análise de Dados':      {q:16,teto:78,hpp:0.30,nivel0:30,  tipo:'conceitual novo (BI, IA, LGPD)'},
-  'Ética Pública':                   {q:16,teto:92,hpp:0.20,nivel0:null,tipo:'manutenção + assédio e anticorrupção'},
+  'Ciência e Análise de Dados':      {q:16,teto:90,hpp:0.30,nivel0:30,  tipo:'conceitual novo (BI, IA, LGPD)'},
+  'Ética Pública':                   {q:16,teto:96,hpp:0.20,nivel0:null,tipo:'manutenção + assédio e anticorrupção'},
   'Conhecimentos Regionais de SC':   {q:16,teto:72,hpp:0.45,nivel0:30,  tipo:'memorização de conteúdo regional'},
 };
+
+// "Peso na prova" mostrado pelo Guruja (% da prova) — estimativa da plataforma, NÃO do edital.
+const PESO_PROVA={'Dir. Constitucional':11.9,'Dir. Administrativo':11.9,'Dir. Civil':11.9,'Dir. Penal':11.9,'Dir. Previdenciário':11.9,
+  'Dir. Financeiro / AFO':9.9,'Reforma Tributária':2.0,'Português':5.7,'Ética Pública':5.7,'Ciência e Análise de Dados':5.7,'Conhecimentos Regionais de SC':5.7};
+// Desempenho real da semana 1 (12–18/10), lido da "Análise geral" do Guruja. Só entram valores conferidos;
+// as demais matérias seguem a regra antiga até a Ritchely informar (campo "nível manual" na aba Decisão).
+// `uso` = valor usado no motor quando o dado medido não cobre toda a matéria (ex.: Reforma, item 24 ainda pendente).
+const GURUJA_SEMANA={'Ética Pública':{pct:94.1},'Dir. Civil':{pct:89.3},'Reforma Tributária':{pct:90.4,uso:85}};
 
 // Núcleo puro (testável): recebe linhas já com nível/estrelas e devolve ranking com veredito e porquê.
 function calcDecisaoCore(rows){
@@ -1051,6 +1125,15 @@ function decisaoQ(mat){
 function nivelRealMat(mat){
   const cfg=getDecisaoCfg();
   if(cfg.nivel&&cfg.nivel[mat]!=null&&!isNaN(cfg.nivel[mat]))return{pct:+cfg.nivel[mat],origem:'manual'};
+  const gs=GURUJA_SEMANA[mat];
+  if(gs){
+    const baseS=gs.uso!=null?gs.uso:gs.pct;
+    const histS=lsGet('historico_diario',[]).filter(r=>r.materia===mat&&(r.dt||0)>=CICLO_INI_MS);
+    const qS=histS.reduce((s,r)=>s+(parseInt(r.questoes)||0),0);
+    const aS=histS.reduce((s,r)=>s+(parseInt(r.acertei)||0),0);
+    if(qS>=10)return{pct:(baseS+aS/qS*100)/2,origem:`Guruja sem.1 + ${qS}q desta semana`};
+    return{pct:baseS,origem:'Guruja sem.1'};
+  }
   const guruja=getGurujaAssuntos();
   let base=null,orig=null;
   if(guruja[mat]){
@@ -1061,7 +1144,7 @@ function nivelRealMat(mat){
     const tops=(EDITAL[mat]?.top||[]).filter(t=>t.acerto!=null);
     if(tops.length){base=tops.reduce((s,t)=>s+t.acerto,0)/tops.length;orig='histórico';}
   }
-  const hist=lsGet('historico_diario',[]).filter(r=>r.materia===mat&&(r.dt||0)>=CICLO_INI_MS);
+  const hist=lsGet('historico_diario',[]).filter(r=>r.materia===mat&&(r.dt||0)>=NIVEL_INI_MS);
   const q=hist.reduce((s,r)=>s+(parseInt(r.questoes)||0),0);
   const a=hist.reduce((s,r)=>s+(parseInt(r.acertei)||0),0);
   const rec=q>=10?a/q*100:null;
@@ -1088,7 +1171,7 @@ function calcOrdemCorte(){
   const feitos=new Set(lsGet('feitos',[]));
   const rank={'CORTAR PRIMEIRO':0,'SE SOBRAR TEMPO':1,'FAZER':2,'NUNCA CORTAR':3};
   return CICLO.filter(c=>!feitos.has(c.id)&&por[c.mat]).map(c=>({...c,dec:por[c.mat]}))
-    .sort((a,b)=>(rank[a.dec.veredito]-rank[b.dec.veredito])||(a.dec.cb-b.dec.cb)||((a.est||3)-(b.est||3))||(b.id-a.id));
+    .sort((a,b)=>((a.corte==null?99:a.corte)-(b.corte==null?99:b.corte))||(rank[a.dec.veredito]-rank[b.dec.veredito])||(a.dec.cb-b.dec.cb)||((a.est||3)-(b.est||3))||(b.id-a.id));
 }
 
 function pesoGate(mat){
@@ -2816,7 +2899,7 @@ function TabHoje({feitos,onAddHoras,onSetTab}){
   const dw=new Date().getDay();
   const NOMES_DW=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
   const trabalha=ehDiaTrabalho(dw);
-  const totalH=trabalha?4:6;
+  const totalH=Math.round(getCapDia(Math.min(7,Math.max(1,Math.round((new Date().setHours(0,0,0,0)-CICLO_INI_MS)/86400000)+1)))/6)/10;
 
   // ── Estados colapsáveis ──────────────────────────────────────
   const[revManual,setRevManual]=useState(()=>lsGet('rev_manual',[]));
@@ -3279,24 +3362,34 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
         );
       })()}
 
-      {/* ── META 1 SEFAZ-SC — cota do dia e candidata a corte (substitui o card da discursiva) ── */}
+      {/* ── PLANO DE HOJE — atividades do dia com o tempo de cada uma + ordem de corte ── */}
       {(()=>{
         const fs=new Set(feitos);
         const diaHoje=Math.min(7,Math.max(1,Math.round((new Date().setHours(0,0,0,0)-CICLO_INI_MS)/86400000)+1));
         const hojeLista=CICLO.filter(c=>c.dia===diaHoje);
         const feitasHoje=hojeLista.filter(c=>fs.has(c.id)).length;
+        const minPlan=hojeLista.reduce((a,c)=>a+c.min,0);
+        const minFeito=hojeLista.filter(c=>fs.has(c.id)).reduce((a,c)=>a+c.min,0);
         const trab=ehDiaTrabalho(new Date().getDay());
-        const corteTop=calcOrdemCorte().find(c=>c.dec.veredito!=='NUNCA CORTAR');
-        const cor=feitasHoje>=hojeLista.length&&hojeLista.length>0?'#34d399':'#fbbf24';
+        const cortes=CICLO.filter(c=>!fs.has(c.id)&&c.corte<99).sort((a,b)=>a.corte-b.corte).slice(0,2);
+        const tudo=feitasHoje>=hojeLista.length&&hojeLista.length>0;
+        const cor=tudo?'#34d399':'#fbbf24';
         return(
-          <div style={{padding:'11px 14px',borderRadius:12,background:`${cor}0d`,border:`1px solid ${cor}35`,marginBottom:12,display:'flex',alignItems:'center',gap:10}}>
-            <span style={{fontSize:20}}>{feitasHoje>=hojeLista.length&&hojeLista.length>0?'✅':'📋'}</span>
-            <div style={{flex:1,minWidth:0}}>
-              <div style={{fontSize:13,color:cor,fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px'}}>META 1 · HOJE {feitasHoje}/{hojeLista.length} · máx. 1h cada · {trab?'💼 dia de trabalho':'🌴 dia livre'}</div>
-              {corteTop&&<div style={{fontSize:14,fontWeight:700,color:'var(--text)'}}>Se apertar, corte primeiro: #{corteTop.id} {corteTop.mat}</div>}
-              {corteTop&&<div style={{fontSize:13,color:'var(--text4)'}}>{corteTop.conteudo}</div>}
+          <div style={{padding:'11px 14px',borderRadius:12,background:`${cor}0d`,border:`1px solid ${cor}35`,marginBottom:12}}>
+            <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:6}}>
+              <span style={{fontSize:20}}>{tudo?'✅':'📋'}</span>
+              <div style={{flex:1,minWidth:0,fontSize:13,color:cor,fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px'}}>PLANO DE HOJE · META {lerCicloNum()} · {feitasHoje}/{hojeLista.length} · {fmtMinG(minFeito)}/{fmtMinG(minPlan)} · {trab?'💼 dia de trabalho':'🌴 dia livre'}</div>
+              <button onClick={()=>onSetTab&&onSetTab('discursiva')} style={{padding:'8px 12px',borderRadius:9,border:`1px solid ${cor}40`,background:`${cor}12`,color:cor,fontSize:14,fontWeight:800,cursor:'pointer',flexShrink:0}}>Decisão ›</button>
             </div>
-            <button onClick={()=>onSetTab&&onSetTab('discursiva')} style={{padding:'8px 12px',borderRadius:9,border:`1px solid ${cor}40`,background:`${cor}12`,color:cor,fontSize:14,fontWeight:800,cursor:'pointer',flexShrink:0}}>Decisão ›</button>
+            {hojeLista.length===0&&<div style={{fontSize:14,color:'var(--text4)'}}>Nada planejado para hoje.</div>}
+            {hojeLista.map(c=>{const d=fs.has(c.id);return(
+              <div key={c.id} style={{display:'flex',gap:8,alignItems:'baseline',padding:'3px 0',opacity:d?.55:1}}>
+                <span style={{fontSize:14,color:d?'#34d399':cor,width:14,flexShrink:0}}>{d?'✓':'○'}</span>
+                <span style={{fontSize:14,color:'var(--text)',flex:1,minWidth:0,textDecoration:d?'line-through':'none'}}>{c.ic} {c.mat} — <span style={{color:'var(--text4)'}}>{c.conteudo}</span></span>
+                <span style={{fontSize:13,color:cor,fontFamily:"'DM Mono',monospace",fontWeight:800,flexShrink:0}}>{fmtMinG(c.min)}</span>
+              </div>
+            );})}
+            {cortes.length>0&&<div style={{fontSize:13,color:'var(--text4)',marginTop:6,lineHeight:1.5}}>✂️ Se apertar, corte primeiro: {cortes.map(c=>`${c.mat} (${c.conteudo.length>30?c.conteudo.slice(0,30)+'…':c.conteudo})`).join(' · ')}</div>}
           </div>
         );
       })()}
@@ -4139,7 +4232,7 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
 }
 
 
-function TabEstudo({feitos,cicloNum,horas,onConcluir,onIrPara,onDesmarcar,onAddHoras,onSyncHistorico,mit,planoSemana,onSavePlano}){
+function TabEstudo({feitos,cicloNum,horas,onConcluir,onIrPara,onDesmarcar,onAddHoras,onSyncHistorico,mit,planoSemana,onSavePlano,onSetTab}){
   const[aba,setAba]=useState('foco');
   const feitosSet=useMemo(()=>new Set(feitos),[feitos]);
   const pendentes=useMemo(()=>CICLO.filter(s=>!feitosSet.has(s.id)),[feitosSet]);
@@ -4343,7 +4436,7 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
                 <div style={{display:'flex',gap:6,marginBottom:5,flexWrap:'wrap'}}>
                   {ativoIsExtra
                     ?<><Chip label="⏸ CONTINUA DE ONTEM" cor="#fb923c"/><Chip label={`${ativo.pctAnterior}% feito anteriormente`} cor="#fb923c" sm/></>
-                    :<><Chip label={ativo.tag} cor={cor}/><Chip label={`B${ativo.id}/${N}`} cor="#1e2d40" sm/></>
+                    :<><Chip label={ativo.tag} cor={cor}/><Chip label={`${CICLO.indexOf(ativo)+1}/${N}`} cor="#1e2d40" sm/></>
                   }
                 </div>
                 <div style={{fontSize:20,fontWeight:900,color:'#e8edf5',lineHeight:1.1,fontFamily:"'DM Serif Display',serif"}}>{ativo.mat}</div>
@@ -4362,7 +4455,7 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
                 )}
               </div>
               <div style={{padding:'7px 10px',borderRadius:9,background:ativoIsExtra?'rgba(251,146,60,.15)':`${cor}15`,border:`1px solid ${ativoIsExtra?'rgba(251,146,60,.3)':cor+'30'}`,textAlign:'center',flexShrink:0}}>
-                <div style={{fontSize:18,fontWeight:900,fontFamily:"'DM Mono',monospace",color:ativoIsExtra?'#fb923c':cor}}>{ativo.h}</div>
+                <div style={{fontSize:18,fontWeight:900,fontFamily:"'DM Mono',monospace",color:ativoIsExtra?'#fb923c':cor}}>{ativo.min?fmtMinG(ativo.min):ativo.h}</div>
               </div>
             </div>
             <div style={{padding:'12px 14px'}}>
@@ -4372,7 +4465,7 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
                   :(ativo.dica||'').split('\n').map((l,i)=><div key={i} style={{fontSize:14,color:'#b4c0d1',lineHeight:1.7}}>{l}</div>)
                 }
               </div>
-              <Pomodoro cor={ativoIsExtra?'#fb923c':cor} onFase={min=>onAddHoras({mat:ativo.mat,min,dt:Date.now()})}/>
+              <Pomodoro key={ativo.id} min={ativoIsExtra?60:ativo.min} cor={ativoIsExtra?'#fb923c':cor} onFase={min=>onAddHoras({mat:ativo.mat,min,dt:Date.now()})}/>
               <button onClick={()=>setConfJaFiz(ativoIsExtra?ativo.id:ativo.id)} style={{width:'100%',padding:'13px',borderRadius:11,border:'none',cursor:'pointer',background:ativoIsExtra?'linear-gradient(135deg,#fb923c,#fb923c)':`linear-gradient(135deg,${cor}cc,${cor})`,color:'#050a14',fontSize:16,fontWeight:900,letterSpacing:'3px',fontFamily:"'DM Mono',monospace"}}>
                 {ativoIsExtra?'⏸ CONTINUA — CONCLUIR':'✓ CONCLUÍDO'}
               </button>
@@ -4387,7 +4480,7 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
           {pendentes.slice(1,5).map(s=>{const c=s.tag?.includes('TRIÂNGULO')?'#fbbf24':s.cor;return(
             <div key={s.id} style={{display:'flex',alignItems:'center',gap:8,padding:'7px 10px',borderRadius:8,border:`1px solid ${c}22`,marginBottom:4}}>
               <span style={{fontSize:15}}>{s.ic}</span>
-              <div style={{flex:1}}><div style={{fontSize:14,color:'#b4c0d1'}}>{s.mat}</div><div style={{fontSize:13,color:'#aab6c6',fontFamily:"'DM Mono',monospace"}}>B{s.id} · {s.h}</div></div>
+              <div style={{flex:1}}><div style={{fontSize:14,color:'#b4c0d1'}}>{s.mat}</div><div style={{fontSize:13,color:'#aab6c6',fontFamily:"'DM Mono',monospace"}}>{s.conteudo.length>38?s.conteudo.slice(0,38)+'…':s.conteudo} · {fmtMinG(s.min||60)}</div></div>
               <button onClick={()=>setConfIr(s.id)} style={{padding:'4px 9px',borderRadius:6,border:`1px solid ${c}44`,background:`${c}10`,color:c,fontSize:13,cursor:'pointer'}}>→</button>
             </div>
           );})}
@@ -4639,7 +4732,7 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
           <span style={{fontSize:14,color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:700,flexShrink:0}}>{feitos.length}/{N}</span>
         </div>
         <div style={{display:'flex',gap:6,marginBottom:14}}>
-          {[[N,'atividades · máx 1h'],[`${Math.round(CICLO_H)}h`,'total da meta'],[`#${cicloNum}`,'meta atual']].map(([v,l],i)=>(
+          {[[N,'atividades'],[fmtMinG(CICLO_MIN),'total do plano'],[`#${cicloNum}`,'meta atual']].map(([v,l],i)=>(
             <div key={i} style={{flex:1,padding:'8px 4px',borderRadius:9,textAlign:'center',background:'rgba(251,191,36,.04)',border:'1px solid rgba(251,191,36,.1)'}}>
               <div style={{fontSize:15,fontWeight:900,color:'#fbbf24',fontFamily:"'DM Mono',monospace",lineHeight:1}}>{v}</div>
               <div style={{fontSize:13,color:'#aab6c6',marginTop:2}}>{l}</div>
@@ -4660,16 +4753,41 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
                   return(<button key={d} onClick={()=>tog(d)} style={{flex:1,padding:'8px 0',borderRadius:8,cursor:'pointer',fontSize:14,fontWeight:800,border:`1px solid ${on?'#60a5fa':'rgba(148,163,184,.3)'}`,background:on?'rgba(96,165,250,.2)':'transparent',color:on?'#60a5fa':'var(--text4)'}}>{l}</button>);
                 })}
               </div>
-              <div style={{fontSize:13,color:'var(--text4)',marginTop:6}}>Dia de trabalho = 4 atividades (até 09:30) · dia livre = 5. A fila se redistribui sozinha pelos dias que restam.</div>
+              <div style={{fontSize:13,color:'var(--text4)',marginTop:6}}>Só marca o rótulo do dia (trabalho/livre). O tempo de cada dia é o de "Horas por dia" logo abaixo.</div>
             </div>
           );
         })()}
+        {/* Horas por dia — a fila é montada em minutos */}
+        {(()=>{
+          const OPC=[120,180,240,300,360];
+          const ciclar=d=>{const cur=getCapDia(d);const nx=OPC[(OPC.indexOf(cur)+1)%OPC.length];let o={};try{o=JSON.parse(localStorage.getItem('horas_dia')||'{}')||{};}catch(e){}o[d]=nx;lsSet('horas_dia',o);window.location.reload();};
+          return(
+            <div style={{padding:'10px 12px',borderRadius:11,background:'rgba(251,191,36,.05)',border:'1px solid rgba(251,191,36,.25)',marginBottom:12}}>
+              <div style={{fontSize:13,color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:6}}>⏱ HORAS POR DIA (toque para mudar de 2h a 6h)</div>
+              <div style={{display:'flex',gap:6}}>
+                {[1,2,3,4,5,6,7].map(d=>(
+                  <button key={d} onClick={()=>ciclar(d)} style={{flex:1,padding:'6px 0',borderRadius:8,cursor:'pointer',border:'1px solid rgba(251,191,36,.4)',background:'rgba(251,191,36,.08)',color:'#fbbf24',textAlign:'center'}}>
+                    <div style={{fontSize:13,fontWeight:800}}>{diaCicloLabel(d).split(' ')[0]}</div>
+                    <div style={{fontSize:13,fontFamily:"'DM Mono',monospace"}}>{fmtMinG(getCapDia(d))}</div>
+                  </button>
+                ))}
+              </div>
+              <div style={{fontSize:13,color:'var(--text4)',marginTop:6}}>A fila monta cada dia por minutos (±15 min). Se não couber tudo, o que sobra aparece como "✂️ estouro", na ordem de corte.</div>
+            </div>
+          );
+        })()}
+        {/* Fora do plano → Decisão › Dispensadas */}
+        <div onClick={()=>onSetTab&&onSetTab('discursiva')} style={{padding:'10px 12px',borderRadius:11,background:'rgba(248,113,113,.06)',border:'1px solid rgba(248,113,113,.3)',marginBottom:12,cursor:'pointer',display:'flex',alignItems:'center',gap:8}}>
+          <span style={{fontSize:16}}>🚫</span>
+          <div style={{flex:1,fontSize:14,color:'var(--text)'}}>Fora do plano: <b>{CICLO_FORA.length} atividades</b> ({fmtMinG(CICLO_FORA.reduce((a,c)=>a+c.min,0))}) — motivo, alternativa e como trazer de volta</div>
+          <span style={{fontSize:14,color:'#f87171',fontWeight:800}}>Decisão ›</span>
+        </div>
         {/* Blocos agrupados por dia */}
         {(()=>{
           const diasTrabalhoCiclo=getDiasTrabalho();
           const DIAS_CICLO11={};
           [...new Set(CICLO.map(s=>s.dia))].forEach(dd=>{
-            DIAS_CICLO11[dd]=`Dia ${dd} · ${diasTrabalhoCiclo.includes(dd%7)?'trabalho':'livre'}`;
+            DIAS_CICLO11[dd]=`${diaCicloLabel(dd)} · ${fmtMinG(CICLO.filter(x=>x.dia===dd).reduce((a,x)=>a+x.min,0))} · ${diasTrabalhoCiclo.includes(dd%7)?'trabalho':'livre'}`;
           });
           const diasUnicos=[...new Set(CICLO.map(s=>s.dia))].sort((a,b)=>a-b);
           return diasUnicos.map(dia=>{
@@ -4685,7 +4803,7 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
                 <span style={{fontSize:13,fontWeight:800,fontFamily:"'DM Mono',monospace",color:temAtivo?'#fbbf24':todoDone?'#34d399':'#aab6c8'}}>
                   {todoDone?'✓ ':temAtivo?'▶ ':''}{DIAS_CICLO11[dia]||`DIA ${dia}`}
                 </span>
-                <span style={{fontSize:13,color:'#aab6c6',marginLeft:'auto',fontFamily:"'DM Mono',monospace"}}>{feitos_dia}/{blocosDia.length} slots</span>
+                <span style={{fontSize:13,color:'#aab6c6',marginLeft:'auto',fontFamily:"'DM Mono',monospace"}}>{feitos_dia}/{blocosDia.length} ativ.</span>
               </div>
               {/* Blocos do dia */}
               {blocosDia.map((s,si)=>{
@@ -4706,7 +4824,7 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
                     <div onClick={toggleAberto} style={{padding:'9px 12px',cursor:'pointer',opacity:!done&&!isAtivo?.85:1,background:done?'rgba(52,211,153,.03)':isAtivo?`${c}08`:'transparent',display:'flex',alignItems:'center',gap:9}}>
                       {/* Badge número */}
                       <div style={{width:22,height:22,borderRadius:'50%',flexShrink:0,border:`2px solid ${done?'#34d399':isAtivo?c:'rgba(148,163,184,.22)'}`,background:done?'#34d399':isAtivo?`${c}25`:'transparent',display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,color:done?'#050a14':isAtivo?c:'#aab6c8',fontWeight:900}}>
-                        {done?'✓':isAtivo?'▶':s.id}
+                        {done?'✓':isAtivo?'▶':si+1}
                       </div>
                       <span style={{fontSize:16,flexShrink:0}}>{s.ic}</span>
                       <div style={{flex:1,minWidth:0}}>
@@ -4714,6 +4832,7 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
                         <div style={{fontSize:13,color:'#c2ccd8',marginTop:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{s.conteudo}</div>
                       </div>
                       <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:3,flexShrink:0}}>
+                        <span style={{fontSize:13,color:s.estouro?'#f87171':'#c2ccd8',fontFamily:"'DM Mono',monospace",fontWeight:700}}>⏱ {fmtMinG(s.min)}{s.estouro?' · ✂️ estouro':''}</span>
                         <Chip label={done?'✓ feito':tri?'🔺':s.tag.split(' ')[0]} cor={done?'#1e3a2a':tri?'#fbbf24':s.cor} sm/>
                         <span style={{fontSize:13,color:'#c2ccd8',fontFamily:"'DM Mono',monospace"}}>{aberto?'▲':'▼'}</span>
                       </div>
@@ -4757,7 +4876,7 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
 
       {aba==='stats'&&<div>
         <div style={{display:'flex',gap:8,marginBottom:14}}>
-          {[['Hoje',fmtMin(minHoje),'#60a5fa'],['Semana',fmtMin(minSem),'#fbbf24'],['Meta ciclo',`${Math.round(CICLO_H)}h`,'#34d399']].map(([l,v,c])=>(
+          {[['Hoje',fmtMin(minHoje),'#60a5fa'],['Semana',fmtMin(minSem),'#fbbf24'],['Meta ciclo',fmtMinG(CICLO_MIN),'#34d399']].map(([l,v,c])=>(
             <div key={l} style={{flex:1,padding:'14px 8px',borderRadius:12,background:`${c}08`,border:`1px solid ${c}20`,textAlign:'center'}}>
               <div style={{fontSize:18,fontWeight:900,color:c,fontFamily:"'DM Mono',monospace"}}>{v}</div>
               <div style={{fontSize:13,color:'#c2ccd8',marginTop:4}}>{l}</div>
@@ -5037,7 +5156,7 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
           <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:8}}><BarProg done={feitos.length} total={N} h={5}/><span style={{fontSize:13,color:'#fbbf24',fontFamily:"'DM Mono',monospace",flexShrink:0}}>{feitos.length}/{N}</span></div>
           <div style={{display:'flex',flexWrap:'wrap',gap:4}}>
             {CICLO.map(s=>{const done=feitosSet.has(s.id);const c=s.tag?.includes('TRIÂNGULO')?'#fbbf24':s.cor;return(
-              <div key={s.id} title={s.mat} style={{width:28,height:28,borderRadius:6,background:done?`${c}30`:'rgba(255,255,255,.03)',border:`1px solid ${done?c:'rgba(148,163,184,.25)'}`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,color:done?c:'#aab6c8',fontFamily:"'DM Mono',monospace",fontWeight:700}}>{done?'✓':s.id}</div>
+              <div key={s.id} title={s.mat} style={{width:28,height:28,borderRadius:6,background:done?`${c}30`:'rgba(255,255,255,.03)',border:`1px solid ${done?c:'rgba(148,163,184,.25)'}`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,color:done?c:'#aab6c8',fontFamily:"'DM Mono',monospace",fontWeight:700}}>{done?'✓':CICLO.indexOf(s)+1}</div>
             );})}
           </div>
         </div>
@@ -6332,13 +6451,14 @@ function TabDiscursiva(){
           Sem mínimo por prova: o corte é a nota padronizada (≥150), então cada desvio perdido em Gerais se compensa com meio desvio em Específicos.
         </div>
         <div style={{fontSize:13,color:'var(--text4)',marginTop:6,lineHeight:1.5}}>
-          ⚠️ O edital NÃO publica quantas questões vão para cada matéria. Os números de questões abaixo são hipótese neutra (Gerais {totQ.gerais}/80 · Específicos {totQ.especificos}/100) — edite se tiver informação melhor.
+          ℹ️ O edital NÃO publica quantas questões vão para cada matéria. As questões abaixo seguem a coluna "Peso na prova" do Guruja (estimativa da plataforma, não do edital): Gerais {Math.round(totQ.gerais)}/80 · Específicos {Math.round(totQ.especificos)}/100. Edite se tiver informação melhor.
         </div>
       </div>
 
       <div style={{display:'flex',gap:6,marginBottom:12}}>
         <Subtab id="materias" l="📋 Por matéria"/>
         <Subtab id="corte" l="✂️ Se atrasar"/>
+        <Subtab id="disp" l={`🚫 Fora (${CICLO_FORA.length})`}/>
       </div>
 
       {sub==='materias'&&(
@@ -6373,6 +6493,8 @@ function TabDiscursiva(){
                     {chip(`meta ${d.teto}%`,'#94a3b8')}
                     {chip(`~${d.q}q`,'#94a3b8')}
                     {d.estrelas!=null&&chip(`Guruja ★${d.estrelas.toFixed(1)}`,'#fbbf24')}
+                    {PESO_PROVA[d.mat]!=null&&chip(`peso na prova ${PESO_PROVA[d.mat]}%`,'#a78bfa')}
+                    {GURUJA_SEMANA[d.mat]&&chip(`Guruja sem.1: ${GURUJA_SEMANA[d.mat].pct}%`,'#94a3b8')}
                   </div>
                   <div style={{display:'flex',gap:14,marginBottom:6}}>
                     {[['pts',d.pts.toFixed(1)],['h',d.horas.toFixed(1)],['pts/h',d.cb.toFixed(2)]].map(([l,v])=>(
@@ -6404,14 +6526,14 @@ function TabDiscursiva(){
       {sub==='corte'&&(
         <div>
           <div style={{fontSize:14,color:'var(--text3)',lineHeight:1.6,marginBottom:10}}>
-            Se não der para bater a meta, <b>sacrifique de cima para baixo</b>. A ordem cruza o veredito da matéria (peso × seu nível × custo-benefício) e, no empate, as estrelas do Guruja. 🔒 = não corte.
+            Se não der para bater a meta, <b>sacrifique de cima para baixo</b>. A ordem segue o plano da semana (nº de corte de cada atividade) e, no empate, o veredito da matéria (peso × seu nível × custo-benefício). 🔒 = peso alto, não corte.
           </div>
           {corte.length===0&&<div style={{padding:14,textAlign:'center',color:'var(--text4)'}}>Nenhuma atividade pendente.</div>}
           {corte.map((c,i)=>{
             const col=CORV[c.dec.veredito];
             return(
               <div key={c.id} style={{display:'flex',gap:10,alignItems:'flex-start',padding:'9px 11px',borderRadius:10,marginBottom:6,border:`1px solid ${col}30`,background:`${col}07`}}>
-                <div style={{width:26,height:26,borderRadius:'50%',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',background:`${col}25`,color:col,fontSize:13,fontWeight:900,fontFamily:"'DM Mono',monospace"}}>{c.dec.veredito==='NUNCA CORTAR'?'🔒':i+1}</div>
+                <div style={{width:26,height:26,borderRadius:'50%',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',background:`${col}25`,color:col,fontSize:13,fontWeight:900,fontFamily:"'DM Mono',monospace"}}>{(c.corte==null?99:c.corte)>=99?'🔒':i+1}</div>
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{fontSize:14,fontWeight:800,color:'var(--text)'}}>{c.ic} {c.mat} <span style={{fontSize:13,color:'var(--text4)',fontFamily:"'DM Mono',monospace",fontWeight:600}}>· #{c.id} · {c.tipo}</span></div>
                   <div style={{fontSize:13,color:'var(--text4)',marginTop:1}}>{c.conteudo}</div>
@@ -6420,6 +6542,7 @@ function TabDiscursiva(){
                     {chip(`pts/h ${c.dec.cb.toFixed(2)}`,'#94a3b8')}
                     {chip(`Guruja ★${c.est}`,'#fbbf24')}
                     {chip(`nível ${Math.round(c.dec.nivel)}%`,'#94a3b8')}
+                    {chip(`⏱ ${fmtMinG(c.min)}`,'#94a3b8')}
                   </div>
                 </div>
               </div>
@@ -6427,6 +6550,46 @@ function TabDiscursiva(){
           })}
         </div>
       )}
+
+      {sub==='disp'&&(()=>{
+        const voltaram=CICLO_DISP.filter(d=>CICLO_VOLTA.includes(d.id));
+        const trazer=id=>{const v=lsGet('ciclo_volta',[]);if(!v.includes(id))lsSet('ciclo_volta',[...v,id]);window.location.reload();};
+        const dispensar=id=>{lsSet('ciclo_volta',lsGet('ciclo_volta',[]).filter(x=>x!==id));window.location.reload();};
+        const totMin=CICLO_FORA.reduce((a,c)=>a+c.min,0);
+        return(
+          <div>
+            <div style={{fontSize:14,color:'var(--text3)',lineHeight:1.6,marginBottom:10}}>
+              Atividades do Guruja que <b>ficaram fora do plano de 19–25/10</b> ({CICLO_FORA.length} · {fmtMinG(totMin)}) para caber em ~4h por dia. A coluna <b>volta nº</b> é a ordem em que elas entram se sobrar tempo. Ao trazer de volta, a atividade entra no fim do plano como a <b>primeira a ser cortada</b>.
+            </div>
+            {CICLO_FORA.length===0&&<div style={{padding:14,textAlign:'center',color:'var(--text4)'}}>Nada fora do plano: todas as atividades voltaram.</div>}
+            {CICLO_FORA.map(d=>(
+              <div key={d.id} style={{padding:'10px 12px',borderRadius:11,marginBottom:8,border:'1px solid rgba(248,113,113,.28)',background:'rgba(248,113,113,.05)'}}>
+                <div style={{display:'flex',alignItems:'center',gap:6,flexWrap:'wrap',marginBottom:4}}>
+                  <span style={{fontSize:15,fontWeight:900,color:'var(--text)'}}>{d.ic} {d.mat}</span>
+                  {chip(d.origem,'#94a3b8')}
+                  {chip(`⏱ ${fmtMinG(d.min)}`,'#94a3b8')}
+                  <span style={{marginLeft:'auto'}}>{chip(`volta nº ${d.ordem}`,'#fbbf24')}</span>
+                </div>
+                <div style={{fontSize:14,color:'var(--text)',marginBottom:4}}>{d.conteudo}</div>
+                <div style={{fontSize:13,color:'var(--text4)',lineHeight:1.5}}><b>Por quê:</b> {d.motivo}</div>
+                <div style={{fontSize:13,color:'var(--text4)',lineHeight:1.5,marginBottom:6}}><b>No lugar:</b> {d.alternativa}</div>
+                <button onClick={()=>trazer(d.id)} style={{padding:'7px 12px',borderRadius:8,fontSize:13,fontWeight:800,cursor:'pointer',border:'1px solid rgba(52,211,153,.45)',background:'rgba(52,211,153,.1)',color:'#34d399'}}>↩ trazer de volta ao plano</button>
+              </div>
+            ))}
+            {voltaram.length>0&&(
+              <div style={{marginTop:6}}>
+                <div style={{fontSize:13,color:'var(--text4)',fontFamily:"'DM Mono',monospace",fontWeight:700,letterSpacing:'1px',marginBottom:6}}>JÁ VOLTARAM PARA O PLANO</div>
+                {voltaram.map(d=>(
+                  <div key={d.id} style={{display:'flex',alignItems:'center',gap:8,padding:'8px 10px',borderRadius:10,marginBottom:6,border:'1px solid rgba(52,211,153,.25)',background:'rgba(52,211,153,.05)'}}>
+                    <div style={{flex:1,minWidth:0,fontSize:14,color:'var(--text)'}}>{d.ic} {d.mat} — <span style={{color:'var(--text4)'}}>{d.conteudo}</span></div>
+                    <button onClick={()=>dispensar(d.id)} style={{padding:'6px 10px',borderRadius:8,fontSize:13,fontWeight:800,cursor:'pointer',border:'1px solid rgba(248,113,113,.4)',background:'transparent',color:'#f87171',flexShrink:0}}>🚫 dispensar de novo</button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })()}
     </div>
   );
 }
@@ -7359,7 +7522,7 @@ function ModalConfig({fechar}){
             {/* Info do app */}
             <div style={{padding:'12px',borderRadius:11,background:'rgba(148,163,184,.06)',border:'1px solid rgba(148,163,184,.15)'}}>
               <div style={{fontSize:13,color:'#c2ccd8',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:8}}>⚙️ APP</div>
-              {[['Versão','RITY OS'],['Meta atual',`${N} atividades · máx. 1h cada · ~${Math.round(CICLO_H)}h`],['Meta semanal',`${lsGet('meta_horas_sem',35)}h`],['Formato','1 atividade do Guruja = máx. 1h (pomodoro 30·5·25)'],['Método','Ciclo Meirelles + Anki + Estudo Reverso'],['Dieta','Low carb · Cetogênico'],['Kauê','Preparatório Colégio Naval — processo separado']].map(([k,v])=>(
+              {[['Versão','RITY OS'],['Meta atual',`${N} atividades · plano 19–25/10 · ${fmtMinG(CICLO_MIN)}`],['Meta semanal',`${lsGet('meta_horas_sem',35)}h`],['Formato','Tempo por atividade: 30 / 45 / 60 / 90 min (pomodoro ajustado ao tempo)'],['Método','Ciclo Meirelles + Anki + Estudo Reverso'],['Dieta','Low carb · Cetogênico'],['Kauê','Preparatório Colégio Naval — processo separado']].map(([k,v])=>(
                 <div key={k} style={{display:'flex',justifyContent:'space-between',padding:'6px 8px',borderRadius:6,background:'rgba(148,163,184,.06)',marginBottom:3}}>
                   <span style={{fontSize:13,color:'#c2ccd8',fontFamily:"'DM Mono',monospace",fontWeight:700}}>{k}</span>
                   <span style={{fontSize:13,color:'#b4c0d1',textAlign:'right',maxWidth:'65%'}}>{v}</span>
@@ -7807,7 +7970,7 @@ function TabDados({horas}){
 // ─── APP RAIZ ────────────────────────────────────────────────
 function App(){
   const[feitos,setFeitos]=useState([]);
-  const[cicloNum,setCicloNum]=useState(10);
+  const[cicloNum,setCicloNum]=useState(2);
   const[horas,setHoras]=useState([]);
   const[mit,setMit]=useState([]);
   const[historico,setHistorico]=useState(()=>lsGet('historico_diario',[]));
@@ -7855,7 +8018,7 @@ function App(){
 
   useEffect(()=>{
     Sync.onStatus(s=>setSyncSt(s));
-    if(Sync.isConfigured()){Sync.init().then(ok=>{if(ok){setFeitos(lsGet('feitos',[]));setCicloNum(lsGet('cicloNum',1));setHoras(lsGet('horas',[]));setMit(lsGet('mit',[]));}});}
+    if(Sync.isConfigured()){Sync.init().then(ok=>{if(ok){setFeitos(lerFeitosValidos());setCicloNum(lerCicloNum());setHoras(lsGet('horas',[]));setMit(lsGet('mit',[]));}});}
     // ── Seed único: simulado Guruja 13-19/07 (251 questões, 8 matérias) ──
     // Sem isso, a fila de Questões (últimos 7 dias) não enxerga esse resultado real.
     (()=>{
@@ -7972,7 +8135,7 @@ function App(){
       }
     })();
     const _f=lsGet('feitos',[]);
-    setFeitos(lsGet('feitos',[]));setCicloNum(lsGet('cicloNum',1));setHoras(lsGet('horas',[]));setMit(lsGet('mit',[]));
+    setFeitos(lerFeitosValidos());setCicloNum(lerCicloNum());setHoras(lsGet('horas',[]));setMit(lsGet('mit',[]));
     const tick=setInterval(()=>setClock(new Date()),1000);
     return()=>clearInterval(tick);
   },[]);
@@ -8164,7 +8327,7 @@ function App(){
 
       <div style={{flex:1,overflowY:'auto',padding:'16px 16px 0',background:'var(--bg)'}}>
         {tab==='ia'     &&<TabIA     appCtx={appCtx} onMIT={saveMIT}/>}
-        {tab==='estudo' &&<TabEstudo feitos={feitos} cicloNum={cicloNum} horas={horas} onConcluir={concluir} onIrPara={irPara} onDesmarcar={desmarcar} onAddHoras={addHoras} onSyncHistorico={syncHistorico} mit={mit} planoSemana={planoSemana} onSavePlano={savePlano}/>}
+        {tab==='estudo' &&<TabEstudo feitos={feitos} cicloNum={cicloNum} horas={horas} onConcluir={concluir} onIrPara={irPara} onDesmarcar={desmarcar} onAddHoras={addHoras} onSyncHistorico={syncHistorico} mit={mit} planoSemana={planoSemana} onSavePlano={savePlano} onSetTab={setTab}/>}
         {tab==='hoje'   &&<TabHoje feitos={feitos} onAddHoras={addHoras} onSetTab={setTab}/>}
         {tab==='revisao'&&<TabRevisao totalBlocos={feitos.length} tmSugestao={tmSugestao} tmIA={tmIA} onSyncHistorico={syncHistorico} onAddHoras={addHoras} ankiSugestoes={calcMotorCanais(feitos,horas,historico).anki.materias||[]} nlmSugestao={calcMotorCanais(feitos,horas,historico).nlm.top||null}/>}
         {tab==='dados'  &&<TabDados horas={horas}/>}
