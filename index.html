@@ -242,15 +242,17 @@ const _w=console.warn;console.warn=(...a)=>{if(String(a[0]||'').includes('Babel'
 const{useState,useEffect,useRef,useMemo,useCallback}=React;
 
 // ─── CONSTANTES ───────────────────────────────────────────────
-const CICLO_INI_MS=new Date(2026,9,19).setHours(0,0,0,0); // Meta 2 SEFAZ-SC — dia 1 = seg 19/10/2026 (dia 7 = dom 25/10)
+const CICLO_INI_MS=new Date(2026,9,26).setHours(0,0,0,0); // Meta 3 SEFAZ-SC — dia 1 = seg 26/10/2026 (dia 7 = dom 01/11, PGM Jundiaí)
 const NIVEL_INI_MS=new Date(2026,9,12).setHours(0,0,0,0); // registros de questões contam desde a Meta 1 (12/10)
-// ── CICLO — PLANO 19–25/10/2026 · 32 atividades (9 que sobraram da Meta 1 + 23 da Meta 2) · ~4h por dia ──
+// ── CICLO — PLANO 26/10–01/11/2026 · 26 atividades (10 atrasadas da Meta 2 + 16 da Meta 3) · TI sempre 1h30 ──
 // Regras (combinadas com a Ritchely): 1h30 = matéria difícil e de peso (Previdenciário) · 1h = bom peso e facilidade,
 // ou mediana com dificuldade · 30–45 min = pouco peso, não vale focar. Ordem fixa por dia (a mais pesada primeiro).
 // A distribuição por dia NÃO é fixa: é recalculada a cada abertura do app, em MINUTOS, a partir do que já foi feito,
 // da capacidade de cada dia (padrão 4h, editável na aba Estudo › Ciclo) e do que resta da semana.
 // `corte` = ordem de corte se apertar (1 = corta primeiro; 99 = nunca corta). `est` = estrelas do Guruja (lidas do print).
 const CAP_DIA_PADRAO=240, TOL_DIA=15;
+// Minutos planejados por dia (seg..dom) — reproduzem o plano aprovado em 26/10. Domingo = PGM Jundiaí (elástico).
+const CAP_PLANO=[270,225,240,240,270,195,270];
 const MAT_INFO={
   'Dir. Constitucional':{ic:'📜'},'Dir. Administrativo':{ic:'🏛️'},'Dir. Financeiro / AFO':{ic:'📈'},
   'Dir. Previdenciário':{ic:'🛡️'},'Dir. Civil':{ic:'📘'},'Dir. Penal':{ic:'⚖️'},'Reforma Tributária':{ic:'🧾'},
@@ -262,62 +264,76 @@ const fmtMinG=m=>m<=0?'0min':m>=60?`${Math.floor(m/60)}h${m%60?String(m%60).padS
 const faixaMin=m=>m>=90?{cor:'#f87171',tag:'🔴 PESADA'}:m>=60?{cor:'#fbbf24',tag:'🟡 MÉDIA'}:{cor:'#34d399',tag:'🟢 LEVE'};
 // [id, matéria, assunto, min, estrelas, dia planejado, corte, tipo, origem, por quê]
 const PLANO_RAW=[
-  [107,'Dir. Previdenciário','RGPS: dependentes e seus benefícios',90,5,1,99,'Questões','Meta 1','Difícil e de peso: 1h30, primeiro do dia, com a cabeça mais fresca.'],
-  [104,'Ciência e Análise de Dados','Conceitos fundamentais de Ciência de Dados',60,3,1,15,'Questões','Meta 1','Matéria nova com pouca medição: 1h para fechar o conceito.'],
-  [101,'Dir. Constitucional','Imersão na Constituição do Estado de SC',60,3,1,99,'Questões','Meta 1','Específica de peso: 1h.'],
-  [106,'Reforma Tributária','IBS, CBS e Comitê Gestor',30,4,1,13,'Questões','Meta 1','Você já está em ~90% e o peso é pequeno (2%): 30 min só para fechar.'],
-  [204,'Dir. Previdenciário','Custeio I',90,4,2,99,'Questões','Meta 2','Difícil e de peso: 1h30.'],
-  [206,'Dir. Financeiro / AFO','Receita',60,5,2,99,'Questões','Meta 2','AFO é a matéria de maior custo-benefício e reforço crítico: 1h.'],
-  [111,'Dir. Administrativo','LC 741/2019 (parte 2)',60,3,2,99,'Questões','Meta 1','Específica de peso: 1h.'],
-  [108,'Conhecimentos Regionais de SC','Conhecimentos de SC',30,3,2,12,'Questões','Meta 1','Regionais rende pouco por hora: 30 min.'],
-  [211,'Dir. Previdenciário','Custeio II',90,4,3,99,'Questões','Meta 2','Difícil e de peso: 1h30.'],
-  [214,'Dir. Penal','Crimes contra as Finanças Públicas',60,4,3,99,'Questões','Meta 2','Tema típico de prova fiscal: 1h.'],
-  [110,'Dir. Constitucional','Bloco A — Direitos e Garantias Fundamentais; Organização do Estado',60,5,3,99,'Questões','Meta 1','Específica de peso, 5★: 1h.'],
-  [209,'Reforma Tributária','Imposto Seletivo',30,4,3,9,'Questões','Meta 2','Peso pequeno e nível bom: 30 min.'],
-  [109,'Dir. Financeiro / AFO','Lei 7.541/1988 (Lei das taxas)',60,4,4,99,'Questões','Meta 1','AFO: 1h.'],
-  [217,'Dir. Constitucional','Bloco B',60,5,4,99,'Questões','Meta 2','Específica de peso, 5★: 1h.'],
-  [216,'Dir. Administrativo','Toda a Ementa',60,3,4,99,'Questões','Meta 2','Específica de peso: 1h.'],
-  [203,'Ciência e Análise de Dados','Análise e interpretação de dados',45,3,4,14,'Questões','Meta 2','Peso geral de 5,7%: 45 min.'],
-  [219,'Dir. Financeiro / AFO','Despesa',60,5,5,99,'Questões','Meta 2','AFO é reforço crítico: 1h.'],
-  [227,'Dir. Penal','Lei 8.137/1990 — crimes contra a ordem tributária',60,4,5,99,'Questões','Meta 2','Tema típico de prova fiscal: 1h.'],
-  [223,'Dir. Previdenciário','Resolução de Questões Favoritas',60,4,5,99,'Questões','Meta 2','Questões fixam Previdenciário depois do Custeio: 1h.'],
-  [208,'Ciência e Análise de Dados','Teste Bloco A',45,4,5,10,'Questões','Meta 2','Teste curto: 45 min.'],
-  [231,'Dir. Constitucional','Bloco C',60,4,6,99,'Questões','Meta 2','Específica de peso: 1h.'],
-  [229,'Dir. Administrativo','Bloco A',60,4,6,99,'Questões','Meta 2','Específica de peso: 1h.'],
-  [232,'Dir. Financeiro / AFO','Dívida ativa e estágios da despesa',60,4,6,99,'Questões','Meta 2','AFO: 1h.'],
-  [213,'Dir. Civil','Bens',60,4,6,11,'Questões','Meta 2','Civil está em ~89%: sobe pouco, mas é específica (peso 2).'],
-  [103,'Português','Resolução de prova: Auditor Fiscal da Fazenda Estadual (SEF/SC)',30,3,7,8,'Questões','Meta 1','Prova da própria banca/órgão: 30 min.'],
-  [210,'Conhecimentos Regionais de SC','Aspectos naturais (teoria)',30,3,7,6,'Teoria','Meta 2','Pouco retorno: 30 min.'],
-  [207,'Português','Semântica',30,4,7,7,'Questões','Meta 2','Reforço do Guruja: 30 min.'],
-  [218,'Conhecimentos Regionais de SC','Aspectos naturais (questões)',30,3,7,5,'Questões','Meta 2','Pouco retorno: 30 min.'],
-  [224,'Ética Pública','Decreto 2.234/2022',30,2,7,4,'Lei Seca','Meta 2','Ética já está em ~94%: só lei seca, 30 min.'],
-  [220,'Português','Sintaxe, regência e crase',30,4,7,3,'Questões','Meta 2','Reforço do Guruja: 30 min.'],
-  [205,'Ética Pública','Lei 17.715/2019',30,2,7,2,'Lei Seca','Meta 2','Ética já está em ~94%: só lei seca, 30 min.'],
-  [230,'Raciocínio Lógico','Imersão FCC',30,3,7,1,'Questões','Meta 2','Peso pequeno: primeira a cortar.'],
+  [302,'Ciência e Análise de Dados','Análise e interpretação de dados — identificação de padrões e tendências',90,3,1,99,'Questões','Atrasada · M2·2','TI não se pula: 1h30, primeira do dia.'],
+  [405,'Dir. Previdenciário','Regime Próprio da Previdência Social (RPPS)',60,4,1,99,'Questões','Meta 3 · M3·5','Teoria geral do RPPS antes da lei de SC. Previdenciário é onde você mais perde pontos.'],
+  [318,'Dir. Penal','Lei 8.137/1990 — crimes contra a ordem tributária, econômica e relações de consumo',60,4,1,99,'Questões','Atrasada · M2·18','Penal está abaixo da média da turma e o tema é típico de prova fiscal.'],
+  [310,'Dir. Financeiro / AFO','Despesa: conceito e classificação',60,5,1,99,'Questões','Atrasada · M2·10','5★ e reforço crítico; AFO vale 9,9% da prova.'],
+  [305,'Ciência e Análise de Dados','Teste Bloco A',90,4,2,99,'Questões','Atrasada · M2·5','TI não se pula: 1h30.'],
+  [424,'Dir. Previdenciário','Lei Complementar nº 412/2008 (RPPS/SC)',90,5,2,99,'Questões','Meta 3 · M3·24','5★ e lei de SC: difícil e de peso, 1h30 com a cabeça fresca.'],
+  [321,'Raciocínio Lógico','Imersão Temática FCC (2025/26)',45,3,2,7,'Questões','Atrasada · M2·21','Disciplina dos Gerais sem nenhuma medição: esta mede no formato da banca.'],
+  [404,'Ciência e Análise de Dados','Conceitos fundamentais de Inteligência Artificial e aprendizado de máquina',90,4,3,99,'Questões','Meta 3 · M3·4','TI não se pula: 1h30.'],
+  [418,'Dir. Constitucional','Jurisprudência — toda a ementa',90,5,3,99,'Questões','Meta 3 · M3·18','5★ e volumosa: precisa de 1h30.'],
+  [320,'Dir. Administrativo','Bloco A — Licitações, improbidade, organização, atos e poderes',60,4,3,99,'Questões','Atrasada · M2·20','Adm vale 11,9% e você tem só 48 questões feitas: amostra pequena.'],
+  [410,'Ciência e Análise de Dados','Ferramentas analíticas e conceitos de Business Intelligence (BI)',90,3,4,99,'Questões','Meta 3 · M3·10','TI não se pula: 1h30.'],
+  [414,'Dir. Penal','Lei 13.869/2019 — Abuso de Autoridade',60,5,4,99,'Questões','Meta 3 · M3·14','5★ na matéria mais fraca das Específicas.'],
+  [434,'Dir. Financeiro / AFO','LRF — Parte I (disposições preliminares, planejamento, receita…)',60,5,4,99,'Questões','Meta 3 · M3·34','5★ e tema recorrente em prova fiscal.'],
+  [430,'Matemática Financeira e Estatística','Imersão Temática FCC (2025/26)',30,3,4,6,'Questões','Meta 3 · M3·30','Segundo ponto cego dos Gerais: 30 min só para medir.'],
+  [312,'Ciência e Análise de Dados','Favoritas A',90,3,5,99,'Questões','Atrasada · M2·12','TI não se pula: 1h30.'],
+  [406,'Dir. Civil','Fato e Negócio Jurídico',60,5,5,99,'Questões','Meta 3 · M3·6','É o único Civil de 5★.'],
+  [407,'Dir. Administrativo','Bloco B — Responsabilidade, serviços, concessões, PPP, agentes…',60,4,5,99,'Questões','Meta 3 · M3·7','Continua cobrindo a matéria mais subamostrada.'],
+  [412,'Dir. Previdenciário','Regime de Previdência Complementar e Emenda Constitucional…',60,4,5,99,'Questões','Meta 3 · M3·12','Fecha a cobertura de Previdenciário na semana.'],
+  [423,'Ciência e Análise de Dados','Governo Digital',90,3,6,99,'Questões','Meta 3 · M3·23','TI não se pula: 1h30.'],
+  [417,'Dir. Administrativo','Bloco C — Controle, Lei Anticorrupção, conceitos, regime jurídico…',60,3,6,8,'Questões','Meta 3 · M3·17','Fecha os 3 blocos de Adm.'],
+  [314,'Dir. Previdenciário','Resolução de questões favoritas',45,3,6,9,'Teste','Atrasada · M2·14','Reteste da matéria com mais erros, no sábado para não escorregar para o domingo da Jundiaí.'],
+  [322,'Dir. Constitucional','Bloco C — Poder Judiciário, Funções Essenciais à Justiça, Ordem…',60,4,7,5,'Questões','Atrasada · M2·22','Domingo é a Jundiaí: só se couber. Const está em 88,5%, a Específica de menor retorno.'],
+  [323,'Dir. Financeiro / AFO','Dívida ativa e Receita e despesa: estágio',60,4,7,4,'Questões','Atrasada · M2·23','Domingo é a Jundiaí: só se couber. Fecha os estágios da despesa.'],
+  [403,'Dir. Financeiro / AFO','RP, DEA, SF, dívida',60,4,7,3,'Questões','Meta 3 · M3·3','Domingo é a Jundiaí: só se couber.'],
+  [426,'Dir. Penal','Resolução de questões favoritas',45,3,7,2,'Teste','Meta 3 · M3·26','Domingo é a Jundiaí: só se couber. Reteste de Penal.'],
+  [433,'Dir. Constitucional','Resolução das questões favoritas',45,3,7,1,'Teste','Meta 3 · M3·33','Domingo é a Jundiaí: só se couber. Primeira a cortar.'],
 ];
 const CICLO_BASE=PLANO_RAW.map(([id,mat,conteudo,min,est,diaPlano,corte,tipo,origem,por],idx)=>{
   const f=faixaMin(min);
-  const dica=`⏱ ${fmtMinG(min)} · ${tipo} · ${origem==='Meta 1'?'sobrou da Meta 1':'Meta 2'}\n${por}\n${corte<99?`✂️ Se apertar, esta é a nº ${corte} a cortar.`:'🔒 Não corta: é matéria de peso.'}`;
+  const dica=`⏱ ${fmtMinG(min)} · ${tipo} · ${origem}\n${por}\n${corte<99?`✂️ Se apertar, esta é a nº ${corte} a cortar.`:'🔒 Não corta: é matéria de peso.'}`;
   return{id,mat,ic:(MAT_INFO[mat]||{}).ic||'📚',cor:f.cor,tag:f.tag,min,h:min/60,tipo,ferramenta:'Guruja',est,conteudo,diaPlano,corte,origem,por,dica,ord:idx};
 });
-// ── FORA DO PLANO (11) — dispensadas desta semana · "ordem" = ordem de volta se sobrar tempo ──
-// [id, matéria, assunto, min, origem, ordem, motivo, alternativa]
+// ── FORA DO PLANO (31) — em ordem de prioridade: se sobrar tempo, faça de cima para baixo ("ordem" = volta nº) ──
+// [id, matéria, assunto, min, estrelas, tipo, origem, ordem, motivo, alternativa]
 const CICLO_DISP_RAW=[
-  [225,'Dir. Civil','Resolução de Questões Favoritas',30,'Meta 2',1,'Civil já está em ~89% e as questões favoritas não geram ganho marginal.','Se sobrar tempo, é a 1ª a voltar. Senão, 5 questões de Civil no tempo morto.'],
-  [221,'Ciência e Análise de Dados','Favoritas A',30,'Meta 2',2,'Dados já tem 3 atividades no plano (104, 203, 208); esta repete o assunto.','Volta depois de 208. Senão, Anki rápido de Dados.'],
-  [105,'Ética Pública','Ética no setor público',30,'Meta 1',3,'Ética está em ~94% e vale só 2★: retorno quase zero por hora.','Anki rápido de Ética no tempo morto.'],
-  [226,'Conhecimentos Regionais de SC','História de SC (Teoria)',30,'Meta 2',4,'Memorização pura; Regionais rende só ~0,27 ponto por hora.','Cards de Anki rápido no ônibus/fila.'],
-  [215,'Matemática Financeira e Estatística','Bloco A — Estatística Descritiva',30,'Meta 2',5,'Estatística tem 2★ e o pior custo-benefício (~0,10; ~36h para ganhar uns poucos pontos).','Só volta se tudo o mais estiver fechado.'],
-  [102,'Conhecimentos Regionais de SC','Símbolos, clima e Treze Tílias (Teoria)',30,'Meta 1',6,'Memorização de baixo retorno (Regionais cb ~0,27).','Anki rápido; 3 questões de Regionais se sobrar.'],
-  [202,'Conhecimentos Regionais de SC','Revisão — agropecuária',30,'Meta 2',7,'É revisão de teoria que a Meta 1 já cobriu; memorização.','Anki rápido.'],
-  [212,'Ética Pública','Revisão — Código de Ética SEF/SC',30,'Meta 2',8,'Ética em ~94%: revisar de novo não muda a nota.','Passada rápida na semana da prova.'],
-  [228,'Matemática Financeira e Estatística','Toda a Ementa',30,'Meta 2',9,'Estatística com pior custo-benefício e 2★.','Só depois de fechar o resto; considerar zerar o tópico.'],
-  [222,'Reforma Tributária','Aspectos gerais, IBS, CBS e Comitê',30,'Meta 2',10,'Repete a 106 (já no plano); Reforma está em ~90% e vale 2% da prova.','Já coberta pela atividade 106.'],
-  [201,'Orientações Gerais','Orientações Gerais da Meta 2',20,'Meta 2',11,'Não gera ponto: é só leitura da orientação.','Leia em 5 min no tempo morto.'],
+  [431,'Dir. Administrativo','Lei 6.745/1985 (Parte 1)',45,3,'Questões','Meta 3 · M3·31',1,'Específica (peso 2) e lei de SC; Adm é a matéria com menos questões feitas (48).','Só saiu por falta de tempo: é a 1ª a voltar.'],
+  [413,'Dir. Civil','Prescrição e Decadência',60,4,'Questões','Meta 3 · M3·13',2,'Específica ★4; Civil já tem o Fato e Negócio Jurídico na semana.','Se sobrar 1h, faça esta antes das outras de Civil.'],
+  [313,'Reforma Tributária','Aspectos gerais, novos princípios, IBS, CBS e Comitê Gestor',30,4,'Questões','Atrasada · M2·13',3,'Você está abaixo da média da turma em Reforma (85,7% contra 90,1%) e são só 30 min.','Se não sobrar, 5 questões de Reforma no tempo morto.'],
+  [304,'Português','Semântica, tipos de discurso e figuras de linguagem',30,4,'Questões','Atrasada · M2·4',4,'Reforço do Guruja ★4; Português fica sem prática nova na semana.','Anki rápido de Semântica.'],
+  [311,'Português','Sintaxe, verbos, regência e crase',30,4,'Questões','Atrasada · M2·11',5,'Reforço do Guruja ★4; barata.','Anki rápido de regência e crase.'],
+  [409,'Português','Resolução de prova: Auditor Fiscal de Receita Estadual (SEFAZ…)',30,3,'Questões','Meta 3 · M3·9',6,'Prova da própria banca/órgão: calibra o Português.','Faça as 10 últimas questões no tempo morto.'],
+  [408,'Dir. Financeiro / AFO','Resolução de questões favoritas',45,3,'Teste','Meta 3 · M3·8',7,'AFO é reforço crítico; teste curto de fixação.','Anki profundo de AFO.'],
+  [419,'Conhecimentos Regionais de SC','Conhecimentos de SC',30,3,'Questões','Meta 3 · M3·19',8,'A amostra de Regionais (23 questões) é pequena demais.','5 questões de Regionais no tempo morto.'],
+  [316,'Dir. Civil','Resolução de Questões Favoritas',45,4,'Teste','Atrasada · M2·16',9,'Reteste de Civil (89%, um pouco abaixo da média da turma).','5 questões de Civil no tempo morto.'],
+  [425,'Dir. Civil','Obrigações',60,4,'Questões','Meta 3 · M3·25',10,'Específica ★4, mas Civil já tem 1 item na semana.','Só depois das de Civil acima.'],
+  [432,'Raciocínio Lógico','Toda a Ementa do Edital',30,2,'Questões','Meta 3 · M3·32',11,'RL não tem medição própria; a imersão FCC da terça já mede.','Só se a imersão de terça mostrar buraco.'],
+  [416,'Ética Pública','Lei 14.540/2023 — Programa de Prevenção e Enfrentamento…',30,3,'Questões','Meta 3 · M3·16',12,'Ainda não foi medida; Ética está em 94% e vale 5,7%.','Leitura rápida da lei no tempo morto.'],
+  [422,'Reforma Tributária','Repartição da Receita Tributária, criação de novos fundos…',30,3,'Questões','Meta 3 · M3·22',13,'Reforma vale 2% da prova, mas você está abaixo da média da turma.','Anki rápido de Reforma.'],
+  [420,'Dir. Financeiro / AFO','Revisão (Lei Complementar nº 898/2026)',45,3,'Revisão','Meta 3 · M3·20',14,'Revisão de conteúdo que você já viu; menor ganho que uma atividade nova.','Anki rápido da LC 898.'],
+  [421,'Português','Resolução de questões favoritas',30,3,'Teste','Meta 3 · M3·21',15,'Reteste de Português depois dos reforços.','Anki profundo de Português.'],
+  [428,'Matemática Financeira e Estatística','Bloco A — Juros simples e compostos, descontos e taxas',30,2,'Questões','Meta 3 · M3·28',16,'★2 e pior custo-benefício por hora; só o núcleo vale.','Só se o resto estiver fechado.'],
+  [415,'Matemática Financeira e Estatística','Bloco B — Análise combinatória e probabilidade',30,2,'Questões','Meta 3 · M3·15',17,'★2 e pior custo-benefício por hora.','Só se o resto estiver fechado.'],
+  [402,'Conhecimentos Regionais de SC','História de SC',30,3,'Questões','Meta 3 · M3·2',18,'Regionais está em 91,3%: memorização de baixo retorno.','Anki rápido de História de SC.'],
+  [427,'Conhecimentos Regionais de SC','Resolução de questões favoritas',30,3,'Teste','Meta 3 · M3·27',19,'Regionais está em 91,3%.','Anki rápido.'],
+  [309,'Conhecimentos Regionais de SC','Aspectos Naturais de Santa Catarina (questões)',30,3,'Questões','Atrasada · M2·9',20,'Regionais está em 91,3%.','Anki rápido.'],
+  [411,'Conhecimentos Regionais de SC','Urbanização e Mesorregiões',30,3,'Teoria','Meta 3 · M3·11',21,'Memorização pura em matéria que já está em 91,3%.','Anki rápido.'],
+  [308,'Matemática Financeira e Estatística','Bloco A — Estatística Descritiva',30,2,'Questões','Atrasada · M2·8',22,'★2; Estatística só entra depois do diagnóstico da quinta.','Anki rápido.'],
+  [319,'Matemática Financeira e Estatística','Toda a Ementa da Disciplina',30,2,'Questões','Atrasada · M2·19',23,'★2; só depois do diagnóstico da quinta.','Considere zerar o tópico.'],
+  [429,'Ética Pública','Revisão (Decreto 2.234/2022 e Lei 14.540/2023)',30,3,'Revisão','Meta 3 · M3·29',24,'Ética está em 94%: revisar de novo muda pouco.','Passada rápida na semana da prova.'],
+  [303,'Ética Pública','Lei 17.715/2019 — Programa de Integridade e Compliance…',30,2,'Questões','Atrasada · M2·3',25,'Ética está em 94% e vale ★2.','Anki rápido.'],
+  [315,'Ética Pública','Decreto 2.234/2022 — Programa de Integridade e Compliance…',30,2,'Lei Seca','Atrasada · M2·15',26,'Ética está em 94% e vale ★2.','Anki rápido.'],
+  [307,'Ética Pública','Revisão (Código de Ética e Disciplina dos Servidores Fazendários)',30,3,'Revisão','Atrasada · M2·7',27,'Ética está em 94%: revisão não muda a nota.','Passada rápida na semana da prova.'],
+  [306,'Conhecimentos Regionais de SC','Aspectos Naturais de Santa Catarina (teoria)',30,3,'Teoria','Atrasada · M2·6',28,'Teoria de memorização em matéria que já está em 91,3%.','Anki rápido.'],
+  [317,'Conhecimentos Regionais de SC','História de SC (teoria)',30,3,'Teoria','Atrasada · M2·17',29,'Teoria de memorização em matéria que já está em 91,3%.','Anki rápido.'],
+  [301,'Conhecimentos Regionais de SC','Revisão (desempenho da agropecuária e do agronegócio…)',30,3,'Revisão','Atrasada · M2·1',30,'Revisão de memorização em matéria que já está em 91,3%.','Anki rápido.'],
+  [401,'Orientações Gerais','Orientações Gerais sobre a Meta 3',20,3,'Teoria','Meta 3 · M3·1',31,'Não gera ponto: é só leitura da orientação.','Leia em 5 min no tempo morto.'],
 ];
-const CICLO_DISP=CICLO_DISP_RAW.map(([id,mat,conteudo,min,origem,ordem,motivo,alternativa])=>{
+const CICLO_DISP=CICLO_DISP_RAW.map(([id,mat,conteudo,min,est,tipo,origem,ordem,motivo,alternativa])=>{
   const f=faixaMin(min);
-  return{id,mat,ic:(MAT_INFO[mat]||{}).ic||'📚',cor:f.cor,tag:'🟢 LEVE',min,h:min/60,tipo:'Questões',ferramenta:'Guruja',est:2,conteudo,diaPlano:7,corte:0,origem,motivo,alternativa,ordem,por:motivo,dica:`↩ Voltou da lista de dispensadas · ⏱ ${fmtMinG(min)}\n${motivo}\n✂️ Entra por último: é a 1ª a cortar se apertar.`,ord:100+ordem};
+  return{id,mat,ic:(MAT_INFO[mat]||{}).ic||'📚',cor:f.cor,tag:f.tag,min,h:min/60,tipo,ferramenta:'Guruja',est,conteudo,diaPlano:7,corte:0,origem,motivo,alternativa,ordem,por:motivo,dica:`↩ Voltou da lista de dispensadas · ⏱ ${fmtMinG(min)}\n${motivo}\n✂️ Entra por último: é a 1ª a cortar se apertar.`,ord:100+ordem};
 });
 const IDS_CICLO_VALIDOS=new Set([...CICLO_BASE,...CICLO_DISP].map(i=>i.id));
 
@@ -326,7 +342,7 @@ const diaCicloLabel=d=>{const dt=new Date(CICLO_INI_MS);dt.setDate(dt.getDate()+
 // Quantos minutos o app deve planejar para cada dia (1..7). Padrão 4h; a Ritchely pode mudar em Estudo › Ciclo.
 function getCapDia(d){
   try{const o=JSON.parse(localStorage.getItem('horas_dia')||'{}');const v=+o[d];if(v>0)return v;}catch(e){}
-  return CAP_DIA_PADRAO;
+  return CAP_PLANO[d-1]||CAP_DIA_PADRAO;
 }
 
 // Distribui as atividades pelos dias (1..7 = seg..dom, a partir de CICLO_INI_MS), em MINUTOS.
@@ -368,20 +384,40 @@ function distribuirCiclo(base,feitos,feitosDt,diasTrab,hojeMs,capFn){
 const CICLO_VOLTA=(()=>{try{const v=JSON.parse(localStorage.getItem('ciclo_volta')||'[]');return Array.isArray(v)?v.filter(id=>CICLO_DISP.some(d=>d.id===id)):[];}catch(e){return [];}})();
 const CICLO_FORA=CICLO_DISP.filter(d=>!CICLO_VOLTA.includes(d.id)).sort((a,b)=>a.ordem-b.ordem);
 
+
+// Registro único de 19/10 (pedido da Ritchely): Const. Estadual de SC — 2h00, 85,7% (Guruja DCON.4639.126557).
+// Idempotente: confere cada lista pelo id antes de gravar; `final` marca como feito para não reaplicar depois.
+function seedRegistro101(wr,final){
+  try{
+    const J=(k,d)=>{try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v);}catch(e){return d;}};
+    if(J('seed_reg_101','')==='done')return;
+    const dt=new Date(2026,9,19,9,49).getTime(), dia0=new Date(2026,9,19).setHours(0,0,0,0);
+    const rid='2026-10-19_DCON.4639.126557';
+    const hist=J('historico_diario',[]);
+    if(!hist.some(r=>r&&r.id===rid))wr('historico_diario',[...hist,{id:rid,materia:'Dir. Constitucional',assunto:'Imersão — Constituição do Estado de Santa Catarina',questoes:'',acertei:'',dificuldade:'',tempo:120,obs:'Guruja: 85,7% de acerto · código DCON.4639.126557 · nº de questões não informado',dt,dia:'2026-10-19',origem:'guruja'}]);
+    const hr=J('horas',[]);
+    if(!hr.some(h=>h&&h.rid===rid))wr('horas',[...hr,{mat:'Dir. Constitucional',min:120,dt,rid}]);
+    if(final)wr('seed_reg_101','done');
+  }catch(e){}
+}
+
 const CICLO=(()=>{
   const lsj=(k,d)=>{try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v);}catch(e){return d;}};
   const hojeMs=new Date().setHours(0,0,0,0);
-  // Migração única para o plano de 19–25/10 (v45): guarda o feitos da Meta 1 em backup e começa o plano do zero.
+  // Migração única para o plano de 26/10–01/11 (v46): guarda o feitos da Meta 2 em backup e começa a Meta 3 do zero.
   try{
-    if(lsj('ciclo_versao','')!=='v45'){
-      localStorage.setItem('feitos_meta1_bkp',JSON.stringify({feitos:lsj('feitos',[]),feitos_dt:lsj('feitos_dt',{}),em:Date.now()}));
+    if(lsj('ciclo_versao','')!=='v46'){
+      localStorage.setItem('feitos_meta2_bkp',JSON.stringify({feitos:lsj('feitos',[]),feitos_dt:lsj('feitos_dt',{}),ciclo_volta:lsj('ciclo_volta',[]),em:Date.now()}));
       localStorage.setItem('feitos',JSON.stringify([]));
       localStorage.setItem('feitos_dt',JSON.stringify({}));
-      localStorage.setItem('cicloNum',JSON.stringify(2));
-      localStorage.setItem('ciclo_versao',JSON.stringify('v45'));
+      localStorage.setItem('cicloNum',JSON.stringify(3));
+      localStorage.removeItem('ciclo_volta');
+      localStorage.removeItem('horas_dia');
+      localStorage.setItem('ciclo_versao',JSON.stringify('v46'));
       if(localStorage.getItem('dias_trabalho')===null)localStorage.setItem('dias_trabalho',JSON.stringify([2,4,5]));
     }
   }catch(e){}
+  try{seedRegistro101((k,v)=>localStorage.setItem(k,JSON.stringify(v)),false);}catch(e){}
   let dw=lsj('dias_trabalho',[2,4,5]);
   if(!Array.isArray(dw)||!dw.length)dw=[2,4,5];
   const volta=CICLO_DISP.filter(d=>CICLO_VOLTA.includes(d.id));
@@ -393,7 +429,7 @@ const N=CICLO.length;
 const CICLO_H=CICLO.reduce((s,c)=>s+c.h,0);
 const CICLO_MIN=CICLO.reduce((s,c)=>s+c.min,0);
 const lerFeitosValidos=()=>{try{const v=JSON.parse(localStorage.getItem('feitos')||'[]');return Array.isArray(v)?v.filter(id=>IDS_CICLO_VALIDOS.has(id)):[];}catch(e){return [];}};
-const lerCicloNum=()=>{try{return Math.max(2,JSON.parse(localStorage.getItem('cicloNum')||'2')||2);}catch(e){return 2;}};
+const lerCicloNum=()=>{try{return Math.max(3,JSON.parse(localStorage.getItem('cicloNum')||'3')||3);}catch(e){return 3;}};
 
 // ── PAINEL ESTRATÉGICO ───────────────────────────────────────
 
@@ -451,7 +487,7 @@ const CRONOGRAMA_MACRO=[
   {periodo:'OUT/2026 — Metas 1 a 3 do Guruja',eventos:[
     {data:'12-18/10',acao:'Meta 1 — 31 atividades em 7 dias (máx. 1h cada)',tipo:'estudo'},
     {data:'19-25/10',acao:'Meta 2 + sobras da Meta 1 — 32 atividades em ~4h por dia (30/45/60/90 min cada)',tipo:'estudo'},
-    {data:'26/10-01/11',acao:'Meta 3 — Previdenciário e legislação de SC sempre antes de Gerais',tipo:'estudo'},
+    {data:'26/10-01/11',acao:'Meta 3 + atrasadas da Meta 2 — 26 atividades (TI 1h30 todo dia útil; Previdenciário e lei de SC antes dos Gerais; domingo elástico)',tipo:'estudo'},
     {data:'01/11',acao:'🧪 PGM Jundiaí — "a frio", treino de resistência',tipo:'prova',alerta:'alto'},
   ]},
   {periodo:'NOV/2026 — Reta final',eventos:[
@@ -1054,7 +1090,7 @@ const DECISAO_PADRAO={
   'Dir. Administrativo':             {q:16.7,teto:92,hpp:0.25,nivel0:null,tipo:'revisão + legislação SC nova'},
   'Dir. Financeiro / AFO':           {q:13.9,teto:92,hpp:0.30,nivel0:null,tipo:'revisão + lei seca SC (LC 898, Lei 7.541)'},
   'Reforma Tributária':              {q:2.8,teto:92,hpp:0.45,nivel0:60,  tipo:'tema novo (EC 132) — poucas questões'},
-  'Dir. Previdenciário':             {q:16.7,teto:82,hpp:0.80,nivel0:45,  tipo:'matéria difícil + lei seca (EC 103, RPPS, LC 412)'},
+  'Dir. Previdenciário':             {q:16.7,teto:88,hpp:0.80,nivel0:45,  tipo:'matéria difícil + lei seca (EC 103, RPPS, LC 412)'},
   'Dir. Civil':                      {q:16.7,teto:92,hpp:0.35,nivel0:null,tipo:'revisão com buracos pontuais'},
   'Dir. Penal':                      {q:16.7,teto:92,hpp:0.30,nivel0:null,tipo:'revisão + leis especiais (8.137, 13.869)'},
   'Português':                       {q:16,teto:90,hpp:0.30,nivel0:null,tipo:'manutenção'},
@@ -1068,10 +1104,22 @@ const DECISAO_PADRAO={
 // "Peso na prova" mostrado pelo Guruja (% da prova) — estimativa da plataforma, NÃO do edital.
 const PESO_PROVA={'Dir. Constitucional':11.9,'Dir. Administrativo':11.9,'Dir. Civil':11.9,'Dir. Penal':11.9,'Dir. Previdenciário':11.9,
   'Dir. Financeiro / AFO':9.9,'Reforma Tributária':2.0,'Português':5.7,'Ética Pública':5.7,'Ciência e Análise de Dados':5.7,'Conhecimentos Regionais de SC':5.7};
-// Desempenho real da semana 1 (12–18/10), lido da "Análise geral" do Guruja. Só entram valores conferidos;
-// as demais matérias seguem a regra antiga até a Ritchely informar (campo "nível manual" na aba Decisão).
-// `uso` = valor usado no motor quando o dado medido não cobre toda a matéria (ex.: Reforma, item 24 ainda pendente).
-const GURUJA_SEMANA={'Ética Pública':{pct:94.1},'Dir. Civil':{pct:89.3},'Reforma Tributária':{pct:90.4,uso:85}};
+// Desempenho acumulado até 26/10 (Meta 1 + Meta 2), lido da "Análise geral" do Guruja.
+// pct = % de acerto · q/a = questões/acertos · media = média da turma · dif = diferença (pontos percentuais).
+// Raciocínio Lógico e Matemática Financeira/Estatística ainda não têm medição: seguem a regra antiga.
+const GURUJA_SEMANA={
+  'Dir. Previdenciário':{pct:81.0,q:74,a:60,media:74.5,dif:6.5},
+  'Dir. Constitucional':{pct:88.5,q:61,a:54,media:84.5,dif:3.9},
+  'Dir. Administrativo':{pct:83.3,q:48,a:40,media:82.3,dif:0.9},
+  'Dir. Civil':{pct:89.0,q:91,a:81,media:89.9,dif:-0.9},
+  'Dir. Penal':{pct:82.1,q:73,a:60,media:85.5,dif:-3.3},
+  'Dir. Financeiro / AFO':{pct:87.1,q:78,a:68,media:85.8,dif:1.3},
+  'Conhecimentos Regionais de SC':{pct:91.3,q:23,a:21,media:83.7,dif:7.5},
+  'Português':{pct:88.8,q:18,a:16,media:81.9,dif:6.8},
+  'Ética Pública':{pct:94.1,q:17,a:16,media:88.0,dif:6.0},
+  'Ciência e Análise de Dados':{pct:85.0,q:20,a:17,media:85.0,dif:0.0},
+  'Reforma Tributária':{pct:85.7,q:56,a:48,media:90.1,dif:-4.4}
+};
 
 // Núcleo puro (testável): recebe linhas já com nível/estrelas e devolve ranking com veredito e porquê.
 function calcDecisaoCore(rows){
@@ -1127,12 +1175,12 @@ function nivelRealMat(mat){
   if(cfg.nivel&&cfg.nivel[mat]!=null&&!isNaN(cfg.nivel[mat]))return{pct:+cfg.nivel[mat],origem:'manual'};
   const gs=GURUJA_SEMANA[mat];
   if(gs){
-    const baseS=gs.uso!=null?gs.uso:gs.pct;
     const histS=lsGet('historico_diario',[]).filter(r=>r.materia===mat&&(r.dt||0)>=CICLO_INI_MS);
     const qS=histS.reduce((s,r)=>s+(parseInt(r.questoes)||0),0);
     const aS=histS.reduce((s,r)=>s+(parseInt(r.acertei)||0),0);
-    if(qS>=10)return{pct:(baseS+aS/qS*100)/2,origem:`Guruja sem.1 + ${qS}q desta semana`};
-    return{pct:baseS,origem:'Guruja sem.1'};
+    // junta o que o Guruja já contou (q questões) com o que você registrou desde 26/10, ponderado por nº de questões
+    if(qS>0&&gs.q)return{pct:(gs.pct/100*gs.q+aS)/(gs.q+qS)*100,origem:`Guruja 26/10 + ${qS}q desta semana`};
+    return{pct:gs.pct,origem:'Guruja 26/10'};
   }
   const guruja=getGurujaAssuntos();
   let base=null,orig=null;
@@ -4759,8 +4807,7 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
         })()}
         {/* Horas por dia — a fila é montada em minutos */}
         {(()=>{
-          const OPC=[120,180,240,300,360];
-          const ciclar=d=>{const cur=getCapDia(d);const nx=OPC[(OPC.indexOf(cur)+1)%OPC.length];let o={};try{o=JSON.parse(localStorage.getItem('horas_dia')||'{}')||{};}catch(e){}o[d]=nx;lsSet('horas_dia',o);window.location.reload();};
+                    const ciclar=d=>{const cur=getCapDia(d);const nx=cur>=360?120:cur+30;let o={};try{o=JSON.parse(localStorage.getItem('horas_dia')||'{}')||{};}catch(e){}o[d]=nx;lsSet('horas_dia',o);window.location.reload();};
           return(
             <div style={{padding:'10px 12px',borderRadius:11,background:'rgba(251,191,36,.05)',border:'1px solid rgba(251,191,36,.25)',marginBottom:12}}>
               <div style={{fontSize:13,color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:6}}>⏱ HORAS POR DIA (toque para mudar de 2h a 6h)</div>
@@ -4787,7 +4834,7 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
           const diasTrabalhoCiclo=getDiasTrabalho();
           const DIAS_CICLO11={};
           [...new Set(CICLO.map(s=>s.dia))].forEach(dd=>{
-            DIAS_CICLO11[dd]=`${diaCicloLabel(dd)} · ${fmtMinG(CICLO.filter(x=>x.dia===dd).reduce((a,x)=>a+x.min,0))} · ${diasTrabalhoCiclo.includes(dd%7)?'trabalho':'livre'}`;
+            DIAS_CICLO11[dd]=`${diaCicloLabel(dd)} · ${fmtMinG(CICLO.filter(x=>x.dia===dd).reduce((a,x)=>a+x.min,0))} · ${diasTrabalhoCiclo.includes(dd%7)?'trabalho':'livre'}${dd===7?' · 🧪 Jundiaí (elástico)':''}`;
           });
           const diasUnicos=[...new Set(CICLO.map(s=>s.dia))].sort((a,b)=>a-b);
           return diasUnicos.map(dia=>{
@@ -6494,7 +6541,7 @@ function TabDiscursiva(){
                     {chip(`~${d.q}q`,'#94a3b8')}
                     {d.estrelas!=null&&chip(`Guruja ★${d.estrelas.toFixed(1)}`,'#fbbf24')}
                     {PESO_PROVA[d.mat]!=null&&chip(`peso na prova ${PESO_PROVA[d.mat]}%`,'#a78bfa')}
-                    {GURUJA_SEMANA[d.mat]&&chip(`Guruja sem.1: ${GURUJA_SEMANA[d.mat].pct}%`,'#94a3b8')}
+                    {GURUJA_SEMANA[d.mat]&&chip(`Guruja 26/10: ${GURUJA_SEMANA[d.mat].pct.toFixed(1).replace('.',',')}% (${GURUJA_SEMANA[d.mat].a}/${GURUJA_SEMANA[d.mat].q}) · média ${GURUJA_SEMANA[d.mat].media.toFixed(1).replace('.',',')}% · ${GURUJA_SEMANA[d.mat].dif>0?'+':''}${GURUJA_SEMANA[d.mat].dif.toFixed(1).replace('.',',')}`,GURUJA_SEMANA[d.mat].dif<0?'#f87171':'#94a3b8')}
                   </div>
                   <div style={{display:'flex',gap:14,marginBottom:6}}>
                     {[['pts',d.pts.toFixed(1)],['h',d.horas.toFixed(1)],['pts/h',d.cb.toFixed(2)]].map(([l,v])=>(
@@ -6559,7 +6606,7 @@ function TabDiscursiva(){
         return(
           <div>
             <div style={{fontSize:14,color:'var(--text3)',lineHeight:1.6,marginBottom:10}}>
-              Atividades do Guruja que <b>ficaram fora do plano de 19–25/10</b> ({CICLO_FORA.length} · {fmtMinG(totMin)}) para caber em ~4h por dia. A coluna <b>volta nº</b> é a ordem em que elas entram se sobrar tempo. Ao trazer de volta, a atividade entra no fim do plano como a <b>primeira a ser cortada</b>.
+              Atividades do Guruja que <b>ficaram fora do plano de 26/10–01/11</b> ({CICLO_FORA.length} · {fmtMinG(totMin)}), <b>em ordem de prioridade: se sobrar tempo, faça de cima para baixo</b> (volta nº 1, 2, 3…). Ao trazer de volta, a atividade entra no fim do plano como a <b>primeira a ser cortada</b>.
             </div>
             {CICLO_FORA.length===0&&<div style={{padding:14,textAlign:'center',color:'var(--text4)'}}>Nada fora do plano: todas as atividades voltaram.</div>}
             {CICLO_FORA.map(d=>(
@@ -7522,7 +7569,7 @@ function ModalConfig({fechar}){
             {/* Info do app */}
             <div style={{padding:'12px',borderRadius:11,background:'rgba(148,163,184,.06)',border:'1px solid rgba(148,163,184,.15)'}}>
               <div style={{fontSize:13,color:'#c2ccd8',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:8}}>⚙️ APP</div>
-              {[['Versão','RITY OS'],['Meta atual',`${N} atividades · plano 19–25/10 · ${fmtMinG(CICLO_MIN)}`],['Meta semanal',`${lsGet('meta_horas_sem',35)}h`],['Formato','Tempo por atividade: 30 / 45 / 60 / 90 min (pomodoro ajustado ao tempo)'],['Método','Ciclo Meirelles + Anki + Estudo Reverso'],['Dieta','Low carb · Cetogênico'],['Kauê','Preparatório Colégio Naval — processo separado']].map(([k,v])=>(
+              {[['Versão','RITY OS'],['Meta atual',`${N} atividades · plano 26/10–01/11 · ${fmtMinG(CICLO_MIN)}`],['Meta semanal',`${lsGet('meta_horas_sem',35)}h`],['Formato','Tempo por atividade: 30 / 45 / 60 / 90 min (pomodoro ajustado ao tempo)'],['Método','Ciclo Meirelles + Anki + Estudo Reverso'],['Dieta','Low carb · Cetogênico'],['Kauê','Preparatório Colégio Naval — processo separado']].map(([k,v])=>(
                 <div key={k} style={{display:'flex',justifyContent:'space-between',padding:'6px 8px',borderRadius:6,background:'rgba(148,163,184,.06)',marginBottom:3}}>
                   <span style={{fontSize:13,color:'#c2ccd8',fontFamily:"'DM Mono',monospace",fontWeight:700}}>{k}</span>
                   <span style={{fontSize:13,color:'#b4c0d1',textAlign:'right',maxWidth:'65%'}}>{v}</span>
@@ -7970,7 +8017,7 @@ function TabDados({horas}){
 // ─── APP RAIZ ────────────────────────────────────────────────
 function App(){
   const[feitos,setFeitos]=useState([]);
-  const[cicloNum,setCicloNum]=useState(2);
+  const[cicloNum,setCicloNum]=useState(3);
   const[horas,setHoras]=useState([]);
   const[mit,setMit]=useState([]);
   const[historico,setHistorico]=useState(()=>lsGet('historico_diario',[]));
@@ -8018,7 +8065,7 @@ function App(){
 
   useEffect(()=>{
     Sync.onStatus(s=>setSyncSt(s));
-    if(Sync.isConfigured()){Sync.init().then(ok=>{if(ok){setFeitos(lerFeitosValidos());setCicloNum(lerCicloNum());setHoras(lsGet('horas',[]));setMit(lsGet('mit',[]));}});}
+    if(Sync.isConfigured()){Sync.init().then(ok=>{if(ok){seedRegistro101(lsSet,true);setFeitos(lerFeitosValidos());setCicloNum(lerCicloNum());setHoras(lsGet('horas',[]));setMit(lsGet('mit',[]));}});}
     // ── Seed único: simulado Guruja 13-19/07 (251 questões, 8 matérias) ──
     // Sem isso, a fila de Questões (últimos 7 dias) não enxerga esse resultado real.
     (()=>{
@@ -8134,6 +8181,7 @@ function App(){
         }catch(e){}
       }
     })();
+    seedRegistro101(lsSet,!Sync.isConfigured());
     const _f=lsGet('feitos',[]);
     setFeitos(lerFeitosValidos());setCicloNum(lerCicloNum());setHoras(lsGet('horas',[]));setMit(lsGet('mit',[]));
     const tick=setInterval(()=>setClock(new Date()),1000);
