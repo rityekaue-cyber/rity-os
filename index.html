@@ -729,20 +729,39 @@ const Sync={
       // Mesclar: nuvem vence se updated_at mais recente que local
       const cloudMap={};
       (data||[]).forEach(r=>{cloudMap[r.key]=r;});
+      // Versão do plano: se ESTE aparelho já migrou (ex.: v46) e a nuvem ainda está numa versão antiga, a nuvem não pode
+      // sobrescrever a migração (antes ela devolvia 'v45' e o app refazia a migração a cada abertura). Nesse caso este
+      // aparelho manda o estado novo para a nuvem.
+      const vn=x=>{const m=String(x==null?'':x).match(/v(\d+)/);return m?+m[1]:0;};
+      const cloudVer=cloudMap['ciclo_versao']?vn(cloudMap['ciclo_versao'].value):0;
+      const localVer=vn(localStorage.getItem('ciclo_versao'));
+      const PROT=new Set(localVer>cloudVer?['ciclo_versao','feitos','feitos_dt','cicloNum','ciclo_volta','horas_dia']:[]);
+      const LAYOUT=new Set(['feitos','feitos_dt','ciclo_volta','horas_dia','dias_trabalho']);
+      this._layoutChanged=false;
+      const setL=(k,v)=>{const nv=JSON.stringify(v);if(localStorage.getItem(k)!==nv){localStorage.setItem(k,nv);if(LAYOUT.has(k))this._layoutChanged=true;}};
+      // Mesclar: nuvem vence se updated_at mais recente que local
       (data||[]).forEach(r=>{
+        if(PROT.has(r.key))return;
         try{
           const localRaw=localStorage.getItem(r.key);
           // Se não tem local ou nuvem é mais recente, usa nuvem
-          if(!localRaw){localStorage.setItem(r.key,JSON.stringify(r.value));return;}
+          if(!localRaw){setL(r.key,r.value);return;}
           // Se updated_at existe, compara; senão nuvem vence
           if(r.updated_at){
             const cloudTs=new Date(r.updated_at).getTime();
             const localMeta=localStorage.getItem('__ts_'+r.key);
             const localTs=localMeta?parseInt(localMeta):0;
-            if(cloudTs>localTs)localStorage.setItem(r.key,JSON.stringify(r.value));
-          }else{localStorage.setItem(r.key,JSON.stringify(r.value));}
+            if(cloudTs>localTs)setL(r.key,r.value);
+          }else{setL(r.key,r.value);}
         }catch{}
       });
+      for(const k of PROT){
+        try{
+          const raw=localStorage.getItem(k);
+          const val=raw!==null?JSON.parse(raw):(k==='horas_dia'?{}:k==='ciclo_volta'?[]:undefined);
+          if(val!==undefined)await _sc.from('rity_os').upsert({key:k,value:val,updated_at:new Date().toISOString()},{onConflict:'key'});
+        }catch{}
+      }
       // Após pull, empurra chaves locais que não estão na nuvem
       const cloudKeys=new Set((data||[]).map(r=>r.key));
       const syncKeys=['feitos','cicloNum','horas','historico_diario','rev_anki','rev_nlm','rev_caderno','rev_1h30','rev_topicos','anki_meta','dif_base_materias','criticos_manuais','edital_status','guruja_data','plano_semanal','urgentes_ia','ia_hist','theme_mode','ciclo_versao','ciclo_extras','rev_profunda_hist'];
@@ -4296,7 +4315,59 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
 }
 
 
-function TabEstudo({feitos,cicloNum,horas,onConcluir,onIrPara,onDesmarcar,onAddHoras,onSyncHistorico,mit,planoSemana,onSavePlano,onSetTab}){
+// ═══ REGISTRO RÁPIDO — atividade feita fora do bloco (tempo livre): tempo + questões + acertos ═══
+function RegistroRapido({item,onClose,onSave}){
+  const[tempo,setTempo]=useState(String(item.min||30));
+  const[q,setQ]=useState('');
+  const[a,setA]=useState('');
+  const[dif,setDif]=useState(0);
+  const[obs,setObs]=useState('');
+  const[inteira,setInteira]=useState(true);
+  const nq=parseInt(q)||0, na=parseInt(a)||0, nt=parseInt(tempo)||0;
+  const erroQ=q!==''&&a!==''&&na>nq;
+  const faltaA=nq>0&&a==='';
+  const ok=nt>0&&!erroQ&&!faltaA;
+  const pct=nq>0&&a!==''&&!erroQ?Math.round(na/nq*100):null;
+  const cp=pct==null?'#aab6c6':pct>=80?'#34d399':pct>=60?'#fbbf24':'#f87171';
+  const inp=(cor)=>({width:'100%',padding:'12px',borderRadius:8,border:`1px solid ${cor}55`,background:`${cor}10`,color:cor,fontSize:20,fontWeight:900,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'});
+  const lab={fontSize:13,color:'#c2ccd8',marginBottom:4};
+  return(
+    <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.9)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:150,padding:14,overflowY:'auto'}}>
+      <div style={{background:'#454f61',border:'1px solid rgba(52,211,153,.35)',borderRadius:16,padding:'18px',maxWidth:360,width:'100%',maxHeight:'94vh',overflowY:'auto'}}>
+        <div style={{fontSize:14,fontWeight:800,color:'#34d399',fontFamily:"'DM Mono',monospace",letterSpacing:'1px',marginBottom:4}}>⚡ REGISTRO RÁPIDO</div>
+        <div style={{fontSize:15,fontWeight:700,color:'#e8edf5'}}>{item.ic||'📌'} {item.mat}</div>
+        <div style={{fontSize:13,color:'#b4c0d1',margin:'2px 0 12px',lineHeight:1.5}}>{item.conteudo}</div>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:10}}>
+          <div><div style={lab}>⏱ TEMPO (min)</div><input type="number" inputMode="numeric" value={tempo} onChange={e=>setTempo(e.target.value)} style={inp('#60a5fa')}/></div>
+          <div><div style={lab}>📊 APROVEITAMENTO</div><div style={{...inp(cp),border:`2px solid ${cp}55`}}>{pct==null?'—%':pct+'%'}</div></div>
+          <div><div style={lab}>📝 QUESTÕES</div><input type="number" inputMode="numeric" value={q} onChange={e=>setQ(e.target.value)} placeholder="0" style={inp('#fbbf24')}/></div>
+          <div><div style={lab}>✅ ACERTEI</div><input type="number" inputMode="numeric" value={a} onChange={e=>setA(e.target.value)} placeholder="0" style={inp('#34d399')}/></div>
+        </div>
+        {erroQ&&<div style={{fontSize:13,color:'#f87171',marginBottom:8}}>Acertos não podem passar do total de questões.</div>}
+        {faltaA&&<div style={{fontSize:13,color:'#fb923c',marginBottom:8}}>Informe quantas acertou (pode ser 0).</div>}
+        <div style={{marginBottom:10}}>
+          <div style={lab}>DIFICULDADE (opcional)</div>
+          <div style={{display:'flex',gap:5}}>
+            {[1,2,3,4,5].map(n=>{const cors=['#34d399','#a3e635','#fbbf24','#fb923c','#f87171'];return(
+              <button key={n} onClick={()=>setDif(d=>d===n?0:n)} style={{flex:1,padding:'9px 4px',borderRadius:8,border:`2px solid ${dif>=n?cors[n-1]:'rgba(148,163,184,.28)'}`,background:dif>=n?`${cors[n-1]}22`:'rgba(255,255,255,.02)',fontSize:17,cursor:'pointer'}}>⭐</button>
+            );})}
+          </div>
+        </div>
+        <input value={obs} onChange={e=>setObs(e.target.value)} placeholder="Observação (opcional): onde travou, o que revisar…" style={{width:'100%',padding:'9px 11px',borderRadius:8,border:'1px solid rgba(148,163,184,.25)',background:'rgba(148,163,184,.06)',color:'#f1f5f9',fontSize:14,outline:'none',boxSizing:'border-box',marginBottom:10}}/>
+        {!item.fora&&<label style={{display:'flex',alignItems:'center',gap:8,fontSize:14,color:'#e8edf5',marginBottom:12,cursor:'pointer'}}>
+          <input type="checkbox" checked={inteira} onChange={e=>setInteira(e.target.checked)} style={{width:18,height:18}}/>
+          Concluí a atividade inteira (marca como feita no plano)
+        </label>}
+        <div style={{display:'flex',gap:8}}>
+          <button onClick={onClose} style={{flex:1,padding:'12px',borderRadius:9,border:'1px solid rgba(255,255,255,.12)',background:'transparent',color:'#b4c0d1',fontSize:14,cursor:'pointer'}}>Cancelar</button>
+          <button disabled={!ok} onClick={()=>onSave(item,{tempo:nt,questoes:nq,acertei:a===''?0:na,temQ:nq>0,dif,obs:obs.trim(),inteira:item.fora?true:inteira})} style={{flex:2,padding:'12px',borderRadius:9,border:'none',background:ok?'#34d399':'rgba(148,163,184,.22)',color:ok?'#050a14':'#aab6c8',fontSize:15,fontWeight:900,cursor:ok?'pointer':'default'}}>💾 Salvar e registrar</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TabEstudo({feitos,cicloNum,horas,onConcluir,onIrPara,onDesmarcar,onAddHoras,onSyncHistorico,mit,planoSemana,onSavePlano,onSetTab,onRapido}){
   const[aba,setAba]=useState('foco');
   const feitosSet=useMemo(()=>new Set(feitos),[feitos]);
   const pendentes=useMemo(()=>CICLO.filter(s=>!feitosSet.has(s.id)),[feitosSet]);
@@ -4927,6 +4998,7 @@ APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia"
                           )}
                         </div>
                       )}
+                      {!done&&onRapido&&<button onClick={e=>{e.stopPropagation();onRapido(s);}} style={{width:'100%',marginTop:7,padding:'9px',borderRadius:9,border:'1px solid rgba(96,165,250,.45)',background:'rgba(96,165,250,.1)',color:'#60a5fa',fontSize:14,fontWeight:800,cursor:'pointer'}}>⚡ Fiz agora — registrar tempo, questões e acertos</button>}
                     </div>}
                   </div>
                 );
@@ -6484,12 +6556,13 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
 // ─── TAB: AGENDA ─────────────────────────────────────────────
 // ─── ABA: MAPA DA PROVA ──────────────────────────────────────
 // ═══ ABA DECISÃO (id 'discursiva' preservado) — peso × nível × custo-benefício por matéria ═══
-function TabDiscursiva(){
+function TabDiscursiva({onRapido,rapidoVer}){
   const[ver,setVer]=useState(0);
   const[editando,setEditando]=useState(false);
   const[sub,setSub]=useState('materias');
-  const dec=useMemo(()=>calcDecisaoMaterias(),[ver]);
-  const corte=useMemo(()=>calcOrdemCorte(),[ver]);
+  const dec=useMemo(()=>calcDecisaoMaterias(),[ver,rapidoVer]);
+  const corte=useMemo(()=>calcOrdemCorte(),[ver,rapidoVer]);
+  const foraFeitos=lsGet('fora_feitos',{});
   const salvarCfg=(campo,mat,valor)=>{
     const c=JSON.parse(JSON.stringify(getDecisaoCfg()||{q:{},nivel:{}}));
     if(!c.q)c.q={};if(!c.nivel)c.nivel={};
@@ -6607,6 +6680,7 @@ function TabDiscursiva(){
                     {chip(`nível ${Math.round(c.dec.nivel)}%`,'#94a3b8')}
                     {chip(`⏱ ${fmtMinG(c.min)}`,'#94a3b8')}
                   </div>
+                  {onRapido&&<button onClick={()=>onRapido(c)} style={{marginTop:7,padding:'7px 12px',borderRadius:8,fontSize:13,fontWeight:800,cursor:'pointer',border:'1px solid rgba(96,165,250,.45)',background:'rgba(96,165,250,.1)',color:'#60a5fa'}}>⚡ Fiz agora — registrar</button>}
                 </div>
               </div>
             );
@@ -6625,8 +6699,8 @@ function TabDiscursiva(){
               Atividades do Guruja que <b>ficaram fora do plano de 26/10–01/11</b> ({CICLO_FORA.length} · {fmtMinG(totMin)}), <b>em ordem de prioridade: se sobrar tempo, faça de cima para baixo</b> (volta nº 1, 2, 3…). Ao trazer de volta, a atividade entra no fim do plano como a <b>primeira a ser cortada</b>.
             </div>
             {CICLO_FORA.length===0&&<div style={{padding:14,textAlign:'center',color:'var(--text4)'}}>Nada fora do plano: todas as atividades voltaram.</div>}
-            {CICLO_FORA.map(d=>(
-              <div key={d.id} style={{padding:'10px 12px',borderRadius:11,marginBottom:8,border:'1px solid rgba(248,113,113,.28)',background:'rgba(248,113,113,.05)'}}>
+            {CICLO_FORA.map(d=>{const ff=foraFeitos[d.id];return(
+              <div key={d.id} style={{padding:'10px 12px',borderRadius:11,marginBottom:8,border:`1px solid ${ff?'rgba(52,211,153,.4)':'rgba(248,113,113,.28)'}`,background:ff?'rgba(52,211,153,.06)':'rgba(248,113,113,.05)'}}>
                 <div style={{display:'flex',alignItems:'center',gap:6,flexWrap:'wrap',marginBottom:4}}>
                   <span style={{fontSize:15,fontWeight:900,color:'var(--text)'}}>{d.ic} {d.mat}</span>
                   {chip(d.origem,'#94a3b8')}
@@ -6636,9 +6710,16 @@ function TabDiscursiva(){
                 <div style={{fontSize:14,color:'var(--text)',marginBottom:4}}>{d.conteudo}</div>
                 <div style={{fontSize:13,color:'var(--text4)',lineHeight:1.5}}><b>Por quê:</b> {d.motivo}</div>
                 <div style={{fontSize:13,color:'var(--text4)',lineHeight:1.5,marginBottom:6}}><b>No lugar:</b> {d.alternativa}</div>
-                <button onClick={()=>trazer(d.id)} style={{padding:'7px 12px',borderRadius:8,fontSize:13,fontWeight:800,cursor:'pointer',border:'1px solid rgba(52,211,153,.45)',background:'rgba(52,211,153,.1)',color:'#34d399'}}>↩ trazer de volta ao plano</button>
+                {ff?(
+                  <div style={{fontSize:14,color:'#34d399',fontWeight:700}}>✓ Feita em {new Date(ff.dt).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})} · {ff.min} min{ff.q>0?` · ${ff.q}q · ${Math.round(ff.a/ff.q*100)}%`:''}</div>
+                ):(
+                  <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+                    {onRapido&&<button onClick={()=>onRapido({...d,fora:true})} style={{padding:'7px 12px',borderRadius:8,fontSize:13,fontWeight:800,cursor:'pointer',border:'1px solid rgba(96,165,250,.45)',background:'rgba(96,165,250,.1)',color:'#60a5fa'}}>⚡ Fiz — registrar</button>}
+                    <button onClick={()=>trazer(d.id)} style={{padding:'7px 12px',borderRadius:8,fontSize:13,fontWeight:800,cursor:'pointer',border:'1px solid rgba(52,211,153,.45)',background:'rgba(52,211,153,.1)',color:'#34d399'}}>↩ trazer de volta ao plano</button>
+                  </div>
+                )}
               </div>
-            ))}
+            );})}
             {voltaram.length>0&&(
               <div style={{marginTop:6}}>
                 <div style={{fontSize:13,color:'var(--text4)',fontFamily:"'DM Mono',monospace",fontWeight:700,letterSpacing:'1px',marginBottom:6}}>JÁ VOLTARAM PARA O PLANO</div>
@@ -8032,8 +8113,10 @@ function TabDados({horas}){
 }
 // ─── APP RAIZ ────────────────────────────────────────────────
 function App(){
-  const[feitos,setFeitos]=useState([]);
-  const[cicloNum,setCicloNum]=useState(3);
+  // Estado inicial já lido do aparelho: antes começava vazio e o carimbo de datas (feitos_dt) apagava as datas de TODAS as
+  // atividades feitas a cada abertura do app, empurrando o vazio para a nuvem.
+  const[feitos,setFeitos]=useState(()=>lerFeitosValidos());
+  const[cicloNum,setCicloNum]=useState(()=>lerCicloNum());
   const[horas,setHoras]=useState([]);
   const[mit,setMit]=useState([]);
   const[historico,setHistorico]=useState(()=>lsGet('historico_diario',[]));
@@ -8053,6 +8136,9 @@ function App(){
   const[clock,setClock]=useState(new Date());
   const[showCfg,setShowCfg]=useState(false);
   const[trofeu,setTrofeu]=useState(false);
+  const[rapido,setRapido]=useState(null);
+  const[rapidoVer,setRapidoVer]=useState(0);
+  const[rapidoMsg,setRapidoMsg]=useState('');
   const[syncSt,setSyncSt]=useState('idle');
 
   // ── SISTEMA DE VOLTA — detecta ausência e simplifica retorno ──
@@ -8081,7 +8167,7 @@ function App(){
 
   useEffect(()=>{
     Sync.onStatus(s=>setSyncSt(s));
-    if(Sync.isConfigured()){Sync.init().then(ok=>{if(ok){seedRegistro101(lsSet,true);seedRegistroEtica(lsSet,true);setFeitos(lerFeitosValidos());setCicloNum(lerCicloNum());setHoras(lsGet('horas',[]));setMit(lsGet('mit',[]));}});}
+    if(Sync.isConfigured()){Sync.init().then(ok=>{if(ok){seedRegistro101(lsSet,true);seedRegistroEtica(lsSet,true);try{if(Sync._layoutChanged){const u=parseInt(sessionStorage.getItem('rity_rl')||'0');if(Date.now()-u>20000){sessionStorage.setItem('rity_rl',String(Date.now()));window.location.reload();return;}}}catch(e){}setFeitos(lerFeitosValidos());setCicloNum(lerCicloNum());setHoras(lsGet('horas',[]));setMit(lsGet('mit',[]));}});}
     // ── Seed único: simulado Guruja 13-19/07 (251 questões, 8 matérias) ──
     // Sem isso, a fila de Questões (últimos 7 dias) não enxerga esse resultado real.
     (()=>{
@@ -8252,6 +8338,22 @@ function App(){
     lsSet('feitos',final);setFeitos(final);
   };
   const addHoras=e=>{const n=[...horas,e];lsSet('horas',n);setHoras(n);};
+  // Registro rápido: grava no histórico (alimenta o nível da matéria), nas horas e marca a atividade como feita
+  const salvarRapido=(item,d)=>{
+    try{
+      const agora=Date.now();
+      const rid=getDK()+'_r'+item.id+'_'+agora;
+      const reg={id:rid,materia:item.mat,assunto:item.conteudo||'',tempo:String(d.tempo),questoes:d.temQ?String(d.questoes):'',acertei:d.temQ?String(d.acertei):'',dificuldade:d.dif||0,obs:(d.obs||'')+(d.inteira?'':(d.obs?' · ':'')+'feita só em parte'),pendente:'',dia:getDK(),dt:agora,origem:'rapido',itemId:item.id};
+      lsSet('historico_diario',[...lsGet('historico_diario',[]),reg].sort((a,b)=>(a.dt||0)-(b.dt||0)));
+      addHoras({mat:item.mat,min:d.tempo,dt:agora,rid});
+      if(item.fora){const ff=lsGet('fora_feitos',{});ff[item.id]={dt:agora,min:d.tempo,q:d.temQ?d.questoes:0,a:d.temQ?d.acertei:0};lsSet('fora_feitos',ff);}
+      else if(d.inteira)concluir(item.id);
+      syncHistorico();
+      setRapido(null);setRapidoVer(v=>v+1);
+      setRapidoMsg(`✅ ${item.mat}: ${d.tempo} min${d.temQ?` · ${d.acertei}/${d.questoes} (${Math.round(d.acertei/d.questoes*100)}%)`:''} registrado${item.fora||!d.inteira?'':' e marcada como feita'}`);
+      setTimeout(()=>setRapidoMsg(''),4500);
+    }catch(e){alert('❌ Não consegui salvar: '+e.message);}
+  };
   const syncHistorico=()=>setHistorico(lsGet('historico_diario',[]));
   const saveMIT=itens=>{lsSet('mit',itens);setMit(itens);};
   const savePlano=p=>{setPlanoSemana(p);lsSet('plano_semanal',p);};
@@ -8391,11 +8493,11 @@ function App(){
 
       <div style={{flex:1,overflowY:'auto',padding:'16px 16px 0',background:'var(--bg)'}}>
         {tab==='ia'     &&<TabIA     appCtx={appCtx} onMIT={saveMIT}/>}
-        {tab==='estudo' &&<TabEstudo feitos={feitos} cicloNum={cicloNum} horas={horas} onConcluir={concluir} onIrPara={irPara} onDesmarcar={desmarcar} onAddHoras={addHoras} onSyncHistorico={syncHistorico} mit={mit} planoSemana={planoSemana} onSavePlano={savePlano} onSetTab={setTab}/>}
+        {tab==='estudo' &&<TabEstudo feitos={feitos} cicloNum={cicloNum} horas={horas} onConcluir={concluir} onIrPara={irPara} onDesmarcar={desmarcar} onAddHoras={addHoras} onSyncHistorico={syncHistorico} mit={mit} planoSemana={planoSemana} onSavePlano={savePlano} onSetTab={setTab} onRapido={setRapido}/>}
         {tab==='hoje'   &&<TabHoje feitos={feitos} onAddHoras={addHoras} onSetTab={setTab}/>}
         {tab==='revisao'&&<TabRevisao totalBlocos={feitos.length} tmSugestao={tmSugestao} tmIA={tmIA} onSyncHistorico={syncHistorico} onAddHoras={addHoras} ankiSugestoes={calcMotorCanais(feitos,horas,historico).anki.materias||[]} nlmSugestao={calcMotorCanais(feitos,horas,historico).nlm.top||null}/>}
         {tab==='dados'  &&<TabDados horas={horas}/>}
-        {tab==='discursiva'&&<TabDiscursiva/>}
+        {tab==='discursiva'&&<TabDiscursiva onRapido={setRapido} rapidoVer={rapidoVer}/>}
         {tab==='mapa'   &&<TabMapa/>}
         {tab==='agenda' &&<TabAgenda planoSemana={planoSemana} onSetTab={setTab}/>}
         <div style={{height:80}}/>
@@ -8419,6 +8521,8 @@ function App(){
         </div>
       )}
       {showCfg&&<ModalConfig fechar={()=>setShowCfg(false)}/>}
+      {rapido&&<RegistroRapido item={rapido} onClose={()=>setRapido(null)} onSave={salvarRapido}/>}
+      {rapidoMsg&&<div style={{position:'fixed',left:12,right:12,bottom:76,zIndex:160,padding:'12px 14px',borderRadius:11,background:'#064e3b',border:'1px solid #34d399',color:'#d1fae5',fontSize:14,fontWeight:700,textAlign:'center'}}>{rapidoMsg}</div>}
     </div>
   );
 }
