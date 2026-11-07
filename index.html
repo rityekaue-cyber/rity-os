@@ -1306,7 +1306,7 @@ const PESO_PROVA={'Dir. Constitucional':11.9,'Dir. Administrativo':11.9,'Dir. Ci
 // Desempenho acumulado até 07/11 (Metas 1 a 4), lido pelo conector do Guruja (antes vinha de prints, com erros de leitura).
 // pct = % de acerto · q/a = questões/acertos · media = média da turma · dif = diferença (pontos percentuais).
 // Raciocínio Lógico, Matemática Financeira e Estatística têm 0 questões no Guruja: seguem o nível estimado (FORM_NIVEL_FIXO).
-const GURUJA_REF_MS=new Date(2026,10,7,7,30).getTime(); // leitura do conector Guruja de 07/11 ~07h15: registros feitos depois dela somam por cima
+let GURUJA_REF_MS=new Date(2026,10,7,7,30).getTime(); // leitura do conector Guruja de 07/11 ~07h15: registros feitos depois dela somam por cima
 const GURUJA_SEMANA={ // números EXATOS lidos pelo conector (meu_desempenho_por_disciplina) em 07/11
   'Dir. Previdenciário':{pct:83.22,q:149,a:124,media:76.14,dif:7.08},
   'Dir. Constitucional':{pct:89.51,q:143,a:128,media:84.03,dif:5.48},
@@ -4252,6 +4252,8 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
 
   return(
     <div style={{maxWidth:680,margin:'0 auto'}}>
+
+      <FaixaGuruja/>
 
       {/* HEADER — compacto */}
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
@@ -8930,6 +8932,166 @@ const GURUJA_SYNC={
   reforcos:{feitos:3,total:12}
 };
 
+
+// ─── LIGAÇÃO COM O GURUJA (guruja.json) ─────────────────────────────────────────────────────────────
+// Uma rotina automática lê o Guruja e grava guruja.json na raiz do site. O app lê esse arquivo ao abrir:
+//  1) marca como feito o que você concluiu no Guruja (reconciliação) e registra os reforços concluídos;
+//  2) atualiza os números por matéria (nível), o painel Dados › Guruja e a faixa de status da aba Hoje.
+// GURUJA_MAP: id da atividade no app → 'A:' (atividade) ou 'R:' (reforço) + activity_id do Guruja.
+const GURUJA_MAP={
+  301:'A:126546',303:'A:125430',304:'A:126446',306:'A:126543',307:'A:126539',308:'A:130866',309:'A:126545',312:'A:126766',314:'A:126760',315:'A:127973',317:'A:127738',319:'A:131045',321:'A:131050',322:'A:127787',
+  402:'A:127740',404:'A:127920',408:'A:129572',409:'A:129340',410:'A:127921',411:'A:129393',415:'A:133077',416:'A:127975',417:'A:129391',419:'A:129454',420:'A:130775',421:'A:130829',422:'A:129537',423:'A:129610',425:'A:129949',426:'A:129941',427:'A:129455',428:'A:132887',429:'A:129387',430:'A:133086',431:'A:130452',432:'A:133118',
+  501:'A:130017',502:'A:130737',504:'A:129389',505:'A:130858',506:'A:132863',507:'A:130862',508:'A:134162',509:'A:131150',510:'A:130731',511:'A:131138',512:'A:130743',513:'A:131095',514:'A:130970',515:'A:134158',516:'A:132619',517:'A:132864',518:'A:132851',519:'A:133104',520:'A:132571',521:'A:133628',522:'A:133327',523:'A:134366',524:'A:133199',525:'A:134229',526:'A:132855',527:'A:133182',528:'A:131180',529:'A:133149',531:'A:132624',532:'A:133917',
+  601:'R:125332',602:'R:123970',603:'R:125335',604:'R:125393',605:'R:125391',606:'R:125394',607:'R:126537',608:'R:126499',609:'R:126694',610:'R:126684',611:'R:131080',612:'R:128018'
+};
+const GURUJA_SIGLA_APP={DPREV:'Dir. Previdenciário',DCON:'Dir. Constitucional',DADM:'Dir. Administrativo',DCIV:'Dir. Civil',DPEN:'Dir. Penal',AFO:'Dir. Financeiro / AFO',PORT:'Português',TINFO:'Ciência e Análise de Dados',ETICA:'Ética Pública',GEO:'Conhecimentos Regionais de SC',RETRI:'Reforma Tributária'};
+const GURUJA_SIGLA_CURTA={DPREV:'Prev',DCON:'Const',DADM:'Adm',DCIV:'Civil',DPEN:'Penal',AFO:'AFO',PORT:'Port',TINFO:'TI',ETICA:'Ética',GEO:'Geo',RETRI:'Reforma Trib.'};
+const GurujaLink={
+  KEY:'guruja_snap',ST:'guruja_snap_st',
+  lerCache(){try{const v=localStorage.getItem('guruja_snap');return v?JSON.parse(v):null;}catch(e){return null;}},
+  status(){try{return JSON.parse(localStorage.getItem('guruja_snap_st')||'null');}catch(e){return null;}},
+  valido(s){return !!(s&&s.versao===1&&s.gerado_em&&!isNaN(Date.parse(s.gerado_em))&&Array.isArray(s.metas)&&Array.isArray(s.desempenho)&&s.meta_atual);},
+  aplicarCache(){const s=this.lerCache();if(!this.valido(s))return false;try{this.aplicarNumeros(s);return true;}catch(e){return false;}},
+  // Números do snapshot → as estruturas que o app já usa (nível por matéria e painel Dados › Guruja)
+  aplicarNumeros(s){
+    const t=Date.parse(s.gerado_em);if(!isNaN(t))GURUJA_REF_MS=t;
+    s.desempenho.forEach(d=>{const app=GURUJA_SIGLA_APP[d.sigla];if(!app||d.q==null||d.pct==null)return;
+      GURUJA_SEMANA[app]={pct:d.pct,q:d.q,a:d.a,media:d.media,dif:d.media==null?0:+(d.pct-d.media).toFixed(2)};});
+    const S=GURUJA_SYNC,ma=s.meta_atual||{},pad=n=>String(n).padStart(2,'0');
+    const dt=new Date(t);
+    S.em=`${pad(dt.getDate())}/${pad(dt.getMonth()+1)}/${dt.getFullYear()} às ${pad(dt.getHours())}h${pad(dt.getMinutes())}`;
+    S.metasFechadas=Math.max(0,(ma.ordem||1)-1);
+    const dq=s.desempenho.reduce((x,d)=>x+(d.q||0),0),da=s.desempenho.reduce((x,d)=>x+(d.a||0),0);
+    S.total={min:(s.tempo&&s.tempo.total_min)||S.total.min,q:dq,a:da};
+    S.metaAtual={n:ma.ordem,feitas:ma.atividades_concluidas,total:ma.atividades_totais,q:ma.questoes||0,a:ma.acertos||0,min:ma.minutos||0};
+    const r=s.ritmo||{};
+    S.ritmo={diasMeu:r.meus_dias_por_meta,diasTurma:r.mediana_dias_por_meta,status:({no_ritmo:'no ritmo',adiantado:'adiantado',atrasado:'atrasado',muito_atrasado:'muito atrasado'})[r.meu_ritmo]||String(r.meu_ritmo||'—').replace('_',' '),decilProgresso:r.decil_progresso,minMeta:r.meus_min_por_meta,minMetaTurma:r.mediana_min_por_meta,qMeta:r.minhas_q_por_meta,qMetaTurma:r.mediana_q_por_meta};
+    const pt=(s.tempo&&s.tempo.por_tipo)||{};
+    S.tempo=['Questões','Teoria','Teste','Lei Seca','Revisão'].map(k=>[k,pt[k]||0]).concat([['Reforços',(s.tempo&&s.tempo.reforcos_min)||0]]);
+    const minDisc={};((s.tempo&&s.tempo.disciplinas)||[]).forEach(x=>{minDisc[x.sigla]=x.min;});
+    const tend={estavel:'estável',melhorando:'melhorando',piorando:'piorando'};
+    const zero=S.disc.filter(d=>d[2]===0&&d[4]==null);
+    const rows=s.desempenho.filter(d=>GURUJA_SIGLA_APP[d.sigla]&&d.q!=null).map(d=>[GURUJA_SIGLA_APP[d.sigla],d.peso,d.q,d.a,d.pct,d.media,d.mediana,d.decil,tend[d.tendencia]||null,minDisc[d.sigla]||0]);
+    if(rows.length>=5)S.disc=rows.concat(zero);
+    if(Array.isArray(s.fracos)&&s.fracos.length)S.fracos=s.fracos.slice(0,10).map(f=>[f.titulo,GURUJA_SIGLA_CURTA[f.sigla]||f.sigla,f.q,f.a,f.pct,f.media,f.link]);
+    const cur=(s.metas||[]).find(m=>m.ordem===ma.ordem);
+    if(cur&&Array.isArray(cur.atividades)){
+      S.feitoMeta4=cur.atividades.filter(a=>a.concluida&&(a.q>0||a.min>0)).map(a=>[String(a.titulo||'').replace(/\s+/g,' ').slice(0,46),GURUJA_SIGLA_CURTA[String(a.codigo||'').split('.')[0]]||String(a.codigo||'').split('.')[0],a.q||0,a.a||0,a.min||0]);
+      if(Array.isArray(cur.reforcos)&&cur.reforcos.length)S.reforcos={feitos:cur.reforcos.filter(x=>x.concluido).length,total:cur.reforcos.length};
+    }
+  },
+  // Cruza o Guruja com o que está marcado no app. Só marca (nunca desmarca). Devolve true se alterou algo.
+  reconciliar(s,prev){
+    const idxA=new Map(),idxR=new Map();
+    (s.metas||[]).forEach(m=>{
+      (m.atividades||[]).forEach(a=>{const o=idxA.get(a.aid);if(!o||a.concluida)idxA.set(a.aid,a);});
+      (m.reforcos||[]).forEach(r=>{const o=idxR.get(r.aid);if(!o||r.concluido)idxR.set(r.aid,r);});
+    });
+    const snapTs=Date.parse(s.gerado_em);
+    const baseTs=(prev&&prev.gerado_em&&!isNaN(Date.parse(prev.gerado_em)))?Math.min(Date.parse(prev.gerado_em),Date.now()):Date.now();
+    const dia=new Date(baseTs).setHours(0,0,0,0);
+    const feitos=lsGet('feitos',[]),fd=lsGet('feitos_dt',{}),hist=lsGet('historico_diario',[]);
+    let mudou=false,histMudou=false;
+    Object.keys(GURUJA_MAP).forEach(k=>{
+      const id=+k;if(!IDS_CICLO_VALIDOS.has(id))return;
+      const[tipo,aid]=GURUJA_MAP[k].split(':');
+      const it=(tipo==='A'?idxA:idxR).get(+aid);if(!it)return;
+      const feito=tipo==='A'?!!it.concluida:!!it.concluido;if(!feito)return;
+      if(!feitos.includes(id)){feitos.push(id);mudou=true;}
+      if(!fd[id]){fd[id]=dia;mudou=true;}
+      if(tipo==='R'){
+        const n=id-600;const ref=REFORCOS_GURUJA.find(r=>r.n===n);
+        if(ref&&!hist.some(h=>h&&h.reforcoN===n&&!h.parcial)){
+          const dt=Math.min(dia+12*3600000,snapTs-60000);
+          const d=new Date(dia),pad=x=>String(x).padStart(2,'0');
+          hist.push({id:`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}_guruja_ref${n}`,materia:ref.mat,assunto:`Reforço nº ${n} — ${ref.t}`,tempo:String(it.min||30),questoes:String(it.q||0),acertei:String(it.a||0),dificuldade:0,obs:'Lido do Guruja · já contado na base do snapshot',pendente:'',dia:`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`,dt,origem:'guruja',itemId:id,reforcoN:n,parcial:false});
+          histMudou=true;mudou=true;
+        }
+      }
+    });
+    if(mudou){
+      localStorage.setItem('feitos',JSON.stringify(feitos));localStorage.setItem('feitos_dt',JSON.stringify(fd));
+      if(histMudou)localStorage.setItem('historico_diario',JSON.stringify(hist.sort((a,b)=>(a.dt||0)-(b.dt||0))));
+    }
+    return mudou;
+  },
+  // Marcado no app, mas pendente no Guruja (só conta no Guruja o que você conclui lá)
+  divergentes(s){
+    if(!this.valido(s))return[];
+    const idxA=new Map(),idxR=new Map();
+    (s.metas||[]).forEach(m=>{
+      (m.atividades||[]).forEach(a=>{const o=idxA.get(a.aid);if(!o||a.concluida)idxA.set(a.aid,a);});
+      (m.reforcos||[]).forEach(r=>{const o=idxR.get(r.aid);if(!o||r.concluido)idxR.set(r.aid,r);});
+    });
+    const fs=new Set(lsGet('feitos',[]));const out=[];
+    Object.keys(GURUJA_MAP).forEach(k=>{
+      const id=+k;if(!fs.has(id))return;
+      const[tipo,aid]=GURUJA_MAP[k].split(':');
+      const it=(tipo==='A'?idxA:idxR).get(+aid);if(!it)return;
+      if(tipo==='A'?it.concluida:it.concluido)return;
+      if(tipo==='A'&&it.ignorada)return;
+      const c=[...CICLO_BASE,...CICLO_DISP].find(x=>x.id===id);
+      out.push({id,nome:c?(c.conteudo||c.mat):String(id)});
+    });
+    return out;
+  },
+  async buscar(){
+    const st={tent:Date.now(),ok:false};
+    try{
+      const r=await fetch('guruja.json?t='+Date.now(),{cache:'no-store'});
+      if(!r.ok)throw new Error('HTTP '+r.status);
+      const s=await r.json();
+      if(!this.valido(s))throw new Error('formato inesperado');
+      const prev=this.lerCache();
+      if(prev&&Date.parse(s.gerado_em)<Date.parse(prev.gerado_em))throw new Error('arquivo mais antigo que o já lido');
+      st.mudou=this.reconciliar(s,prev);
+      if(!prev||prev.gerado_em!==s.gerado_em)localStorage.setItem('guruja_snap',JSON.stringify(s));
+      this.aplicarNumeros(s);
+      st.ok=true;st.em=s.gerado_em;
+    }catch(e){st.erro=String(e&&e.message||e).slice(0,120);}
+    try{localStorage.setItem('guruja_snap_st',JSON.stringify(st));}catch(e){}
+    try{window.dispatchEvent(new Event('guruja-atualizado'));}catch(e){}
+    return st;
+  }
+};
+GurujaLink.aplicarCache();
+const fmtIdade=ms=>{const m=Math.max(0,Math.round(ms/60000));if(m<60)return `${m} min`;const h=Math.floor(m/60);if(h<48)return `${h} h`;return `${Math.floor(h/24)} dias`;};
+function FaixaGuruja(){
+  const[,tk]=useState(0);
+  useEffect(()=>{const f=()=>tk(x=>x+1);window.addEventListener('guruja-atualizado',f);return()=>window.removeEventListener('guruja-atualizado',f);},[]);
+  const s=GurujaLink.lerCache(),st=GurujaLink.status();
+  const mono="'DM Mono',monospace";
+  if(!GurujaLink.valido(s)){
+    return(<div style={{padding:'9px 12px',borderRadius:11,background:'rgba(148,163,184,.08)',border:'1px solid rgba(148,163,184,.3)',marginBottom:10,fontSize:13,color:'#aab6c8',lineHeight:1.5}}>
+      <b style={{fontFamily:mono,letterSpacing:'1px'}}>📡 GURUJA</b> · ainda sem leitura automática{st&&st.erro?` (${st.erro})`:''}. Os números vêm da última atualização manual.
+    </div>);
+  }
+  const idade=Date.now()-Date.parse(s.gerado_em);
+  const velho=idade>54*3600000,medio=idade>30*3600000;
+  const cor=velho?'#f87171':medio?'#fbbf24':'#34d399';
+  const ma=s.meta_atual||{},r=s.ritmo||{};
+  const ritmo=({no_ritmo:'no ritmo',adiantado:'adiantado',atrasado:'atrasado',muito_atrasado:'muito atrasado'})[r.meu_ritmo]||null;
+  const cur=(s.metas||[]).find(m=>m.ordem===ma.ordem);
+  const ref=cur&&Array.isArray(cur.reforcos)?cur.reforcos:[];
+  const refFeitos=ref.filter(x=>x.concluido).length;
+  const dv=GurujaLink.divergentes(s);
+  const falhou=st&&!st.ok&&st.erro;
+  const dtS=new Date(s.gerado_em),pad=n=>String(n).padStart(2,'0');
+  return(
+    <div style={{padding:'9px 12px',borderRadius:11,background:`${cor}0d`,border:`1px solid ${cor}45`,marginBottom:10}}>
+      <div style={{display:'flex',flexWrap:'wrap',gap:'4px 12px',alignItems:'center',fontSize:13,color:'var(--text3)'}}>
+        <b style={{fontFamily:mono,letterSpacing:'1px',color:cor}}>📡 GURUJA · {fmtIdade(idade)} atrás</b>
+        <span>Meta {ma.ordem}: <b>{ma.atividades_concluidas}/{ma.atividades_totais}</b></span>
+        {ritmo&&<span>{ritmo}</span>}
+        <span>atraso {ma.dias_atraso||0} d</span>
+        {ref.length>0&&<span>reforços {refFeitos}/{ref.length}</span>}
+      </div>
+      {(velho||medio)&&<div style={{fontSize:13,color:cor,marginTop:4,lineHeight:1.5}}>{velho?'⚠️ Leitura muito antiga: ':'Leitura de ontem: '}o plano pode estar defasado em relação ao que você já fez no Guruja.</div>}
+      {falhou&&<div style={{fontSize:13,color:'#fbbf24',marginTop:4,lineHeight:1.5}}>Não consegui atualizar agora ({st.erro}). Mostrando a leitura de {pad(dtS.getDate())}/{pad(dtS.getMonth()+1)} às {pad(dtS.getHours())}h{pad(dtS.getMinutes())}.</div>}
+      {dv.length>0&&<div style={{fontSize:13,color:'#fbbf24',marginTop:4,lineHeight:1.5}}>⚠️ Marcado no app, mas ainda pendente no Guruja: {dv.slice(0,3).map(x=>x.nome).join(' · ')}{dv.length>3?` e mais ${dv.length-3}`:''}. Conclua no portal para o Guruja contar.</div>}
+    </div>
+  );
+}
 function PainelGuruja(){
   const S=GURUJA_SYNC;const mono="'DM Mono',monospace";
   const fm=(x,d=1)=>x==null?'—':x.toFixed(d).replace('.',',');
@@ -9508,6 +9670,15 @@ function App(){
       setFeitos(lerFeitosValidos());setCicloNum(lerCicloNum());setHoras(lsGet('horas',[]));setMit(lsGet('mit',[]));
     };
     if(Sync.isConfigured()){Sync.init().then(aplicarSync);}
+    // Guruja: lê o guruja.json ao abrir e quando você volta para a aba (no máx. a cada 10 min)
+    const lerGuruja=()=>{GurujaLink.buscar().then(st=>{
+      try{
+        if(st&&st.ok&&st.mudou){const u=parseInt(sessionStorage.getItem('rity_rl_g')||'0');if(Date.now()-u>20000){sessionStorage.setItem('rity_rl_g',String(Date.now()));window.location.reload();return;}}
+        setFeitos(lerFeitosValidos());setHistorico(lsGet('historico_diario',[]));
+      }catch(e){}
+    });};
+    lerGuruja();
+    try{let ultG=Date.now();document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='visible')return;if(Date.now()-ultG<600000)return;ultG=Date.now();lerGuruja();});}catch(e){}
     // Ao voltar para esta aba/janela (depois de usar o app em outro aparelho), baixa o que mudou
     try{
       let ult=Date.now();
