@@ -1,7 +1,7 @@
 {
  "versao": 1,
- "gerado_em": "2026-11-08T13:23:53Z",
- "origem": "chrome (leitura manual na conversa)",
+ "gerado_em": "2026-11-08T14:00:00Z",
+ "origem": "chrome meio-dia",
  "planejamento_id": 100470,
  "total": {
   "erros": 173,
@@ -609,6 +609,15 @@
    ]
   },
   {
+   "nome": "Estatística",
+   "erros": 0,
+   "com_motivo": 0,
+   "cobertura_pct": null,
+   "motivo_predominante": null,
+   "motivo_predominante_pct": null,
+   "atividades": []
+  },
+  {
    "nome": "Ética no Serviço Público",
    "erros": 4,
    "com_motivo": 0,
@@ -635,6 +644,15 @@
      "motivo_predominante": null
     }
    ]
+  },
+  {
+   "nome": "Matemática Financeira",
+   "erros": 0,
+   "com_motivo": 0,
+   "cobertura_pct": null,
+   "motivo_predominante": null,
+   "motivo_predominante_pct": null,
+   "atividades": []
   },
   {
    "nome": "Tecnologia da Informação",
@@ -692,6 +710,24 @@
    ]
   },
   {
+   "nome": "Raciocínio Lógico",
+   "erros": 0,
+   "com_motivo": 0,
+   "cobertura_pct": null,
+   "motivo_predominante": null,
+   "motivo_predominante_pct": null,
+   "atividades": []
+  },
+  {
+   "nome": "Orientações Gerais",
+   "erros": 0,
+   "com_motivo": 0,
+   "cobertura_pct": null,
+   "motivo_predominante": null,
+   "motivo_predominante_pct": null,
+   "atividades": []
+  },
+  {
    "nome": "Geografia",
    "erros": 2,
    "com_motivo": 0,
@@ -709,42 +745,6 @@
      "motivo_predominante": null
     }
    ]
-  },
-  {
-   "nome": "Estatística",
-   "erros": 0,
-   "com_motivo": 0,
-   "cobertura_pct": null,
-   "motivo_predominante": null,
-   "motivo_predominante_pct": null,
-   "atividades": []
-  },
-  {
-   "nome": "Matemática Financeira",
-   "erros": 0,
-   "com_motivo": 0,
-   "cobertura_pct": null,
-   "motivo_predominante": null,
-   "motivo_predominante_pct": null,
-   "atividades": []
-  },
-  {
-   "nome": "Raciocínio Lógico",
-   "erros": 0,
-   "com_motivo": 0,
-   "cobertura_pct": null,
-   "motivo_predominante": null,
-   "motivo_predominante_pct": null,
-   "atividades": []
-  },
-  {
-   "nome": "Orientações Gerais",
-   "erros": 0,
-   "com_motivo": 0,
-   "cobertura_pct": null,
-   "motivo_predominante": null,
-   "motivo_predominante_pct": null,
-   "atividades": []
   }
  ],
  "evolucao_motivos": null
