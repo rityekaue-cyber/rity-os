@@ -1,38 +1,38 @@
-# meta — lido em 2026-11-08T13:42Z
-4ª Meta — SEFAZ-SC: pós edital (Kamikaze) • Início em 02 de novembro
-9 / 32 atividades | 15 disciplinas | Desempenho atingido 87,5% | Horas estudadas 11h 50m | Questões resolvidas 153 | Média diária hora/estudo 1h 55m
+# meta — lido em 2026-11-08T15:06Z
+4ª Meta | SEFAZ-SC: pós edital (Kamikaze) | Início em 02 de novembro | 9 / 32 atividades | 15 disciplinas
+Desempenho atingido 87,5% | Horas estudadas 11h 50m | Questões resolvidas 153 | Média diária hora/estudo 1h 54m
 5ª Meta: prevista para 09 de novembro (bloqueada) | Sequência de estudos: 2 dias consecutivos
 Abas: Atividades 32 | Reforços 13 | Aprofundamentos 1
 # | Disciplina | Tipo | Título | Prioridade | Tempo | Desempenho | Código
-1 | Orientações Gerais | Teoria | Orientações Gerais sobre a Meta 4 | - | 00h20m | - | GERAL.4886.130017
-2 | Geografia | Revisão | Revisão (Símbolos de SC; últimas notícias Clima; Treze Tílias; Cultura; Museu do mar; PortoNave; Aspectos Naturais; História de SC) | Dispensável | 00h00m | - | GEO.4648.130737
-3 | AFO e Direito Financeiro | Questões | LRF - PARTE II (Despesa e endividamento) | Indispensável | 01h30m | 80,0% | AFO.4654.130777
-4 | Ética no Serviço Público | Lei Seca | Lei nº 12.846/2013 (Lei anticorrupção) | Desejável | 01h00m | - | ETICA.4647.129389
-5 | Direito Administrativo | Questões | Lei nº 6.745/1985 (Parte 2) | Desejável | 00h30m | 95,0% | DADM.4672.130858
-6 | AFO e Direito Financeiro | Questões | LRF - PARTE III (Transparência e prestação de contas) | Desejável | 00h00m | - | AFO.4654.132863
-7 | Reforma Tributária | Questões | Regras de Transição | Desejável | 00h00m | - | RETRI.4643.130862
-8 | Estatística | Questões | Imersão Temática FCC (2025/26) | Dispensável | 00h00m | - | ESTAT.4660.134162
-9 | Direito Penal | Questões | Bloco A - Crimes Contra a Fé Pública e Crimes Contra a Administração Pública | Desejável | 01h00m | 88,0% | DPEN.4637.131150
-10 | Geografia | Teoria | A população e a ocupação histórica do território | Dispensável | 00h00m | - | GEO.4648.130731
-11 | Tecnologia da Informação | Questões | Teste Bloco B | Desejável | 00h00m | - | TINFO.4673.131138
-12 | Ética no Serviço Público | Questões | Lei nº 12.846/2013 (Lei anticorrupção) | Dispensável | 00h00m | - | ETICA.4647.130743
-13 | Direito Previdenciário | Questões | Bloco A (RGPS: Segurados, dependentes, benefícios e custeio da Seguridade Social) | Dispensável | 00h00m | - | DPREV.4681.131095
-14 | Direito Civil | Questões | Blocos A e B | Dispensável | 00h00m | - | DCIV.4636.130970
-15 | Direito Constitucional | Questões | Toda a Ementa do Edital | Dispensável | 00h00m | - | DCON.4639.134158
-16 | Direito Administrativo | Questões | Toda a Ementa | Desejável | 01h00m | 85,7% | DADM.4672.132619
-17 | AFO e Direito Financeiro | Questões | Bloco B (Lei das Taxas, Receita, Despesa, DEA, RP, dívida, SF) | Desejável | 00h00m | - | AFO.4654.132864
-18 | Geografia | Questões | Conhecimentos de Santa Catarina | Dispensável | 00h00m | - | GEO.4648.132851
-19 | Reforma Tributária | Questões | Demais dispositivos da EC 132 | Desejável | 00h00m | - | RETRI.4643.133104
-20 | Português | Questões | Ortografia, Coordenação e Subordinação e Concordância | Desejável | 00h30m | 90,0% | PORT.4666.132571
-21 | Matemática Financeira | Questões | Bloco B - Sistema de amortização e Análise de investimentos | Dispensável | 00h00m | - | MATFI.4671.133628
-22 | Direito Penal | Questões | Bloco B - Crimes Contra as Finanças Públicas, Crimes Contra a Ordem Tributária e Abuso de Autoridade | Dispensável | 01h00m | 76,0% | DPEN.4637.133327
-23 | Estatística | Questões | Toda a Ementa da Disciplina | Dispensável | 00h00m | - | ESTAT.4663.134366
-24 | Tecnologia da Informação | Questões | Revisão A | Dispensável | 00h00m | - | TINFO.4673.133199
-25 | Raciocínio Lógico | Questões | Toda a Ementa do Edital | Dispensável | 00h00m | - | RLOG.4659.134229
-26 | Geografia | Revisão | Revisão (Urbanização e Mesorregiões; População; Produção agropecuária; Exportação; Agronegócio de SC 2025) | Dispensável | 00h00m | - | GEO.4648.132855
-27 | Ética no Serviço Público | Teste | Resolução de questões favoritas | Dispensável | 00h00m | - | ETICA.4647.133182
-28 | Direito Previdenciário | Teste | Resolução de questões favoritas | Dispensável | 00h00m | - | DPREV.4681.131180
-29 | Direito Civil | Teste | Resolução de Questões Favoritas | Dispensável | 00h00m | - | DCIV.4636.133149
-30 | Direito Constitucional | Questões | Toda a Ementa do Edital | Dispensável | 01h00m | 100,0% | DCON.4639.134159
-31 | Direito Administrativo | Teste | Resolução de questões favoritas | Dispensável | 00h00m | - | DADM.4672.132624
-32 | AFO e Direito Financeiro | Questões | Bloco C (LRF) | Desejável | 00h00m | - | AFO.4654.133917
+1|Orientações Gerais|Teoria|Orientações Gerais sobre a Meta 4|-|00h 20m|-|GERAL.4886.130017
+2|Geografia|Revisão|Revisão (Símbolos de SC; Ultimas notícias sobre o Clima; Treze Tilias. Cultura. Museu do mar. PortoNave; Aspectos Naturais de Santa Catarina; História de SC)|Dispensável|00h 00m|-|GEO.4648.130737
+3|AFO e Direito Financeiro|Questões|LRF - PARTE II (Despesa e endividamento)|Indispensável|01h 30m|80,0%|AFO.4654.130777
+4|Ética no Serviço Público|Lei Seca|Lei nº 12.846/2013 (Lei anticorrupção).|Desejável|01h 00m|-|ETICA.4647.129389
+5|Direito Administrativo|Questões|Lei nº 6.745/1985 (Parte 2).|Desejável|00h 30m|95,0%|DADM.4672.130858
+6|AFO e Direito Financeiro|Questões|LRF - PARTE III (Transparência e prestação de contas)|Desejável|00h 00m|-|AFO.4654.132863
+7|Reforma Tributária|Questões|Regras de Transição|Desejável|00h 00m|-|RETRI.4643.130862
+8|Estatística|Questões|Imersão Temática FCC (2025/26)|Dispensável|00h 00m|-|ESTAT.4660.134162
+9|Direito Penal|Questões|Bloco A - Crimes Contra a Fé Pública e Crimes Contra a Administração Pública|Desejável|01h 00m|88,0%|DPEN.4637.131150
+10|Geografia|Teoria|A população e a ocupação histórica do território|Dispensável|00h 00m|-|GEO.4648.130731
+11|Tecnologia da Informação|Questões|Teste Bloco B|Desejável|00h 00m|-|TINFO.4673.131138
+12|Ética no Serviço Público|Questões|Lei nº 12.846/2013 (Lei anticorrupção).|Dispensável|00h 00m|-|ETICA.4647.130743
+13|Direito Previdenciário|Questões|Bloco A (RGPS: Segurados, dependentes, benefícios e custeio da Seguridade Social)|Dispensável|00h 00m|-|DPREV.4681.131095
+14|Direito Civil|Questões|Blocos A e B|Dispensável|00h 00m|-|DCIV.4636.130970
+15|Direito Constitucional|Questões|Toda a Ementa do Edital|Dispensável|00h 00m|-|DCON.4639.134158
+16|Direito Administrativo|Questões|Toda a Ementa.|Desejável|01h 00m|85,7%|DADM.4672.132619
+17|AFO e Direito Financeiro|Questões|Bloco B (Lei das Taxas, Receita, Despesa, DEA, RP, divida, SF)|Desejável|00h 00m|-|AFO.4654.132864
+18|Geografia|Questões|Conhecimentos de Santa Catarina|Dispensável|00h 00m|-|GEO.4648.132851
+19|Reforma Tributária|Questões|Demais dispositivos da EC 132|Desejável|00h 00m|-|RETRI.4643.133104
+20|Português|Questões|Ortografia, Coordenação e Subordinação e Concordância|Desejável|00h 30m|90,0%|PORT.4666.132571
+21|Matemática Financeira|Questões|Bloca B - Sistema de amortização e Análise de investimentos|Dispensável|00h 00m|-|MATFI.4671.133628
+22|Direito Penal|Questões|Bloco B - Crimes Contra as Finanças Públicas, Crimes Contra a Ordem Tributária e Abuso de Autoridade|Dispensável|01h 00m|76,0%|DPEN.4637.133327
+23|Estatística|Questões|Toda a Ementa da Disciplina|Dispensável|00h 00m|-|ESTAT.4663.134366
+24|Tecnologia da Informação|Questões|Revisão A|Dispensável|00h 00m|-|TINFO.4673.133199
+25|Raciocínio Lógico|Questões|Toda a Ementa do Edital|Dispensável|00h 00m|-|RLOG.4659.134229
+26|Geografia|Revisão|Revisão (Urbanização e Mesorregiões; População. Produção agropecuária. Exportação. Desempenho da AGROPECUÁRIA e do AGRONEGÓCIO de Santa Catarina 2025)|Dispensável|00h 00m|-|GEO.4648.132855
+27|Ética no Serviço Público|Teste|Resolução de questões favoritas|Dispensável|00h 00m|-|ETICA.4647.133182
+28|Direito Previdenciário|Teste|Resolução de questões favoritas|Dispensável|00h 00m|-|DPREV.4681.131180
+29|Direito Civil|Teste|Resolução de Questões Favoritas|Dispensável|00h 00m|-|DCIV.4636.133149
+30|Direito Constitucional|Questões|Toda a Ementa do Edital|Dispensável|01h 00m|100,0%|DCON.4639.134159
+31|Direito Administrativo|Teste|Resolução de questões favoritas.|Dispensável|00h 00m|-|DADM.4672.132624
+32|AFO e Direito Financeiro|Questões|Bloco C (LRF)|Desejável|00h 00m|-|AFO.4654.133917

@@ -1,6 +1,6 @@
 {
  "versao": 1,
- "gerado_em": "2026-11-08T14:00:00Z",
+ "gerado_em": "2026-11-08T15:07:52Z",
  "origem": "chrome meio-dia",
  "planejamento_id": 100470,
  "total": {
@@ -611,7 +611,7 @@
   {
    "nome": "Estatística",
    "erros": 0,
-   "com_motivo": 0,
+   "com_motivo": null,
    "cobertura_pct": null,
    "motivo_predominante": null,
    "motivo_predominante_pct": null,
@@ -648,7 +648,7 @@
   {
    "nome": "Matemática Financeira",
    "erros": 0,
-   "com_motivo": 0,
+   "com_motivo": null,
    "cobertura_pct": null,
    "motivo_predominante": null,
    "motivo_predominante_pct": null,
@@ -712,7 +712,7 @@
   {
    "nome": "Raciocínio Lógico",
    "erros": 0,
-   "com_motivo": 0,
+   "com_motivo": null,
    "cobertura_pct": null,
    "motivo_predominante": null,
    "motivo_predominante_pct": null,
@@ -721,7 +721,7 @@
   {
    "nome": "Orientações Gerais",
    "erros": 0,
-   "com_motivo": 0,
+   "com_motivo": null,
    "cobertura_pct": null,
    "motivo_predominante": null,
    "motivo_predominante_pct": null,
