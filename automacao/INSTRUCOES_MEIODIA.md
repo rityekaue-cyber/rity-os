@@ -17,7 +17,10 @@ Esta rotina usa o **Chrome da Ritchely** (ferramentas `mcp__claude-in-chrome__*`
 - Nunca grave nome, e-mail, foto ou dados de contato. Nunca grave quantidade de alunos, posição ou ranking entre
   alunos. Se uma linha de texto bruto citar isso, remova a linha antes de salvar.
 - Nunca abra Arena, Arquivo, Favoritas nem Comparativo (o Comparativo já vem pelo conector).
+- Em "Minhas análises" **nunca** acione botões de solicitar análise (há cota por ciclo de assinatura): só leia o texto.
 - Abra uma aba nova para o trabalho e **feche-a ao terminar**.
+- **Horários reais:** `gerado_em` e a primeira linha de cada `portal/*.txt` devem vir de `date -u +%Y-%m-%dT%H:%M:%SZ`
+  executado no momento em que você monta o arquivo. Nunca arredonde nem invente horário.
 
 ## Passo a passo
 1. Prepare o repositório (como na rotina das 04h10): `add_repo` com `rityekaue-cyber/rity-os` e `access push`;
