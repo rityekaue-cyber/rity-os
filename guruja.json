@@ -1,6 +1,6 @@
 {
  "versao": 1,
- "gerado_em": "2026-11-08T07:13:39Z",
+ "gerado_em": "2026-11-09T07:19:29Z",
  "origem": "tarefa agendada",
  "planejamento_id": 100470,
  "meta_atual": {
@@ -11,12 +11,12 @@
   "vezes_adiada": 0,
   "status": "ontime",
   "atividades_totais": 32,
-  "atividades_concluidas": 9,
-  "atividades_pendentes": 23,
+  "atividades_concluidas": 11,
+  "atividades_pendentes": 21,
   "atividades_ignoradas": 0,
-  "questoes": 153,
-  "acertos": 134,
-  "minutos": 710
+  "questoes": 198,
+  "acertos": 176,
+  "minutos": 800
  },
  "metas": [
   {
@@ -26,11 +26,11 @@
    "data_inicio": "2026-11-02T06:46:42",
    "data_conclusao": null,
    "atividades_totais": 32,
-   "atividades_concluidas": 9,
+   "atividades_concluidas": 11,
    "atividades_ignoradas": 0,
-   "questoes": 153,
-   "acertos": 134,
-   "minutos": 710,
+   "questoes": 198,
+   "acertos": 176,
+   "minutos": 800,
    "atividades": [
     {
      "aid": 130017,
@@ -121,10 +121,10 @@
      "tipo": "Questões",
      "rel": 5,
      "prio": "Desejável",
-     "q": null,
-     "a": null,
-     "min": 0,
-     "concluida": false,
+     "q": 20,
+     "a": 19,
+     "min": 60,
+     "concluida": true,
      "ignorada": false,
      "link": "https://www.tecconcursos.com.br/s/Q7CkTK"
     },
@@ -489,10 +489,10 @@
      "tipo": "Teste",
      "rel": 4,
      "prio": "Dispensável",
-     "q": null,
-     "a": null,
-     "min": 0,
-     "concluida": false,
+     "q": 25,
+     "a": 23,
+     "min": 30,
+     "concluida": true,
      "ignorada": false,
      "link": "https://www.tecconcursos.com.br/s/Q7DJGc"
     },
@@ -1826,7 +1826,7 @@
    "q": 167,
    "a": 138,
    "pct": 82.63,
-   "media": 85.14,
+   "media": 85.07,
    "mediana": 85.0,
    "decil": 4,
    "tendencia": "estavel"
@@ -1850,7 +1850,7 @@
    "q": 65,
    "a": 53,
    "pct": 81.53,
-   "media": 80.99,
+   "media": 80.98,
    "mediana": 82.9,
    "decil": 5,
    "tendencia": "estavel"
@@ -1859,23 +1859,23 @@
    "sigla": "DCIV",
    "disciplina": "Direito Civil",
    "peso": 11.9,
-   "q": 182,
-   "a": 163,
-   "pct": 89.56,
-   "media": 87.72,
-   "mediana": 88.0,
-   "decil": 6,
+   "q": 207,
+   "a": 186,
+   "pct": 89.85,
+   "media": 87.25,
+   "mediana": 87.9,
+   "decil": 7,
    "tendencia": "estavel"
   },
   {
    "sigla": "AFO",
    "disciplina": "AFO e Direito Financeiro",
    "peso": 9.9,
-   "q": 155,
-   "a": 138,
-   "pct": 89.03,
-   "media": 86.49,
-   "mediana": 86.7,
+   "q": 175,
+   "a": 157,
+   "pct": 89.71,
+   "media": 86.32,
+   "mediana": 86.6,
    "decil": 7,
    "tendencia": "estavel"
   },
@@ -1886,7 +1886,7 @@
    "q": 173,
    "a": 149,
    "pct": 86.12,
-   "media": 81.91,
+   "media": 81.84,
    "mediana": 83.4,
    "decil": 8,
    "tendencia": "estavel"
@@ -1898,7 +1898,7 @@
    "q": 83,
    "a": 72,
    "pct": 86.74,
-   "media": 81.78,
+   "media": 81.74,
    "mediana": 81.8,
    "decil": 8,
    "tendencia": "estavel"
@@ -1910,7 +1910,7 @@
    "q": 143,
    "a": 128,
    "pct": 89.51,
-   "media": 83.95,
+   "media": 83.91,
    "mediana": 82.5,
    "decil": 10,
    "tendencia": "melhorando"
@@ -1922,7 +1922,7 @@
    "q": 149,
    "a": 124,
    "pct": 83.22,
-   "media": 75.97,
+   "media": 75.99,
    "mediana": 75.0,
    "decil": 9,
    "tendencia": "estavel"
@@ -1934,18 +1934,18 @@
    "q": 23,
    "a": 21,
    "pct": 91.3,
-   "media": 83.79,
+   "media": 83.78,
    "mediana": 82.6,
    "decil": 9,
    "tendencia": null
   }
  ],
  "tempo": {
-  "total_min": 5870,
+  "total_min": 5960,
   "por_tipo": {
-   "Questões": 4950,
+   "Questões": 5010,
    "Teoria": 290,
-   "Teste": 210,
+   "Teste": 240,
    "Lei Seca": 180,
    "Revisão": 0
   },
@@ -1962,7 +1962,7 @@
    },
    {
     "sigla": "AFO",
-    "min": 660
+    "min": 720
    },
    {
     "sigla": "DCON",
@@ -1973,12 +1973,12 @@
     "min": 570
    },
    {
-    "sigla": "DPEN",
+    "sigla": "DCIV",
     "min": 570
    },
    {
-    "sigla": "DCIV",
-    "min": 540
+    "sigla": "DPEN",
+    "min": 570
    },
    {
     "sigla": "RETRI",
@@ -2019,9 +2019,9 @@
   "meus_dias_por_meta": 7,
   "mediana_dias_por_meta": 7,
   "dias_atraso": 0,
-  "decil_progresso": 8,
+  "decil_progresso": 7,
   "meus_min_por_meta": 1720,
-  "mediana_min_por_meta": 1220,
+  "mediana_min_por_meta": 1240,
   "minhas_q_por_meta": 370,
   "mediana_q_por_meta": 470
  },
@@ -2077,7 +2077,7 @@
    "q": 25,
    "a": 19,
    "pct": 76,
-   "media": 86.6,
+   "media": 86.4,
    "link": "https://www.tecconcursos.com.br/s/Q7DeL5"
   },
   {
@@ -2086,7 +2086,7 @@
    "q": 17,
    "a": 13,
    "pct": 76.4,
-   "media": 78.9,
+   "media": 78.8,
    "link": "https://www.tecconcursos.com.br/s/Q72qKK"
   },
   {
@@ -2118,8 +2118,8 @@
   }
  ],
  "dificeis_turma": [
+  "ESTAT",
   "DPREV",
-  "RLOG",
-  "ESTAT"
+  "RLOG"
  ]
 }
