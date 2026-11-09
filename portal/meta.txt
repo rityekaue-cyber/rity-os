@@ -1,38 +1,40 @@
-# meta — lido em 2026-11-08T15:06Z
-4ª Meta | SEFAZ-SC: pós edital (Kamikaze) | Início em 02 de novembro | 9 / 32 atividades | 15 disciplinas
-Desempenho atingido 87,5% | Horas estudadas 11h 50m | Questões resolvidas 153 | Média diária hora/estudo 1h 54m
-5ª Meta: prevista para 09 de novembro (bloqueada) | Sequência de estudos: 2 dias consecutivos
-Abas: Atividades 32 | Reforços 13 | Aprofundamentos 1
-# | Disciplina | Tipo | Título | Prioridade | Tempo | Desempenho | Código
-1|Orientações Gerais|Teoria|Orientações Gerais sobre a Meta 4|-|00h 20m|-|GERAL.4886.130017
-2|Geografia|Revisão|Revisão (Símbolos de SC; Ultimas notícias sobre o Clima; Treze Tilias. Cultura. Museu do mar. PortoNave; Aspectos Naturais de Santa Catarina; História de SC)|Dispensável|00h 00m|-|GEO.4648.130737
-3|AFO e Direito Financeiro|Questões|LRF - PARTE II (Despesa e endividamento)|Indispensável|01h 30m|80,0%|AFO.4654.130777
-4|Ética no Serviço Público|Lei Seca|Lei nº 12.846/2013 (Lei anticorrupção).|Desejável|01h 00m|-|ETICA.4647.129389
-5|Direito Administrativo|Questões|Lei nº 6.745/1985 (Parte 2).|Desejável|00h 30m|95,0%|DADM.4672.130858
-6|AFO e Direito Financeiro|Questões|LRF - PARTE III (Transparência e prestação de contas)|Desejável|00h 00m|-|AFO.4654.132863
-7|Reforma Tributária|Questões|Regras de Transição|Desejável|00h 00m|-|RETRI.4643.130862
-8|Estatística|Questões|Imersão Temática FCC (2025/26)|Dispensável|00h 00m|-|ESTAT.4660.134162
-9|Direito Penal|Questões|Bloco A - Crimes Contra a Fé Pública e Crimes Contra a Administração Pública|Desejável|01h 00m|88,0%|DPEN.4637.131150
-10|Geografia|Teoria|A população e a ocupação histórica do território|Dispensável|00h 00m|-|GEO.4648.130731
-11|Tecnologia da Informação|Questões|Teste Bloco B|Desejável|00h 00m|-|TINFO.4673.131138
-12|Ética no Serviço Público|Questões|Lei nº 12.846/2013 (Lei anticorrupção).|Dispensável|00h 00m|-|ETICA.4647.130743
-13|Direito Previdenciário|Questões|Bloco A (RGPS: Segurados, dependentes, benefícios e custeio da Seguridade Social)|Dispensável|00h 00m|-|DPREV.4681.131095
-14|Direito Civil|Questões|Blocos A e B|Dispensável|00h 00m|-|DCIV.4636.130970
-15|Direito Constitucional|Questões|Toda a Ementa do Edital|Dispensável|00h 00m|-|DCON.4639.134158
-16|Direito Administrativo|Questões|Toda a Ementa.|Desejável|01h 00m|85,7%|DADM.4672.132619
-17|AFO e Direito Financeiro|Questões|Bloco B (Lei das Taxas, Receita, Despesa, DEA, RP, divida, SF)|Desejável|00h 00m|-|AFO.4654.132864
-18|Geografia|Questões|Conhecimentos de Santa Catarina|Dispensável|00h 00m|-|GEO.4648.132851
-19|Reforma Tributária|Questões|Demais dispositivos da EC 132|Desejável|00h 00m|-|RETRI.4643.133104
-20|Português|Questões|Ortografia, Coordenação e Subordinação e Concordância|Desejável|00h 30m|90,0%|PORT.4666.132571
-21|Matemática Financeira|Questões|Bloca B - Sistema de amortização e Análise de investimentos|Dispensável|00h 00m|-|MATFI.4671.133628
-22|Direito Penal|Questões|Bloco B - Crimes Contra as Finanças Públicas, Crimes Contra a Ordem Tributária e Abuso de Autoridade|Dispensável|01h 00m|76,0%|DPEN.4637.133327
-23|Estatística|Questões|Toda a Ementa da Disciplina|Dispensável|00h 00m|-|ESTAT.4663.134366
-24|Tecnologia da Informação|Questões|Revisão A|Dispensável|00h 00m|-|TINFO.4673.133199
-25|Raciocínio Lógico|Questões|Toda a Ementa do Edital|Dispensável|00h 00m|-|RLOG.4659.134229
-26|Geografia|Revisão|Revisão (Urbanização e Mesorregiões; População. Produção agropecuária. Exportação. Desempenho da AGROPECUÁRIA e do AGRONEGÓCIO de Santa Catarina 2025)|Dispensável|00h 00m|-|GEO.4648.132855
-27|Ética no Serviço Público|Teste|Resolução de questões favoritas|Dispensável|00h 00m|-|ETICA.4647.133182
-28|Direito Previdenciário|Teste|Resolução de questões favoritas|Dispensável|00h 00m|-|DPREV.4681.131180
-29|Direito Civil|Teste|Resolução de Questões Favoritas|Dispensável|00h 00m|-|DCIV.4636.133149
-30|Direito Constitucional|Questões|Toda a Ementa do Edital|Dispensável|01h 00m|100,0%|DCON.4639.134159
-31|Direito Administrativo|Teste|Resolução de questões favoritas.|Dispensável|00h 00m|-|DADM.4672.132624
-32|AFO e Direito Financeiro|Questões|Bloco C (LRF)|Desejável|00h 00m|-|AFO.4654.133917
+# meta — lido em 2026-11-09T15:42Z
+5ª Meta | SEFAZ-SC: pós edital (Kamikaze) | Início em 09 de novembro | 1 / 34 atividades | 15 disciplinas
+32 atividades pendentes | 7 reforços | 0 aprofundamentos
+Desempenho atingido 92,0% | Horas estudadas 1h 50m
+6ª Meta: prevista para 16 de novembro (bloqueada)
+Sequência de estudos: 4 dias consecutivos
+Concluídas na 5ª meta: GERAL.4886.130018 Orientações Gerais sobre a Meta 5 (Teoria, 00h20m); DCIV.4636.133915 Responsabilidade Civil (Questões, 01h00m, 92,0%)
+Pendentes (disciplina | tipo | título | prioridade | relevância | código):
+GEO | Teste | Resolução de questões favoritas | Dispensável | 3 | GEO.4648.132856
+AFO | Teste | Resolução de questões favoritas | Dispensável | 3 | AFO.4654.133918
+DPREV | Questões | Toda a Ementa do Edital | Dispensável | 3 | DPREV.4681.133021
+DCIV | Questões | Contratos | Desejável | 4 | DCIV.4636.133318
+ETICA | Questões | Todo conteúdo | Dispensável | 3 | ETICA.4647.133198
+DADM | Questões | Decreto nº 2.094/2022. | Desejável | 3 | DADM.4672.134350
+AFO | Teste | Imersão Temática - Classificação de despesa | Desejável | 3 | AFO.4654.133919
+PORT | Questões | Morfologia, Formação das Palavras, Colocação Pronominal e Pontuação | Desejável | 3 | PORT.4666.134093
+ESTAT | Questões | Toda a Ementa do Edital | Dispensável | 2 | ESTAT.4660.135299
+GEO | Teoria | Aspectos econômicos de SC | Dispensável | 5 | GEO.4648.134150
+DPEN | Questões | Toda a Ementa | Dispensável | 3 | DPEN.4637.134016
+TINFO | Questões | Revisão B | Desejável | 4 | TINFO.4673.133201
+DPREV | Questões | Toda a Ementa do Edital | Dispensável | 3 | DPREV.4681.134255
+ETICA | Questões | Todo conteúdo | Dispensável | 3 | ETICA.4647.134094
+DCON | Teste | Toda a Ementa do Edital | Dispensável | 4 | DCON.4639.135272
+DADM | Questões | Jurisprudências I. | Desejável | 4 | DADM.4672.134364
+GEO | Questões | Conhecimentos de SC | Dispensável | 3 | GEO.4648.134198
+AFO | Questões | Revisão (Lei Complementar nº 898/2026 e Lei nº 7.5...) | Dispensável | 3 | AFO.4654.134954
+PORT | Questões | Resolução de prova: Fiscal de Tributos Estaduais (MT) / 2026 e Auditor Fiscal da Receita Estadual... | Dispensável | 3 | PORT.4666.135316
+RETRI | Questões | Repartição da Receita Tributária, Criação de Novos Fundos, Regras de Transição e Demais dispositivos | Dispensável | 3 | RETRI.4643.133836
+MATFI | Questões | Toda a ementa | Dispensável | 2 | MATFI.4671.134884
+DPEN | Teste | Toda a Ementa | Dispensável | 3 | DPEN.4637.134038
+ESTAT | Questões | Toda a Ementa da Disciplina | Dispensável | 2 | ESTAT.4663.135324
+TINFO | Questões | Toda a Ementa | Dispensável | 3 | TINFO.4673.134341
+GEO | Teoria | Boletim de Indicadores Econômico-Fiscais – Dezembro 2025 | Dispensável | 4 | GEO.4648.134200
+RLOG | Questões | Toda a Ementa do Edital | Dispensável | 2 | RLOG.4659.136468
+DPREV | Teste | Toda a Ementa do Edital | Dispensável | 3 | DPREV.4681.135437
+DCIV | Questões | Formas de direito de exploração de propriedades (posse, usufruto, contratos de compra e venda, comod...) | Desejável | 4 | DCIV.4636.135406
+ETICA | Questões | Todo conteúdo | Dispensável | 3 | ETICA.4647.134103
+DCON | Teste | Toda a Ementa do Edital | Dispensável | 3 | DCON.4639.135278
+DADM | Questões | Jurisprudências II. | Desejável | 4 | DADM.4672.135376
+AFO | Questões | Todo conteúdo | Dispensável | 3 | AFO.4654.134958

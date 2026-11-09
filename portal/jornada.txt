@@ -1,6 +1,4 @@
-# jornada — lido em 2026-11-08T15:07Z
-Jornada | Planejamento: SEFAZ-SC: pós edital (Kamikaze)
-Dias de estudo (Novembro de 2026): 4 dias no mês | Melhor sequência: 2 dias seguidos | Média ativ. por dia: 4,2 atividades | Tempo de estudo mensal: 22h50min
-Progresso por meta: metas 1,2,3,4 | Faixas de desempenho: 100% a 85%, 85% a 80%, 80% a 70%, 70% a 50%, 50% a 0%
-Quantidade de atividades por meta (texto bruto): 31|32|33|34|31|32|34|32
-Seções: Atividades por Meta, Média de atividades, Antecipação, Adiamento, Atraso (valores em gráfico, não legíveis em texto)
+# jornada — lido em 2026-11-09T15:42Z
+Jornada | SEFAZ-SC: pós edital (Kamikaze)
+Novembro de 2026: 6 dias de estudo no mês | Melhor sequência 4 dias seguidos | Média ativ. por dia 3,5 atividades | Tempo de estudo mensal 26h10min
+Progresso por meta (gráficos sem valores legíveis no texto): metas 1 a 5; quantidade de atividades por meta: 31, 32, 34, 32, 34
