@@ -1,40 +1,5 @@
-# meta — lido em 2026-11-09T15:42Z
-5ª Meta | SEFAZ-SC: pós edital (Kamikaze) | Início em 09 de novembro | 1 / 34 atividades | 15 disciplinas
-32 atividades pendentes | 7 reforços | 0 aprofundamentos
-Desempenho atingido 92,0% | Horas estudadas 1h 50m
-6ª Meta: prevista para 16 de novembro (bloqueada)
-Sequência de estudos: 4 dias consecutivos
-Concluídas na 5ª meta: GERAL.4886.130018 Orientações Gerais sobre a Meta 5 (Teoria, 00h20m); DCIV.4636.133915 Responsabilidade Civil (Questões, 01h00m, 92,0%)
-Pendentes (disciplina | tipo | título | prioridade | relevância | código):
-GEO | Teste | Resolução de questões favoritas | Dispensável | 3 | GEO.4648.132856
-AFO | Teste | Resolução de questões favoritas | Dispensável | 3 | AFO.4654.133918
-DPREV | Questões | Toda a Ementa do Edital | Dispensável | 3 | DPREV.4681.133021
-DCIV | Questões | Contratos | Desejável | 4 | DCIV.4636.133318
-ETICA | Questões | Todo conteúdo | Dispensável | 3 | ETICA.4647.133198
-DADM | Questões | Decreto nº 2.094/2022. | Desejável | 3 | DADM.4672.134350
-AFO | Teste | Imersão Temática - Classificação de despesa | Desejável | 3 | AFO.4654.133919
-PORT | Questões | Morfologia, Formação das Palavras, Colocação Pronominal e Pontuação | Desejável | 3 | PORT.4666.134093
-ESTAT | Questões | Toda a Ementa do Edital | Dispensável | 2 | ESTAT.4660.135299
-GEO | Teoria | Aspectos econômicos de SC | Dispensável | 5 | GEO.4648.134150
-DPEN | Questões | Toda a Ementa | Dispensável | 3 | DPEN.4637.134016
-TINFO | Questões | Revisão B | Desejável | 4 | TINFO.4673.133201
-DPREV | Questões | Toda a Ementa do Edital | Dispensável | 3 | DPREV.4681.134255
-ETICA | Questões | Todo conteúdo | Dispensável | 3 | ETICA.4647.134094
-DCON | Teste | Toda a Ementa do Edital | Dispensável | 4 | DCON.4639.135272
-DADM | Questões | Jurisprudências I. | Desejável | 4 | DADM.4672.134364
-GEO | Questões | Conhecimentos de SC | Dispensável | 3 | GEO.4648.134198
-AFO | Questões | Revisão (Lei Complementar nº 898/2026 e Lei nº 7.5...) | Dispensável | 3 | AFO.4654.134954
-PORT | Questões | Resolução de prova: Fiscal de Tributos Estaduais (MT) / 2026 e Auditor Fiscal da Receita Estadual... | Dispensável | 3 | PORT.4666.135316
-RETRI | Questões | Repartição da Receita Tributária, Criação de Novos Fundos, Regras de Transição e Demais dispositivos | Dispensável | 3 | RETRI.4643.133836
-MATFI | Questões | Toda a ementa | Dispensável | 2 | MATFI.4671.134884
-DPEN | Teste | Toda a Ementa | Dispensável | 3 | DPEN.4637.134038
-ESTAT | Questões | Toda a Ementa da Disciplina | Dispensável | 2 | ESTAT.4663.135324
-TINFO | Questões | Toda a Ementa | Dispensável | 3 | TINFO.4673.134341
-GEO | Teoria | Boletim de Indicadores Econômico-Fiscais – Dezembro 2025 | Dispensável | 4 | GEO.4648.134200
-RLOG | Questões | Toda a Ementa do Edital | Dispensável | 2 | RLOG.4659.136468
-DPREV | Teste | Toda a Ementa do Edital | Dispensável | 3 | DPREV.4681.135437
-DCIV | Questões | Formas de direito de exploração de propriedades (posse, usufruto, contratos de compra e venda, comod...) | Desejável | 4 | DCIV.4636.135406
-ETICA | Questões | Todo conteúdo | Dispensável | 3 | ETICA.4647.134103
-DCON | Teste | Toda a Ementa do Edital | Dispensável | 3 | DCON.4639.135278
-DADM | Questões | Jurisprudências II. | Desejável | 4 | DADM.4672.135376
-AFO | Questões | Todo conteúdo | Dispensável | 3 | AFO.4654.134958
+# meta — lido em 2026-11-10T15:08Z
+(O link "Meta" abriu aluno/visao-geral; só este trecho foi legível)
+Sequência de estudos
+5 dias de estudo consecutivos
+S T Q Q S S D

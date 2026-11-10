@@ -1,23 +1,24 @@
-# desempenho — lido em 2026-11-09T15:42Z
-Desempenho Acumulado | SEFAZ-SC: pós edital (Kamikaze) | Todas as disciplinas
-Desempenho atingido 86,6% | Horas estudadas 99h 30m | Questões resolvidas 1.335 | Média diária hora/estudo 3h 31m
-Disciplina | Questões | Acertos | Desempenho | Atividades (tempo médio) | Reforços | Aprofundamentos | Total tempo
+# desempenho — lido em 2026-11-10T15:08Z
+Desempenho Acumulado — SEFAZ-SC: pós edital (Kamikaze)
+Desempenho atingido 86,5% · Horas estudadas 103h · Questões resolvidas 1.392 · Média diária 3h 31m
+Disciplina | Questões | Acertos | Desempenho | Atividades | Reforços | Aprofund. | Total
 AFO e Direito Financeiro | 175 | 157 | 89,7% | 1h06m | 30m | - | 12h
-Direito Administrativo | 173 | 149 | 86,1% | 1h03m | - | - | 9h30m
+Direito Administrativo | 188 | 162 | 86,1% | 1h03m | - | - | 10h30m
 Direito Civil | 232 | 209 | 90,0% | 1h | 30m | - | 10h30m
 Direito Constitucional | 143 | 128 | 89,5% | 1h34m | - | - | 11h
 Direito Penal | 167 | 138 | 82,6% | 1h04m | 30m | - | 10h
-Direito Previdenciário | 149 | 124 | 83,2% | 1h38m | - | - | 13h
-Estatística | sem registro
+Direito Previdenciário | 191 | 159 | 83,2% | 1h33m | - | - | 15h30m
+Estatística | - | - | - | - | - | - | -
 Ética no Serviço Público | 27 | 23 | 85,1% | 1h | - | - | 4h
 Geografia | 23 | 21 | 91,3% | 1h23m | - | - | 5h30m
-Matemática Financeira | sem registro
+Matemática Financeira | - | - | - | - | - | - | -
 Português | 83 | 72 | 86,7% | 48m | - | - | 4h
-Raciocínio Lógico | sem registro
+Raciocínio Lógico | - | - | - | - | - | - | -
 Reforma Tributária | 98 | 83 | 84,6% | 1h18m | - | - | 6h30m
 Tecnologia da Informação | 65 | 53 | 81,5% | 2h24m | - | 1h30m | 13h30m
-Total | 1335 | 1157 | 86,6% | 1h16m | 30m | 1h30m | 99h30m
-Tempo médio por dia da semana: Dom 2h | Seg 3h30m | Ter 3h45m | Qua 5h15m | Qui 4h50m | Sex 4h30m | Sáb 4h20m
-Questões resolvidas por disciplina (% do total): TINFO 13,5 | DPREV 13,0 | AFO 12,0 | DCON 11,0 | DCIV 10,5 | DPEN 10,0 | DADM 9,5 | RETRI 6,5 | GEO 5,5 | ETICA 4,0 | PORT 4,0
-Sistemática de revisão: Revisou 49,2% | Não revisou 47,8% | Não informado 2,8%
-Sistemática de conferência: A cada questão 91,3% | Só ao final 5,7% | Não informado 2,8%
+Total | 1392 | 1205 | 86,5% | 1h16m | 30m | 1h30m | 103h
+(Nota: a ordem das linhas segue a lista de disciplinas; o texto bruto trazia as colunas em blocos separados.)
+Tempo médio por dia da semana: Dom 2h · Seg 4h · Ter 3h18m · Qua 5h15m · Qui 4h50m · Sex 4h30m · Sáb 4h20m
+Questões por disciplina: DPREV 15,0% · TINFO 13,1% · AFO 11,6% · DCON 10,6% · DADM 10,1% · DCIV 10,1% · DPEN 9,7% · RETRI 6,3% · GEO 5,3% · ETICA 3,8% · PORT 3,8%
+Sistemática de revisão: Revisou 50,0% · Não revisou 47,2% · Não informado 2,7%
+Sistemática de conferência: A cada questão 90,2% · Só ao final 6,9% · Não informado 2,7%
