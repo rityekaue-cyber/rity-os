@@ -1,40 +1,40 @@
 {
  "versao": 1,
- "gerado_em": "2026-11-10T15:08:36Z",
- "origem": "chrome meio-dia",
+ "gerado_em": "2026-11-10T22:28:25Z",
+ "origem": "chrome sob demanda",
  "planejamento_id": 100470,
  "total": {
-  "erros": 187,
-  "com_motivo": 62,
-  "cobertura_pct": 33.2,
+  "erros": 197,
+  "com_motivo": 72,
+  "cobertura_pct": 36.5,
   "motivo_predominante": "Desconhecimento",
-  "motivo_predominante_pct": 64.5
+  "motivo_predominante_pct": 68.1
  },
  "motivos": [
   {
    "motivo": "Desconhecimento",
-   "n": 40,
-   "pct": 64.5
+   "n": 49,
+   "pct": 68.1
   },
   {
    "motivo": "Esquecimento",
-   "n": 9,
-   "pct": 14.5
+   "n": 10,
+   "pct": 13.9
   },
   {
    "motivo": "Confusão conceitual",
    "n": 8,
-   "pct": 12.9
+   "pct": 11.1
   },
   {
    "motivo": "Falta de atenção",
    "n": 3,
-   "pct": 4.8
+   "pct": 4.2
   },
   {
    "motivo": "Erro de interpretação",
    "n": 2,
-   "pct": 3.2
+   "pct": 2.8
   }
  ],
  "disciplinas": [
@@ -140,11 +140,11 @@
   },
   {
    "nome": "AFO e Direito Financeiro",
-   "erros": 18,
-   "com_motivo": 12,
-   "cobertura_pct": 66.7,
+   "erros": 24,
+   "com_motivo": 18,
+   "cobertura_pct": 75.0,
    "motivo_predominante": "Desconhecimento",
-   "motivo_predominante_pct": 50.0,
+   "motivo_predominante_pct": 61.1,
    "atividades": [
     {
      "codigo": "AFO.4654.125332",
@@ -208,6 +208,15 @@
      "a": 19,
      "erros": 1,
      "motivo_predominante": "Erro de interpretação"
+    },
+    {
+     "codigo": "AFO.4654.132864",
+     "meta": 4,
+     "assunto": "Bloco B (Lei das Taxas, Receita, Despesa, DEA, RP, divida, SF)",
+     "q": 24,
+     "a": 18,
+     "erros": 6,
+     "motivo_predominante": "Desconhecimento"
     }
    ]
   },
@@ -450,11 +459,11 @@
   },
   {
    "nome": "Direito Constitucional",
-   "erros": 15,
-   "com_motivo": 5,
-   "cobertura_pct": 33.3,
+   "erros": 19,
+   "com_motivo": 9,
+   "cobertura_pct": 47.4,
    "motivo_predominante": "Desconhecimento",
-   "motivo_predominante_pct": 60.0,
+   "motivo_predominante_pct": 77.8,
    "atividades": [
     {
      "codigo": "DCON.4639.126557",
@@ -509,6 +518,15 @@
      "a": 23,
      "erros": 2,
      "motivo_predominante": null
+    },
+    {
+     "codigo": "DCON.4639.134158",
+     "meta": 4,
+     "assunto": "Toda a Ementa do Edital",
+     "q": 22,
+     "a": 18,
+     "erros": 4,
+     "motivo_predominante": "Desconhecimento"
     }
    ]
   },

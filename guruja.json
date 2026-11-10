@@ -1,7 +1,7 @@
 {
  "versao": 1,
- "gerado_em": "2026-11-10T07:22:22Z",
- "origem": "tarefa agendada",
+ "gerado_em": "2026-11-10T22:28:13Z",
+ "origem": "sob demanda (usuária)",
  "planejamento_id": 100470,
  "meta_atual": {
   "ordem": 5,
@@ -695,11 +695,11 @@
    "data_inicio": "2026-11-02T06:46:42.4333333",
    "data_conclusao": "2026-11-09T06:35:03.7666667",
    "atividades_totais": 32,
-   "atividades_concluidas": 12,
-   "atividades_ignoradas": 20,
-   "questoes": 212,
-   "acertos": 188,
-   "minutos": 860,
+   "atividades_concluidas": 15,
+   "atividades_ignoradas": 17,
+   "questoes": 286,
+   "acertos": 247,
+   "minutos": 1070,
    "atividades": [
     {
      "aid": 130017,
@@ -902,11 +902,11 @@
      "tipo": "Questões",
      "rel": 4,
      "prio": "Dispensável",
-     "q": 0,
-     "a": 0,
-     "min": 0,
-     "concluida": false,
-     "ignorada": true,
+     "q": 22,
+     "a": 18,
+     "min": 90,
+     "concluida": true,
+     "ignorada": false,
      "link": "https://www.tecconcursos.com.br/s/Q7Ac5M"
     },
     {
@@ -934,11 +934,11 @@
      "tipo": "Questões",
      "rel": 3,
      "prio": "Dispensável",
-     "q": 0,
-     "a": 0,
-     "min": 0,
-     "concluida": false,
-     "ignorada": true,
+     "q": 22,
+     "a": 18,
+     "min": 60,
+     "concluida": true,
+     "ignorada": false,
      "link": "https://www.tecconcursos.com.br/s/Q7FDZA"
     },
     {
@@ -966,11 +966,11 @@
      "tipo": "Questões",
      "rel": 4,
      "prio": "Desejável",
-     "q": 0,
-     "a": 0,
-     "min": 0,
-     "concluida": false,
-     "ignorada": true,
+     "q": 24,
+     "a": 18,
+     "min": 60,
+     "concluida": true,
+     "ignorada": false,
      "link": "https://www.tecconcursos.com.br/s/Q7Ckyf"
     },
     {
@@ -1844,8 +1844,8 @@
    "data_inicio": "2026-10-19T06:45:52.0033333",
    "data_conclusao": "2026-10-26T08:49:07.9466667",
    "atividades_totais": 32,
-   "atividades_concluidas": 19,
-   "atividades_ignoradas": 12,
+   "atividades_concluidas": 20,
+   "atividades_ignoradas": 11,
    "questoes": null,
    "acertos": null,
    "minutos": null
@@ -1872,7 +1872,7 @@
    "q": 98,
    "a": 83,
    "pct": 84.69,
-   "media": 88.49,
+   "media": 88.46,
    "mediana": 89.1,
    "decil": 3,
    "tendencia": "piorando"
@@ -1884,7 +1884,7 @@
    "q": 167,
    "a": 138,
    "pct": 82.63,
-   "media": 85.09,
+   "media": 85.02,
    "mediana": 85,
    "decil": 4,
    "tendencia": "estavel"
@@ -1914,26 +1914,26 @@
    "tendencia": "estavel"
   },
   {
+   "sigla": "AFO",
+   "disciplina": "AFO e Direito Financeiro",
+   "peso": 9.9,
+   "q": 199,
+   "a": 175,
+   "pct": 87.93,
+   "media": 85.58,
+   "mediana": 86.3,
+   "decil": 6,
+   "tendencia": "estavel"
+  },
+  {
    "sigla": "DCIV",
    "disciplina": "Direito Civil",
    "peso": 11.9,
    "q": 232,
    "a": 209,
    "pct": 90.08,
-   "media": 87.32,
+   "media": 87.29,
    "mediana": 87.9,
-   "decil": 7,
-   "tendencia": "estavel"
-  },
-  {
-   "sigla": "AFO",
-   "disciplina": "AFO e Direito Financeiro",
-   "peso": 9.9,
-   "q": 175,
-   "a": 157,
-   "pct": 89.71,
-   "media": 86.3,
-   "mediana": 86.3,
    "decil": 7,
    "tendencia": "estavel"
   },
@@ -1944,10 +1944,22 @@
    "q": 188,
    "a": 162,
    "pct": 86.17,
-   "media": 82.05,
+   "media": 81.85,
    "mediana": 83.1,
    "decil": 8,
    "tendencia": "estavel"
+  },
+  {
+   "sigla": "DCON",
+   "disciplina": "Direito Constitucional",
+   "peso": 11.9,
+   "q": 165,
+   "a": 146,
+   "pct": 88.48,
+   "media": 83.55,
+   "mediana": 81.9,
+   "decil": 10,
+   "tendencia": "melhorando"
   },
   {
    "sigla": "PORT",
@@ -1962,25 +1974,13 @@
    "tendencia": "estavel"
   },
   {
-   "sigla": "DCON",
-   "disciplina": "Direito Constitucional",
-   "peso": 11.9,
-   "q": 143,
-   "a": 128,
-   "pct": 89.51,
-   "media": 83.96,
-   "mediana": 82.5,
-   "decil": 10,
-   "tendencia": "melhorando"
-  },
-  {
    "sigla": "DPREV",
    "disciplina": "Direito Previdenciário",
    "peso": 11.9,
-   "q": 163,
-   "a": 136,
-   "pct": 83.43,
-   "media": 76.71,
+   "q": 191,
+   "a": 159,
+   "pct": 83.24,
+   "media": 76.64,
    "mediana": 75,
    "decil": 9,
    "tendencia": "estavel"
@@ -1999,10 +1999,10 @@
   }
  ],
  "tempo": {
-  "total_min": 6190,
+  "total_min": 6460,
   "por_tipo": {
-   "Questões": 5130,
-   "Teoria": 310,
+   "Questões": 5340,
+   "Teoria": 370,
    "Teste": 300,
    "Lei Seca": 180,
    "Revisão": 0
@@ -2012,7 +2012,7 @@
   "disciplinas": [
    {
     "sigla": "DPREV",
-    "min": 840
+    "min": 930
    },
    {
     "sigla": "TINFO",
@@ -2020,11 +2020,11 @@
    },
    {
     "sigla": "AFO",
-    "min": 720
+    "min": 780
    },
    {
     "sigla": "DCON",
-    "min": 660
+    "min": 720
    },
    {
     "sigla": "DADM",
@@ -2039,12 +2039,12 @@
     "min": 600
    },
    {
-    "sigla": "RETRI",
+    "sigla": "GEO",
     "min": 390
    },
    {
-    "sigla": "GEO",
-    "min": 330
+    "sigla": "RETRI",
+    "min": 390
    },
    {
     "sigla": "ETICA",
@@ -2078,9 +2078,9 @@
   "mediana_dias_por_meta": 7,
   "dias_atraso": 0,
   "decil_progresso": 8,
-  "meus_min_por_meta": 1445,
+  "meus_min_por_meta": 1512,
   "mediana_min_por_meta": 1200,
-  "minhas_q_por_meta": 331,
+  "minhas_q_por_meta": 349,
   "mediana_q_por_meta": 440
  },
  "fracos": [
@@ -2130,6 +2130,15 @@
    "link": "https://www.tecconcursos.com.br/s/Q7570e"
   },
   {
+   "titulo": "Bloco B (Lei das Taxas, Receita, Despesa, DEA, RP, divida, SF)",
+   "sigla": "AFO",
+   "q": 24,
+   "a": 18,
+   "pct": 75,
+   "media": 81.8,
+   "link": "https://www.tecconcursos.com.br/s/Q7Ckyf"
+  },
+  {
    "titulo": "Bloco B - Crimes Contra as Finanças Públicas, Crimes Contra a Ordem Tributária e Abuso de Autoridade",
    "sigla": "DPEN",
    "q": 25,
@@ -2164,15 +2173,6 @@
    "pct": 77.7,
    "media": 86.3,
    "link": "https://www.tecconcursos.com.br/s/Q72HNn"
-  },
-  {
-   "titulo": "Crimes Contra as Finanças Públicas",
-   "sigla": "DPEN",
-   "q": 14,
-   "a": 11,
-   "pct": 78.5,
-   "media": 85.6,
-   "link": "https://www.tecconcursos.com.br/s/Q72gOW"
   }
  ],
  "dificeis_turma": [
