@@ -1,7 +1,7 @@
 {
  "versao": 1,
- "gerado_em": "2026-11-10T22:28:25Z",
- "origem": "chrome sob demanda",
+ "gerado_em": "2026-11-11T15:09:55Z",
+ "origem": "chrome meio-dia",
  "planejamento_id": 100470,
  "total": {
   "erros": 197,
@@ -38,6 +38,88 @@
   }
  ],
  "disciplinas": [
+  {
+   "nome": "AFO e Direito Financeiro",
+   "erros": 24,
+   "com_motivo": 18,
+   "cobertura_pct": 75.0,
+   "motivo_predominante": "Desconhecimento",
+   "motivo_predominante_pct": 61.1,
+   "atividades": [
+    {
+     "codigo": "AFO.4654.125332",
+     "meta": 1,
+     "assunto": "PPA e LDO",
+     "q": 22,
+     "a": 19,
+     "erros": 3,
+     "motivo_predominante": "Desconhecimento"
+    },
+    {
+     "codigo": "AFO.4654.125335",
+     "meta": 1,
+     "assunto": "LOA, emendas, ciclo orçamentário. DREM",
+     "q": 16,
+     "a": 13,
+     "erros": 3,
+     "motivo_predominante": null
+    },
+    {
+     "codigo": "AFO.4654.126537",
+     "meta": 1,
+     "assunto": "Lei nº 7.541/1988 (Lei das taxas)",
+     "q": 18,
+     "a": 14,
+     "erros": 4,
+     "motivo_predominante": "Desconhecimento"
+    },
+    {
+     "codigo": "AFO.4654.127782",
+     "meta": 2,
+     "assunto": "Despesa: Conceito, classificação",
+     "q": 17,
+     "a": 16,
+     "erros": 1,
+     "motivo_predominante": null
+    },
+    {
+     "codigo": "AFO.4654.129571",
+     "meta": 3,
+     "assunto": "RP, DEA, SF, dívida",
+     "q": 20,
+     "a": 18,
+     "erros": 2,
+     "motivo_predominante": null
+    },
+    {
+     "codigo": "AFO.4654.130777",
+     "meta": 4,
+     "assunto": "LRF - PARTE II (Despesa e endividamento)",
+     "q": 20,
+     "a": 16,
+     "erros": 4,
+     "motivo_predominante": "Desconhecimento"
+    },
+    {
+     "codigo": "AFO.4654.132863",
+     "meta": 4,
+     "assunto": "LRF - PARTE III (Transparência e prestação de contas)",
+     "q": 20,
+     "a": 19,
+     "erros": 1,
+     "motivo_predominante": "Erro de interpretação"
+    },
+    {
+     "codigo": "AFO.4654.132864",
+     "meta": 4,
+     "assunto": "Bloco B (Lei das Taxas, Receita, Despesa, DEA, RP, divida, SF)",
+     "q": 24,
+     "a": 18,
+     "erros": 6,
+     "motivo_predominante": "Desconhecimento"
+    }
+   ]
+  },
   {
    "nome": "Direito Previdenciário",
    "erros": 32,
@@ -139,88 +221,6 @@
    ]
   },
   {
-   "nome": "AFO e Direito Financeiro",
-   "erros": 24,
-   "com_motivo": 18,
-   "cobertura_pct": 75.0,
-   "motivo_predominante": "Desconhecimento",
-   "motivo_predominante_pct": 61.1,
-   "atividades": [
-    {
-     "codigo": "AFO.4654.125332",
-     "meta": 1,
-     "assunto": "PPA e LDO",
-     "q": 22,
-     "a": 19,
-     "erros": 3,
-     "motivo_predominante": "Desconhecimento"
-    },
-    {
-     "codigo": "AFO.4654.125335",
-     "meta": 1,
-     "assunto": "LOA, emendas, ciclo orçamentário. DREM",
-     "q": 16,
-     "a": 13,
-     "erros": 3,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "AFO.4654.126537",
-     "meta": 1,
-     "assunto": "Lei nº 7.541/1988 (Lei das taxas)",
-     "q": 18,
-     "a": 14,
-     "erros": 4,
-     "motivo_predominante": "Desconhecimento"
-    },
-    {
-     "codigo": "AFO.4654.127782",
-     "meta": 2,
-     "assunto": "Despesa: Conceito, classificação",
-     "q": 17,
-     "a": 16,
-     "erros": 1,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "AFO.4654.129571",
-     "meta": 3,
-     "assunto": "RP, DEA, SF, dívida",
-     "q": 20,
-     "a": 18,
-     "erros": 2,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "AFO.4654.130777",
-     "meta": 4,
-     "assunto": "LRF - PARTE II (Despesa e endividamento)",
-     "q": 20,
-     "a": 16,
-     "erros": 4,
-     "motivo_predominante": "Desconhecimento"
-    },
-    {
-     "codigo": "AFO.4654.132863",
-     "meta": 4,
-     "assunto": "LRF - PARTE III (Transparência e prestação de contas)",
-     "q": 20,
-     "a": 19,
-     "erros": 1,
-     "motivo_predominante": "Erro de interpretação"
-    },
-    {
-     "codigo": "AFO.4654.132864",
-     "meta": 4,
-     "assunto": "Bloco B (Lei das Taxas, Receita, Despesa, DEA, RP, divida, SF)",
-     "q": 24,
-     "a": 18,
-     "erros": 6,
-     "motivo_predominante": "Desconhecimento"
-    }
-   ]
-  },
-  {
    "nome": "Direito Administrativo",
    "erros": 26,
    "com_motivo": 10,
@@ -316,6 +316,79 @@
      "q": 15,
      "a": 13,
      "erros": 2,
+     "motivo_predominante": "Desconhecimento"
+    }
+   ]
+  },
+  {
+   "nome": "Direito Constitucional",
+   "erros": 19,
+   "com_motivo": 9,
+   "cobertura_pct": 47.4,
+   "motivo_predominante": "Desconhecimento",
+   "motivo_predominante_pct": 77.8,
+   "atividades": [
+    {
+     "codigo": "DCON.4639.126557",
+     "meta": 1,
+     "assunto": "Imersão - Constituição do Estado de Santa Catarina",
+     "q": 21,
+     "a": 18,
+     "erros": 3,
+     "motivo_predominante": null
+    },
+    {
+     "codigo": "DCON.4639.129526",
+     "meta": 1,
+     "assunto": "Bloco A (Direitos e Garantias Fundamentais; Organização do Estado; e Administração pública)",
+     "q": 22,
+     "a": 21,
+     "erros": 1,
+     "motivo_predominante": null
+    },
+    {
+     "codigo": "DCON.4639.131080",
+     "meta": 2,
+     "assunto": "Bloco B (Poder Legislativo; Poder Executivo; e Controle de Constitucionalidade)",
+     "q": 18,
+     "a": 15,
+     "erros": 3,
+     "motivo_predominante": null
+    },
+    {
+     "codigo": "DCON.4639.131081",
+     "meta": 2,
+     "assunto": "Bloco C (Poder Judiciário; Funções Essenciais à Justiça; Ordem Econômica e Financeira; Ordem Social; CE SC)",
+     "q": 15,
+     "a": 14,
+     "erros": 1,
+     "motivo_predominante": null
+    },
+    {
+     "codigo": "DCON.4639.132996",
+     "meta": 3,
+     "assunto": "Jurisprudência - Toda a Ementa",
+     "q": 20,
+     "a": 15,
+     "erros": 5,
+     "motivo_predominante": "Desconhecimento"
+    },
+    {
+     "codigo": "DCON.4639.132997",
+     "meta": 3,
+     "assunto": "Resolução das questões favoritas",
+     "q": 25,
+     "a": 23,
+     "erros": 2,
+     "motivo_predominante": null
+    },
+    {
+     "codigo": "DCON.4639.134158",
+     "meta": 4,
+     "assunto": "Toda a Ementa do Edital",
+     "q": 22,
+     "a": 18,
+     "erros": 4,
      "motivo_predominante": "Desconhecimento"
     }
    ]
@@ -454,79 +527,6 @@
      "a": 18,
      "erros": 2,
      "motivo_predominante": null
-    }
-   ]
-  },
-  {
-   "nome": "Direito Constitucional",
-   "erros": 19,
-   "com_motivo": 9,
-   "cobertura_pct": 47.4,
-   "motivo_predominante": "Desconhecimento",
-   "motivo_predominante_pct": 77.8,
-   "atividades": [
-    {
-     "codigo": "DCON.4639.126557",
-     "meta": 1,
-     "assunto": "Imersão - Constituição do Estado de Santa Catarina",
-     "q": 21,
-     "a": 18,
-     "erros": 3,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "DCON.4639.129526",
-     "meta": 1,
-     "assunto": "Bloco A (Direitos e Garantias Fundamentais; Organização do Estado; e Administração pública)",
-     "q": 22,
-     "a": 21,
-     "erros": 1,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "DCON.4639.131080",
-     "meta": 2,
-     "assunto": "Bloco B (Poder Legislativo; Poder Executivo; e Controle de Constitucionalidade)",
-     "q": 18,
-     "a": 15,
-     "erros": 3,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "DCON.4639.131081",
-     "meta": 2,
-     "assunto": "Bloco C (Poder Judiciário; Funções Essenciais à Justiça; Ordem Econômica e Financeira; Ordem Social; CE SC)",
-     "q": 15,
-     "a": 14,
-     "erros": 1,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "DCON.4639.132996",
-     "meta": 3,
-     "assunto": "Jurisprudência - Toda a Ementa",
-     "q": 20,
-     "a": 15,
-     "erros": 5,
-     "motivo_predominante": "Desconhecimento"
-    },
-    {
-     "codigo": "DCON.4639.132997",
-     "meta": 3,
-     "assunto": "Resolução das questões favoritas",
-     "q": 25,
-     "a": 23,
-     "erros": 2,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "DCON.4639.134158",
-     "meta": 4,
-     "assunto": "Toda a Ementa do Edital",
-     "q": 22,
-     "a": 18,
-     "erros": 4,
-     "motivo_predominante": "Desconhecimento"
     }
    ]
   },
@@ -688,7 +688,7 @@
   {
    "nome": "Estatística",
    "erros": 0,
-   "com_motivo": null,
+   "com_motivo": 0,
    "cobertura_pct": null,
    "motivo_predominante": null,
    "motivo_predominante_pct": null,
@@ -725,7 +725,7 @@
   {
    "nome": "Matemática Financeira",
    "erros": 0,
-   "com_motivo": null,
+   "com_motivo": 0,
    "cobertura_pct": null,
    "motivo_predominante": null,
    "motivo_predominante_pct": null,
@@ -789,7 +789,7 @@
   {
    "nome": "Raciocínio Lógico",
    "erros": 0,
-   "com_motivo": null,
+   "com_motivo": 0,
    "cobertura_pct": null,
    "motivo_predominante": null,
    "motivo_predominante_pct": null,
@@ -798,7 +798,7 @@
   {
    "nome": "Orientações Gerais",
    "erros": 0,
-   "com_motivo": null,
+   "com_motivo": 0,
    "cobertura_pct": null,
    "motivo_predominante": null,
    "motivo_predominante_pct": null,
