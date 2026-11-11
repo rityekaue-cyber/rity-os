@@ -1,7 +1,7 @@
 {
  "versao": 1,
- "gerado_em": "2026-11-10T22:28:13Z",
- "origem": "sob demanda (usuária)",
+ "gerado_em": "2026-11-11T07:13:02Z",
+ "origem": "tarefa agendada",
  "planejamento_id": 100470,
  "meta_atual": {
   "ordem": 5,
@@ -1872,7 +1872,7 @@
    "q": 98,
    "a": 83,
    "pct": 84.69,
-   "media": 88.46,
+   "media": 88.42,
    "mediana": 89.1,
    "decil": 3,
    "tendencia": "piorando"
@@ -1908,8 +1908,8 @@
    "q": 65,
    "a": 53,
    "pct": 81.53,
-   "media": 81.03,
-   "mediana": 83,
+   "media": 81.02,
+   "mediana": 82.9,
    "decil": 5,
    "tendencia": "estavel"
   },
@@ -1920,8 +1920,8 @@
    "q": 199,
    "a": 175,
    "pct": 87.93,
-   "media": 85.58,
-   "mediana": 86.3,
+   "media": 85.52,
+   "mediana": 85.8,
    "decil": 6,
    "tendencia": "estavel"
   },
@@ -1932,8 +1932,8 @@
    "q": 232,
    "a": 209,
    "pct": 90.08,
-   "media": 87.29,
-   "mediana": 87.9,
+   "media": 87.26,
+   "mediana": 87.8,
    "decil": 7,
    "tendencia": "estavel"
   },
@@ -1945,7 +1945,7 @@
    "a": 162,
    "pct": 86.17,
    "media": 81.85,
-   "mediana": 83.1,
+   "mediana": 82.1,
    "decil": 8,
    "tendencia": "estavel"
   },
@@ -1956,7 +1956,7 @@
    "q": 165,
    "a": 146,
    "pct": 88.48,
-   "media": 83.55,
+   "media": 83.6,
    "mediana": 81.9,
    "decil": 10,
    "tendencia": "melhorando"
@@ -1968,7 +1968,7 @@
    "q": 83,
    "a": 72,
    "pct": 86.74,
-   "media": 81.71,
+   "media": 81.72,
    "mediana": 81.8,
    "decil": 8,
    "tendencia": "estavel"
@@ -1980,7 +1980,7 @@
    "q": 191,
    "a": 159,
    "pct": 83.24,
-   "media": 76.64,
+   "media": 76.68,
    "mediana": 75,
    "decil": 9,
    "tendencia": "estavel"
