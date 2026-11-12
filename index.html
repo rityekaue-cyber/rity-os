@@ -309,6 +309,7 @@ const EST_MIN={'Questões':60,'Teste':45,'Teoria':45,'Lei Seca':30,'Revisão':30
 const estimarMin=a=>{if(a.min>0)return a.min;const b=EST_MIN[a.tipo]||45;return(a.tipo==='Questões'&&(a.rel||0)>=4)?90:b;};
 const IDREF_BASE=600; // reforço nº n da meta atual → id 600+n (atividades usam o próprio activity_id do Guruja, sempre > 1000)
 const siglaDe=a=>String(a.codigo||'').split('.')[0];
+const estReforco=r=>r.tipo_reforco==='Hard'?5:r.tipo_reforco==='Medium'?4:3;   // o Guruja não informa estrelas do reforço: estimativa pelo tipo
 const matDe=a=>GURUJA_SIGLA_APP[siglaDe(a)]||a.disciplina||'Outras';
 const icDe=mat=>(MAT_INFO[mat]||{}).ic||'📚';
 
@@ -326,8 +327,8 @@ const _planoAtiv=[],_planoDisp=[];
   });
   (cur.reforcos||[]).forEach((r,idx)=>{
     const n=idx+1;const mat=GURUJA_SIGLA_APP[siglaDeReforco(r)]||r.disciplina||'Outras';
-    REFORCOS_GURUJA.push({n,mat,t:r.titulo||'',est:(r.tipo_reforco==='Hard'?5:r.tipo_reforco==='Medium'?4:3),cod:'',aid:r.aid,id:IDREF_BASE+n,feito:!!r.concluido});
-    itens.push({id:IDREF_BASE+n,mat,tipo:'Reforço',conteudo:`Reforço — ${r.titulo||''}`,min:30,est:(r.tipo_reforco==='Hard'?5:4),prio:null,ign:!!r.ignorado,
+    REFORCOS_GURUJA.push({n,mat,t:r.titulo||'',est:estReforco(r),cod:'',aid:r.aid,id:IDREF_BASE+n,feito:!!r.concluido});
+    itens.push({id:IDREF_BASE+n,mat,tipo:'Reforço',conteudo:`Reforço — ${r.titulo||''}`,min:30,est:estReforco(r),prio:null,ign:!!r.ignorado,
       origem:`Reforço · R#${n}`,gl:`Reforço nº ${n}`,glLongo:`Reforços do Guruja · nº ${n}`,seq:1000+idx,cod:''});
   });
   // Ordem do plano: reforços e Indispensáveis primeiro, depois maior relevância; dentro disso, a ordem do Guruja.
@@ -505,36 +506,6 @@ function ordemPinada(b){
 }
 
 
-// Registro único de 19/10 (pedido da Ritchely): Const. Estadual de SC — 2h00, 85,7% (Guruja DCON.4639.126557).
-// Idempotente: confere cada lista pelo id antes de gravar; `final` marca como feito para não reaplicar depois.
-function seedRegistro101(wr,final){
-  try{
-    const J=(k,d)=>{try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v);}catch(e){return d;}};
-    if(J('seed_reg_101','')==='done')return;
-    const dt=new Date(2026,9,19,9,49).getTime(), dia0=new Date(2026,9,19).setHours(0,0,0,0);
-    const rid='2026-10-19_DCON.4639.126557';
-    const hist=J('historico_diario',[]);
-    if(!hist.some(r=>r&&r.id===rid))wr('historico_diario',[...hist,{id:rid,materia:'Dir. Constitucional',assunto:'Imersão — Constituição do Estado de Santa Catarina',questoes:'',acertei:'',dificuldade:'',tempo:120,obs:'Guruja: 85,7% de acerto · código DCON.4639.126557 · nº de questões não informado',dt,dia:'2026-10-19',origem:'guruja'}]);
-    const hr=J('horas',[]);
-    if(!hr.some(h=>h&&h.rid===rid))wr('horas',[...hr,{mat:'Dir. Constitucional',min:120,dt,rid}]);
-    if(final)wr('seed_reg_101','done');
-  }catch(e){}
-}
-
-// Registro único de 26/10 (pedido da Ritchely): Ética no Serviço Público — "Ética no setor público", 1h00, 70,0% (Guruja, atividade 23 da Meta 1).
-function seedRegistroEtica(wr,final){
-  try{
-    const J=(k,d)=>{try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v);}catch(e){return d;}};
-    if(J('seed_reg_etica26','')==='done')return;
-    const dt=new Date(2026,9,26,20,0).getTime();
-    const rid='2026-10-26_ETICA.setor-publico';
-    const hist=J('historico_diario',[]);
-    if(!hist.some(r=>r&&r.id===rid))wr('historico_diario',[...hist,{id:rid,materia:'Ética Pública',assunto:'Ética no setor público',questoes:'',acertei:'',dificuldade:'',tempo:60,obs:'Guruja: 70,0% de acerto · atividade da Meta 1 · nº de questões não informado',dt,dia:'2026-10-26',origem:'guruja'}]);
-    const hr=J('horas',[]);
-    if(!hr.some(h=>h&&h.rid===rid))wr('horas',[...hr,{mat:'Ética Pública',min:60,dt,rid}]);
-    if(final)wr('seed_reg_etica26','done');
-  }catch(e){}
-}
 
 const CICLO=(()=>{
   const lsj=(k,d)=>{try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v);}catch(e){return d;}};
@@ -760,7 +731,7 @@ const Sync={
       const vn=x=>{const m=String(x==null?'':x).match(/v(\d+)/);return m?+m[1]:0;};
       const cloudVer=cloudMap['ciclo_versao']?vn(cloudMap['ciclo_versao'].value):0;
       const localVer=vn(localStorage.getItem('ciclo_versao'));
-      const PROT=new Set(localVer>cloudVer?['ciclo_versao','feitos','feitos_dt','cicloNum','ciclo_volta','horas_dia']:[]);
+      const PROT=new Set(localVer>cloudVer?['ciclo_versao','feitos','feitos_dt','fora_feitos','cicloNum','ciclo_volta','horas_dia','dias_trabalho','semana_cfg','ia_dia','ia_briefing','guruja_data']:[]);   // v60: inclui as chaves que a troca de planejamento limpou
       this._layoutChanged=false;this._changed=[];
       const setL=(k,v)=>{
         const cur=localStorage.getItem(k);
@@ -793,7 +764,7 @@ const Sync={
       for(const k of PROT){
         try{
           const raw=localStorage.getItem(k);
-          const val=raw!==null?JSON.parse(raw):(k==='horas_dia'?{}:k==='ciclo_volta'?[]:undefined);
+          const val=raw!==null?JSON.parse(raw):(k==='horas_dia'||k==='fora_feitos'||k==='semana_cfg'?{}:k==='ciclo_volta'?[]:k==='ia_dia'||k==='ia_briefing'||k==='guruja_data'?null:undefined);
           if(val!==undefined){await _sc.from('rity_os').upsert({key:k,value:val,updated_at:new Date().toISOString()},{onConflict:'key'});_setBase(k,canon(val));}
         }catch(e){}
       }
@@ -1429,7 +1400,7 @@ function statusPct(pct){
   return'critico';
 }
 
-const MATS_JURIDICAS=EDITAL_MATS.filter(m=>m.startsWith('Dir.')||m==='Direito Empresarial (Comercial)'||m==='Legislação TCE-SP'||m==='Ética Pública');
+const MATS_JURIDICAS=EDITAL_MATS.filter(m=>m.startsWith('Dir.')||m==='Direito Empresarial (Comercial)'||m==='Legislação Tributária Estadual');
 
 // ── 1. QUESTÕES — pior desempenho ponderado dos últimos 7 dias (ontem pesa 3x) ──
 function calcQuestoesPrioridade(historico){
@@ -3351,7 +3322,7 @@ function calcMotorCanais(feitos,horas,historico){
 // Mantém compatibilidade com código legado que usa calcTempoMorto
 function calcTempoMorto(feitos,horas,historico){
   const motor=calcMotorCanais(feitos,horas,historico);
-  const fallback={mat:'Dir. Financeiro / AFO',difMedia:0,diasSem:0};
+  const fallback={mat:MATERIAS[0].app,difMedia:0,diasSem:0};
   return{
     anki:motor.geral[0]||fallback,
     nlm:motor.nlm.top?{mat:motor.nlm.top.mat,difMedia:0,diasSem:motor.nlm.top.diasNlm}:motor.geral[1]||fallback,
@@ -4949,7 +4920,7 @@ function TabEstudo({feitos,cicloNum,horas,onConcluir,onIrPara,onDesmarcar,onAddH
     try{
       const r=await chamarClaude(
         `Coach de concursos no planejamento Consolidar a base do Guruja (pré-edital, FCC). Analise os dados do Guruja e monte plano inteligente. Sem edital: todas as matérias têm o mesmo peso (Adm, Const, Civil, Empresarial, Penal, Tributário, LTE, Contabilidade, Auditoria, Português, RL, TI).
-Relevâncias (peso×incidência estimada): Previdenciário=5, Civil=5, Penal=5, Const=5, AFO=4, Adm=4, Português=3, Ciência de Dados=3, Ética=2, Regionais SC=2, RL/Mat.Fin/Estatística=2.
+Relevâncias: sem edital, todas as matérias têm o mesmo peso.
 Ciclo atual: bloco ${ativo?.mat||'indefinido'}. Meta: ${metaHoras}h/semana. Contexto: ${contextSem||'semana normal'}.
 APENAS JSON sem markdown: {"diagnostico":"2 frases","plano":[{"mat":"nome","horasSugeridas":2.5,"prioridade":1,"motivo":"por que","taxa":82.0,"status":"critica|atencao|ok"}],"alerta":"materia mais urgente"}`,
         [{role:'user',content:`Dados Guruja:\n${gurujaTxt.slice(0,6000)}`}],1500
@@ -5026,7 +4997,7 @@ APENAS JSON sem markdown: {"diagnostico":"2 frases","plano":[{"mat":"nome","hora
     try{
       const r=await chamarClaude(
         `Coach de concursos no planejamento Consolidar a base do Guruja (pré-edital, FCC). Analise desempenho da Ritchely e cruze taxa de acerto com relevância; todas as matérias têm o mesmo peso (sem edital).
-Relevâncias: Previdenciário=5, Civil=5, Penal=5, Const=5, AFO=4, Adm=4, Português=3, Ciência de Dados=3, Ética=2, Regionais SC=2, RL/Mat.Fin/Estatística=2.
+Relevâncias: sem edital, todas as matérias têm o mesmo peso.
 APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia":5,"status":"critica|atencao|ok","acao":"o que fazer"}],"resumo":"2 frases diretas","alerta":"materia mais critica"}`,
         [{role:'user',content:`Dados Guruja:\n${gurujaTxt.slice(0,6000)}`}],1200
       );
@@ -6297,7 +6268,7 @@ function ReforcosCiclo({onRapido,ver}){
               <div style={{flex:1,minWidth:0}}>
                 <div style={{fontSize:14,fontWeight:700,color:'#e8edf5',lineHeight:1.3}}>{(MAT_INFO[r.mat]||{}).ic||'🔁'} {r.mat} <span style={{color:'#fbbf24',fontFamily:mono,fontSize:12}}>{'★'.repeat(r.est)}</span></div>
                 <div style={{fontSize:13,color:'#c2ccd8',lineHeight:1.4}}>{r.t}</div>
-                <div style={{fontSize:12,color:'#7dd3fc',fontFamily:mono,marginTop:1}}>#{r.n} · {r.cod} · prazo dia {r.dtg}{planDia(r.n)?` · plano: ${planDia(r.n)}`:''}</div>
+                <div style={{fontSize:12,color:'#7dd3fc',fontFamily:mono,marginTop:1}}>#{r.n}{r.cod?` · ${r.cod}`:''}{r.dtg?` · prazo dia ${r.dtg}`:''}{planDia(r.n)?` · plano: ${planDia(r.n)}`:''}</div>
                 {x.regs.length>0&&<div style={{fontSize:12,color:'#c2ccd8',fontFamily:mono,marginTop:2}}>
                   {x.regs.length}× feito · ⏱ {fmtMinG(x.min)} · 📝 {x.q}q · ✅ {x.a} · <span style={{color:corPct(pAc),fontWeight:800}}>{pAc==null?'—':pAc+'%'}</span>{pUlt!=null&&x.regs.length>1?` · última ${pUlt}%`:''}
                 </div>}
@@ -6344,7 +6315,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
   const LABELS_DIF=['FÁCIL','TRANQUILO','MÉDIO','DIFÍCIL','MUITO DIFÍCIL'];
 
   // Tempo Morto calculado no App e passado como prop tmSugestao
-  const tempoMorto=tmSugestao||{anki:{mat:'Dir. Financeiro / AFO',difMedia:0,diasSem:0},nlm:{mat:'Dir. Previdenciário',difMedia:0,diasSem:0},ranking:[],travouRecente:[]};
+  const tempoMorto=tmSugestao||{anki:{mat:MATERIAS[0].app,difMedia:0,diasSem:0},nlm:{mat:MATERIAS[1].app,difMedia:0,diasSem:0},ranking:[],travouRecente:[]};
 
   // Fix 1h30 — conta blocos desde última revisão
   const ultimaRev=rev1h30Regs.length>0?rev1h30Regs[rev1h30Regs.length-1]:null;
@@ -9185,7 +9156,7 @@ function App(){
     Sync.onStatus(s=>setSyncSt(s));
     const aplicarSync=ok=>{
       if(!ok)return;
-      seedRegistro101(lsSet,true);seedRegistroEtica(lsSet,true);
+      
       try{if(Sync._changed&&Sync._changed.length){const u=parseInt(sessionStorage.getItem('rity_rl')||'0');if(Date.now()-u>20000){sessionStorage.setItem('rity_rl',String(Date.now()));window.location.reload();return;}}}catch(e){}
       setFeitos(lerFeitosValidos());setCicloNum(lerCicloNum());setHoras(lsGet('horas',[]));setMit(lsGet('mit',[]));
     };
@@ -9208,31 +9179,6 @@ function App(){
         ult=Date.now();Sync.init().then(aplicarSync);
       });
     }catch(e){}
-    // ── Seed único: simulado Guruja 13-19/07 (251 questões, 8 matérias) ──
-    // Sem isso, a fila de Questões (últimos 7 dias) não enxerga esse resultado real.
-    (()=>{
-      const KEY='rity_seed_simulado_20260719_v2';
-      if(!localStorage.getItem(KEY)){
-        try{
-          const hist=JSON.parse(localStorage.getItem('historico_diario')||'[]');
-          const semAntigo=hist.filter(r=>r.origem!=='guruja_simulado');
-          const _dk=getDK();
-          const _dt=Date.now();
-          const novos=[
-            {materia:'Dir. Administrativo',questoes:63,acertei:59,dt:_dt,dia:_dk,origem:'guruja_simulado'},
-            {materia:'Dir. Constitucional',questoes:42,acertei:40,dt:_dt,dia:_dk,origem:'guruja_simulado'},
-            {materia:'Português',questoes:22,acertei:19,dt:_dt,dia:_dk,origem:'guruja_simulado'},
-            {materia:'Dir. Civil',questoes:25,acertei:21,dt:_dt,dia:_dk,origem:'guruja_simulado'},
-            {materia:'Dir. Financeiro / AFO',questoes:43,acertei:37,dt:_dt,dia:_dk,origem:'guruja_simulado'},
-            {materia:'Dir. Penal',questoes:18,acertei:16,dt:_dt,dia:_dk,origem:'guruja_simulado'},
-            {materia:'Raciocínio Lógico',questoes:17,acertei:13,dt:_dt,dia:_dk,origem:'guruja_simulado'},
-            {materia:'Dir. Tributário',questoes:21,acertei:16,dt:_dt,dia:_dk,origem:'guruja_simulado'},
-          ];
-          localStorage.setItem('historico_diario',JSON.stringify([...semAntigo,...novos]));
-          localStorage.setItem(KEY,'done');
-        }catch(e){}
-      }
-    })();
     // ── Limpeza única: datas impossíveis (ex: "2026-2-30") em registros antigos ──
     // Achado no export de 07/08 — Anki e NLM tinham "último: 2026-2-30"/"2026-2-31",
     // resquício de uma versão anterior do app. getDK() atual não produz mais isso.
@@ -9265,52 +9211,6 @@ function App(){
         }catch(e){}
       }
     })();
-    // ── Seed único: 6 pontos críticos por assunto, confirmados em conversa 08/08 ──
-    (()=>{
-      const KEY='rity_seed_criticos_assunto_20260808';
-      if(!localStorage.getItem(KEY)){
-        try{
-          const atuais=JSON.parse(localStorage.getItem('criticos_manuais')||'[]');
-          const novos=[
-            {mat:'Dir. Tributário',assunto:'Garantias e Privilégios do Crédito Tributário (arts. 183 a 193 do CTN)',motivo:'Conhecimento raso — precisa revisar',prioridade:'alta',id:Date.now()+1,dt:Date.now()},
-            {mat:'Dir. Administrativo',assunto:'Domínio Público',motivo:'Precisa revisar',prioridade:'alta',id:Date.now()+2,dt:Date.now()},
-            {mat:'Direito Empresarial (Comercial)',assunto:'',motivo:'Base ainda fraca — matéria inteira',prioridade:'alta',id:Date.now()+3,dt:Date.now()},
-            {mat:'Dir. Civil',assunto:'Contratos — Parte Geral',motivo:'Gargalo confirmado — caiu pra 72,7% no teste de 08/08',prioridade:'media',id:Date.now()+4,dt:Date.now()},
-            {mat:'Legislação TCE-SP',assunto:'',motivo:'Só estudei teoria — nunca testei com questão',prioridade:'media',id:Date.now()+5,dt:Date.now()},
-            {mat:'Ética Pública',assunto:'Lei de Conflito de Interesses',motivo:'Avaliação da Ritchely: nunca caiu na VUNESP, extremamente difícil de cair (não confirmado de forma independente)',prioridade:'descartar',id:Date.now()+6,dt:Date.now()},
-          ];
-          localStorage.setItem('criticos_manuais',JSON.stringify([...atuais,...novos]));
-          localStorage.setItem(KEY,'done');
-        }catch(e){}
-      }
-    })();
-    // ── Seed único: Competência do Poder Judiciário — crítico, confirmado 10/08 ──
-    (()=>{
-      const KEY='rity_seed_critico_pj_20260810';
-      if(!localStorage.getItem(KEY)){
-        try{
-          const atuais=JSON.parse(localStorage.getItem('criticos_manuais')||'[]');
-          const novo={mat:'Dir. Constitucional',assunto:'Competência do Poder Judiciário',motivo:'Situação crítica — precisa revisar',prioridade:'alta',id:Date.now(),dt:Date.now()};
-          localStorage.setItem('criticos_manuais',JSON.stringify([...atuais,novo]));
-          localStorage.setItem(KEY,'done');
-        }catch(e){}
-      }
-    })();
-    // ── Seed único: 2 pontos críticos por assunto, confirmados em conversa 18/08 ──
-    (()=>{
-      const KEY='rity_seed_criticos_assunto_20260818';
-      if(!localStorage.getItem(KEY)){
-        try{
-          const atuais=JSON.parse(localStorage.getItem('criticos_manuais')||'[]');
-          const novos=[
-            {mat:'Dir. Civil',assunto:'Atos Unilaterais e Responsabilidade Civil',motivo:'Novo dado real 10-16/08: 64% — pior número de Civil já registrado, abaixo de Contratos (72,7%) e Obrigações Pt1 (70%)',prioridade:'alta',id:Date.now()+1,dt:Date.now()},
-            {mat:'Direito Empresarial (Comercial)',assunto:'Direito Societário',motivo:'70% (20q, 14 acertos) — abaixo da média da plataforma, mesmo padrão das outras 2 atividades da matéria',prioridade:'media',id:Date.now()+2,dt:Date.now()},
-          ];
-          localStorage.setItem('criticos_manuais',JSON.stringify([...atuais,...novos]));
-          localStorage.setItem(KEY,'done');
-        }catch(e){}
-      }
-    })();
     // ── Dias de trabalho: agora editáveis pelos botões da aba Estudo › Ciclo (só cria o padrão se não existir) ──
     if(localStorage.getItem('dias_trabalho')===null)localStorage.setItem('dias_trabalho', JSON.stringify([2,4,5]));
     // ── Seed único: volta pro modo escuro — o claro ficou ruim ──
@@ -9323,7 +9223,7 @@ function App(){
         }catch(e){}
       }
     })();
-    seedRegistro101(lsSet,!Sync.isConfigured());seedRegistroEtica(lsSet,!Sync.isConfigured());
+    
     const _f=lsGet('feitos',[]);
     setFeitos(lerFeitosValidos());setCicloNum(lerCicloNum());setHoras(lsGet('horas',[]));setMit(lsGet('mit',[]));
     const tick=setInterval(()=>setClock(new Date()),1000);
