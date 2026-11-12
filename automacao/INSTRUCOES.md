@@ -10,6 +10,8 @@ repositório. O app (`index.html`) lê esse arquivo ao abrir. **Nunca altere `in
 - Não inclua nome, e-mail nem qualquer dado pessoal. Só dados de estudo.
 - Números da turma entram somente como mediana/média agregada (campos `media`, `mediana`, `mediana_*`).
 
+> **Planejamento ativo desde 12/11/2026: "Consolidar a base" (SEFAZ-RS, `planejamento_id` 105325).** O exemplo abaixo é do planejamento antigo (SC). Use sempre o planejamento ativo devolvido pelo conector. Enquanto a Meta 1 não tiver desempenho nem edital no Guruja, grave `"desempenho": []` (o validador aceita isso só na meta 1).
+
 ## Passo a passo
 1. Carregue as ferramentas: ToolSearch com
    `select:mcp__Guruja__historico_de_metas,mcp__Guruja__detalhe_de_uma_meta,mcp__Guruja__meu_desempenho_por_disciplina,mcp__Guruja__meu_desempenho_comparativo,mcp__Guruja__meu_tempo_de_estudo,mcp__Guruja__contexto_do_planejamento,mcp__Guruja__meus_pontos_fracos`
@@ -31,7 +33,7 @@ repositório. O app (`index.html`) lê esse arquivo ao abrir. **Nunca altere `in
  "versao": 1,
  "gerado_em": "2026-11-07T11:46:33Z",
  "origem": "tarefa agendada",
- "planejamento_id": 100470,
+ "planejamento_id": 105325,
  "meta_atual": {"ordem": 4, "target_id": 0, "data_inicio": "2026-11-02T06:46:42", "dias_atraso": 0, "vezes_adiada": 0,
    "status": "ontime", "atividades_totais": 32, "atividades_concluidas": 8, "atividades_pendentes": 24,
    "atividades_ignoradas": 0, "questoes": 128, "acertos": 115, "minutos": 590},

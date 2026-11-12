@@ -50,7 +50,8 @@ for m in metas:
         if 'aid' not in r or 'concluido' not in r: E(f'meta {o}: reforço sem aid/concluido')
 if detalhadas < 1: E('nenhuma meta detalhada')
 dp = d.get('desempenho') or []
-if len(dp) < 5: E('desempenho com poucas disciplinas')
+# Planejamento novo (pré-edital, Meta 1) ainda não tem desempenho no Guruja: aceita lista vazia só na meta 1.
+if len(dp) < 5 and not (len(dp) == 0 and ma.get('ordem') == 1): E('desempenho com poucas disciplinas')
 for x in dp:
     if x.get('q') is not None and x.get('a') is not None and x['a'] > x['q']: E('desempenho: acertos > questões em '+str(x.get('sigla')))
     if x.get('q') and x.get('pct') is not None and abs(x['a']/x['q']*100 - x['pct']) > 0.6: E('desempenho: pct não bate em '+str(x.get('sigla')))

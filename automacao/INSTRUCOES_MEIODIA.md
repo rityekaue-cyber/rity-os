@@ -28,7 +28,7 @@ Esta rotina usa o **Chrome da Ritchely** (ferramentas `mcp__claude-in-chrome__*`
 2. Carregue as ferramentas do Chrome com UM ToolSearch:
    `select:mcp__claude-in-chrome__tabs_context_mcp,mcp__claude-in-chrome__tabs_create_mcp,mcp__claude-in-chrome__navigate,mcp__claude-in-chrome__get_page_text,mcp__claude-in-chrome__find,mcp__claude-in-chrome__computer,mcp__claude-in-chrome__tabs_close_mcp`
 3. `tabs_context_mcp` (createIfEmpty) e navegue para
-   `https://portal.guruja.com.br/aluno/padrao-de-erros?planning=100470&disciplineId=193`. Aguarde carregar
+   `https://portal.guruja.com.br/aluno/padrao-de-erros?planning=105325&disciplineId=193`. Aguarde carregar
    e use `get_page_text`. Se o resumo ainda estiver vazio, repita `get_page_text` após alguns segundos.
 4. Do resumo, extraia o total, a distribuição dos motivos e a linha de cada disciplina
    (erros, com motivos, cobertura, motivo predominante e o percentual dele).
@@ -55,7 +55,7 @@ Esta rotina usa o **Chrome da Ritchely** (ferramentas `mcp__claude-in-chrome__*`
  "versao": 1,
  "gerado_em": "2026-11-08T15:00:00Z",
  "origem": "chrome meio-dia",
- "planejamento_id": 100470,
+ "planejamento_id": 105325,
  "total": {"erros": 173, "com_motivo": 51, "cobertura_pct": 29.5,
            "motivo_predominante": "Desconhecimento", "motivo_predominante_pct": 62.7},
  "motivos": [{"motivo": "Desconhecimento", "n": 32, "pct": 62.7}],

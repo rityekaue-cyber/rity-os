@@ -9,10 +9,10 @@
 <meta name="application-name" content="RITY OS"/>
 <meta name="apple-mobile-web-app-title" content="RITY OS"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<link rel="manifest" href="data:application/json,{%22name%22:%22RITY%20OS%20%C2%B7%20SEFAZ-SC%22,%22short_name%22:%22RITY%20OS%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22%23f7f2e6%22,%22theme_color%22:%22%23f7f2e6%22,%22orientation%22:%22portrait%22}"/>
+<link rel="manifest" href="data:application/json,{%22name%22:%22RITY%20OS%20%C2%B7%20SEFAZ-RS%22,%22short_name%22:%22RITY%20OS%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22%23f7f2e6%22,%22theme_color%22:%22%23f7f2e6%22,%22orientation%22:%22portrait%22}"/>
 <!-- Ícone Apple (inline SVG como data URI) -->
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%23050a14'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-size='300' font-family='serif'%3E⚖%3C/text%3E%3Ctext x='50%25' y='88%25' dominant-baseline='middle' text-anchor='middle' font-size='72' font-family='monospace' fill='%23fbbf24' font-weight='bold'%3ERTY OS%3C/text%3E%3C/svg%3E"/>
-<title>RITY OS · SEFAZ-SC 2026</title>
+<title>RITY OS · SEFAZ-RS</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Mono:wght@400;500;700&family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -242,7 +242,7 @@ const _w=console.warn;console.warn=(...a)=>{if(String(a[0]||'').includes('Babel'
 const{useState,useEffect,useRef,useMemo,useCallback}=React;
 
 // ─── CONSTANTES ───────────────────────────────────────────────
-const CICLO_INI_MS=new Date(2026,10,9).setHours(0,0,0,0); // Meta 5 SEFAZ-SC — dia 1 = seg 09/11/2026 (dia 6 = sáb 14/11; dia 7 = dom 15/11, livre)
+const CICLO_INI_MS=new Date(2026,10,12).setHours(0,0,0,0); // Meta 1 SEFAZ-RS (Consolidar a base) — dia 1 = qui 12/11/2026 · dia 4 = dom 15/11 (livre) · dia 7 = qua 18/11
 const NIVEL_INI_MS=new Date(2026,9,12).setHours(0,0,0,0); // registros de questões contam desde a Meta 1 (12/10)
 // ── CICLO — PLANO 02/11–08/11/2026 · refeito em 03/11 (férias até a prova): 5 atividades por dia = TI + difícil + média + fácil + 1 reforço (30 no total) · TI e Previdenciário em prioridade ──
 // Regras (combinadas com a Ritchely): 1h30 = matéria difícil e de peso (Previdenciário) · 1h = bom peso e facilidade,
@@ -251,28 +251,27 @@ const NIVEL_INI_MS=new Date(2026,9,12).setHours(0,0,0,0); // registros de quest�
 // da capacidade de cada dia (padrão 4h, editável na aba Estudo › Ciclo) e do que resta da semana.
 // `corte` = ordem de corte se apertar (1 = corta primeiro; 99 = nunca corta). `est` = estrelas do Guruja (lidas do print).
 // ── REGRAS DO PLANO (combinadas com a Ritchely; valem para montar todos os próximos ciclos) ──
-const REGRA_TI_MAX_NOVAS_SEMANA=2;   // desde 31/10: aprender um ponto novo de TI leva ~1h30; TI é a matéria que ela menos domina
-const MAT_TI='Ciência e Análise de Dados';
+const REGRA_TI_MAX_NOVAS_SEMANA=6;   // desde 31/10: aprender um ponto novo de TI leva ~1h30; TI é a matéria que ela menos domina
+const MAT_TI='Tecnologia da Informação';
 const ehTINova=i=>i.mat===MAT_TI&&!/teste|favoritas|revis/i.test(i.conteudo||'');   // Teste/Favoritas/Revisão = revisão, não conta como meta nova
 const REGRAS_PLANO=[
-  {ic:'🏖️',t:'Férias até a prova: 5h por dia + 30 min de Anki',d:'Desde 03/11 (pedido seu): estudo livre até 22/11, fora o Anki profundo de 30 min. Viagem sábado 21: sexta 20 ainda é dia de estudo e sábado 21 é só revisão leve. O plano é refeito semana a semana.'},
-  {ic:'🧮',t:'Como o plano escolhe o que estudar (fórmula de 04/11)',d:'40% o que você está fraca × peso na prova · 40% a prioridade que o Guruja deu à atividade (Indispensável, Desejável, Dispensável) · 10% matéria parada há tempo que vale a pena · 10% relevância (estrelas) do Guruja. Cada atividade mostra a própria nota.'},
-  {ic:'📓',t:'Caderno do TEC em cada tarefa · Estatística e Mat. Financeira cortadas',d:'Desde 08/11: cada atividade e reforço com caderno no TEC ganhou o botão 📓 que abre o caderno direto (o link vem do Guruja, lido pelas rotinas das 04h10 e do meio-dia). Você decidiu cortar Estatística e Matemática Financeira do plano (7 atividades, 5h45): RL fica só no tempo morto, com 5–8 questões por dia. A Análise Combinatória e Probabilidade ficou (é RLM). O domingo passou a ter Previdenciário (questões favoritas) no lugar da Estatística.'},
-  {ic:'🧩',t:'Meta 5 (09 a 14/11): 24 atividades pela nota 40/40/10/10, Meta 5 + ignoradas',d:'Refeito em 09/11: a mesma nota (40% fraco×peso, 40% prioridade, 10% parada há tempo, 10% estrelas) foi aplicada às 29 atividades da Meta 5 que cabem no plano, a todas as ignoradas das Metas 2 a 4 e à pendente da Meta 2 (68 atividades no total, sem Estatística, Mat. Financeira e RL). Entraram as 24 melhores (4 por dia, seg a sáb, domingo livre, mais os reforços nº 6 a 11 e a leitura de Orientações). 11 ignoradas voltaram ao plano: reabilite no portal antes de fazer. As atividades da Meta 5 que saíram continuam pendentes no portal. TI: Revisão B e Business Intelligence (cota de 2 por semana).'},
-  {ic:'📡',t:'Dados do Guruja: eu leio pelo conector e atualizo o app',d:'O app é um arquivo estático e não se conecta sozinho ao Guruja. Quando você pedir "atualiza", eu leio as metas, o desempenho e os reforços, corrijo a base de acertos e marco o que você já fez lá. Veja tudo em Dados › 📡 Guruja.'},
-  {ic:'🔁',t:'Reforços do Guruja: 1 por dia, em ciclo (começa em PPA e LDO)',d:'Segue a ordem do Guruja (nº 1 a 12) e, fechada a volta, recomeça. 30 min por reforço: 5★ = 10 questões do tema; 4★ e 3★ = 5 questões + 5 cartões dos erros. Registre tempo, questões e acertos em Revisão › Reforços: os dados entram no seu nível por matéria.'},
-  {ic:'📊',t:'TI: no máximo 2 metas NOVAS por semana',d:'Aprender um ponto novo de TI leva ~1h30 do seu dia e é a matéria que você menos domina. Por isso não entra meta nova de TI todos os dias: no máximo 2 por semana, 1h30 cada (semana de 09/11: Revisão B e Business Intelligence). Teste, Favoritas e Revisão não contam.'},
-  {ic:'⏱',t:'Tempo por atividade',d:'1h30 = matéria difícil e de pouco domínio · 1h = peso bom e mais fácil · 30–45 min = pouco peso.'},
+  {ic:'🎯',t:'Foco no SEFAZ-RS desde 12/11 (pré-edital, banca FCC)',d:'Decisão sua com o mentor: o plano passou a ser o planejamento "Consolidar a base" do Guruja (Meta 1, 20 atividades), de quinta 12/11 a quarta 18/11, com domingo livre. A prova do SEFAZ-SC em 22/11 vira treino. A Meta 5 do SC fica pendente e inativa no portal.'},
+  {ic:'⏱',t:'Rotina do dia: 1h de TI + 2h de Contabilidade + 1h de revisão das outras matérias',d:'São 4h por dia (o Anki profundo das 05h, 30 min, fica fora). O dia tem sempre esta ordem: TI primeiro, depois Contabilidade, e a hora de revisão por último.'},
+  {ic:'🧱',t:'Ordem de pré-requisitos',d:'Contabilidade vem antes de Auditoria (a Auditoria só entra a partir de segunda 16/11, depois da base contábil). Direito Tributário vem antes de Legislação Tributária Estadual.'},
+  {ic:'🧪',t:'Os minutos são estimativa minha',d:'O Guruja não informa quanto tempo leva cada atividade. As linhas "Questões FCC" marcadas como rotina do mentor não são do Guruja: elas completam a carga de Contabilidade e de TI e são as primeiras a cortar se o dia apertar.'},
+  {ic:'📓',t:'Caderno do TEC em cada tarefa',d:'Cada atividade com caderno no TEC ganha o botão 📓 que abre o caderno direto (o link vem do Guruja, lido pelas rotinas das 04h10 e do meio-dia).'},
+  {ic:'📡',t:'Dados do Guruja: eu leio pelo conector e atualizo o app',d:'O app é um arquivo estático e não se conecta sozinho ao Guruja. Quando você pedir "atualiza", eu leio as metas e marco o que você já fez lá. O planejamento novo ainda não tem desempenho nem edital no Guruja, então a nota 40/40/10/10 e os níveis por matéria só voltam quando houver dados.'},
 ];
 const CAP_DIA_PADRAO=240, TOL_DIA=15;
 // Minutos planejados por dia (seg..dom) = soma do plano (sábado e domingo refeitos em 07/11 de manhã com os dados do conector). Dá para mudar em Estudo › Ciclo › Horas por dia.
-const CAP_PLANO=[300,270,270,300,270,240,0]; // seg..dom · seg a sáb: 4 atividades + 1 reforço por dia · domingo livre (0)
+const CAP_PLANO=[240,240,240,0,240,240,240]; // qui12 sex13 sáb14 dom15 seg16 ter17 qua18 · 4h por dia (1h TI + 2h Contabilidade + 1h revisão) · domingo livre (0)
 const MAT_INFO={
   'Dir. Constitucional':{ic:'📜'},'Dir. Administrativo':{ic:'🏛️'},'Dir. Financeiro / AFO':{ic:'📈'},
   'Dir. Previdenciário':{ic:'🛡️'},'Dir. Civil':{ic:'📘'},'Dir. Penal':{ic:'⚖️'},'Reforma Tributária':{ic:'🧾'},
   'Português':{ic:'📝'},'Ciência e Análise de Dados':{ic:'📊'},'Ética Pública':{ic:'🤝'},
   'Conhecimentos Regionais de SC':{ic:'🗺️'},'Raciocínio Lógico':{ic:'🧩'},
-  'Matemática Financeira e Estatística':{ic:'🧮'},'Orientações Gerais':{ic:'🧭'}
+  'Matemática Financeira e Estatística':{ic:'🧮'},'Orientações Gerais':{ic:'🧭'},
+  'Contabilidade Geral':{ic:'📒'},'Auditoria':{ic:'🔎'},'Dir. Tributário':{ic:'🧾'},'Legislação Tributária Estadual':{ic:'🏷️'},'Tecnologia da Informação':{ic:'💾'},'Direito Empresarial (Comercial)':{ic:'🏢'}
 };
 const fmtMinG=m=>m<=0?'0min':m>=60?`${Math.floor(m/60)}h${m%60?String(m%60).padStart(2,'0'):''}`:`${m}min`;
 const faixaMin=m=>m>=90?{cor:'#f87171',tag:'🔴 PESADA'}:m>=60?{cor:'#fbbf24',tag:'🟡 MÉDIA'}:{cor:'#34d399',tag:'🟢 LEVE'};
@@ -290,37 +289,36 @@ function gurujaLabel(o){
   return{longo:o,curto:o};
 }
 const PLANO_RAW=[
-  [715, "Dir. Civil", "Responsabilidade Civil", 90, 4, 1, 99, "Questões", "Meta 5 · M5·15", "Nota 0,69 = fraco×peso 0,50 (Civil: 89,56% e peso 11,9%) ×40% + prioridade Guruja Indispensável ×40% + parada há tempo 0,10 ×10% + relevância ★4 ×10%, Única atividade Indispensável da Meta 5."],
-  [718, "Dir. Administrativo", "Jurisprudências I", 60, 4, 1, 21, "Questões", "Meta 5 · M5·18", "Nota 0,59 = fraco×peso 0,66 (Administrativo: 86,12% e peso 11,9%) ×40% + prioridade Guruja Desejável ×40% + parada há tempo 0,10 ×10% + relevância ★4 ×10%,"],
-  [517, "Dir. Financeiro / AFO", "Bloco B — receita, despesa, DRU, restos a pagar, dívida…", 60, 4, 1, 11, "Questões", "Meta 4 · M4·17", "Nota 0,51 = fraco×peso 0,43 (AFO: 89,03% e peso 9,9%) ×40% + prioridade Guruja Desejável ×40% + parada há tempo 0,20 ×10% + relevância ★4 ×10%, Estava ignorada no Guruja: reabilite no portal antes de fazer."],
-  [528, "Dir. Previdenciário", "Resolução de questões favoritas", 45, 3, 1, 13, "Teste", "Meta 4 · M4·28", "Nota 0,52 = fraco×peso 0,80 (Prev: 83,22% e peso 11,9%) ×40% + prioridade Guruja Dispensável ×40% + parada há tempo 0,60 ×10% + relevância ★3 ×10%, Estava ignorada no Guruja: reabilite no portal antes de fazer."],
-  [701, "Orientações Gerais", "Orientações Gerais sobre a Meta 5", 15, 1, 1, 99, "Teoria", "Meta 5 · M5·1", "Leitura rápida de 15 min: precisa estar concluída ou ignorada para a Meta 6 (16/11) abrir."],
-  [606, "Dir. Penal", "Reforço — Crimes Contra a Administração Pública - Parte II", 30, 5, 1, 99, "Reforço", "Reforço · R#6 · DPEN.4637.125394", "🔁 Reforço 5★ nº 6 do ciclo do Guruja (1 por dia, em ordem). 10 questões do tema; o que errar vira Anki (método 3C)."],
-  [713, "Ciência e Análise de Dados", "Revisão B", 90, 4, 2, 99, "Questões", "Meta 5 · M5·13", "Nota 0,51 = fraco×peso 0,42 (TI: 81,53% e peso 5,7%) ×40% + prioridade Guruja Desejável ×40% + parada há tempo 0,20 ×10% + relevância ★4 ×10%, Revisão de TI: não conta como meta nova de TI."],
-  [513, "Dir. Previdenciário", "Bloco A — RGPS: segurados, dependentes, benefícios e custeio da Seguridade Social", 60, 4, 2, 19, "Questões", "Meta 4 · RGPS (Bloco A)", "Nota 0,54 = fraco×peso 0,80 (Prev: 83,22% e peso 11,9%) ×40% + prioridade Guruja Dispensável ×40% + parada há tempo 0,60 ×10% + relevância ★4 ×10%, Estava ignorada no Guruja: reabilite no portal antes de fazer."],
-  [322, "Dir. Financeiro / AFO", "Dívida ativa e receita e despesa: estágio", 60, 4, 2, 10, "Questões", "Atrasada · M2·? AFO.4654.127787", "Nota 0,51 = fraco×peso 0,43 (AFO: 89,03% e peso 9,9%) ×40% + prioridade Guruja Desejável ×40% + parada há tempo 0,20 ×10% + relevância ★4 ×10%, Única pendente da Meta 2 no Guruja."],
-  [306, "Conhecimentos Regionais de SC", "Aspectos Naturais de Santa Catarina (teoria)", 30, 3, 2, 3, "Teoria", "Atrasada · M2·6", "Nota 0,47 = fraco×peso 0,20 (Geografia SC: 91,3% e peso 5,7%) ×40% + prioridade Guruja Desejável ×40% + parada há tempo 0,90 ×10% + relevância ★3 ×10%, Estava ignorada no Guruja: reabilite no portal antes de fazer."],
-  [607, "Dir. Financeiro / AFO", "Reforço — Lei nº 7.541/1988 (Lei das taxas)", 30, 4, 2, 99, "Reforço", "Reforço · R#7 · AFO.4654.126537", "🔁 Reforço 4★ nº 7 do ciclo do Guruja (1 por dia, em ordem). 5 questões do tema + 5 cartões de Anki dos erros."],
-  [714, "Dir. Previdenciário", "Toda a ementa do edital", 90, 3, 3, 15, "Questões", "Meta 5 · M5·14", "Nota 0,52 = fraco×peso 0,80 (Prev: 83,22% e peso 11,9%) ×40% + prioridade Guruja Dispensável ×40% + parada há tempo 0,60 ×10% + relevância ★3 ×10%,"],
-  [707, "Dir. Administrativo", "Decreto nº 2.094/2022", 60, 3, 3, 20, "Questões", "Meta 5 · M5·7", "Nota 0,57 = fraco×peso 0,66 (Administrativo: 86,12% e peso 11,9%) ×40% + prioridade Guruja Desejável ×40% + parada há tempo 0,10 ×10% + relevância ★3 ×10%,"],
-  [705, "Dir. Civil", "Contratos", 60, 4, 3, 17, "Questões", "Meta 5 · M5·5", "Nota 0,53 = fraco×peso 0,50 (Civil: 89,56% e peso 11,9%) ×40% + prioridade Guruja Desejável ×40% + parada há tempo 0,10 ×10% + relevância ★4 ×10%,"],
-  [309, "Conhecimentos Regionais de SC", "Aspectos Naturais de Santa Catarina (questões)", 30, 3, 3, 4, "Questões", "Atrasada · M2·9", "Nota 0,47 = fraco×peso 0,20 (Geografia SC: 91,3% e peso 5,7%) ×40% + prioridade Guruja Desejável ×40% + parada há tempo 0,90 ×10% + relevância ★3 ×10%, Estava ignorada no Guruja: reabilite no portal antes de fazer."],
-  [608, "Reforma Tributária", "Reforço — Imposto Seletivo", 30, 4, 3, 99, "Reforço", "Reforço · R#8 · RETRI.4643.1264…", "🔁 Reforço 4★ nº 8 do ciclo do Guruja (1 por dia, em ordem). 5 questões do tema + 5 cartões de Anki dos erros."],
-  [704, "Dir. Previdenciário", "Toda a ementa do edital", 90, 3, 4, 14, "Questões", "Meta 5 · M5·4", "Nota 0,52 = fraco×peso 0,80 (Prev: 83,22% e peso 11,9%) ×40% + prioridade Guruja Dispensável ×40% + parada há tempo 0,60 ×10% + relevância ★3 ×10%,"],
-  [733, "Dir. Administrativo", "Jurisprudências II", 60, 4, 4, 22, "Questões", "Meta 5 · M5·33", "Nota 0,59 = fraco×peso 0,66 (Administrativo: 86,12% e peso 11,9%) ×40% + prioridade Guruja Desejável ×40% + parada há tempo 0,10 ×10% + relevância ★4 ×10%,"],
-  [730, "Dir. Civil", "Formas de direito de exploração de propriedades (posse, usufruto, contratos…)", 60, 4, 4, 18, "Questões", "Meta 5 · M5·30", "Nota 0,53 = fraco×peso 0,50 (Civil: 89,56% e peso 11,9%) ×40% + prioridade Guruja Desejável ×40% + parada há tempo 0,10 ×10% + relevância ★4 ×10%,"],
-  [708, "Dir. Financeiro / AFO", "Imersão Temática — Classificação de despesa", 60, 3, 4, 9, "Teste", "Meta 5 · M5·8", "Nota 0,49 = fraco×peso 0,43 (AFO: 89,03% e peso 9,9%) ×40% + prioridade Guruja Desejável ×40% + parada há tempo 0,20 ×10% + relevância ★3 ×10%,"],
-  [609, "Dir. Civil", "Reforço — Bens", 30, 4, 4, 99, "Reforço", "Reforço · R#9 · DCIV.4636.126694", "🔁 Reforço 4★ nº 9 do ciclo do Guruja (1 por dia, em ordem). 5 questões do tema + 5 cartões de Anki dos erros."],
-  [712, "Dir. Penal", "Toda a ementa", 90, 3, 5, 2, "Questões", "Meta 5 · M5·12", "Nota 0,47 = fraco×peso 0,77 (Penal: 83,8% e peso 11,9%) ×40% + prioridade Guruja Dispensável ×40% + parada há tempo 0,20 ×10% + relevância ★3 ×10%,"],
-  [729, "Dir. Previdenciário", "Toda a ementa do edital", 60, 3, 5, 16, "Teste", "Meta 5 · M5·29", "Nota 0,52 = fraco×peso 0,80 (Prev: 83,22% e peso 11,9%) ×40% + prioridade Guruja Dispensável ×40% + parada há tempo 0,60 ×10% + relevância ★3 ×10%,"],
-  [532, "Dir. Financeiro / AFO", "Bloco C", 60, 4, 5, 12, "Questões", "Meta 4 · M4·32", "Nota 0,51 = fraco×peso 0,43 (AFO: 89,03% e peso 9,9%) ×40% + prioridade Guruja Desejável ×40% + parada há tempo 0,20 ×10% + relevância ★4 ×10%, Estava ignorada no Guruja: reabilite no portal antes de fazer."],
-  [419, "Conhecimentos Regionais de SC", "Conhecimentos de SC", 30, 3, 5, 6, "Questões", "Atrasada · M3·19", "Nota 0,47 = fraco×peso 0,20 (Geografia SC: 91,3% e peso 5,7%) ×40% + prioridade Guruja Desejável ×40% + parada há tempo 0,90 ×10% + relevância ★3 ×10%, Estava ignorada no Guruja: reabilite no portal antes de fazer."],
-  [610, "Dir. Penal", "Reforço — Crimes Contra as Finanças Públicas", 30, 3, 5, 99, "Reforço", "Reforço · R#10 · DPEN.4637.126684", "🔁 Reforço 3★ nº 10 do ciclo do Guruja (1 por dia, em ordem). 5 questões do tema + 5 cartões de Anki dos erros."],
-  [410, "Ciência e Análise de Dados", "Ferramentas analíticas e conceitos de Business Intelligence (BI)", 90, 3, 6, 7, "Questões", "Atrasada · M3·10", "Nota 0,49 = fraco×peso 0,42 (TI: 81,53% e peso 5,7%) ×40% + prioridade Guruja Desejável ×40% + parada há tempo 0,20 ×10% + relevância ★3 ×10%, TI nova da semana (a cota é 2 por semana, com a Revisão B). Estava ignorada no Guruja: reabilite no portal antes de fazer."],
-  [408, "Dir. Financeiro / AFO", "Resolução de questões favoritas", 45, 3, 6, 8, "Teste", "Atrasada · M3·8", "Nota 0,49 = fraco×peso 0,43 (AFO: 89,03% e peso 9,9%) ×40% + prioridade Guruja Desejável ×40% + parada há tempo 0,20 ×10% + relevância ★3 ×10%, Estava ignorada no Guruja: reabilite no portal antes de fazer."],
-  [426, "Dir. Penal", "Resolução de questões favoritas", 45, 3, 6, 1, "Teste", "Atrasada · M3·26", "Nota 0,47 = fraco×peso 0,77 (Penal: 83,8% e peso 11,9%) ×40% + prioridade Guruja Dispensável ×40% + parada há tempo 0,20 ×10% + relevância ★3 ×10%, Estava ignorada no Guruja: reabilite no portal antes de fazer."],
-  [411, "Conhecimentos Regionais de SC", "Urbanização e Mesorregiões", 30, 3, 6, 5, "Teoria", "Atrasada · M3·11", "Nota 0,47 = fraco×peso 0,20 (Geografia SC: 91,3% e peso 5,7%) ×40% + prioridade Guruja Desejável ×40% + parada há tempo 0,90 ×10% + relevância ★3 ×10%, Estava ignorada no Guruja: reabilite no portal antes de fazer."],
-  [611, "Dir. Constitucional", "Reforço — Bloco B (Poder Legislativo; Poder Executivo; e Controle de Constitucionalidade…)", 30, 5, 6, 99, "Reforço", "Reforço · R#11 · DCON.4639.131080", "🔁 Reforço 5★ nº 11 do ciclo do Guruja (1 por dia, em ordem). 10 questões do tema; o que errar vira Anki (método 3C)."],
+  [109351, "Tecnologia da Informação", "[TI I] Conceitos Básicos de Banco de Dados (parte 1)", 60, 4, 1, 99, "Teoria", "Meta 1 · Consolidar a base", "1h de TI do dia. Tempo estimado por mim (o Guruja não informa minutos)."],
+  [78591, "Contabilidade Geral", "Histórico da Contabilidade, Conceitos introdutórios e Técnicas contábeis", 75, 5, 1, 99, "Teoria", "Meta 1 · Consolidar a base", "Base de Contabilidade: vem antes de Auditoria. Tempo estimado por mim (o Guruja não informa minutos)."],
+  [78647, "Contabilidade Geral", "Conceitos, Objetivos e Finalidades — Questões", 45, 4, 1, 99, "Questões", "Meta 1 · Consolidar a base", "Fixa o que acabou de ver. Tempo estimado por mim (o Guruja não informa minutos)."],
+  [118437, "Dir. Tributário", "Conceito, Classificação, Natureza Jurídica e Espécies de Tributos", 60, 4, 1, 99, "Questões", "Meta 1 · Consolidar a base", "Dir. Tributário vem antes de Legislação Tributária Estadual. Tempo estimado por mim (o Guruja não informa minutos)."],
+  [109353, "Tecnologia da Informação", "[TI I] Conceitos Básicos de Banco de Dados (parte 2)", 60, 4, 2, 99, "Teoria", "Meta 1 · Consolidar a base", "1h de TI do dia. Tempo estimado por mim (o Guruja não informa minutos)."],
+  [78664, "Contabilidade Geral", "Patrimônio. Componentes Patrimoniais", 90, 5, 2, 99, "Teoria", "Meta 1 · Consolidar a base", "Núcleo da Contabilidade: bens, direitos e obrigações. Tempo estimado por mim (o Guruja não informa minutos)."],
+  [801, "Contabilidade Geral", "Questões de Contabilidade Geral (FCC) — Conceitos e Patrimônio", 30, 3, 2, 10, "Questões", "Plano · rotina do mentor", "Rotina do seu mentor: 1h TI + 2h Contabilidade + 1h de revisão por dia. Questões FCC do que você viu no dia. Se o dia apertar, esta linha é a primeira a cortar."],
+  [118180, "Dir. Administrativo", "Conceitos iniciais, Regime Jurídico e Princípios", 30, 4, 2, 99, "Questões", "Meta 1 · Consolidar a base", "Tempo estimado por mim (o Guruja não informa minutos)."],
+  [118356, "Dir. Constitucional", "Teoria Geral do Direito Constitucional", 30, 3, 2, 99, "Questões", "Meta 1 · Consolidar a base", "Tempo estimado por mim (o Guruja não informa minutos)."],
+  [109358, "Tecnologia da Informação", "[TI I] Mapeamento — Aula 02", 30, 4, 3, 99, "Mapeamento", "Meta 1 · Consolidar a base", "Mapa mental da aula 02. Tempo estimado por mim (o Guruja não informa minutos)."],
+  [109356, "Tecnologia da Informação", "[TI I] Revisão — Aula 02", 30, 3, 3, 99, "Revisão", "Meta 1 · Consolidar a base", "Fecha a Aula 02 de TI. Tempo estimado por mim (o Guruja não informa minutos)."],
+  [78669, "Contabilidade Geral", "Representação Gráfica e Equiparação Patrimonial", 75, 5, 3, 99, "Teoria", "Meta 1 · Consolidar a base", "Tempo estimado por mim (o Guruja não informa minutos)."],
+  [802, "Contabilidade Geral", "Questões de Contabilidade Geral (FCC) — Representação gráfica e equação patrimonial", 45, 3, 3, 9, "Questões", "Plano · rotina do mentor", "Rotina do seu mentor: 1h TI + 2h Contabilidade + 1h de revisão por dia. Questões FCC do que você viu no dia. Se o dia apertar, esta linha é a primeira a cortar."],
+  [106235, "Raciocínio Lógico", "Introdução às proposições", 30, 5, 3, 99, "Teoria", "Meta 1 · Consolidar a base", "Tempo estimado por mim (o Guruja não informa minutos)."],
+  [106236, "Raciocínio Lógico", "Distinção entre proposição, sentença e expressão", 30, 5, 3, 99, "Teoria", "Meta 1 · Consolidar a base", "Tempo estimado por mim (o Guruja não informa minutos)."],
+  [803, "Tecnologia da Informação", "Questões de TI (FCC) — Banco de Dados: conceitos básicos", 60, 3, 5, 7, "Questões", "Plano · rotina do mentor", "Rotina do seu mentor: 1h TI + 2h Contabilidade + 1h de revisão por dia. Questões de TI sobre o que você viu até sábado. Se o dia apertar, esta linha é a primeira a cortar."],
+  [78679, "Contabilidade Geral", "Patrimônio, Componentes Patrimoniais e Equiparação — Questões (CESPE e FGV)", 60, 4, 5, 99, "Questões", "Meta 1 · Consolidar a base", "Tempo estimado por mim (o Guruja não informa minutos)."],
+  [804, "Contabilidade Geral", "Questões de Contabilidade Geral (FCC) — Patrimônio e equação patrimonial", 45, 3, 5, 8, "Questões", "Plano · rotina do mentor", "Rotina do seu mentor: 1h TI + 2h Contabilidade + 1h de revisão por dia. Questões FCC da semana. Se o dia apertar, esta linha é a primeira a cortar."],
+  [105748, "Auditoria", "Contextualização e Classificação de Auditoria", 30, 3, 5, 99, "Teoria", "Meta 1 · Consolidar a base", "Só depois da base de Contabilidade. Tempo estimado por mim (o Guruja não informa minutos)."],
+  [105750, "Auditoria", "Classificação de Auditoria. NBC TA 200", 45, 4, 5, 99, "Teoria", "Meta 1 · Consolidar a base", "Tempo estimado por mim (o Guruja não informa minutos)."],
+  [805, "Tecnologia da Informação", "Questões de TI (FCC) — Mapeamento e revisão da Aula 02", 60, 3, 6, 5, "Questões", "Plano · rotina do mentor", "Rotina do seu mentor: 1h TI + 2h Contabilidade + 1h de revisão por dia. Questões de TI. Se o dia apertar, esta linha é a primeira a cortar."],
+  [806, "Contabilidade Geral", "Questões de Contabilidade Geral (FCC) — bloco 1 da semana", 60, 3, 6, 6, "Questões", "Plano · rotina do mentor", "Rotina do seu mentor: 1h TI + 2h Contabilidade + 1h de revisão por dia. Questões FCC de tudo que você viu em Contabilidade. Se o dia apertar, esta linha é a primeira a cortar."],
+  [809, "Contabilidade Geral", "Questões de Contabilidade Geral (FCC) — bloco 2 da semana", 45, 3, 6, 4, "Questões", "Plano · rotina do mentor", "Rotina do seu mentor: 1h TI + 2h Contabilidade + 1h de revisão por dia. Questões FCC de tudo que você viu em Contabilidade. Se o dia apertar, esta linha é a primeira a cortar."],
+  [106101, "Auditoria", "NBC TA 200: Definições", 45, 5, 6, 99, "Teoria", "Meta 1 · Consolidar a base", "Tempo estimado por mim (o Guruja não informa minutos)."],
+  [117720, "Português", "Ortografia e Formação das Palavras", 30, 3, 6, 99, "Questões", "Meta 1 · Consolidar a base", "Tempo estimado por mim (o Guruja não informa minutos)."],
+  [807, "Tecnologia da Informação", "Questões de TI (FCC) — misto da semana", 60, 3, 7, 2, "Questões", "Plano · rotina do mentor", "Rotina do seu mentor: 1h TI + 2h Contabilidade + 1h de revisão por dia. Questões de TI. Se o dia apertar, esta linha é a primeira a cortar."],
+  [808, "Contabilidade Geral", "Revisão de Contabilidade Geral — erros da semana (refazer)", 60, 3, 7, 3, "Revisão", "Plano · rotina do mentor", "Rotina do seu mentor: 1h TI + 2h Contabilidade + 1h de revisão por dia. Fecha a semana: refaz o que errou. Se o dia apertar, esta linha é a primeira a cortar."],
+  [810, "Contabilidade Geral", "Revisão de Contabilidade Geral — questões FCC para fechar a semana", 45, 3, 7, 1, "Revisão", "Plano · rotina do mentor", "Rotina do seu mentor: 1h TI + 2h Contabilidade + 1h de revisão por dia. Fecha a semana: refaz o que errou. Se o dia apertar, esta linha é a primeira a cortar."],
+  [117775, "Português", "Morfologia, Formação das Palavras, Colocação Pronominal e Pontuação", 30, 3, 7, 99, "Questões", "Meta 1 · Consolidar a base", "Tempo estimado por mim (o Guruja não informa minutos)."],
+  [118483, "Dir. Civil", "LINDB", 45, 5, 7, 99, "Questões", "Meta 1 · Consolidar a base", "Tempo estimado por mim (o Guruja não informa minutos)."],
 ];
 const CICLO_BASE=PLANO_RAW.map(([id,mat,conteudo,min,est,diaPlano,corte,tipo,origem,por],idx)=>{
   const f=faixaMin(min);
@@ -330,75 +328,10 @@ const CICLO_BASE=PLANO_RAW.map(([id,mat,conteudo,min,est,diaPlano,corte,tipo,ori
 });
 // ── FORA DO PLANO (52) — em ordem de prioridade: se sobrar tempo, faça de cima para baixo ("ordem" = volta nº) ──
 // [id, matéria, assunto, min, estrelas, tipo, origem, ordem, motivo, alternativa]
-const CICLO_DISP_RAW=[
-  [612, "Dir. Penal", "Reforço — Lei nº 8.137/1990 - Crimes contra a ordem tributária, econômica e contra as…", 30, 4, "Reforço", "Reforço · R#12 · DPEN.4637.128018", 1, "Reforço 4★ nº 12 do ciclo do Guruja: entra depois dos nº 6 a 11 (1 por dia nesta semana), na semana de 16/11.", "5 questões do tema + 5 cartões de Anki dos erros."],
-  [613, "Dir. Previdenciário", "Reforço — Regime de Previdência Complementar e Emenda Constitucional 103/2019", 30, 4, "Reforço", "Reforço · R#13 · DPREV.4681.128204", 2, "Reforço nº 13 do ciclo do Guruja: entra depois do nº 12, na semana de 16/11 (esta semana vão os nº 6 a 11, 1 por dia).", "5 questões do tema + 5 cartões de Anki dos erros."],
-  [724, "Dir. Penal", "Toda a ementa", 60, 3, "Teste", "Meta 5 · M5·24", 3, "Nota 0,47 = fraco×peso 0,77 (Penal: 83,8% e peso 11,9%) ×40% + prioridade Guruja Dispensável ×40% + parada há tempo 0,20 ×10% + relevância ★3 ×10%, Ficou fora da semana de 09 a 14/11: são 24 vagas (4 por dia, de segunda a sábado) e a 24ª nota é 0,47. As ignoradas do Guruja entraram na mesma disputa.", "Se sobrar tempo, faça de cima para baixo (a lista está em ordem de nota)."],
-  [709, "Português", "Morfologia, formação das palavras, colocação pronominal e pontuação", 45, 3, "Questões", "Meta 5 · M5·9", 4, "Nota 0,43 = fraco×peso 0,30 (Português: 86,74% e peso 5,7%) ×40% + prioridade Guruja Desejável ×40% + parada há tempo 0,10 ×10% + relevância ★3 ×10%, Ficou fora da semana de 09 a 14/11: são 24 vagas (4 por dia, de segunda a sábado) e a 24ª nota é 0,47. As ignoradas do Guruja entraram na mesma disputa.", "Se sobrar tempo, faça de cima para baixo (a lista está em ordem de nota)."],
-  [717, "Dir. Constitucional", "Toda a ementa do edital", 45, 4, "Teste", "Meta 5 · M5·17", 5, "Nota 0,39 = fraco×peso 0,50 (Constitucional: 89,51% e peso 11,9%) ×40% + prioridade Guruja Dispensável ×40% + parada há tempo 0,30 ×10% + relevância ★4 ×10%, Ficou fora da semana de 09 a 14/11: são 24 vagas (4 por dia, de segunda a sábado) e a 24ª nota é 0,47. As ignoradas do Guruja entraram na mesma disputa.", "Se sobrar tempo, faça de cima para baixo (a lista está em ordem de nota)."],
-  [732, "Dir. Constitucional", "Toda a ementa do edital", 45, 3, "Teste", "Meta 5 · M5·32", 6, "Nota 0,37 = fraco×peso 0,50 (Constitucional: 89,51% e peso 11,9%) ×40% + prioridade Guruja Dispensável ×40% + parada há tempo 0,30 ×10% + relevância ★3 ×10%, Ficou fora da semana de 09 a 14/11: são 24 vagas (4 por dia, de segunda a sábado) e a 24ª nota é 0,47. As ignoradas do Guruja entraram na mesma disputa.", "Se sobrar tempo, faça de cima para baixo (a lista está em ordem de nota)."],
-  [711, "Conhecimentos Regionais de SC", "Aspectos econômicos de SC (teoria)", 45, 5, "Teoria", "Meta 5 · M5·11", 7, "Nota 0,35 = fraco×peso 0,20 (Geografia SC: 91,3% e peso 5,7%) ×40% + prioridade Guruja Dispensável ×40% + parada há tempo 0,90 ×10% + relevância ★5 ×10%, Ficou fora da semana de 09 a 14/11: são 24 vagas (4 por dia, de segunda a sábado) e a 24ª nota é 0,47. As ignoradas do Guruja entraram na mesma disputa.", "Se sobrar tempo, faça de cima para baixo (a lista está em ordem de nota)."],
-  [703, "Dir. Financeiro / AFO", "Resolução de questões favoritas", 45, 3, "Teste", "Meta 5 · M5·3", 8, "Nota 0,33 = fraco×peso 0,43 (AFO: 89,03% e peso 9,9%) ×40% + prioridade Guruja Dispensável ×40% + parada há tempo 0,20 ×10% + relevância ★3 ×10%, Ficou fora da semana de 09 a 14/11: são 24 vagas (4 por dia, de segunda a sábado) e a 24ª nota é 0,47. As ignoradas do Guruja entraram na mesma disputa.", "Se sobrar tempo, faça de cima para baixo (a lista está em ordem de nota)."],
-  [720, "Dir. Financeiro / AFO", "Revisão (LC 898/2026 e Lei das taxas)", 45, 3, "Revisão", "Meta 5 · M5·20", 9, "Nota 0,33 = fraco×peso 0,43 (AFO: 89,03% e peso 9,9%) ×40% + prioridade Guruja Dispensável ×40% + parada há tempo 0,20 ×10% + relevância ★3 ×10%, Ficou fora da semana de 09 a 14/11: são 24 vagas (4 por dia, de segunda a sábado) e a 24ª nota é 0,47. As ignoradas do Guruja entraram na mesma disputa.", "Se sobrar tempo, faça de cima para baixo (a lista está em ordem de nota)."],
-  [734, "Dir. Financeiro / AFO", "Todo conteúdo", 60, 3, "Questões", "Meta 5 · M5·34", 10, "Nota 0,33 = fraco×peso 0,43 (AFO: 89,03% e peso 9,9%) ×40% + prioridade Guruja Dispensável ×40% + parada há tempo 0,20 ×10% + relevância ★3 ×10%, Ficou fora da semana de 09 a 14/11: são 24 vagas (4 por dia, de segunda a sábado) e a 24ª nota é 0,47. As ignoradas do Guruja entraram na mesma disputa.", "Se sobrar tempo, faça de cima para baixo (a lista está em ordem de nota)."],
-  [727, "Conhecimentos Regionais de SC", "Boletim de Indicadores Econômico-Fiscais — Dezembro 2025", 30, 4, "Teoria", "Meta 5 · M5·27", 11, "Nota 0,33 = fraco×peso 0,20 (Geografia SC: 91,3% e peso 5,7%) ×40% + prioridade Guruja Dispensável ×40% + parada há tempo 0,90 ×10% + relevância ★4 ×10%, Ficou fora da semana de 09 a 14/11: são 24 vagas (4 por dia, de segunda a sábado) e a 24ª nota é 0,47. As ignoradas do Guruja entraram na mesma disputa.", "Se sobrar tempo, faça de cima para baixo (a lista está em ordem de nota)."],
-  [726, "Ciência e Análise de Dados", "Toda a ementa", 90, 3, "Questões", "Meta 5 · M5·26", 12, "Nota 0,33 = fraco×peso 0,42 (TI: 81,53% e peso 5,7%) ×40% + prioridade Guruja Dispensável ×40% + parada há tempo 0,20 ×10% + relevância ★3 ×10%, Ficou fora da semana de 09 a 14/11: são 24 vagas (4 por dia, de segunda a sábado) e a 24ª nota é 0,47. As ignoradas do Guruja entraram na mesma disputa.", "Se sobrar tempo, faça de cima para baixo (a lista está em ordem de nota)."],
-  [702, "Conhecimentos Regionais de SC", "Resolução de questões favoritas", 30, 3, "Teste", "Meta 5 · M5·2", 13, "Nota 0,31 = fraco×peso 0,20 (Geografia SC: 91,3% e peso 5,7%) ×40% + prioridade Guruja Dispensável ×40% + parada há tempo 0,90 ×10% + relevância ★3 ×10%, Ficou fora da semana de 09 a 14/11: são 24 vagas (4 por dia, de segunda a sábado) e a 24ª nota é 0,47. As ignoradas do Guruja entraram na mesma disputa.", "Se sobrar tempo, faça de cima para baixo (a lista está em ordem de nota)."],
-  [719, "Conhecimentos Regionais de SC", "Conhecimentos de SC", 30, 3, "Questões", "Meta 5 · M5·19", 14, "Nota 0,31 = fraco×peso 0,20 (Geografia SC: 91,3% e peso 5,7%) ×40% + prioridade Guruja Dispensável ×40% + parada há tempo 0,90 ×10% + relevância ★3 ×10%, Ficou fora da semana de 09 a 14/11: são 24 vagas (4 por dia, de segunda a sábado) e a 24ª nota é 0,47. As ignoradas do Guruja entraram na mesma disputa.", "Se sobrar tempo, faça de cima para baixo (a lista está em ordem de nota)."],
-  [706, "Ética Pública", "Todo conteúdo", 30, 3, "Questões", "Meta 5 · M5·6", 15, "Nota 0,29 = fraco×peso 0,34 (Ética Pública: 85,18% e peso 5,7%) ×40% + prioridade Guruja Dispensável ×40% + parada há tempo 0,10 ×10% + relevância ★3 ×10%, Ficou fora da semana de 09 a 14/11: são 24 vagas (4 por dia, de segunda a sábado) e a 24ª nota é 0,47. As ignoradas do Guruja entraram na mesma disputa.", "Se sobrar tempo, faça de cima para baixo (a lista está em ordem de nota)."],
-  [716, "Ética Pública", "Todo conteúdo", 30, 3, "Questões", "Meta 5 · M5·16", 16, "Nota 0,29 = fraco×peso 0,34 (Ética Pública: 85,18% e peso 5,7%) ×40% + prioridade Guruja Dispensável ×40% + parada há tempo 0,10 ×10% + relevância ★3 ×10%, Ficou fora da semana de 09 a 14/11: são 24 vagas (4 por dia, de segunda a sábado) e a 24ª nota é 0,47. As ignoradas do Guruja entraram na mesma disputa.", "Se sobrar tempo, faça de cima para baixo (a lista está em ordem de nota)."],
-  [731, "Ética Pública", "Todo conteúdo", 30, 3, "Questões", "Meta 5 · M5·31", 17, "Nota 0,29 = fraco×peso 0,34 (Ética Pública: 85,18% e peso 5,7%) ×40% + prioridade Guruja Dispensável ×40% + parada há tempo 0,10 ×10% + relevância ★3 ×10%, Ficou fora da semana de 09 a 14/11: são 24 vagas (4 por dia, de segunda a sábado) e a 24ª nota é 0,47. As ignoradas do Guruja entraram na mesma disputa.", "Se sobrar tempo, faça de cima para baixo (a lista está em ordem de nota)."],
-  [721, "Português", "Resolução de prova: Fiscal de Tributos Estaduais (MT) e Auditor Fiscal (SEFAZ GO) 2026", 45, 3, "Questões", "Meta 5 · M5·21", 18, "Nota 0,27 = fraco×peso 0,30 (Português: 86,74% e peso 5,7%) ×40% + prioridade Guruja Dispensável ×40% + parada há tempo 0,10 ×10% + relevância ★3 ×10%, Ficou fora da semana de 09 a 14/11: são 24 vagas (4 por dia, de segunda a sábado) e a 24ª nota é 0,47. As ignoradas do Guruja entraram na mesma disputa.", "Se sobrar tempo, faça de cima para baixo (a lista está em ordem de nota)."],
-  [722, "Reforma Tributária", "Repartição da receita, novos fundos, regras de transição e demais dispositivos da EC 132", 30, 3, "Questões", "Meta 5 · M5·22", 19, "Nota 0,21 = fraco×peso 0,12 (Reforma Tributária: 85,52% e peso 2%) ×40% + prioridade Guruja Dispensável ×40% + parada há tempo 0,21 ×10% + relevância ★3 ×10%, Ficou fora da semana de 09 a 14/11: são 24 vagas (4 por dia, de segunda a sábado) e a 24ª nota é 0,47. As ignoradas do Guruja entraram na mesma disputa.", "Se sobrar tempo, faça de cima para baixo (a lista está em ordem de nota)."],
-  [728, "Raciocínio Lógico", "Toda a ementa do edital", 45, 2, "Questões", "Meta 5 · M5·28", 20, "RL fica só no tempo morto (5–8 questões por dia no TEC), por decisão sua de 08/11. Esta atividade do Guruja não vai para o plano.", "Faça aos poucos no tempo morto, ou ignore no portal."],
-];
+const CICLO_DISP_RAW=[]; // Meta 1 SEFAZ-RS: nada fora do ciclo por enquanto (o ciclo do SC foi arquivado em 12/11)
 // ── IGNORADAS NO GURUJA em 09/11 (21 da Meta 4 + as das Metas 2 e 3) que NÃO voltaram ao plano de 09 a 14/11: ficam aqui "para ver depois", com a nota 40/40/10/10 ──
-const CICLO_IGNORADAS=[
-  [423, "Ciência e Análise de Dados", "Governo Digital", 90, "Atrasada · M3·23", "0,49"],
-  [511, "Ciência e Análise de Dados", "Teste Bloco B", 90, "Meta 4 · M4·11", "0,49"],
-  [307, "Ética Pública", "Revisão (Código de Ética e Disciplina dos Servidores Fazendários)", 30, "Atrasada · M2·7", "0,45"],
-  [304, "Português", "Semântica, tipos de discurso e figuras de linguagem", 45, "Atrasada · M2·4", "0,45"],
-  [409, "Português", "Resolução de prova: Auditor Fiscal de Receita Estadual (SEFAZ SP)", 30, "Atrasada · M3·9", "0,43"],
-  [303, "Ética Pública", "Lei 17.715/2019 — Programa de Integridade e Compliance…", 30, "Atrasada · M2·3", "0,43"],
-  [531, "Dir. Administrativo", "Resolução de questões favoritas", 45, "Meta 4 · M4·31", "0,41"],
-  [515, "Dir. Constitucional", "Toda a ementa do edital", 60, "Meta 4 · M4·15", "0,37"],
-  [507, "Reforma Tributária", "Regras de transição", 30, "Meta 4 · M4·7", "0,37"],
-  [519, "Reforma Tributária", "Demais dispositivos da EC 132", 30, "Meta 4 · M4·19", "0,37"],
-  [514, "Dir. Civil", "Bloco A e B", 60, "Meta 4 · M4·14", "0,35"],
-  [524, "Ciência e Análise de Dados", "Revisão A", 90, "Meta 4 · M4·24", "0,35"],
-  [420, "Dir. Financeiro / AFO", "Revisão (Lei Complementar nº 898/2026)", 45, "Atrasada · M3·20", "0,33"],
-  [312, "Ciência e Análise de Dados", "Favoritas A", 90, "Atrasada · M2·12", "0,33"],
-  [502, "Conhecimentos Regionais de SC", "Revisão (métodos de SC; últimas notícias sobre o clima…)", 30, "Meta 4 · M4·2", "0,31"],
-  [510, "Conhecimentos Regionais de SC", "A população e a ocupação histórica do território", 30, "Meta 4 · M4·10", "0,31"],
-  [518, "Conhecimentos Regionais de SC", "Conhecimentos de Santa Catarina", 30, "Meta 4 · M4·18", "0,31"],
-  [526, "Conhecimentos Regionais de SC", "Revisão (urbanização e mesorregiões; população; produção…)", 30, "Meta 4 · M4·26", "0,31"],
-  [402, "Conhecimentos Regionais de SC", "História de SC", 30, "Atrasada · M3·2", "0,31"],
-  [427, "Conhecimentos Regionais de SC", "Resolução de questões favoritas", 30, "Atrasada · M3·27", "0,31"],
-  [317, "Conhecimentos Regionais de SC", "História de SC (teoria)", 30, "Atrasada · M2·17", "0,31"],
-  [301, "Conhecimentos Regionais de SC", "Revisão (desempenho da agropecuária e do agronegócio…)", 30, "Atrasada · M2·1", "0,29"],
-  [512, "Ética Pública", "Lei nº 12.846/2013 (Lei Anticorrupção)", 30, "Meta 4 · M4·12", "0,29"],
-  [527, "Ética Pública", "Resolução de questões favoritas", 30, "Meta 4 · M4·27", "0,29"],
-  [416, "Ética Pública", "Lei 14.540/2023 — Programa de Prevenção e Enfrentamento…", 30, "Atrasada · M3·16", "0,29"],
-  [429, "Ética Pública", "Revisão (Decreto 2.234/2022 e Lei 14.540/2023)", 30, "Atrasada · M3·29", "0,29"],
-  [315, "Ética Pública", "Decreto 2.234/2022 — Programa de Integridade e Compliance…", 30, "Atrasada · M2·15", "0,27"],
-  [906, "Ciência e Análise de Dados", "Revisão da semana — erros e questões de TI", 90, "Plano · 03/11", null],
-  [321, "Raciocínio Lógico", "Imersão Temática FCC (2025/26)", 45, "Atrasada · M2·21", null],
-  [415, "Matemática Financeira e Estatística", "Bloco B — Análise Combinatória e Probabilidade", 30, "Atrasada · M3·15", null],
-  [525, "Raciocínio Lógico", "Toda a Ementa do Edital", 30, "Meta 4 · M4·25", null],
-  [432, "Raciocínio Lógico", "Toda a Ementa do Edital", 30, "Atrasada · M3·32", null],
-];
-const CICLO_CORTADAS=[
-  [430, "Matemática Financeira e Estatística", "Imersão Temática FCC (2025/26)", 45],
-  [521, "Matemática Financeira e Estatística", "Bloco B — Sistema de amortização e análise de investimentos", 90],
-  [508, "Matemática Financeira e Estatística", "Estatística — Imersão Temática FCC", 30],
-  [428, "Matemática Financeira e Estatística", "Bloco A — Juros simples e compostos, descontos e taxas", 90],
-  [523, "Matemática Financeira e Estatística", "Estatística — Toda a Ementa da Disciplina", 30],
-  [308, "Matemática Financeira e Estatística", "Bloco A — Estatística Descritiva", 30],
-  [319, "Matemática Financeira e Estatística", "Toda a Ementa da Disciplina", 30],
-  [710, "Matemática Financeira e Estatística", "Estatística — Toda a ementa do edital (Meta 5)", 30],
-  [723, "Matemática Financeira e Estatística", "Matemática Financeira — Toda a ementa (Meta 5)", 30],
-  [725, "Matemática Financeira e Estatística", "Estatística — Toda a ementa da disciplina (Meta 5)", 30],
-];
+const CICLO_IGNORADAS=[];
+const CICLO_CORTADAS=[];
 const CICLO_DISP=CICLO_DISP_RAW.map(([id,mat,conteudo,min,est,tipo,origem,ordem,motivo,alternativa])=>{
   const f=faixaMin(min);
   const gl=gurujaLabel(origem);
@@ -576,6 +509,16 @@ const CICLO=(()=>{
       localStorage.setItem('ciclo_versao',JSON.stringify('v56'));
     }
   }catch(e){}
+  // v57 (12/11): mudança de rumo — foco no SEFAZ-RS (pré-edital, FCC). Planejamento novo "Consolidar a base", Meta 1, 20 atividades, de qui 12/11 a qua 18/11 (domingo livre). Rotina do mentor: 1h TI + 2h Contabilidade + 1h de revisão. Mantém o histórico de estudo; zera o que foi marcado como feito no ciclo do SC.
+  try{
+    if(cv<57){
+      localStorage.setItem('feitos_v57_bkp',JSON.stringify({feitos:lsj('feitos',[]),feitos_dt:lsj('feitos_dt',{}),ciclo_volta:lsj('ciclo_volta',[]),fora_feitos:lsj('fora_feitos',{}),cicloNum:lsj('cicloNum',5),em:Date.now()}));
+      localStorage.setItem('feitos','[]');localStorage.setItem('feitos_dt','{}');localStorage.setItem('fora_feitos','{}');
+      localStorage.removeItem('horas_dia');localStorage.removeItem('ia_dia');localStorage.removeItem('ia_briefing');localStorage.removeItem('ciclo_volta');
+      localStorage.setItem('cicloNum',JSON.stringify(1));
+      localStorage.setItem('ciclo_versao',JSON.stringify('v57'));
+    }
+  }catch(e){}
   try{seedRegistro101((k,v)=>localStorage.setItem(k,JSON.stringify(v)),false);}catch(e){}
   try{seedRegistroEtica((k,v)=>localStorage.setItem(k,JSON.stringify(v)),false);}catch(e){}
   let dw=lsj('dias_trabalho',[2,4,5]);
@@ -591,16 +534,21 @@ const N=CICLO.length;
 const CICLO_H=CICLO.reduce((s,c)=>s+c.h,0);
 const CICLO_MIN=CICLO.reduce((s,c)=>s+c.min,0);
 const lerFeitosValidos=()=>{try{const v=JSON.parse(localStorage.getItem('feitos')||'[]');return Array.isArray(v)?v.filter(id=>IDS_CICLO_VALIDOS.has(id)):[];}catch(e){return [];}};
-const lerCicloNum=()=>{try{return Math.max(4,JSON.parse(localStorage.getItem('cicloNum')||'4')||4);}catch(e){return 4;}};
+const lerCicloNum=()=>{try{return Math.max(1,JSON.parse(localStorage.getItem('cicloNum')||'1')||1);}catch(e){return 1;}};
 
 // ── PAINEL ESTRATÉGICO ───────────────────────────────────────
 
 const CONCURSOS_ALVO=[
   {
-    codigo:'SEFAZ-SC',prioridade:'principal',status:'Prova 22/11/2026 · Florianópolis · inscrição confirmada',
+    codigo:'SEFAZ-RS',prioridade:'principal',status:'Pré-edital · banca FCC definida (contratação a formalizar) · sem data de prova',
+    banca:'FCC',vagas:'a definir',cargo:'Auditor-Fiscal da Receita Estadual (AFRE)',salario:37550.49,edital:'a publicar',
+    estrutura:'Estrutura ainda não publicada. O app usa, de forma provisória, a distribuição do edital de 2018 (260 questões) até o edital novo sair',
+    alerta:'Foco desde 12/11/2026 (decisão com o mentor). Quando o edital sair, os pesos, o mapa e o plano são refeitos em cima dele'
+  },
+  {
+    codigo:'SEFAZ-SC',prioridade:'estrategico',status:'Prova 22/11/2026 · Florianópolis · inscrição confirmada — vira treino',
     banca:'FCC',vagas:8,cargo:'Auditor Estadual de Finanças Públicas — Direito (E05)',salario:25337.61,edital:'01/2026',
-    estrutura:'180 questões em dia único: manhã 80 Gerais (peso 1, 4h) + tarde 100 Específicos (peso 2, 5h) · sem discursiva',
-    alerta:'Corte = soma das notas padronizadas ≥ 150 · desempate: maior nota em Específicos · resultado final previsto 14/01/2027'
+    alerta:'Mesma banca do RS: use como primeira medida real de Direito e Português em prova FCC. Sem preparo específico'
   },
   {
     codigo:'TCE-SP',prioridade:'finalizado',status:'Prova realizada em 11/10/2026 — aguardando gabarito e resultado',
@@ -631,48 +579,37 @@ const CONCURSOS_ALVO=[
 ];
 
 const LEGISLACAO_ALVO=[
-  {codigo:'CE/SC',nome:'Constituição do Estado de Santa Catarina',prioridade:1},
-  {codigo:'LC 741/2019',nome:'Estrutura organizacional do Estado de SC',prioridade:1},
-  {codigo:'Lei 6.745/1985',nome:'Estatuto do Servidor Público Civil de SC',prioridade:1},
-  {codigo:'Dec. 2.094/2022',nome:'Regimento Interno da SEF/SC',prioridade:1},
-  {codigo:'LC 898/2026',nome:'Execução de emendas parlamentares em SC',prioridade:1},
-  {codigo:'LC 412/2008',nome:'RPPS/SC',prioridade:1},
-  {codigo:'EC 103/2019',nome:'Reforma da Previdência',prioridade:1},
-  {codigo:'Lei 7.541/1988',nome:'Lei das taxas (SC)',prioridade:2},
-  {codigo:'Lei 4.320/64 · LC 101/2000',nome:'Orçamento público · LRF',prioridade:2},
-  {codigo:'Lei 8.137/90 · Lei 13.869/19',nome:'Crimes contra a ordem tributária · Abuso de autoridade',prioridade:2},
-  {codigo:'Lei 14.133/21 · 8.429/92 · 12.846/13',nome:'Licitações · Improbidade · Anticorrupção',prioridade:2},
-  {codigo:'Lei 12.527/11 · Lei 13.709/18',nome:'LAI · LGPD',prioridade:2},
+  {codigo:'CTN (Lei 5.172/1966)',nome:'Código Tributário Nacional',prioridade:1},
+  {codigo:'CF arts. 145 a 162',nome:'Sistema Tributário Nacional e repartição de receitas',prioridade:1},
+  {codigo:'LC 87/1996',nome:'Lei Kandir (ICMS)',prioridade:1},
+  {codigo:'EC 132/2023 · LC 214/2025 · LC 227/2026',nome:'Reforma Tributária (IBS, CBS e Imposto Seletivo)',prioridade:1},
+  {codigo:'Lei 6.404/1976',nome:'Lei das S.A. (base de Contabilidade e Empresarial)',prioridade:1},
+  {codigo:'NBC TA 200 e seguintes',nome:'Normas de Auditoria Independente',prioridade:1},
+  {codigo:'Legislação do RS',nome:'ICMS, IPVA e ITCD do Rio Grande do Sul (entra quando a Legislação Tributária Estadual começar no Guruja)',prioridade:2},
+  {codigo:'LC 24/1975 · LC 123/2006 · LC 116/2003',nome:'CONFAZ · Simples Nacional · ISS',prioridade:2},
+  {codigo:'Lei 8.137/1990',nome:'Crimes contra a ordem tributária',prioridade:2},
 ];
 
 const CRONOGRAMA_MACRO=[
-  {periodo:'OUT/2026 — Metas 1 a 3 do Guruja',eventos:[
-    {data:'12-18/10',acao:'Meta 1 — 31 atividades em 7 dias (máx. 1h cada)',tipo:'estudo'},
-    {data:'19-25/10',acao:'Meta 2 + sobras da Meta 1 — 32 atividades em ~4h por dia (30/45/60/90 min cada)',tipo:'estudo'},
-    {data:'26/10-28/10',acao:'Meta 3 + atrasadas da Meta 2 — 11 atividades cumpridas no Guruja',tipo:'estudo'},
-    {data:'29/10-01/11',acao:'Plano refeito em 29/10 — 16 metas (Qui 5 · Sex 5 · Sáb 4 · Dom 2), TI 1h30 todo dia',tipo:'estudo'},
-    {data:'01/11',acao:'PGM Jundiaí — decidido não ir: domingo de estudo normal',tipo:'estudo'},
+  {periodo:'NOV/2026 — Virada para o SEFAZ-RS',eventos:[
+    {data:'12-18/11',acao:'Meta 1 do planejamento "Consolidar a base" — 20 atividades, 4h por dia (1h TI + 2h Contabilidade + 1h revisão), domingo livre',tipo:'estudo'},
+    {data:'13/11',acao:'📋 SEFAZ-SC: Edital de Convocação — confirmar local da prova',tipo:'edital'},
+    {data:'20-21/11',acao:'Viagem a Florianópolis (sem conteúdo novo)',tipo:'descanso'},
+    {data:'22/11',acao:'📋 Prova SEFAZ-SC como treino FCC — manhã Gerais (4h) · tarde Específicos (5h)',tipo:'prova',alerta:'alto'},
+    {data:'23/11',acao:'Gabarito do SEFAZ-SC a partir das 17h: conferir e usar como diagnóstico de Direito e Português',tipo:'edital'},
   ]},
-  {periodo:'NOV/2026 — Reta final',eventos:[
-    {data:'02-08/11',acao:'Meta 4 + atrasadas das Metas 2 e 3 — plano refeito em 03/11 (férias até a prova): por dia 1 TI + 1 difícil + 1 média + 1 fácil + 1 reforço, 5h por dia (domingo 4h)',tipo:'estudo'},
-    {data:'13/11',acao:'📋 Edital de Convocação — confirmar local da prova',tipo:'edital',alerta:'alto'},
-    {data:'~14-15/11',acao:'Simulado completo de 180q em dia único (80 Gerais + 100 Específicos), cronometrado',tipo:'estudo'},
-    {data:'16-19/11',acao:'Revisão por erro — Específicos primeiro',tipo:'estudo'},
-    {data:'20-21/11',acao:'Viagem a Florianópolis + descanso (sem conteúdo novo)',tipo:'descanso'},
-    {data:'22/11',acao:'📋 PROVA SEFAZ-SC — manhã Gerais (4h) · tarde Específicos (5h)',tipo:'prova',alerta:'alto'},
-  ]},
-  {periodo:'DEPOIS DA PROVA',eventos:[
-    {data:'23/11',acao:'Gabarito a partir das 17h · recursos 24-25/11',tipo:'edital'},
-    {data:'04/01/2027',acao:'Resultado preliminar · resultado final 14/01/2027',tipo:'edital'},
+  {periodo:'A PARTIR DE 23/11 — Base do SEFAZ-RS',eventos:[
+    {data:'meta a meta',acao:'Seguir as metas do Guruja, uma por vez. Checkpoint: 75% ou mais em questões FCC de Contabilidade',tipo:'estudo'},
+    {data:'sem data',acao:'📋 Edital do SEFAZ-RS: quando sair, refazer pesos, mapa da prova e plano',tipo:'edital',alerta:'alto'},
   ]},
 ];
 
 const REGRAS_INEGOCIAVEIS=[
   {regra:'Anki + questões todo dia — sem negociação',categoria:'diario'},
-  {regra:'Máximo 1 hora por atividade do Guruja — passou, vira para a próxima',categoria:'ciclo'},
-  {regra:'Específicos (peso 2) nunca são cortados antes de Gerais — veja a aba ⚖️ Decisão',categoria:'ciclo'},
-  {regra:'Fora do edital SEFAZ-SC (Direito): Discursiva, Empresarial, Tributário isolado, Processo Civil, Trabalho, Legislação TCE-SP',categoria:'escopo'},
-  {regra:'PGM Jundiaí (01/11): ir a frio, sem conteúdo extra',categoria:'escopo'},
+  {regra:'Rotina do mentor: 1h de TI + 2h de Contabilidade + 1h de revisão das outras matérias',categoria:'ciclo'},
+  {regra:'Contabilidade antes de Auditoria · Direito Tributário antes de Legislação Tributária Estadual',categoria:'ciclo'},
+  {regra:'Teoria só fecha com questões e cartões dos erros (método 3C)',categoria:'ciclo'},
+  {regra:'Fora do foco: Finanças Públicas, Economia, Contabilidade Pública e Administração (até o edital dizer o contrário)',categoria:'escopo'},
   {regra:'FCC não desconta erro: nunca deixar questão em branco',categoria:'prova'},
 ];
 
@@ -692,7 +629,7 @@ function getAlertasAtivos(){
   if(hoje>='2026-10-26'&&hoje<='2026-11-15') alertas.push({tipo:'logistica',msg:'✈️ Prova em Florianópolis: passagem e hospedagem para 21/11',cor:'#60a5fa'});
   if(hoje>='2026-11-13'&&hoje<='2026-11-22') alertas.push({tipo:'convocacao',msg:'📋 Edital de Convocação (13/11) — confirme local e horário da prova',cor:'#fb923c'});
   const diasProva=Math.ceil((new Date('2026-11-22T00:00:00')-new Date(hoje+'T00:00:00'))/86400000);
-  if(diasProva>0) alertas.push({tipo:'prova',msg:`📋 SEFAZ-SC · Prova 22/11/2026 (Florianópolis) · ${diasProva} dias restantes`,cor:'#fbbf24'});
+  if(diasProva>0) alertas.push({tipo:'prova',msg:`📋 Treino FCC: prova do SEFAZ-SC em 22/11/2026 (Florianópolis) · ${diasProva} dias`,cor:'#fbbf24'});
   return alertas;
 }
 
@@ -748,7 +685,7 @@ const MATRIZ_MEIRELLES={
   // ── MANUTENÇÃO (Anki/Guruja apenas) ──
   'Dir. Administrativo':   {prioridade:'manutencao',estrelas:4,pctAcerto:85.3,  jornada:29, nivel:'Expert',   ferramenta:'TecConcursos',      motivo:'🟢 85,3% (389q) — 7,3pp acima da média, maior vantagem relativa do sistema'},
   'Dir. Constitucional':   {prioridade:'manutencao',estrelas:4,pctAcerto:88.3,  jornada:27, nivel:'Expert',   ferramenta:'TecConcursos',      motivo:'🟢 88,3% (361q) — 5,7pp acima da média, inclui Controle Externo/TCs'},
-  'Dir. Tributário':       {prioridade:'hibernacao', estrelas:1,pctAcerto:84.6, jornada:27, nivel:'Expert', ferramenta:'TecConcursos FGV', motivo:'⚫ Tributário isolado não cai na SEFAZ-SC (só Reforma Tributária, em Financeiro)'},
+  'Dir. Tributário':       {prioridade:'urgente', estrelas:5,pctAcerto:84.6, jornada:27, nivel:'Expert', ferramenta:'TecConcursos FGV', motivo:'🔴 Núcleo fiscal do SEFAZ-RS — base forte (84,6% no TEC), vem antes de Legislação Tributária Estadual'},
   'Dir. Financeiro / AFO': {prioridade:'manutencao',estrelas:4,pctAcerto:87.0,  jornada:35, nivel:'Expert',   ferramenta:'TecConcursos',      motivo:'🟡 87,0% (316q) — 2,8pp acima da média, exceto Precatórios/Receita/MatFi'},
   'Dir. Civil':            {prioridade:'manutencao',estrelas:3,pctAcerto:78.0,  jornada:29, nivel:'Expert',   ferramenta:'TecConcursos',      motivo:'🟡 78,0% (291q) — só 2,6pp acima da média, a menor folga das matérias fortes. Obrigações Pt1 70%, Contratos Geral 69%, Atos Unilaterais 64%'},
   // ── NIVELAMENTO (só Bloco 0) ──
@@ -756,8 +693,13 @@ const MATRIZ_MEIRELLES={
   'Legislação TCE-SP':     {prioridade:'hibernacao', estrelas:1,pctAcerto:76.0, jornada:6, nivel:'Intermediário', ferramenta:'Gran Cursos', motivo:'⚫ Fora do edital SEFAZ-SC (era do TCE-SP)'},
   'Ética Pública':         {prioridade:'manutencao',estrelas:3,pctAcerto:88.0,jornada:4,  nivel:'Intermediário',ferramenta:'Gran Cursos',       motivo:'🟢 88,0% (42q) — 0,6pp acima da média; Conflito de Interesses (74%) e OCDE (73,9%) são os pontos mais fracos'},
   'Raciocínio Lógico':     {prioridade:'manutencao',   estrelas:5,pctAcerto:81.9,  jornada:17, nivel:'Aprendiz', ferramenta:'Gran Cursos',       motivo:'🟢 81,9% (105q) — 2,7pp acima da média. Reclassificado de urgente pra manutenção: trajetória confirmada desde o diagnóstico inicial (76%)'},
-  'Direito Empresarial (Comercial)':{prioridade:'hibernacao',estrelas:1,pctAcerto:75.6,jornada:3,nivel:'Diagnóstico',ferramenta:'Guruja',motivo:'⚫ Empresarial não cai na SEFAZ-SC'},
-  // ── SEFAZ-SC — matérias novas ──
+  'Direito Empresarial (Comercial)':{prioridade:'manutencao',estrelas:3,pctAcerto:75.6,jornada:3,nivel:'Diagnóstico',ferramenta:'Guruja',motivo:'🟡 Cai no SEFAZ-RS (peso pequeno); ainda não entrou nas metas'},
+  // ── SEFAZ-RS — matérias do planejamento "Consolidar a base" (12/11) ──
+  'Contabilidade Geral':   {prioridade:'urgente',estrelas:5,pctAcerto:null,jornada:0,nivel:'Aprendiz',ferramenta:'Guruja',motivo:'🔴 Núcleo fiscal: 2h por dia. Você estudou no 1º semestre de 2026; é retomada'},
+  'Auditoria':             {prioridade:'urgente',estrelas:5,pctAcerto:null,jornada:0,nivel:'Aprendiz',ferramenta:'Guruja',motivo:'🔴 Núcleo fiscal: entra depois da base de Contabilidade'},
+  'Legislação Tributária Estadual':{prioridade:'nivelamento',estrelas:5,pctAcerto:null,jornada:0,nivel:'Aprendiz',ferramenta:'Guruja',motivo:'🟠 Núcleo fiscal, mas só depois de Direito Tributário (e a lei do RS depende do edital)'},
+  'Tecnologia da Informação':{prioridade:'urgente',estrelas:4,pctAcerto:null,jornada:0,nivel:'Aprendiz',ferramenta:'Guruja',motivo:'🔴 1h por dia (Banco de Dados). Você estudou no 1º semestre de 2026; é retomada'},
+  // ── SEFAZ-SC — matérias antigas ──
   'Dir. Previdenciário':   {prioridade:'urgente',   estrelas:5,pctAcerto:null,jornada:0,  nivel:'Aprendiz', ferramenta:'Guruja', motivo:'🔴 Dificuldade real — maior volume de pontos em jogo no bloco de peso 2 (RGPS, RPPS, EC 103, LC 412/2008)'},
   'Matemática Financeira e Estatística':{prioridade:'nivelamento',estrelas:3,pctAcerto:26,jornada:0,nivel:'Zero Base',ferramenta:'Guruja',motivo:'🟠 26% em Mat. Financeira, Estatística do zero — só o núcleo; menor custo-benefício'},
   'Ciência e Análise de Dados':{prioridade:'nivelamento',estrelas:4,pctAcerto:null,jornada:0,nivel:'Zero Base',ferramenta:'Guruja',motivo:'🟠 Cai (BI, IA, LGPD) — conceitual, retorno razoável'},
@@ -1148,12 +1090,77 @@ function Pomodoro({cor,onFase,min}){
 }
 
 const EDITAL={
-  // SEFAZ-SC — FCC — Auditor Estadual de Finanças Públicas (Direito) — Prova 22/11/2026
-  // Sem mínimo por prova: nota padronizada (média 50, desvio 10); Gerais peso 1 (80q) + Específicos peso 2 (100q); corte: soma ≥ 150.
-  '_meta':{concurso:'SEFAZ-SC',cargo:'Auditor Estadual de Finanças Públicas — Direito (E05)',banca:'FCC',prova:'22/11/2026',
-    nota:{tipo:'padronizada',media:50,desvio:10,corte:150,gerais:{questoes:80,peso:1},especificos:{questoes:100,peso:2}}},
+  // SEFAZ-RS — FCC — Auditor-Fiscal da Receita Estadual — PRÉ-EDITAL (sem data de prova).
+  // Matérias = os programas do planejamento "Consolidar a base" do Guruja (lidos pelo conector em 12/11/2026).
+  // Tópicos das matérias novas = árvore de assuntos de cada programa no Guruja. Distribuição de questões = provisória (edital de 2018, 260 questões).
+  // bloco 'especificos' = núcleo fiscal (Contabilidade, Auditoria, Dir. Tributário, Legislação Tributária Estadual) · 'gerais' = base.
+  '_meta':{concurso:'SEFAZ-RS',cargo:'Auditor-Fiscal da Receita Estadual (AFRE)',banca:'FCC',prova:'a definir',
+    nota:{tipo:'a definir',media:null,desvio:null,corte:null,gerais:{questoes:120,peso:1},especificos:{questoes:140,peso:1}}},
 
-  // ── CONHECIMENTOS GERAIS ─────────────────────────────────────────────────
+  // ── NÚCLEO FISCAL ───────────────────────────────────────────────────────
+  'Contabilidade Geral':{bloco:'especificos',
+    top:[
+      {t:'Conceito, objeto, finalidade, técnicas contábeis e equação patrimonial',p:11.1,acerto:null,status:'diagnostico'},
+      {t:'Contabilidade básica: atos e fatos, escrituração, plano de contas, balancete, CPC 00',p:11.1,acerto:null,status:'diagnostico'},
+      {t:'Regimes contábeis e apuração do resultado',p:11.1,acerto:null,status:'diagnostico'},
+      {t:'Demonstrações contábeis (BP, DRE, DLPA, DFC, DVA, DRA, DMPL, consolidadas)',p:11.1,acerto:null,status:'diagnostico'},
+      {t:'Ativo: disponibilidades, contas a receber, investimentos, imobilizado, intangível, depreciação, impairment',p:11.1,acerto:null,status:'diagnostico'},
+      {t:'Passivo exigível: fornecedores, empréstimos, folha, tributos sobre o lucro, provisões',p:11.1,acerto:null,status:'diagnostico'},
+      {t:'Estoques e operações com mercadorias (PEPS, UEPS, média; ICMS, IPI, PIS/Cofins)',p:11.1,acerto:null,status:'diagnostico'},
+      {t:'Patrimônio líquido: capital, reservas, ações em tesouraria, ajuste de avaliação patrimonial',p:11.1,acerto:null,status:'diagnostico'},
+      {t:'Outros CPCs (12, 15, 02, 47, 46, 23)',p:11.1,acerto:null,status:'diagnostico'},
+    ]},
+  'Auditoria':{bloco:'especificos',
+    top:[
+      {t:'Objetivos gerais do auditor e NBC TA 200',p:8.3,acerto:null,status:'diagnostico'},
+      {t:'Normas profissionais: ética, independência e controle de qualidade',p:8.3,acerto:null,status:'diagnostico'},
+      {t:'Materialidade, relevância e risco',p:8.3,acerto:null,status:'diagnostico'},
+      {t:'Evidência, testes e procedimentos de auditoria',p:8.3,acerto:null,status:'diagnostico'},
+      {t:'Planejamento, documentação e papéis de trabalho',p:8.3,acerto:null,status:'diagnostico'},
+      {t:'Amostragem em auditoria',p:8.3,acerto:null,status:'diagnostico'},
+      {t:'Fraude e erro',p:8.3,acerto:null,status:'diagnostico'},
+      {t:'Controle interno da entidade auditada',p:8.3,acerto:null,status:'diagnostico'},
+      {t:'Estimativas, continuidade, eventos subsequentes e partes relacionadas',p:8.3,acerto:null,status:'diagnostico'},
+      {t:'Opinião do auditor: relatórios e pareceres',p:8.3,acerto:null,status:'diagnostico'},
+      {t:'Auditoria interna e perícia contábil',p:8.3,acerto:null,status:'diagnostico'},
+      {t:'Auditoria fiscal: SPED, EFD, NF-e e Ajustes SINIEF',p:8.3,acerto:null,status:'diagnostico'},
+    ]},
+  'Dir. Tributário':{bloco:'especificos',
+    top:[
+      {t:'Conceito, classificação, natureza jurídica e espécies de tributos',p:8.3,acerto:null,status:'diagnostico'},
+      {t:'Limitações ao poder de tributar: princípios e imunidades',p:8.3,acerto:null,status:'diagnostico'},
+      {t:'Competência tributária',p:8.3,acerto:null,status:'diagnostico'},
+      {t:'Legislação tributária (arts. 96 a 112 do CTN)',p:8.3,acerto:null,status:'diagnostico'},
+      {t:'Obrigação tributária (arts. 113 a 138 do CTN)',p:8.3,acerto:null,status:'diagnostico'},
+      {t:'Crédito tributário (arts. 139 a 193 do CTN)',p:8.3,acerto:null,status:'diagnostico'},
+      {t:'Administração tributária (arts. 194 a 208 do CTN)',p:8.3,acerto:null,status:'diagnostico'},
+      {t:'Impostos federais, estaduais e municipais',p:8.3,acerto:null,status:'diagnostico'},
+      {t:'Repartição constitucional de receitas tributárias',p:8.3,acerto:null,status:'diagnostico'},
+      {t:'Processo tributário e execução fiscal (Lei 6.830)',p:8.3,acerto:null,status:'diagnostico'},
+      {t:'Leis complementares: LC 24, LC 87 (Kandir), LC 123, LC 116 e LC 160',p:8.3,acerto:null,status:'diagnostico'},
+      {t:'Jurisprudência dos tribunais superiores',p:8.3,acerto:null,status:'diagnostico'},
+    ]},
+  'Legislação Tributária Estadual':{bloco:'especificos',
+    top:[
+      {t:'ICMS: fato gerador e hipóteses de não incidência',p:16.7,acerto:null,status:'diagnostico'},
+      {t:'ICMS: alíquotas, base de cálculo e valor a pagar',p:16.7,acerto:null,status:'diagnostico'},
+      {t:'ICMS: não cumulatividade (crédito, estorno, transferência)',p:16.7,acerto:null,status:'diagnostico'},
+      {t:'ICMS: sujeito passivo e local da operação',p:16.7,acerto:null,status:'diagnostico'},
+      {t:'ICMS: substituição tributária',p:16.7,acerto:null,status:'diagnostico'},
+      {t:'Legislação específica do RS (a definir pelo edital)',p:16.7,acerto:null,status:'diagnostico'},
+    ]},
+
+  // ── BASE ────────────────────────────────────────────────────────────────
+  'Tecnologia da Informação':{bloco:'gerais',
+    top:[
+      {t:'Conceitos iniciais de banco de dados e arquitetura ANSI/SPARC',p:14.3,acerto:null,status:'diagnostico'},
+      {t:'Projeto e modelagem de dados: MER, modelo relacional e normalização',p:14.3,acerto:null,status:'diagnostico'},
+      {t:'SGBD: propriedades, transações (ACID), visões e triggers',p:14.3,acerto:null,status:'diagnostico'},
+      {t:'Linguagem SQL (DDL, DML, DQL, DCL, DTL e procedimentos)',p:14.3,acerto:null,status:'diagnostico'},
+      {t:'Bancos dimensionais: BI, Data Warehouse, OLAP, mineração de dados, Big Data',p:14.3,acerto:null,status:'diagnostico'},
+      {t:'Outros modelos: NoSQL, orientado a objetos, distribuídos',p:14.3,acerto:null,status:'diagnostico'},
+      {t:'Administração, segurança, otimização e recuperação de banco de dados',p:14.3,acerto:null,status:'diagnostico'},
+    ]},
   'Português':{bloco:'gerais',
     top:[
       {t:'Interpretação Textual',p:28.0,acerto:64,status:'carro-chefe'},
@@ -1168,48 +1175,16 @@ const EDITAL={
     ]},
   'Raciocínio Lógico':{bloco:'gerais',
     top:[
-      {t:'Proposições, Conectivos e Tabela-Verdade',p:30,acerto:null,status:'diagnostico'},
-      {t:'Equivalências Lógicas e Negação',p:25,acerto:null,status:'diagnostico'},
-      {t:'Silogismos e Inferências',p:20,acerto:null,status:'diagnostico'},
-      {t:'Raciocínio Matemático Básico',p:15,acerto:null,status:'diagnostico'},
-      {t:'Outros',p:10,acerto:null,status:'diagnostico'},
+      {t:'Proposições: definição, reconhecimento e princípios lógicos',p:14.3,acerto:null,status:'diagnostico'},
+      {t:'Operadores lógicos, tabela-verdade, tautologia e contradição',p:14.3,acerto:null,status:'diagnostico'},
+      {t:'Equivalências lógicas e negação de proposições',p:14.3,acerto:null,status:'diagnostico'},
+      {t:'Lógica de argumentação, diagramas lógicos e quantificadores',p:14.3,acerto:null,status:'diagnostico'},
+      {t:'Raciocínio crítico: falácias, indução e abdução',p:14.3,acerto:null,status:'diagnostico'},
+      {t:'Tópicos de Matemática: conjuntos, PA e PG, porcentagem, proporcionalidade, equações, matrizes',p:14.3,acerto:null,status:'diagnostico'},
+      {t:'Problemas lógicos: sequências, calendários, orientação, parentesco',p:14.3,acerto:null,status:'diagnostico'},
     ]},
-  'Ética Pública':{bloco:'gerais',
+  'Dir. Constitucional':{bloco:'gerais',
     top:[
-      {t:'Ética, Moral e Função Pública — princípios, deveres e vedações',p:25,acerto:null,status:'nivelamento'},
-      {t:'Código de Ética dos Servidores Fazendários de SC · Decreto 1.171/94',p:25,acerto:null,status:'nivelamento'},
-      {t:'Integridade e compliance — riscos de fraude e corrupção',p:20,acerto:null,status:'nivelamento'},
-      {t:'Prevenção ao assédio moral/sexual e à discriminação',p:15,acerto:null,status:'nivelamento'},
-      {t:'Lei Anticorrupção — Lei 12.846/2013',p:15,acerto:null,status:'nivelamento'},
-    ]},
-  'Matemática Financeira e Estatística':{bloco:'gerais',
-    top:[
-      {t:'Juros simples e compostos · taxas equivalentes, real e efetiva',p:25,acerto:26,status:'ponto-fraco'},
-      {t:'Descontos e amortizações (SAC, Price, misto)',p:20,acerto:null,status:'diagnostico'},
-      {t:'Fluxo de caixa, valor atual e TIR',p:10,acerto:null,status:'diagnostico'},
-      {t:'Estatística descritiva (média, mediana, variância, desvio-padrão)',p:15,acerto:null,status:'diagnostico'},
-      {t:'Probabilidade e distribuições (binomial, normal, Poisson, qui-quadrado, t)',p:15,acerto:null,status:'diagnostico'},
-      {t:'Inferência: amostragem, intervalos de confiança, testes de hipótese, regressão',p:15,acerto:null,status:'diagnostico'},
-    ]},
-  'Ciência e Análise de Dados':{bloco:'gerais',
-    top:[
-      {t:'Conceitos de Ciência de Dados · dados estruturados e não estruturados',p:20,acerto:null,status:'diagnostico'},
-      {t:'Business Intelligence e visualização (dashboards, indicadores)',p:25,acerto:null,status:'diagnostico'},
-      {t:'Governo digital e Inteligência Artificial (ML, IA generativa, LLMs)',p:30,acerto:null,status:'diagnostico'},
-      {t:'LGPD — Lei 13.709/2018 aplicada ao Poder Público',p:25,acerto:null,status:'diagnostico'},
-    ]},
-  'Conhecimentos Regionais de SC':{bloco:'gerais',
-    top:[
-      {t:'Economia: agropecuária, agronegócio e exportações',p:35,acerto:null,status:'diagnostico'},
-      {t:'Geografia física, clima e população',p:25,acerto:null,status:'diagnostico'},
-      {t:'História e cultura',p:20,acerto:null,status:'diagnostico'},
-      {t:'Política e símbolos de SC',p:20,acerto:null,status:'diagnostico'},
-    ]},
-
-  // ── CONHECIMENTOS ESPECÍFICOS ────────────────────────────────────────────
-  'Dir. Constitucional':{bloco:'especificos',
-    top:[
-      {t:'Constituição do Estado de Santa Catarina',p:6,acerto:null,status:'nivelamento'},
       {t:'Organização do Estado (arts. 18-43 CF)',p:22.3,acerto:83,status:'manutencao'},
       {t:'Organização dos Poderes (arts. 44-135 CF)',p:20.9,acerto:81,status:'manutencao'},
       {t:'Tributação e Orçamento (arts. 145-169 CF)',p:14.7,acerto:83,status:'manutencao'},
@@ -1219,9 +1194,8 @@ const EDITAL={
       {t:'Poder Judiciário',p:5.0,acerto:69,status:'ponto-fraco'},
       {t:'Funções Essenciais (MP/Defensoria)',p:3.0,acerto:92,status:'manutencao'},
     ]},
-  'Dir. Administrativo':{bloco:'especificos',
+  'Dir. Administrativo':{bloco:'gerais',
     top:[
-      {t:'Legislação de SC: LC 741/2019, Lei 6.745/1985, Decreto 2.094/2022 (RI da SEF)',p:8,acerto:null,status:'nivelamento'},
       {t:'LGPD (Lei 13.709/18) e LAI (Lei 12.527/11)',p:5,acerto:null,status:'nivelamento'},
       {t:'Regime Jurídico, Princípios, Poderes e Deveres',p:15,acerto:93,status:'manutencao'},
       {t:'Licitações e Contratos (Lei 14.133/21)',p:15,acerto:85,status:'manutencao'},
@@ -1236,26 +1210,9 @@ const EDITAL={
       {t:'Intervenção na Propriedade / Bens Públicos',p:4,acerto:75,status:'manutencao'},
       {t:'Processo Administrativo (Lei 9.784/99)',p:2,acerto:89,status:'manutencao'},
     ]},
-  'Dir. Financeiro / AFO':{bloco:'especificos',
-    top:[
-      {t:'LC 898/2026 — execução de emendas parlamentares em SC · emendas impositivas',p:5,acerto:null,status:'nivelamento'},
-      {t:'Lei 7.541/1988 (Lei das taxas) · DREM',p:5,acerto:null,status:'nivelamento'},
-      {t:'LRF — Arts. 1º a 14',p:10,acerto:89,status:'manutencao'},
-      {t:'LRF — Arts. 15º a 24 (despesa pessoal)',p:8,acerto:73,status:'ponto-fraco'},
-      {t:'LRF — Arts. 25º a 42 (dívida)',p:8,acerto:90,status:'manutencao'},
-      {t:'LRF — Arts. 43º a 73-C',p:5,acerto:83,status:'manutencao'},
-      {t:'Receita — Conceitos e Classificações',p:8,acerto:70,status:'ponto-fraco'},
-      {t:'Despesa — Conceitos e Classificações',p:8,acerto:76,status:'manutencao'},
-      {t:'Leis Orçamentárias (PPA/LDO/LOA)',p:8,acerto:77,status:'manutencao'},
-      {t:'Princípios e Vedações Orçamentárias',p:6,acerto:87,status:'manutencao'},
-      {t:'Precatórios (art. 100 CF)',p:5,acerto:35,status:'ponto-fraco'},
-      {t:'Matemática Financeira aplicada',p:5,acerto:26,status:'ponto-fraco'},
-      {t:'Manual de Demonstrativos Fiscais',p:5,acerto:76,status:'manutencao'},
-    ]},
-  'Dir. Civil':{bloco:'especificos',
+  'Dir. Civil':{bloco:'gerais',
     top:[
       {t:'Fatos e Negócios Jurídicos',p:9,acerto:89,status:'manutencao'},
-      {t:'Técnica Legislativa — elaboração/redação/consolidação de leis (LC 95/1998)',p:6,acerto:null,status:'diagnostico'},
       {t:'LINDB',p:7,acerto:93,status:'manutencao'},
       {t:'Pessoas Naturais e Jurídicas',p:7,acerto:89,status:'manutencao'},
       {t:'Bens',p:5,acerto:92,status:'manutencao'},
@@ -1266,10 +1223,8 @@ const EDITAL={
       {t:'Espécies de Contratos Pt2',p:5,acerto:72,status:'manutencao'},
       {t:'Responsabilidade Civil',p:6,acerto:85,status:'manutencao'},
       {t:'Direito das Coisas',p:5,acerto:77,status:'manutencao'},
-      {t:'Regularização Fundiária Urbana e Rural (Lei 13.465/2017)',p:5,acerto:58.3,status:'ponto-fraco'},
-      {t:'Loteamento e Parcelamento do Solo (Lei 6.766/1979) / Incorporações (Lei 4.591/1964)',p:4,acerto:null,status:'diagnostico'},
     ]},
-  'Dir. Penal':{bloco:'especificos',
+  'Dir. Penal':{bloco:'gerais',
     top:[
       {t:'Princípios da legalidade e da anterioridade',p:8,acerto:null,status:'nivelamento'},
       {t:'Crimes contra a Fé Pública (falsidade de títulos e documental)',p:20,acerto:null,status:'nivelamento'},
@@ -1278,24 +1233,21 @@ const EDITAL={
       {t:'Lei 8.137/1990 — crimes contra a ordem tributária',p:15,acerto:null,status:'nivelamento'},
       {t:'Lei 13.869/2019 — abuso de autoridade',p:10,acerto:null,status:'nivelamento'},
     ]},
-  'Reforma Tributária':{bloco:'especificos',
+  'Direito Empresarial (Comercial)':{bloco:'gerais',
     top:[
-      {t:'Aspectos gerais e novos princípios (EC 132/2023)',p:50,acerto:82,status:'manutencao'},
-      {t:'IBS, CBS e Comitê Gestor',p:50,acerto:75,status:'ponto-fraco'},
-    ]},
-  'Dir. Previdenciário':{bloco:'especificos',
-    top:[
-      {t:'RGPS — segurados e benefícios',p:20,acerto:null,status:'diagnostico'},
-      {t:'RGPS — dependentes e benefícios',p:12,acerto:null,status:'diagnostico'},
-      {t:'EC 103/2019 — regras gerais e de transição',p:18,acerto:null,status:'diagnostico'},
-      {t:'RPPS — custeio, equilíbrio financeiro e atuarial',p:18,acerto:null,status:'diagnostico'},
-      {t:'Certificado de Regularidade Previdenciária (CRP)',p:5,acerto:null,status:'diagnostico'},
-      {t:'Contagem recíproca e compensação previdenciária',p:7,acerto:null,status:'diagnostico'},
-      {t:'Regime de Previdência Complementar (RPC) e relação RPPS×RGPS',p:7,acerto:null,status:'diagnostico'},
-      {t:'LC 412/2008 — RPPS/SC',p:13,acerto:null,status:'diagnostico'},
+      {t:'Conceito, autonomia, fontes e princípios',p:14.3,acerto:null,status:'diagnostico'},
+      {t:'Empresário e estabelecimento (arts. 966 a 980 e 1.142 a 1.149 do CC)',p:14.3,acerto:null,status:'diagnostico'},
+      {t:'Institutos complementares: registro, nome empresarial, prepostos e escrituração',p:14.3,acerto:null,status:'diagnostico'},
+      {t:'Sociedades não personificadas e sociedade simples',p:14.3,acerto:null,status:'diagnostico'},
+      {t:'Sociedade limitada',p:14.3,acerto:null,status:'diagnostico'},
+      {t:'Sociedade anônima (Lei 6.404/1976)',p:14.3,acerto:null,status:'diagnostico'},
+      {t:'Operações societárias, coligadas e desconsideração da personalidade jurídica',p:14.3,acerto:null,status:'diagnostico'},
     ]},
 
 };
+// Distribuição PROVISÓRIA da prova (edital de 2018: 260 questões). Troque aqui quando o edital novo sair.
+const PROVA={qG:120,qE:140,pG:1,pE:1};
+const PROVA_TOTAL=PROVA.qG*PROVA.pG+PROVA.qE*PROVA.pE;
 // Lista de matérias reais do edital, excluindo a chave '_meta' (metadados da prova).
 // Usar SEMPRE isto (e não Object.keys(EDITAL) direto) ao iterar matérias.
 const EDITAL_MATS=Object.keys(EDITAL).filter(k=>k!=='_meta');
@@ -1314,40 +1266,32 @@ const isDecorebaHeuristico=titulo=>PADROES_DECOREBA.some(p=>p.test(titulo));
 // teto = meta realista de acerto até a prova · hpp = horas de estudo por ponto percentual a recuperar
 // nivel0 = estimativa usada só enquanto não existe dado real (Guruja/registro) da matéria.
 const DECISAO_PADRAO={
-  'Dir. Constitucional':             {q:16.7,teto:92,hpp:0.25,nivel0:null,tipo:'revisão de base forte'},
-  'Dir. Administrativo':             {q:16.7,teto:92,hpp:0.25,nivel0:null,tipo:'revisão + legislação SC nova'},
-  'Dir. Financeiro / AFO':           {q:13.9,teto:92,hpp:0.30,nivel0:null,tipo:'revisão + lei seca SC (LC 898, Lei 7.541)'},
-  'Reforma Tributária':              {q:2.8,teto:92,hpp:0.45,nivel0:60,  tipo:'tema novo (EC 132) — poucas questões'},
-  'Dir. Previdenciário':             {q:16.7,teto:88,hpp:0.80,nivel0:45,  tipo:'matéria difícil + lei seca (EC 103, RPPS, LC 412)'},
-  'Dir. Civil':                      {q:16.7,teto:92,hpp:0.35,nivel0:null,tipo:'revisão com buracos pontuais'},
-  'Dir. Penal':                      {q:16.7,teto:92,hpp:0.30,nivel0:null,tipo:'revisão + leis especiais (8.137, 13.869)'},
-  'Português':                       {q:16,teto:90,hpp:0.30,nivel0:null,tipo:'manutenção'},
-  'Raciocínio Lógico':               {q:6, teto:90,hpp:0.35,nivel0:null,tipo:'manutenção'},
-  'Matemática Financeira e Estatística':{q:10,teto:60,hpp:0.80,nivel0:25,tipo:'exatas do zero — só o núcleo (juros, descontos, SAC/Price)'},
-  'Ciência e Análise de Dados':      {q:16,teto:90,hpp:0.30,nivel0:30,  tipo:'conceitual novo (BI, IA, LGPD)'},
-  'Ética Pública':                   {q:16,teto:96,hpp:0.20,nivel0:null,tipo:'manutenção + assédio e anticorrupção'},
-  'Conhecimentos Regionais de SC':   {q:16,teto:72,hpp:0.45,nivel0:30,  tipo:'memorização de conteúdo regional'},
+  'Contabilidade Geral':             {q:30, teto:85,hpp:0.60,nivel0:60,  tipo:'núcleo fiscal — retomada (estudada no 1º semestre de 2026)'},
+  'Auditoria':                       {q:40, teto:85,hpp:0.50,nivel0:60,  tipo:'núcleo fiscal — depende da base de Contabilidade'},
+  'Dir. Tributário':                 {q:30, teto:90,hpp:0.30,nivel0:80,  tipo:'núcleo fiscal — base forte, revisar pelo CTN'},
+  'Legislação Tributária Estadual':  {q:40, teto:80,hpp:0.70,nivel0:30,  tipo:'núcleo fiscal — matéria nova (ICMS e lei do RS)'},
+  'Tecnologia da Informação':        {q:26, teto:80,hpp:0.60,nivel0:55,  tipo:'retomada (Banco de Dados)'},
+  'Português':                       {q:26, teto:90,hpp:0.30,nivel0:null,tipo:'manutenção'},
+  'Raciocínio Lógico':               {q:20, teto:85,hpp:0.40,nivel0:82,  tipo:'manutenção'},
+  'Dir. Constitucional':             {q:10, teto:92,hpp:0.25,nivel0:null,tipo:'revisão de base forte'},
+  'Dir. Administrativo':             {q:10, teto:92,hpp:0.25,nivel0:null,tipo:'revisão de base forte'},
+  'Dir. Civil':                      {q:9.4,teto:92,hpp:0.35,nivel0:null,tipo:'revisão com buracos pontuais'},
+  'Dir. Penal':                      {q:9.3,teto:90,hpp:0.30,nivel0:null,tipo:'revisão'},
+  'Direito Empresarial (Comercial)': {q:9.3,teto:85,hpp:0.40,nivel0:75,  tipo:'ainda não entrou nas metas'},
 };
 
 // "Peso na prova" mostrado pelo Guruja (% da prova) — estimativa da plataforma, NÃO do edital.
-const PESO_PROVA={'Dir. Constitucional':11.9,'Dir. Administrativo':11.9,'Dir. Civil':11.9,'Dir. Penal':11.9,'Dir. Previdenciário':11.9,
-  'Dir. Financeiro / AFO':9.9,'Reforma Tributária':2.0,'Português':5.7,'Ética Pública':5.7,'Ciência e Análise de Dados':5.7,'Conhecimentos Regionais de SC':5.7};
+const PESO_PROVA={'Legislação Tributária Estadual':15.4,'Auditoria':15.4,'Contabilidade Geral':11.5,'Dir. Tributário':11.5,'Tecnologia da Informação':10,'Português':10,'Raciocínio Lógico':7.7,'Dir. Constitucional':3.85,'Dir. Administrativo':3.85,'Dir. Civil':3.6,'Dir. Penal':3.6,'Direito Empresarial (Comercial)':3.6}; // PROVISÓRIO: distribuição do edital de 2018 do SEFAZ-RS (o Guruja ainda não tem edital vinculado)
 // Desempenho acumulado até 07/11 (Metas 1 a 4), lido pelo conector do Guruja (antes vinha de prints, com erros de leitura).
 // pct = % de acerto · q/a = questões/acertos · media = média da turma · dif = diferença (pontos percentuais).
 // Raciocínio Lógico, Matemática Financeira e Estatística têm 0 questões no Guruja: seguem o nível estimado (FORM_NIVEL_FIXO).
 let GURUJA_REF_MS=new Date(2026,10,7,7,30).getTime(); // leitura do conector Guruja de 07/11 ~07h15: registros feitos depois dela somam por cima
-const GURUJA_SEMANA={ // números EXATOS lidos pelo conector (meu_desempenho_por_disciplina) em 07/11
-  'Dir. Previdenciário':{pct:83.22,q:149,a:124,media:76.14,dif:7.08},
+const GURUJA_SEMANA={ // histórico real do planejamento do SEFAZ-SC (conector, 07/11): só as matérias que continuam no SEFAZ-RS
   'Dir. Constitucional':{pct:89.51,q:143,a:128,media:84.03,dif:5.48},
   'Dir. Administrativo':{pct:86.12,q:173,a:149,media:81.85,dif:4.27},
   'Dir. Civil':{pct:89.56,q:182,a:163,media:87.78,dif:1.78},
   'Dir. Penal':{pct:83.80,q:142,a:119,media:84.89,dif:-1.09},
-  'Dir. Financeiro / AFO':{pct:89.03,q:155,a:138,media:86.49,dif:2.54},
-  'Conhecimentos Regionais de SC':{pct:91.30,q:23,a:21,media:83.79,dif:7.51},
-  'Português':{pct:86.74,q:83,a:72,media:81.82,dif:4.92},
-  'Ética Pública':{pct:85.18,q:27,a:23,media:84.71,dif:0.47},
-  'Ciência e Análise de Dados':{pct:81.53,q:65,a:53,media:80.96,dif:0.57},
-  'Reforma Tributária':{pct:85.52,q:76,a:65,media:89.05,dif:-3.53}
+  'Português':{pct:86.74,q:83,a:72,media:81.82,dif:4.92}
 };
 
 // ═══ FÓRMULA 40/40/10/10 (04/11) — nota de cada atividade ═══
@@ -1424,11 +1368,11 @@ const GURUJA_ITEM={
   906:['Ciência e Análise de Dados','D',4],
   702:["Conhecimentos de SC",'X',3],703:["Dir. Financeiro / AFO",'X',3],704:["Dir. Previdenciário",'X',3],705:["Dir. Civil",'D',4],706:["Ética Pública",'X',3],707:["Dir. Administrativo",'D',3],708:["Dir. Financeiro / AFO",'D',3],709:["Português",'D',3],710:["Estatística",'X',2],711:["Conhecimentos de SC",'X',5],712:["Dir. Penal",'X',3],713:["Ciência e Análise de Dados",'D',4],714:["Dir. Previdenciário",'X',3],715:["Dir. Civil",'I',4],716:["Ética Pública",'X',3],717:["Dir. Constitucional",'X',4],718:["Dir. Administrativo",'D',4],719:["Conhecimentos de SC",'X',3],720:["Dir. Financeiro / AFO",'X',3],721:["Português",'X',3],722:["Reforma Tributária",'X',3],723:["MatFin",'X',2],724:["Dir. Penal",'X',3],725:["Estatística",'X',2],726:["Ciência e Análise de Dados",'X',3],727:["Conhecimentos de SC",'X',4],728:["Raciocínio Lógico",'X',2],729:["Dir. Previdenciário",'X',3],730:["Dir. Civil",'D',4],731:["Ética Pública",'X',3],732:["Dir. Constitucional",'X',3],733:["Dir. Administrativo",'D',4],734:["Dir. Financeiro / AFO",'X',3]
 };
-const FORM_PESO={'Dir. Previdenciário':11.9,'Dir. Penal':11.9,'Dir. Administrativo':11.9,'Dir. Constitucional':11.9,'Dir. Civil':11.9,'Dir. Financeiro / AFO':9.9,'Ciência e Análise de Dados':5.7,'Português':5.7,'Ética Pública':5.7,'Conhecimentos de SC':5.7,'Reforma Tributária':2.0,'MatFin':1.9,'Estatística':1.9,'Raciocínio Lógico':1.9};
+const FORM_PESO={'Legislação Tributária Estadual':15.4,'Auditoria':15.4,'Contabilidade Geral':11.5,'Dir. Tributário':11.5,'Tecnologia da Informação':10,'Português':10,'Raciocínio Lógico':7.7,'Dir. Constitucional':3.85,'Dir. Administrativo':3.85,'Dir. Civil':3.6,'Dir. Penal':3.6,'Direito Empresarial (Comercial)':3.6};
 // FORM_REC (parada há tempo, 0–1): 07/11 pelo que o Guruja mostra de cada matéria (estimativa: o conector não dá a data de cada atividade)
-const FORM_REC={'Dir. Previdenciário':.6,'Dir. Penal':.2,'Dir. Administrativo':.1,'Dir. Constitucional':.3,'Dir. Civil':.1,'Dir. Financeiro / AFO':.2,'Ciência e Análise de Dados':.2,'Português':.1,'Ética Pública':.1,'Conhecimentos de SC':.9,'Reforma Tributária':.6,'MatFin':1,'Estatística':1,'Raciocínio Lógico':1};
-const FORM_NIVEL_FIXO={'MatFin':26,'Estatística':30,'Raciocínio Lógico':82}; // 0 questões no Guruja (confirmado pelo conector): estimativa minha, a trocar pelo dado real quando você fizer as questões
-const FORM_APP={'Conhecimentos de SC':'Conhecimentos Regionais de SC','MatFin':'Matemática Financeira e Estatística','Estatística':'Matemática Financeira e Estatística'};
+const FORM_REC={'Legislação Tributária Estadual':1,'Auditoria':.6,'Contabilidade Geral':.6,'Dir. Tributário':.6,'Tecnologia da Informação':.6,'Português':.1,'Raciocínio Lógico':.8,'Dir. Constitucional':.3,'Dir. Administrativo':.1,'Dir. Civil':.1,'Dir. Penal':.2,'Direito Empresarial (Comercial)':1};
+const FORM_NIVEL_FIXO={}; // matérias sem dado real usam o nivel0 de DECISAO_PADRAO (estimativa minha, marcada como 'estimado')
+const FORM_APP={};
 const FORM_PRIO={I:1,D:.6,X:.2};
 const FORM_PNOME={I:'Indispensável',D:'Desejável',X:'Dispensável'};
 function formulaDisc(disc){
@@ -1455,7 +1399,7 @@ const fmN=x=>x.toFixed(2).replace('.',',');
 // Núcleo puro (testável): recebe linhas já com nível/estrelas e devolve ranking com veredito e porquê.
 function calcDecisaoCore(rows){
   const out=rows.map(r=>{
-    const peso=r.bloco==='especificos'?2:1;
+    const peso=r.bloco==='especificos'?PROVA.pE:PROVA.pG;
     const nivel=r.nivel;
     const gap=Math.max(0,r.teto-nivel);
     const fRel=r.estrelas!=null?Math.min(1.6,Math.max(0.7,r.estrelas/3)):1;
@@ -1476,11 +1420,11 @@ function calcDecisaoCore(rows){
     o.veredito=v;o.corV=cor;
   });
   out.forEach(o=>{
-    const blocoTxt=o.bloco==='especificos'?'Específicos (peso 2×)':'Gerais (peso 1×)';
-    const tail=o.veredito==='NUNCA CORTAR'?(o.nivel<70?'nível abaixo de 70% num bloco de peso 2 — cada ponto vale dobrado':'muitos pontos em jogo num bloco de peso 2')
+    const blocoTxt=o.bloco==='especificos'?'Núcleo fiscal':'Base';
+    const tail=o.veredito==='NUNCA CORTAR'?(o.nivel<70?'nível abaixo de 70% no núcleo fiscal':'muitos pontos em jogo no núcleo fiscal')
       :o.veredito==='FAZER'?'retorno bom por hora gasta'
       :o.veredito==='SE SOBRAR TEMPO'?'retorno médio — faça depois das matérias de cima'
-      :(o.bloco==='gerais'?'peso 1× e retorno baixo por hora — é onde cortar sai mais barato':'retorno baixo por hora');
+      :(o.bloco==='gerais'?'retorno baixo por hora — é onde cortar sai mais barato':'retorno baixo por hora');
     o.porque=`${blocoTxt} · ~${o.q}q (hipótese) · nível ${Math.round(o.nivel)}% → meta ${o.teto}% (${Math.round(o.gap)}pp) · ~${o.horas.toFixed(1)}h (${o.tipo}) → ${o.cb.toFixed(2)} pts/h · ${tail}`;
   });
   return out.sort((a,b)=>b.cb-a.cb);
@@ -1556,7 +1500,7 @@ function calcOrdemCorte(){
 function pesoGate(mat){
   const g=EDITAL[mat];
   if(!g)return 1;
-  const base=g.bloco==='especificos'?2:1;
+  const base=g.bloco==='especificos'?PROVA.pE:PROVA.pG;
   return base*Math.min(1.2,Math.max(0.5,decisaoQ(mat)/16));
 }
 
@@ -1805,12 +1749,12 @@ function calcProjecaoNotaFinal(){
   const totalQ=b=>dec.filter(d=>d.bloco===b).reduce((s,d)=>s+d.q,0);
   const reais=b=>dec.filter(d=>d.bloco===b&&d.nivelOrigem!=='estimado').length;
   const tot=b=>dec.filter(d=>d.bloco===b).length;
-  const pontosGerais=Math.round(soma('gerais')/Math.max(1,totalQ('gerais'))*80);
-  const pontosEspec=Math.round(soma('especificos')/Math.max(1,totalQ('especificos'))*100);
+  const pontosGerais=Math.round(soma('gerais')/Math.max(1,totalQ('gerais'))*PROVA.qG);
+  const pontosEspec=Math.round(soma('especificos')/Math.max(1,totalQ('especificos'))*PROVA.qE);
   return{
     pontosGerais,pontosEspec,pontosObjetiva:pontosGerais+pontosEspec,pontosDiscursiva:null,
-    notaFinal:pontosGerais+pontosEspec*2, // acertos ponderados (máx. 280) — não é a nota padronizada
-    passaGerais:pontosGerais>=56,passaEspec:pontosEspec>=85,passaDiscursiva:null,
+    notaFinal:pontosGerais*PROVA.pG+pontosEspec*PROVA.pE, // acertos ponderados (máx. 280) — não é a nota padronizada
+    passaGerais:pontosGerais>=Math.round(PROVA.qG*.8),passaEspec:pontosEspec>=Math.round(PROVA.qE*.8),passaDiscursiva:null,
     cobGerais:reais('gerais'),totalGerais:tot('gerais'),cobEspec:reais('especificos'),totalEspec:tot('especificos'),
     correcoesRegistradas:0,
   };
@@ -2076,11 +2020,11 @@ const TIPOS_DIA={
 };
 const SEMANA_CFG_PADRAO={ferias:{de:'2026-11-03',ate:'2026-11-22'},trabalho:[2,4,5],excecoes:{'2026-11-21':'viagem','2026-11-22':'prova'},min:{}};
 const DATA_PROVA_MS=new Date(2026,10,22).getTime();
-const ALVO_NOTA_PADRAO=220;
-const MAT_CURTO={'Dir. Previdenciário':'Previdenciário','Dir. Penal':'Penal','Dir. Administrativo':'Administrativo','Dir. Constitucional':'Constitucional','Dir. Civil':'Civil','Dir. Financeiro / AFO':'AFO','Ciência e Análise de Dados':'TI','Português':'Português','Ética Pública':'Ética','Conhecimentos Regionais de SC':'Geografia SC','Reforma Tributária':'Reforma Trib.','Raciocínio Lógico':'RL','Matemática Financeira e Estatística':'MatFin/Estatística','Orientações Gerais':'Orientações'};
+const ALVO_NOTA_PADRAO=208; // 80% de 260
+const MAT_CURTO={'Dir. Previdenciário':'Previdenciário','Dir. Penal':'Penal','Dir. Administrativo':'Administrativo','Dir. Constitucional':'Constitucional','Dir. Civil':'Civil','Dir. Financeiro / AFO':'AFO','Ciência e Análise de Dados':'TI','Português':'Português','Ética Pública':'Ética','Conhecimentos Regionais de SC':'Geografia SC','Reforma Tributária':'Reforma Trib.','Raciocínio Lógico':'RL','Contabilidade Geral':'Contab','Auditoria':'Auditoria','Dir. Tributário':'Tributário','Legislação Tributária Estadual':'LTE','Tecnologia da Informação':'TI','Direito Empresarial (Comercial)':'Empresarial','Matemática Financeira e Estatística':'MatFin/Estatística','Orientações Gerais':'Orientações'};
 const matCurto=m=>MAT_CURTO[m]||m;
 const RISCO_FIXO_NOME={'Matemática Financeira':'MatFin','Conhecimentos Regionais de SC':'Conhecimentos de SC'};
-const FRACO_AREA={'Prev':'Dir. Previdenciário','Penal':'Dir. Penal','TI':'Ciência e Análise de Dados','AFO':'Dir. Financeiro / AFO','Ética':'Ética Pública','Reforma Trib.':'Reforma Tributária'};
+const FRACO_AREA={'Prev':'Dir. Previdenciário','Penal':'Dir. Penal','TI':'Tecnologia da Informação','AFO':'Dir. Financeiro / AFO','Ética':'Ética Pública','Reforma Trib.':'Reforma Tributária'};
 
 const dkDeData=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 const dataDeDk=dk=>{const[a,b,c]=String(dk).split('-').map(Number);return new Date(a,(b||1)-1,c||1);};
@@ -2221,9 +2165,9 @@ function calcDistancia(){
   const rows=Object.keys(FORM_PESO).map(d=>{const f=formulaDisc(d);return{disc:d,peso:f.peso,nivel:f.nivel};});
   const sp=rows.reduce((s,r)=>s+r.peso,0);
   const pct=rows.reduce((s,r)=>s+r.peso*r.nivel,0)/sp;
-  const cen=[['otimista',3],['realista',9],['pessimista',16]].map(([n,dd])=>({n,dd,pct:pct-dd,pts:(pct-dd)/100*280}));
+  const cen=[['otimista',3],['realista',9],['pessimista',16]].map(([n,dd])=>({n,dd,pct:pct-dd,pts:(pct-dd)/100*PROVA_TOTAL}));
   const alvo=+lsGet('alvo_nota',ALVO_NOTA_PADRAO)||ALVO_NOTA_PADRAO;
-  return{pct,pts:pct/100*280,cen,alvo};
+  return{pct,pts:pct/100*PROVA_TOTAL,cen,alvo};
 }
 function calcRiscos(){
   const S=GURUJA_SYNC;const trio=[];const cortadasRisco=['Matemática Financeira','Estatística'];
@@ -2231,7 +2175,7 @@ function calcRiscos(){
     const [nome,,q,,pctG,media,,,tend]=r;
     const key=RISCO_FIXO_NOME[nome]||nome;
     const f=formulaDisc(key);
-    const emJogo=280*f.peso/100*(100-f.nivel)/100;
+    const emJogo=PROVA_TOTAL*f.peso/100*(100-f.nivel)/100;
     let mult=1;const mot=[];
     if(!q){mult*=1.3;mot.push('0 questões feitas (nível do app é estimativa)');}
     if(tend==='piorando'){mult*=1.25;mot.push('tendência piorando');}
@@ -2241,16 +2185,17 @@ function calcRiscos(){
   });
   const grupo=[];
   const resto=linhas.filter(l=>!cortadasRisco.includes(l.nome));
-  const itens=resto.map(l=>({nome:l.nome,emJogo:l.emJogo,score:l.score,mot:l.mot,peso:l.peso,nivel:l.nivel,trio:false}));
+  const itens=resto.map(l=>({nome:l.nome,emJogo:l.emJogo,score:l.score,mot:l.mot,peso:l.peso,nivel:l.nivel,q:l.q,trio:false}));
   if(grupo.length)itens.push({nome:'MatFin + Estatística + RL',emJogo:grupo.reduce((s,l)=>s+l.emJogo,0),score:grupo.reduce((s,l)=>s+l.score,0),mot:['0 questões feitas no Guruja (nível do app é estimativa)'],peso:grupo.reduce((s,l)=>s+l.peso,0),nivel:null,trio:true});
   itens.sort((a,b)=>b.score-a.score);
   return itens.slice(0,3).map(r=>{
     let acao='',link=null;
-    if(r.nome==='Raciocínio Lógico'){acao='RL fica só no tempo morto: 5–8 questões por dia no TEC (sem bloco no plano).';}
-    else{
+    {
       const f=S.fracos.filter(x=>FRACO_AREA[x[1]]===r.nome)[0];
       if(f){acao=`Ponto mais fraco: “${f[0]}” — ${fmN(f[4])}% (média geral ${fmN(f[5])}%). Refaça as questões erradas dele (3C).`;link=f[6];}
-      else acao='Sem ponto fraco abaixo da média nesta matéria: mantenha com reforço e questões do TEC, sem tempo extra.';
+      else if(r.nome==='Legislação Tributária Estadual')acao='Matéria nova e a de maior peso provisório. Só começa depois de Direito Tributário; a lei do RS depende do edital.';
+      else if(!r.q)acao='Ainda sem questões registradas: o nível é estimativa minha. Registre as primeiras 30 questões FCC para medir de verdade.';
+      else acao='Sem ponto fraco abaixo da média nesta matéria: mantenha com questões do TEC, sem tempo extra.';
     }
     return{...r,acao,link};
   });
@@ -2298,11 +2243,11 @@ function blocoMentora(){
     const R=calcRiscos();
     if(R.length)L.push('3 MAIORES RISCOS: '+R.map((r,i)=>`${i+1}) ${r.nome} ~${r.emJogo.toFixed(1)} pts em jogo (${r.mot.join('; ')||'peso alto'})`).join(' · '));
     const D=calcDistancia();
-    L.push(`DISTÂNCIA DO CORTE: treino ~${D.pct.toFixed(0)}% (~${D.pts.toFixed(0)}/280) · prova realista ~${D.cen[1].pts.toFixed(0)} · mínimo 150 · alvo dela ${D.alvo} (alvo é dela, não o corte oficial)`);
+    L.push(`DISTÂNCIA DO CORTE: treino ~${D.pct.toFixed(0)}% (~${D.pts.toFixed(0)}/${PROVA_TOTAL}) · prova realista ~${D.cen[1].pts.toFixed(0)} · sem corte oficial (SEFAZ-RS ainda sem edital) · alvo dela ${D.alvo} (alvo é dela, não o corte oficial)`);
     return L.join('\n');
   }catch(e){return '';}
 }
-const IA_REGRAS_COMUNS=`Você é a mentora da Ritchely: concurseira do SEFAZ-SC (Auditor Estadual de Finanças Públicas — Direito, FCC, prova 22/11/2026), advogada, mãe solo do Kauê (Colégio Naval), em férias até a prova. Tom: direto, caloroso, sem motivação vazia e sem elogio sem número. Use só os dados abaixo; se um dado não está lá, não invente. Nunca cite quantidade de alunos da plataforma e nunca fale de metas futuras do Guruja. Você NÃO altera o plano: quando algo precisa mudar, diga que a proposta aparece nos botões e que ela decide.`;
+const IA_REGRAS_COMUNS=`Você é a mentora da Ritchely: concurseira com foco no SEFAZ-RS (Auditor-Fiscal da Receita Estadual, banca FCC, edital ainda não publicado e sem data de prova; a prova do SEFAZ-SC em 22/11/2026 é só treino), advogada, mãe solo do Kauê (Colégio Naval). Rotina combinada com o mentor: 1h de TI + 2h de Contabilidade + 1h de revisão das outras matérias por dia. Tom: direto, caloroso, sem motivação vazia e sem elogio sem número. Use só os dados abaixo; se um dado não está lá, não invente. Nunca cite quantidade de alunos da plataforma e nunca fale de metas futuras do Guruja. Você NÃO altera o plano: quando algo precisa mudar, diga que a proposta aparece nos botões e que ela decide.`;
 function promptAbertura(){
   return `${IA_REGRAS_COMUNS}
 
@@ -2483,7 +2428,7 @@ function PainelMentora({onRapido,onSetTab,onAbrirChat,rapidoVer}){
   // ── Distância e riscos ──
   const D=calcDistancia();const R=calcRiscos();
   const corPts=pts=>pts>=D.alvo?'#34d399':pts>=150?'#fbbf24':'#f87171';
-  const pctDe=pts=>Math.max(0,Math.min(100,pts/280*100));
+  const pctDe=pts=>Math.max(0,Math.min(100,pts/PROVA_TOTAL*100));
   const real=D.cen[1];
   const dif=real.pts-D.alvo;
   const prog=E.minPlano>0?Math.round(E.minFeito/E.minPlano*100):0;
@@ -2496,7 +2441,7 @@ function PainelMentora({onRapido,onSetTab,onAbrirChat,rapidoVer}){
     const c=cfgEdit;
     const ok=c.ferias&&c.ferias.de&&c.ferias.ate&&c.ferias.de<=c.ferias.ate;
     lsSet('semana_cfg',{ferias:ok?c.ferias:null,trabalho:c.trabalho,excecoes:c.excecoes,min:c.min||{}});
-    const a=parseInt(alvoEdit,10);if(a>=100&&a<=280)lsSet('alvo_nota',a);
+    const a=parseInt(alvoEdit,10);if(a>=100&&a<=PROVA_TOTAL)lsSet('alvo_nota',a);
     sincronizarDiasTrabalho();setSheet(null);refresh();
   }
 
@@ -2507,7 +2452,7 @@ function PainelMentora({onRapido,onSetTab,onAbrirChat,rapidoVer}){
       <div style={{background:'linear-gradient(135deg,rgba(30,20,10,.95),rgba(10,7,3,.98))',border:'1px solid rgba(251,191,36,.18)',borderRadius:13,padding:'11px 13px',marginBottom:9}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:8}}>
           <div>
-            <div style={{fontSize:12,color:'rgba(251,191,36,.55)',letterSpacing:'3px',fontFamily:mono,fontWeight:700}}>MENTORA · SEFAZ-SC</div>
+            <div style={{fontSize:12,color:'rgba(251,191,36,.55)',letterSpacing:'3px',fontFamily:mono,fontWeight:700}}>MENTORA · SEFAZ-RS</div>
             <div style={{fontFamily:"'DM Serif Display',serif",color:'#f0e6d0',fontSize:19,marginTop:2}}>{rotuloDk(E.dk)} · {T.ic} {T.nome}</div>
             <div style={{fontSize:13,color:'#aab6c8',marginTop:3,fontFamily:mono}}>{E.diasProva>0?`faltam ${E.diasProva} dias para a prova`:'dia da prova'}{E.noPlano?` · plano dia ${E.diaIdx}/7`:' · plano encerrado'}</div>
           </div>
@@ -2582,13 +2527,11 @@ function PainelMentora({onRapido,onSetTab,onAbrirChat,rapidoVer}){
 
       {/* 2 — Distância até o corte */}
       <div style={IA_CARD}>
-        <div style={IA_LAB}>📏 DISTÂNCIA ATÉ O CORTE</div>
-        <div style={{fontSize:15,color:'#f1f5f9',lineHeight:1.6}}>Hoje você acerta ~<strong style={{color:'#fbbf24'}}>{D.pct.toFixed(0)}%</strong> do que treina (≈ {D.pts.toFixed(0)} de 280 pontos). Na prova, o ambiente costuma custar 3 a 16 pontos percentuais.</div>
+        <div style={IA_LAB}>📏 DISTÂNCIA ATÉ O SEU ALVO</div>
+        <div style={{fontSize:15,color:'#f1f5f9',lineHeight:1.6}}>Hoje você acerta ~<strong style={{color:'#fbbf24'}}>{D.pct.toFixed(0)}%</strong> do que treina (≈ {D.pts.toFixed(0)} de {PROVA_TOTAL} pontos). Na prova, o ambiente costuma custar 3 a 16 pontos percentuais.</div>
         <div style={{position:'relative',height:26,margin:'14px 0 6px',background:'rgba(148,163,184,.2)',borderRadius:6}}>
           <div style={{position:'absolute',left:0,top:0,bottom:0,width:`${pctDe(real.pts)}%`,background:`linear-gradient(90deg,${corPts(real.pts)}66,${corPts(real.pts)})`,borderRadius:6}}/>
-          <div style={{position:'absolute',left:`${pctDe(150)}%`,top:-4,bottom:-4,width:2,background:'#f87171'}}/>
           <div style={{position:'absolute',left:`${pctDe(D.alvo)}%`,top:-4,bottom:-4,width:2,background:'#34d399'}}/>
-          <div style={{position:'absolute',left:`${pctDe(150)}%`,top:28,transform:'translateX(-50%)',fontSize:11,color:'#f87171',fontFamily:mono,whiteSpace:'nowrap'}}>mín. 150</div>
           <div style={{position:'absolute',left:`${pctDe(D.alvo)}%`,top:28,transform:'translateX(-50%)',fontSize:11,color:'#34d399',fontFamily:mono,whiteSpace:'nowrap'}}>alvo {D.alvo}</div>
         </div>
         <div style={{display:'flex',gap:6,marginTop:30}}>
@@ -2601,9 +2544,9 @@ function PainelMentora({onRapido,onSetTab,onAbrirChat,rapidoVer}){
           ))}
         </div>
         <div style={{fontSize:14,color:'#d5dde8',marginTop:9,lineHeight:1.6}}>
-          Cenário realista: <strong style={{color:corPts(real.pts)}}>{real.pts.toFixed(0)} pts</strong>, {dif>=0?`${dif.toFixed(0)} pts acima do seu alvo`:`${Math.abs(dif).toFixed(0)} pts abaixo do seu alvo`} e {(real.pts-150).toFixed(0)} acima do mínimo. {dif<0?'O que fecha essa diferença está nos 3 riscos abaixo.':'Margem boa: o trabalho agora é não perder pontos nos 3 riscos abaixo.'}
+          Cenário realista: <strong style={{color:corPts(real.pts)}}>{real.pts.toFixed(0)} pts</strong>, {dif>=0?`${dif.toFixed(0)} pts acima do seu alvo`:`${Math.abs(dif).toFixed(0)} pts abaixo do seu alvo`}. {dif<0?'O que fecha essa diferença está nos 3 riscos abaixo.':'Margem boa: o trabalho agora é não perder pontos nos 3 riscos abaixo.'}
         </div>
-        <div style={{fontSize:12,color:'#aab6c8',marginTop:6,lineHeight:1.5}}>Pontos brutos estimados (80 gerais ×1 + 100 específicas ×2). O corte oficial é por nota padronizada e depende da turma; o alvo é seu e se edita em ⚙️ Semana. Desconto de prova (3/9/16 pp) é estimativa.</div>
+        <div style={{fontSize:12,color:'#aab6c8',marginTop:6,lineHeight:1.5}}>SEFAZ-RS ainda sem edital: não existe corte oficial. Pontos brutos numa prova provisória de {PROVA_TOTAL} questões (distribuição do edital de 2018). Matérias sem questões registradas entram com nível estimado por mim. O alvo é seu e se edita em ⚙️ Semana. Desconto de prova (3/9/16 pp) é estimativa.</div>
       </div>
 
       {/* 3 — Os 3 maiores riscos */}
@@ -2715,8 +2658,8 @@ function PainelMentora({onRapido,onSetTab,onAbrirChat,rapidoVer}){
               </label>
             ))}
           </div>
-          <div style={{fontSize:13,color:'#aab6c8',marginBottom:6}}>Seu alvo de nota (pontos brutos de 280; o corte oficial não é conhecido)</div>
-          <input type="number" min="100" max="280" value={alvoEdit} onChange={e=>setAlvoEdit(e.target.value)} style={{width:90,padding:'7px 9px',borderRadius:8,border:'1px solid rgba(255,255,255,.2)',background:'rgba(0,0,0,.25)',color:'#f1f5f9',fontSize:15,marginBottom:14}}/>
+          <div style={{fontSize:13,color:'#aab6c8',marginBottom:6}}>Seu alvo de nota (pontos brutos de 260; ainda não há edital nem corte oficial)</div>
+          <input type="number" min="100" max="260" value={alvoEdit} onChange={e=>setAlvoEdit(e.target.value)} style={{width:90,padding:'7px 9px',borderRadius:8,border:'1px solid rgba(255,255,255,.2)',background:'rgba(0,0,0,.25)',color:'#f1f5f9',fontSize:15,marginBottom:14}}/>
           <button onClick={salvarSemana} style={{width:'100%',padding:'13px',borderRadius:11,border:'none',background:'linear-gradient(135deg,#c8850a,#fbbf24)',color:'#050a14',fontSize:15,fontWeight:900,cursor:'pointer',fontFamily:mono}}>Salvar semana</button>
         </IASheet>
       )}
@@ -2784,7 +2727,7 @@ function ChatIA({appCtx,onMIT,embed}){
 
     // Projeção de nota — se a prova fosse hoje
     const proj=calcProjecaoNotaFinal();
-    const projTxt=`Gerais ~${proj.pontosGerais??'?'}/80 (meta interna 56) · Específicos ~${proj.pontosEspec??'?'}/100 (meta interna 85) · estimativa inclui matérias ainda sem dado real (marcadas como estimadas na aba Decisão)`;
+    const projTxt=`Base ~${proj.pontosGerais??'?'}/${PROVA.qG} · Núcleo fiscal ~${proj.pontosEspec??'?'}/${PROVA.qE} (distribuição provisória, sem edital) · estimativa inclui matérias ainda sem dado real (marcadas como estimadas na aba Decisão)`;
 
     // Padrão de erro na discursiva, se houver correção registrada
     const padraoErro=calcPadraoErroDiscursiva(lsGet('rev_discursiva',[]));
@@ -2794,7 +2737,7 @@ function ChatIA({appCtx,onMIT,embed}){
     const decLog=lsGet('ia_decisoes_historico',[]).slice(-4);
     const decTxt=decLog.length?decLog.map(l=>`${l.data}: ${l.itens.join(' · ')}`).join(' | '):'nenhuma decisão registrada ainda';
 
-    return `Você é a Assessora IA pessoal da Ritchely — mentora de alto desempenho para o concurso SEFAZ-SC (Auditor Estadual de Finanças Públicas — Direito, banca FCC, prova 22/11/2026, Florianópolis). Estrutura: 180 questões em dia único — 80 Gerais (peso 1) + 100 Específicos (peso 2), sem discursiva; corte = soma das notas padronizadas ≥ 150 (sem mínimo por prova); desempate pela maior nota em Específicos. Não existem mais os 3 gates do TCE-SP.
+    return `Você é a Assessora IA pessoal da Ritchely — mentora de alto desempenho com foco no SEFAZ-RS (Auditor-Fiscal da Receita Estadual, banca FCC, edital ainda não publicado e sem data de prova; a prova do SEFAZ-SC em 22/11/2026 é só treino). Matérias: núcleo fiscal (Contabilidade Geral, Auditoria, Direito Tributário, Legislação Tributária Estadual) e base (TI/Banco de Dados, Português, Raciocínio Lógico, Constitucional, Administrativo, Civil, Penal, Empresarial). Não há edital: pesos e número de questões são provisórios (edital de 2018), e não existe corte oficial. Regras: Contabilidade antes de Auditoria; Direito Tributário antes de Legislação Tributária Estadual; rotina de 1h TI + 2h Contabilidade + 1h revisão.
 
 PERFIL: Ritchely, mãe solo do Kauê (Colégio Naval). Acorda cedo pro Bloco Ouro. Trabalha em dias configuráveis no app (varia por semana — confira ehDiaTrabalho, não presuma Ter/Qui/Sex fixo).
 
@@ -2834,7 +2777,7 @@ ESCALA DE APROVEITAMENTO:
 ≥85% = SÓLIDO · 70-84% = ATENÇÃO · <70% = CRÍTICO
 NUNCA chame de ruim algo ≥85%. NUNCA chame de bom algo <70%.
 
-TÓPICOS DE MAIOR PESO INTERNO POR MATÉRIA (proporção dentro da matéria, edital SEFAZ-SC 2026 (FCC) — proporções internas são estimativas):
+TÓPICOS DE MAIOR PESO INTERNO POR MATÉRIA (proporção dentro da matéria, matérias do SEFAZ-RS — sem edital, proporções internas são estimativas):
 ${EDITAL_MATS.filter(m=>EDITAL[m]?.bloco==='especificos').map(m=>{const top=[...(EDITAL[m].top||[])].sort((a,b)=>b.p-a.p)[0];return top?`${m}: ${top.t} (${top.p}%)`:null;}).filter(Boolean).join(' · ')}
 
 SISTEMA DE REVISÃO:
@@ -3237,7 +3180,7 @@ Cole este texto no Claude.ai para análise completa.
     <div style={{display:'flex',flexDirection:'column',height:embed?'min(640px,calc(100dvh - 160px))':'calc(100dvh - 155px)'}}>
       <div style={{background:'linear-gradient(135deg,rgba(30,20,10,.95),rgba(10,7,3,.98))',border:'1px solid rgba(251,191,36,.15)',borderRadius:13,padding:'11px 13px',marginBottom:8,display:'flex',justifyContent:'space-between',alignItems:'center',flexShrink:0}}>
         <div>
-          <div style={{fontSize:13,color:'rgba(251,191,36,.5)',letterSpacing:'3px',fontFamily:"'DM Mono',monospace",fontWeight:700}}>{embed?'CONVERSA LIVRE':'ASSESSORA IA · SEFAZ-SC'}</div>
+          <div style={{fontSize:13,color:'rgba(251,191,36,.5)',letterSpacing:'3px',fontFamily:"'DM Mono',monospace",fontWeight:700}}>{embed?'CONVERSA LIVRE':'ASSESSORA IA · SEFAZ-RS'}</div>
           <div style={{fontFamily:"'DM Serif Display',serif",color:'#f0e6d0',fontSize:17,marginTop:2}}>{embed?'Pergunte o que quiser':'Perguntas · Plano · Suporte'}</div>
         </div>
         <div style={{display:'flex',gap:6}}>
@@ -3586,7 +3529,9 @@ const GURUJA_SEED={
 // Retorna dados do Guruja: seed + dados importados pelo usuário (usuário vence)
 function getGurujaAssuntos(){
   const importados=lsGet('guruja_assuntos',{});
-  return{...GURUJA_SEED,...importados};
+  const todos={...GURUJA_SEED,...importados};
+  // só as matérias do concurso atual (SEFAZ-RS); o histórico das outras fica guardado, mas não aparece
+  return Object.fromEntries(Object.entries(todos).filter(([m])=>EDITAL_MATS.includes(m)));
 }
 
 // Score de urgência por assunto: acerto baixo + abaixo da média + relevância alta
@@ -4190,7 +4135,7 @@ Anki: ${ankiMaterias.map(m=>`${m.mat}(${m.cards}cards)`).join(', ')}.
 TEC hoje: ${tecHoje.d3.length} itens vencendo, ${tecHoje.d15.length} próximos.
 NLM urgente: ${nlmSugerido?.mat||'-'} (${nlmSugerido?.pct||'?'}%, ${nlmSugerido?.diasNlm||0}d sem NLM).
 ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
-      const res=await chamarClaude(`Você é assessora de estudos da Ritchely para SEFAZ-SC 2026 (FCC · Prova 22/11/2026 · Auditor Estadual de Finanças Públicas — Direito). Prioridade: Específicos (peso 2) — Previdenciário é o maior buraco; depois legislação de SC e Ciência de Dados. Sem discursiva; corte = nota padronizada ≥150. TEC=caderno sem datas, só dificuldade. ANKI=75 cards/dia em 3 matérias. Rev.1h30=Obsidian+TEC+Anki. Responda em 3 linhas diretas. ${cobrar?'Cobre o que não foi feito ontem.':''}` ,
+      const res=await chamarClaude(`Você é assessora de estudos da Ritchely, com foco no SEFAZ-RS (Auditor-Fiscal da Receita Estadual, banca FCC, edital ainda não publicado e sem data de prova; a prova do SEFAZ-SC em 22/11/2026 é só treino). Prioridade: núcleo fiscal (Contabilidade, Auditoria, Dir. Tributário, Legislação Tributária Estadual) e TI. Sem edital: pesos provisórios, sem corte oficial. TEC=caderno sem datas, só dificuldade. ANKI=75 cards/dia em 3 matérias. Rev.1h30=Obsidian+TEC+Anki. Responda em 3 linhas diretas. ${cobrar?'Cobre o que não foi feito ontem.':''}` ,
         [{role:'user',content:ctx}],120);
       lsSet(`despacho_ia_${hoje}`,res);setDespacho(res);
     }catch(e){console.log(e);}
@@ -4335,24 +4280,24 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
 
       {/* ── SEFAZ-SC · FCC — nota padronizada (sem mínimo por prova; corte = soma ponderada ≥ 150) ── */}
       {(()=>{
-        const dataMeta='22/11/2026';
+        const dataMeta='edital a publicar';
         const diasRestantes=Math.ceil((new Date('2026-11-22T00:00:00')-new Date())/86400000);
         const proj=calcProjecaoNotaFinal();
         const faseColor='#fb923c';
         const caixas=[
-          {nome:'Gerais',ic:'📝',cor:'#60a5fa',q:80,peso:'peso 1',est:proj.pontosGerais,meta:56,metaTxt:'meta interna 70%'},
-          {nome:'Específicos',ic:'⚖️',cor:'#a78bfa',q:100,peso:'peso 2',est:proj.pontosEspec,meta:85,metaTxt:'meta interna 85%'},
+          {nome:'Base',ic:'📝',cor:'#60a5fa',q:PROVA.qG,peso:'provisório',est:proj.pontosGerais,meta:Math.round(PROVA.qG*.8),metaTxt:'meta interna 80%'},
+          {nome:'Núcleo fiscal',ic:'🧾',cor:'#a78bfa',q:PROVA.qE,peso:'provisório',est:proj.pontosEspec,meta:Math.round(PROVA.qE*.8),metaTxt:'meta interna 80%'},
         ];
         return(
           <div style={{borderRadius:12,background:'rgba(15,23,42,.6)',border:'1px solid rgba(255,255,255,.08)',marginBottom:12,overflow:'hidden'}}>
             <div style={{padding:'10px 14px',background:'rgba(255,255,255,.03)',borderBottom:'1px solid rgba(255,255,255,.06)',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
               <div>
-                <div style={{fontSize:13,fontWeight:800,color:'var(--text)',fontFamily:"'DM Mono',monospace",letterSpacing:'1px'}}>SEFAZ-SC · FCC · {dataMeta}</div>
-                <div style={{fontSize:13,color:faseColor,marginTop:1}}>📍 Auditor Estadual de Finanças Públicas — Direito · 180 questões em dia único</div>
+                <div style={{fontSize:13,fontWeight:800,color:'var(--text)',fontFamily:"'DM Mono',monospace",letterSpacing:'1px'}}>SEFAZ-RS · FCC · {dataMeta}</div>
+                <div style={{fontSize:13,color:faseColor,marginTop:1}}>📍 Auditor-Fiscal da Receita Estadual · treino FCC: prova do SEFAZ-SC em 22/11</div>
               </div>
               <div style={{textAlign:'right'}}>
                 <div style={{fontSize:21,fontWeight:900,color:'#f87171',fontFamily:"'DM Mono',monospace",lineHeight:1}}>{diasRestantes}</div>
-                <div style={{fontSize:13,color:'var(--text4)'}}>dias</div>
+                <div style={{fontSize:13,color:'var(--text4)'}}>{diasRestantes>0?'dias p/ o treino':'—'}</div>
               </div>
             </div>
             <div style={{padding:'10px 14px',display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
@@ -4371,7 +4316,7 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
               })}
             </div>
             <div style={{padding:'6px 14px 10px',fontSize:13,color:'#aab6c6',textAlign:'center',lineHeight:1.5}}>
-              Sem mínimo por prova. Corte = soma das notas padronizadas ≥ 150 (= ficar acima da média ponderada do grupo) · desempate: maior nota em Específicos · estimativa inclui matérias ainda sem dado real (veja a aba ⚖️ Decisão)
+              Sem edital: não há corte nem pesos oficiais. Números provisórios (edital de 2018, 260 questões) · matérias sem questões registradas entram com nível estimado (veja a aba ⚖️ Decisão)
             </div>
           </div>
         );
@@ -5425,7 +5370,7 @@ function TabEstudo({feitos,cicloNum,horas,onConcluir,onIrPara,onDesmarcar,onAddH
     setGurujaLoad(true);
     try{
       const r=await chamarClaude(
-        `Coach de concursos especializada em SEFAZ-SC 2026 (FCC). Analise os dados do Guruja e monte plano inteligente: Específicos valem peso 2 (Const, Adm, Financeiro/AFO, Previdenciário, Civil, Penal) e Gerais peso 1 (Português, RL/Mat.Fin/Estatística, Ciência de Dados, Ética, Regionais SC). Sem discursiva; sem mínimo por prova.
+        `Coach de concursos especializada em SEFAZ-RS (FCC, pré-edital). Analise os dados do Guruja e monte plano inteligente: núcleo fiscal (Contabilidade, Auditoria, Dir. Tributário, Legislação Tributária Estadual) primeiro, depois a base (TI, Português, RL, Const, Adm, Civil, Penal, Empresarial). Sem edital: pesos provisórios.
 Relevâncias (peso×incidência estimada): Previdenciário=5, Civil=5, Penal=5, Const=5, AFO=4, Adm=4, Português=3, Ciência de Dados=3, Ética=2, Regionais SC=2, RL/Mat.Fin/Estatística=2.
 Ciclo atual: bloco ${ativo?.mat||'indefinido'}. Meta: ${metaHoras}h/semana. Contexto: ${contextSem||'semana normal'}.
 APENAS JSON sem markdown: {"diagnostico":"2 frases","plano":[{"mat":"nome","horasSugeridas":2.5,"prioridade":1,"motivo":"por que","taxa":82.0,"status":"critica|atencao|ok"}],"alerta":"materia mais urgente"}`,
@@ -5502,7 +5447,7 @@ APENAS JSON sem markdown: {"diagnostico":"2 frases","plano":[{"mat":"nome","hora
     setGurujaLoad(true);
     try{
       const r=await chamarClaude(
-        `Coach de concursos especializada em Guruja/SEFAZ-SC (FCC). Analise desempenho da Ritchely e cruze taxa de acerto com relevância: Específicos (peso 2: Const, Adm, Financeiro/AFO, Previdenciário, Civil, Penal) e Gerais (peso 1: Português, RL/Mat.Fin/Estatística, Ciência de Dados, Ética, Regionais SC).
+        `Coach de concursos especializada em Guruja/SEFAZ-RS (FCC, pré-edital). Analise desempenho da Ritchely e cruze taxa de acerto com relevância: núcleo fiscal (Contabilidade, Auditoria, Dir. Tributário, Legislação Tributária Estadual) e base (TI, Português, RL, Const, Adm, Civil, Penal, Empresarial).
 Relevâncias: Previdenciário=5, Civil=5, Penal=5, Const=5, AFO=4, Adm=4, Português=3, Ciência de Dados=3, Ética=2, Regionais SC=2, RL/Mat.Fin/Estatística=2.
 APENAS JSON sem markdown: {"prioridades":[{"mat":"nome","taxa":85.0,"relevancia":5,"status":"critica|atencao|ok","acao":"o que fazer"}],"resumo":"2 frases diretas","alerta":"materia mais critica"}`,
         [{role:'user',content:`Dados Guruja:\n${gurujaTxt.slice(0,6000)}`}],1200
@@ -6854,7 +6799,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
       const historico2=lsGet('historico_diario',[]);
       const ranking=Object.entries(historico2.reduce((acc,r)=>{if(r.materia&&r.questoes){acc[r.materia]=acc[r.materia]||{q:0,a:0};acc[r.materia].q+=parseInt(r.questoes)||0;acc[r.materia].a+=parseInt(r.acertei)||0;}return acc;},{})).map(([m,v])=>({m,pct:v.q>0?Math.round(v.a/v.q*100):null})).sort((a,b)=>(a.pct||100)-(b.pct||100));
       const ctx=`Ciclo atual: bloco ${totalBlocos}/${N}. Motor local sugere Anki: ${tempoMorto.anki.mat} e NLM: ${tempoMorto.nlm.mat}. ${fmtRanking()}. Travou recentemente: ${tempoMorto.travouRecente.join('; ')||'nada'}. Guruja: ${lsGet('guruja_data',null)?.alerta||'sem dado'}.`;
-      const res=await chamarClaude('Você é assistente de estudos para concurso SEFAZ-SC (FCC). Responda APENAS JSON sem markdown: {"anki":"nome_materia","nlm":"nome_materia","motivo":"1 frase explicando por que essas matérias agora"}',
+      const res=await chamarClaude('Você é assistente de estudos para concurso SEFAZ-RS (FCC, pré-edital). Responda APENAS JSON sem markdown: {"anki":"nome_materia","nlm":"nome_materia","motivo":"1 frase explicando por que essas matérias agora"}',
         [{role:'user',content:ctx}],200);
       const parsed=JSON.parse(res.replace(/```json|```/g,'').trim());
       const cache={...parsed,dia:dk};
@@ -6887,8 +6832,8 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
       const hist=lsGet('historico_diario',[]);
       const por={};hist.forEach(r=>{if(r.materia&&r.questoes){por[r.materia]=por[r.materia]||{q:0,a:0};por[r.materia].q+=parseInt(r.questoes)||0;por[r.materia].a+=parseInt(r.acertei)||0;}});
       const ranking=Object.entries(por).map(([m,v])=>({m,pct:v.q>0?Math.round(v.a/v.q*100):null,q:v.q})).sort((a,b)=>(a.pct||100)-(b.pct||100));
-      const ctx=`Pesos SEFAZ-SC FCC: Específicos (peso 2) = Previdenciário=MAX (maior buraco), Civil, Penal, Const, Adm, AFO; Gerais (peso 1) = Português, Ciência de Dados, Ética, Regionais SC, RL/Mat.Fin/Estatística (menor retorno por hora). Sem discursiva. Aproveitamento atual (pior→melhor): ${ranking.slice(0,8).map(r=>`${r.m}:${r.pct!==null?r.pct+'%':'sem dado'}(${r.q}Q)`).join(', ')}. Ciclo atual: bloco ${totalBlocos}/${N}. Manuais já marcados: ${criticosManuais.map(x=>x.mat).join(', ')||'nenhum'}.`;
-      const res=await chamarClaude('Você é mentor de SEFAZ-SC (FCC). Analise e retorne JSON: {"sugestoes":[{"mat":"nome","motivo":"1 frase objetiva","prioridade":"alta|media"}]} — máximo 4 sugestões que complementem os manuais. Sem markdown.',
+      const ctx=`Pesos provisórios SEFAZ-RS (FCC, sem edital): núcleo fiscal = Legislação Tributária Estadual, Auditoria, Contabilidade, Dir. Tributário (mais da metade da prova); base = TI, Português, RL, Const, Adm, Civil, Penal, Empresarial. Aproveitamento atual (pior→melhor): ${ranking.slice(0,8).map(r=>`${r.m}:${r.pct!==null?r.pct+'%':'sem dado'}(${r.q}Q)`).join(', ')}. Ciclo atual: bloco ${totalBlocos}/${N}. Manuais já marcados: ${criticosManuais.map(x=>x.mat).join(', ')||'nenhum'}.`;
+      const res=await chamarClaude('Você é mentor de SEFAZ-RS (FCC, pré-edital). Analise e retorne JSON: {"sugestoes":[{"mat":"nome","motivo":"1 frase objetiva","prioridade":"alta|media"}]} — máximo 4 sugestões que complementem os manuais. Sem markdown.',
         [{role:'user',content:ctx}],400);
       const parsed=JSON.parse(res.replace(/```json|```/g,'').trim());
       const novas=parsed.sugestoes?.filter(s=>s.mat&&!criticosManuais.find(m=>m.mat===s.mat))||[];
@@ -7067,7 +7012,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
             )}
             {foraEscopoN>0&&(
               <div style={{padding:'8px 12px',borderRadius:9,background:'rgba(148,163,184,.06)',border:'1px solid rgba(148,163,184,.18)',marginBottom:10,fontSize:13,color:'var(--text4)'}}>
-                🗂️ {foraEscopoN} item(ns) de matéria fora do edital SEFAZ-SC estão ocultos aqui (não apagados) — foco só no que cai na sua prova.
+                🗂️ {foraEscopoN} item(ns) de matéria fora das matérias do SEFAZ-RS estão ocultos aqui (não apagados) — foco só no que cai na sua prova.
               </div>
             )}
             <div style={{padding:'12px 14px',borderRadius:12,background:'rgba(96,165,250,.06)',border:'1px solid rgba(96,165,250,.2)',marginBottom:14}}>
@@ -7685,11 +7630,11 @@ function TabDiscursiva({onRapido,rapidoVer}){
       <div style={{padding:'13px 15px',borderRadius:13,background:'rgba(251,191,36,.07)',border:'1px solid rgba(251,191,36,.28)',marginBottom:12}}>
         <div style={{fontSize:13,color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:5}}>⚖️ DECISÃO — PESO × SEU NÍVEL × CUSTO-BENEFÍCIO</div>
         <div style={{fontSize:14,color:'var(--text3)',lineHeight:1.6}}>
-          Específicos valem <b>2×</b> e Gerais <b>1×</b>. <b>pts</b> = pontos-peso que você ainda pode ganhar na matéria · <b>h</b> = horas estimadas para chegar na meta · <b>pts/h</b> = custo-benefício.
-          Sem mínimo por prova: o corte é a nota padronizada (≥150), então cada desvio perdido em Gerais se compensa com meio desvio em Específicos.
+          Sem edital, todas as matérias valem <b>1×</b> por enquanto. <b>pts</b> = pontos-peso que você ainda pode ganhar na matéria · <b>h</b> = horas estimadas para chegar na meta · <b>pts/h</b> = custo-benefício.
+          O núcleo fiscal (Contabilidade, Auditoria, Dir. Tributário e Legislação Tributária Estadual) concentra mais da metade das questões na distribuição provisória.
         </div>
         <div style={{fontSize:13,color:'var(--text4)',marginTop:6,lineHeight:1.5}}>
-          ℹ️ O edital NÃO publica quantas questões vão para cada matéria. As questões abaixo seguem a coluna "Peso na prova" do Guruja (estimativa da plataforma, não do edital): Gerais {Math.round(totQ.gerais)}/80 · Específicos {Math.round(totQ.especificos)}/100. Edite se tiver informação melhor.
+          ℹ️ O SEFAZ-RS ainda não tem edital. As questões abaixo seguem a distribuição do edital de 2018 (260 questões): Base {Math.round(totQ.gerais)}/{PROVA.qG} · Núcleo fiscal {Math.round(totQ.especificos)}/{PROVA.qE}. Edite se tiver informação melhor.
         </div>
       </div>
 
@@ -7716,7 +7661,7 @@ function TabDiscursiva({onRapido,rapidoVer}){
                 <div style={{padding:'10px 12px'}}>
                   <div style={{display:'flex',alignItems:'center',gap:6,flexWrap:'wrap',marginBottom:6}}>
                     <span style={{fontSize:15,fontWeight:900,color:'var(--text)'}}>{ICV[d.veredito]} {d.mat}</span>
-                    {chip(d.bloco==='especificos'?'Específicos ×2':'Gerais ×1',d.bloco==='especificos'?'#a78bfa':'#60a5fa')}
+                    {chip(d.bloco==='especificos'?'Núcleo fiscal':'Base',d.bloco==='especificos'?'#a78bfa':'#60a5fa')}
                     <span style={{marginLeft:'auto'}}>{chip(d.veredito,c)}</span>
                   </div>
                   <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
@@ -7755,7 +7700,7 @@ function TabDiscursiva({onRapido,rapidoVer}){
             );
           })}
           <div style={{padding:'10px 12px',borderRadius:10,background:'rgba(148,163,184,.07)',border:'1px solid rgba(148,163,184,.2)',fontSize:13,color:'var(--text4)',lineHeight:1.6}}>
-            <b>Como o veredito sai:</b> 🔒 Específicos com muitos pontos em jogo ou nível &lt;70% (com ≥8 questões) nunca é cortado · ✅ pts/h alto ou Específicos com pts/h ≥0,5 · 🟡 pts/h ≥0,35 · ✂️ abaixo disso.
+            <b>Como o veredito sai:</b> 🔒 Núcleo fiscal com muitos pontos em jogo ou nível &lt;70% (com ≥8 questões) nunca é cortado · ✅ pts/h alto ou núcleo fiscal com pts/h ≥0,5 · 🟡 pts/h ≥0,35 · ✂️ abaixo disso.
             Nível "estimado" = ainda sem dado real (laranja): troca sozinho quando o Guruja/registros trouxerem acerto. A linha branca na barra é a meta.
           </div>
         </div>
@@ -7791,7 +7736,13 @@ function TabDiscursiva({onRapido,rapidoVer}){
         </div>
       )}
 
-      {sub==='disp'&&(()=>{
+      {sub==='disp'&&!CICLO_DISP.length&&(
+        <div style={{padding:'12px 14px',borderRadius:12,background:'rgba(96,165,250,.07)',border:'1px solid rgba(96,165,250,.3)'}}>
+          <div style={{fontSize:13,color:'#60a5fa',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:5}}>📦 FORA DO CICLO</div>
+          <div style={{fontSize:14,color:'var(--text3)',lineHeight:1.6}}>Nada fora do ciclo. As 20 atividades da Meta 1 (Consolidar a base) estão todas no plano de 12 a 18/11. O ciclo antigo do SEFAZ-SC foi arquivado.</div>
+        </div>
+      )}
+      {sub==='disp'&&CICLO_DISP.length>0&&(()=>{
         const voltaram=CICLO_DISP.filter(d=>CICLO_VOLTA.includes(d.id));
         const trazer=id=>{const v=lsGet('ciclo_volta',[]);if(!v.includes(id))lsSet('ciclo_volta',[...v,id]);window.location.reload();};
         const dispensar=id=>{lsSet('ciclo_volta',lsGet('ciclo_volta',[]).filter(x=>x!==id));window.location.reload();};
@@ -8949,44 +8900,43 @@ function ModalConfig({fechar}){
 
 // ─── PAINEL GURUJA — dados lidos pelo conector em 07/11 (o app não lê o Guruja sozinho: eu atualizo quando você pedir) ───
 const GURUJA_SYNC={
-  em:'07/11/2026 às ~07h15',
-  metasFechadas:3,
-  total:{min:5660,q:1218,a:1055},
-  metaAtual:{n:4,feitas:8,total:32,q:128,a:115,min:590},
-  ritmo:{diasMeu:7,diasTurma:7,status:'no ritmo',decilProgresso:8,minMeta:1690,minMetaTurma:1160,qMeta:363,qMetaTurma:490},
-  tempo:[['Questões',4800],['Teoria',290],['Teste',210],['Lei Seca',180],['Revisão',0],['Reforços',90]],
-  // [nome, peso, questões, acertos, %, média geral, mediana dos outros, decil, tendência, minutos]
+  em:'12/11/2026 às ~12h15',
+  planejamento:'Consolidar a base (SEFAZ-RS · pré-edital · FCC)',
+  metasFechadas:0,
+  total:{min:0,q:0,a:0},
+  metaAtual:{n:1,feitas:0,total:20,q:0,a:0,min:0},
+  ritmo:{diasMeu:7,diasTurma:7,status:'no ritmo',decilProgresso:null,minMeta:0,minMetaTurma:1,qMeta:0,qMetaTurma:1},
+  tempo:[['Questões',0],['Teoria',0],['Teste',0],['Lei Seca',0],['Revisão',0],['Reforços',0]],
+  // [nome, peso provisório, questões, acertos, %, média geral, mediana dos outros, decil, tendência, minutos]
+  // Constitucional, Administrativo, Civil, Penal e Português: histórico real do planejamento do SEFAZ-SC (07/11). As demais: 0 questões no planejamento novo.
   disc:[
-    ['Dir. Previdenciário',11.9,149,124,83.22,76.14,75.0,9,'estável',780],
-    ['Dir. Constitucional',11.9,143,128,89.51,84.03,82.5,10,'melhorando',660],
-    ['Dir. Administrativo',11.9,173,149,86.12,81.85,83.4,8,'estável',570],
-    ['Dir. Civil',11.9,182,163,89.56,87.78,88.0,6,'estável',510],
-    ['Dir. Penal',11.9,142,119,83.80,84.89,84.5,5,'estável',480],
-    ['Dir. Financeiro / AFO',9.9,155,138,89.03,86.49,86.7,7,'estável',660],
-    ['Português',5.72,83,72,86.74,81.82,81.8,8,'estável',240],
-    ['Ciência e Análise de Dados',5.72,65,53,81.53,80.96,82.9,5,'estável',810],
-    ['Ética Pública',5.72,27,23,85.18,84.71,84.2,6,null,240],
-    ['Conhecimentos Regionais de SC',5.72,23,21,91.30,83.79,82.6,9,null,330],
-    ['Reforma Tributária',2.0,76,65,85.52,89.05,90.4,3,'piorando',300],
-    ['Matemática Financeira',1.91,0,0,null,null,null,null,null,0],
-    ['Estatística',1.9,0,0,null,null,null,null,null,0],
-    ['Raciocínio Lógico',1.91,0,0,null,null,null,null,null,0]
+    ['Legislação Tributária Estadual',15.4,0,0,null,null,null,null,null,0],
+    ['Auditoria',15.4,0,0,null,null,null,null,null,0],
+    ['Contabilidade Geral',11.5,0,0,null,null,null,null,null,0],
+    ['Dir. Tributário',11.5,0,0,null,null,null,null,null,0],
+    ['Tecnologia da Informação',10,0,0,null,null,null,null,null,0],
+    ['Português',10,83,72,86.74,81.82,81.8,8,'estável',0],
+    ['Raciocínio Lógico',7.7,0,0,null,null,null,null,null,0],
+    ['Dir. Constitucional',3.85,143,128,89.51,84.03,82.5,10,'melhorando',0],
+    ['Dir. Administrativo',3.85,173,149,86.12,81.85,83.4,8,'estável',0],
+    ['Dir. Civil',3.6,182,163,89.56,87.78,88.0,6,'estável',0],
+    ['Dir. Penal',3.6,142,119,83.80,84.89,84.5,5,'estável',0],
+    ['Direito Empresarial (Comercial)',3.6,0,0,null,null,null,null,null,0]
   ],
-  // pontos fracos = atividades abaixo da média geral (pior primeiro)
   fracos:[
-    ['Ética no setor público','Ética',10,7,70.0,79.0,'https://www.tecconcursos.com.br/s/Q6zxHq'],
-    ['Previdência Complementar e EC 103/2019','Prev',15,11,73.3,75.5,'https://www.tecconcursos.com.br/s/Q75Nvu'],
     ['Princípios e Crimes contra a Fé Pública','Penal',15,11,73.3,76.1,'https://www.tecconcursos.com.br/s/Q6xaiP'],
-    ['Análise e interpretação de dados','TI',15,11,73.3,76.6,'https://www.tecconcursos.com.br/s/Q70OFy'],
     ['Lei 8.137/1990 (ordem tributária)','Penal',20,15,75.0,81.9,'https://www.tecconcursos.com.br/s/Q7570e'],
-    ['TI · Teste Bloco A','TI',17,13,76.4,78.8,'https://www.tecconcursos.com.br/s/Q72qKK'],
-    ['Imposto Seletivo','Reforma Trib.',17,13,76.4,91.7,'https://www.tecconcursos.com.br/s/Q72Djc'],
-    ['Lei das taxas (7.541/1988)','AFO',18,14,77.7,86.3,'https://www.tecconcursos.com.br/s/Q72HNn'],
-    ['Crimes contra as Finanças Públicas','Penal',14,11,78.5,85.8,'https://www.tecconcursos.com.br/s/Q72gOW'],
-    ['LRF — Parte II (despesa e endividamento)','AFO',20,16,80.0,83.9,'https://www.tecconcursos.com.br/s/Q79fdr']
+    ['Crimes contra as Finanças Públicas','Penal',14,11,78.5,85.8,'https://www.tecconcursos.com.br/s/Q72gOW']
   ],
-  feitoMeta4:[['LRF — Parte II','AFO',20,16,90],['Penal · Bloco A','Penal',25,22,60],['Adm · Toda a ementa','Adm',21,18,60],['Const · Toda a ementa','Const',22,22,60],['Adm · Lei 6.745 (Parte 2)','Adm',20,19,30],['Português · Ortografia, coordenação…','Port',20,18,30],['Ética · Lei Anticorrupção (Lei Seca)','Ética',0,0,60]],
-  reforcos:{feitos:3,total:12}
+  feitoMeta4:[],
+  reforcos:{feitos:0,total:0},
+  // Jornada do Guruja em 12/11 (progresso de grade, não de acerto): [programa, nível, atividades percorridas, total]
+  jornada:[
+    ['Contabilidade Geral e Avançada','Aprendiz',5,240],['Auditoria Privada','Aprendiz',3,106],['Tecnologia da Informação I (Banco de Dados)','Aprendiz',4,105],
+    ['Raciocínio Lógico','Aprendiz',2,92],['Legislação Tributária Estadual','Aprendiz',0,34],['Direito Tributário (Essencial + Complementar)','Expert',1,52],
+    ['Português','Expert',2,40],['Direito Administrativo (Essencial + Complementar)','Expert',1,47],['Direito Constitucional (Essencial + Complementar)','Expert',1,45],
+    ['Direito Civil (Essencial + Complementar)','Expert',1,34],['Direito Penal (Essencial + Complementar)','Expert',0,26],['Direito Empresarial (Essencial)','Expert',0,20]
+  ]
 };
 
 
@@ -8996,14 +8946,15 @@ const GURUJA_SYNC={
 //  2) atualiza os números por matéria (nível), o painel Dados › Guruja e a faixa de status da aba Hoje.
 // GURUJA_MAP: id da atividade no app → 'A:' (atividade) ou 'R:' (reforço) + activity_id do Guruja.
 const GURUJA_MAP={
+  109351:'A:109351',78591:'A:78591',78647:'A:78647',118437:'A:118437',109353:'A:109353',78664:'A:78664',118180:'A:118180',118356:'A:118356',109358:'A:109358',109356:'A:109356',78669:'A:78669',106235:'A:106235',106236:'A:106236',78679:'A:78679',105748:'A:105748',105750:'A:105750',106101:'A:106101',117720:'A:117720',117775:'A:117775',118483:'A:118483',
   301:'A:126546',303:'A:125430',304:'A:126446',306:'A:126543',307:'A:126539',308:'A:130866',309:'A:126545',312:'A:126766',314:'A:126760',315:'A:127973',317:'A:127738',319:'A:131045',321:'A:131050',322:'A:127787',
   402:'A:127740',404:'A:127920',408:'A:129572',409:'A:129340',410:'A:127921',411:'A:129393',415:'A:133077',416:'A:127975',417:'A:129391',419:'A:129454',420:'A:130775',421:'A:130829',422:'A:129537',423:'A:129610',425:'A:129949',426:'A:129941',427:'A:129455',428:'A:132887',429:'A:129387',430:'A:133086',431:'A:130452',432:'A:133118',
   501:'A:130017',502:'A:130737',504:'A:129389',505:'A:130858',506:'A:132863',507:'A:130862',508:'A:134162',509:'A:131150',510:'A:130731',511:'A:131138',512:'A:130743',513:'A:131095',514:'A:130970',515:'A:134158',516:'A:132619',517:'A:132864',518:'A:132851',519:'A:133104',520:'A:132571',521:'A:133628',522:'A:133327',523:'A:134366',524:'A:133199',525:'A:134229',526:'A:132855',527:'A:133182',528:'A:131180',529:'A:133149',531:'A:132624',532:'A:133917',
   601:'R:125332',602:'R:123970',603:'R:125335',604:'R:125393',605:'R:125391',606:'R:125394',607:'R:126537',608:'R:126499',609:'R:126694',610:'R:126684',611:'R:131080',612:'R:128018',613:'R:128204',
   701:'A:130018',702:'A:132856',703:'A:133918',704:'A:133021',705:'A:133318',706:'A:133198',707:'A:134350',708:'A:133919',709:'A:134093',710:'A:135299',711:'A:134150',712:'A:134016',713:'A:133201',714:'A:134255',715:'A:133915',716:'A:134094',717:'A:135272',718:'A:134364',719:'A:134198',720:'A:134954',721:'A:135316',722:'A:133836',723:'A:134884',724:'A:134038',725:'A:135324',726:'A:134341',727:'A:134200',728:'A:136468',729:'A:135437',730:'A:135406',731:'A:134103',732:'A:135278',733:'A:135376',734:'A:134958'
 };
-const GURUJA_SIGLA_APP={DPREV:'Dir. Previdenciário',DCON:'Dir. Constitucional',DADM:'Dir. Administrativo',DCIV:'Dir. Civil',DPEN:'Dir. Penal',AFO:'Dir. Financeiro / AFO',PORT:'Português',TINFO:'Ciência e Análise de Dados',ETICA:'Ética Pública',GEO:'Conhecimentos Regionais de SC',RETRI:'Reforma Tributária'};
-const GURUJA_SIGLA_CURTA={DPREV:'Prev',DCON:'Const',DADM:'Adm',DCIV:'Civil',DPEN:'Penal',AFO:'AFO',PORT:'Port',TINFO:'TI',ETICA:'Ética',GEO:'Geo',RETRI:'Reforma Trib.'};
+const GURUJA_SIGLA_APP={DPREV:'Dir. Previdenciário',DCON:'Dir. Constitucional',DADM:'Dir. Administrativo',DCIV:'Dir. Civil',DPEN:'Dir. Penal',AFO:'Dir. Financeiro / AFO',PORT:'Português',TINFO:'Tecnologia da Informação',LTE:'Legislação Tributária Estadual',DEMP:'Direito Empresarial (Comercial)',ETICA:'Ética Pública',GEO:'Conhecimentos Regionais de SC',RETRI:'Reforma Tributária',CTBGA:'Contabilidade Geral',AUD:'Auditoria',DTRIB:'Dir. Tributário',RLOG:'Raciocínio Lógico'};
+const GURUJA_SIGLA_CURTA={DPREV:'Prev',DCON:'Const',DADM:'Adm',DCIV:'Civil',DPEN:'Penal',AFO:'AFO',PORT:'Port',TINFO:'TI',ETICA:'Ética',GEO:'Geo',RETRI:'Reforma Trib.',LTE:'LTE',DEMP:'Empresarial',CTBGA:'Contab',AUD:'Aud',DTRIB:'Trib',RLOG:'RL'};
 
 // ─── CADERNO DO TEC (link vem do guruja.json) ───────────────────────────────────────────────────────
 // O Guruja guarda, em cada atividade e reforço, o link do caderno do TEC. O app só abre esse link (nunca o guarda sozinho).
@@ -9053,7 +9004,7 @@ const GurujaLink={
     S.em=`${pad(dt.getDate())}/${pad(dt.getMonth()+1)}/${dt.getFullYear()} às ${pad(dt.getHours())}h${pad(dt.getMinutes())}`;
     S.metasFechadas=Math.max(0,(ma.ordem||1)-1);
     const dq=s.desempenho.reduce((x,d)=>x+(d.q||0),0),da=s.desempenho.reduce((x,d)=>x+(d.a||0),0);
-    S.total={min:(s.tempo&&s.tempo.total_min)||S.total.min,q:dq,a:da};
+    if(dq>0)S.total={min:(s.tempo&&s.tempo.total_min)||S.total.min,q:dq,a:da};
     S.metaAtual={n:ma.ordem,feitas:ma.atividades_concluidas,total:ma.atividades_totais,q:ma.questoes||0,a:ma.acertos||0,min:ma.minutos||0};
     const r=s.ritmo||{};
     S.ritmo={diasMeu:r.meus_dias_por_meta,diasTurma:r.mediana_dias_por_meta,status:({no_ritmo:'no ritmo',adiantado:'adiantado',atrasado:'atrasado',muito_atrasado:'muito atrasado'})[r.meu_ritmo]||String(r.meu_ritmo||'—').replace('_',' '),decilProgresso:r.decil_progresso,minMeta:r.meus_min_por_meta,minMetaTurma:r.mediana_min_por_meta,qMeta:r.minhas_q_por_meta,qMetaTurma:r.mediana_q_por_meta};
@@ -9183,7 +9134,29 @@ function FaixaGuruja(){
     </div>
   );
 }
+function PainelGurujaNovo(){
+  const S=GURUJA_SYNC;const mono="'DM Mono',monospace";
+  return(
+    <div>
+      <div style={{padding:'12px 14px',borderRadius:12,background:'rgba(96,165,250,.07)',border:'1px solid rgba(96,165,250,.3)',marginBottom:12}}>
+        <div style={{fontSize:13,color:'#60a5fa',fontFamily:mono,fontWeight:800,letterSpacing:'1px',marginBottom:5}}>📡 GURUJA · LIDO PELO CONECTOR EM {S.em.toUpperCase()}</div>
+        <div style={{fontSize:15,color:'var(--text)',fontWeight:800}}>{S.planejamento}</div>
+        <div style={{fontSize:14,color:'var(--text3)',lineHeight:1.6,marginTop:4}}>Meta {S.metaAtual.n}: <b>{S.metaAtual.feitas}/{S.metaAtual.total}</b> atividades. O planejamento é novo: ainda não há questões, acertos nem tempo registrados nele, e o Guruja não tem edital vinculado (sem pesos oficiais).</div>
+      </div>
+      <div style={{fontSize:13,color:'var(--text4)',fontFamily:mono,fontWeight:700,letterSpacing:'1px',marginBottom:6}}>JORNADA NO GURUJA — PROGRESSO DE GRADE (não é acerto)</div>
+      {S.jornada.map(([nome,nivel,feitas,total])=>(
+        <div key={nome} style={{padding:'9px 12px',borderRadius:10,marginBottom:6,border:'1px solid rgba(148,163,184,.25)',background:'rgba(148,163,184,.04)'}}>
+          <div style={{display:'flex',justifyContent:'space-between',gap:8,fontSize:14,color:'var(--text)'}}><b>{nome}</b><span style={{color:nivel==='Expert'?'#34d399':'#fbbf24',fontWeight:800,whiteSpace:'nowrap'}}>{nivel}</span></div>
+          <div style={{height:6,borderRadius:3,background:'rgba(148,163,184,.2)',marginTop:6}}><div style={{height:6,borderRadius:3,width:`${Math.min(100,feitas/total*100)}%`,background:'#60a5fa'}}/></div>
+          <div style={{fontSize:13,color:'var(--text4)',marginTop:3}}>{feitas} de {total} atividades percorridas</div>
+        </div>
+      ))}
+      <div style={{fontSize:13,color:'var(--text4)',lineHeight:1.5,marginTop:8}}>O nível "Expert" do Guruja mede progresso de grade herdado dos planejamentos anteriores, não o seu acerto atual. Os níveis por matéria do app usam o histórico real de Constitucional, Administrativo, Civil, Penal e Português (planejamento do SEFAZ-SC) e estimativa minha nas matérias sem questões.</div>
+    </div>
+  );
+}
 function PainelGuruja(){
+  if(!GURUJA_SYNC.total.q)return <PainelGurujaNovo/>;
   const S=GURUJA_SYNC;const mono="'DM Mono',monospace";
   const fm=(x,d=1)=>x==null?'—':x.toFixed(d).replace('.',',');
   const cor=p=>p==null?'#aab6c8':p>=88?'#34d399':p>=83?'#a3e635':p>=78?'#fbbf24':'#f87171';
@@ -10077,7 +10050,7 @@ function App(){
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:6}}>
           <div style={{display:'flex',alignItems:'center',gap:7,flexWrap:'wrap'}}>
             <div style={{fontFamily:"'DM Serif Display',serif",fontSize:19,color:'#fbbf24',letterSpacing:'1px',fontWeight:700}}>RITY OS</div>
-            <span style={{fontSize:13,fontWeight:800,letterSpacing:'2px',padding:'2px 6px',borderRadius:3,background:'rgba(251,191,36,.1)',color:'rgba(251,191,36,.6)',border:'1px solid rgba(251,191,36,.2)',fontFamily:"'DM Mono',monospace"}}>SEFAZ-SC</span>
+            <span style={{fontSize:13,fontWeight:800,letterSpacing:'2px',padding:'2px 6px',borderRadius:3,background:'rgba(251,191,36,.1)',color:'rgba(251,191,36,.6)',border:'1px solid rgba(251,191,36,.2)',fontFamily:"'DM Mono',monospace"}}>SEFAZ-RS</span>
             <div style={{width:7,height:7,borderRadius:'50%',background:syncSt==='ok'?'#34d399':syncSt==='syncing'?'#fbbf24':syncSt==='error'?'#f87171':'#aab6c8',transition:'background .4s'}}/>
             {!chaveOK&&<span onClick={()=>setShowCfg(true)} style={{fontSize:13,padding:'2px 6px',borderRadius:3,background:'rgba(248,113,113,.12)',color:'#f87171',border:'1px solid rgba(248,113,113,.3)',cursor:'pointer',fontFamily:"'DM Mono',monospace"}}>⚠️ SEM CHAVE IA</span>}
             {urgentes.length>0&&<span onClick={()=>setTab('revisao')} style={{fontSize:13,padding:'2px 6px',borderRadius:3,background:'rgba(248,113,113,.1)',color:'#f87171',border:'1px solid rgba(248,113,113,.25)',cursor:'pointer',fontFamily:"'DM Mono',monospace"}}>🚨 {urgentes.length} urgente{urgentes.length>1?'s':''}</span>}
