@@ -70,3 +70,9 @@ repositório. O app (`index.html`) lê esse arquivo ao abrir. **Nunca altere `in
 - `tendencia`: `estavel`, `melhorando`, `piorando` ou `null`. `decil` é o número (`decil_9` → 9).
 - `ritmo.decil_progresso`: número (`decil_8` → 8).
 - Transcreva TODAS as atividades e reforços das 3 metas detalhadas, inclusive as pendentes e as ignoradas.
+
+## Reforços pendentes (aba Revisão › Reforços) — nota de 13/11
+O app lista os reforços lendo `metas[].reforcos` deste arquivo (campos `aid`, `titulo`, `disciplina`, `tipo_reforco`, `concluido`, `ignorado`, `q`, `a`, `min`, `link`).
+- Inclua **todos** os reforços da meta atual, pendentes e concluídos, com `concluido` verdadeiro/falso. Reforço pendente que não aparecer aqui não aparece no app.
+- Se o conector não devolver os pendentes, leia a tela de Reforços do portal (Chrome) e acrescente-os em `metas[<meta atual>].reforcos`, sem apagar os que já existem.
+- O planejamento “Consolidar a base” (105325) ainda não tinha reforços em 13/11: lista vazia é o estado correto, não erro.

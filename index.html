@@ -255,8 +255,9 @@ const REGRA_TI_MAX_NOVAS_SEMANA=6;   // desde 31/10: aprender um ponto novo de T
 const MAT_TI='Tecnologia da Informação';
 const ehTINova=i=>i.mat===MAT_TI&&!/teste|favoritas|revis/i.test(i.conteudo||'');   // Teste/Favoritas/Revisão = revisão, não conta como meta nova
 const REGRAS_PLANO=[
-  {ic:'🎯',t:'Foco no SEFAZ-RS desde 12/11 (pré-edital, banca FCC)',d:'Decisão sua com o mentor: o plano passou a ser o planejamento "Consolidar a base" do Guruja (Meta 1, 20 atividades), de quinta 12/11 a quarta 18/11, com domingo livre. A prova do SEFAZ-SC em 22/11 vira treino. A Meta 5 do SC fica pendente e inativa no portal.'},
-  {ic:'⏱',t:'Rotina do dia: 1h de TI + 2h de Contabilidade + 1h de revisão das outras matérias',d:'São 4h por dia (o Anki profundo das 05h, 30 min, fica fora). O dia tem sempre esta ordem: TI primeiro, depois Contabilidade, e a hora de revisão por último.'},
+  {ic:'🧠',t:'Revisão refeita em 13/11: o que cada sub-aba faz',d:'Reforços = lista do Guruja. Questões = caderno de erros do TEC, 30 min na quarta, sexta e domingo, da matéria mais difícil para a mais fácil. Memorização = baralho filtrado de 100 notas, montado toda segunda, contador "restam N". Passiva = 2 áudios por dia (1 do que você estudou + 1 da matéria de menor contato), calculados uma vez por dia. Profunda = segunda, 1h30, lista sua. Estratégia = fechamento da semana e fila única de lacunas. O teto é 5h por dia; o que sobra até 300 min é folga.'},
+  {ic:'🎯',t:'Foco no SEFAZ-RS desde 12/11 (pré-edital, banca FCC)',d:'Decisão sua com o mentor: o plano passou a ser o planejamento "Consolidar a base" do Guruja (Meta 1, 20 atividades), de quinta 12/11 a quarta 18/11, com domingo só com o caderno de erros (30 min). A prova do SEFAZ-SC em 22/11 vira treino. A Meta 5 do SC fica pendente e inativa no portal.'},
+  {ic:'⏱',t:'Rotina do dia: 1h de TI + 2h de Contabilidade + 1h de revisão das outras matérias',d:'São até 5h por dia (o Anki profundo das 05h, 30 min, fica fora; o que sobrar até 5h é folga). O dia tem sempre esta ordem: TI primeiro, depois Contabilidade, e a hora de revisão por último.'},
   {ic:'🧱',t:'Ordem de pré-requisitos',d:'Contabilidade vem antes de Auditoria (a Auditoria só entra a partir de segunda 16/11, depois da base contábil). Direito Tributário vem antes de Legislação Tributária Estadual.'},
   {ic:'🧪',t:'Os minutos são estimativa minha',d:'O Guruja não informa quanto tempo leva cada atividade. As linhas "Questões FCC" marcadas como rotina do mentor não são do Guruja: elas completam a carga de Contabilidade e de TI e são as primeiras a cortar se o dia apertar.'},
   {ic:'📓',t:'Caderno do TEC em cada tarefa',d:'Cada atividade com caderno no TEC ganha o botão 📓 que abre o caderno direto (o link vem do Guruja, lido pelas rotinas das 04h10 e do meio-dia).'},
@@ -264,14 +265,15 @@ const REGRAS_PLANO=[
 ];
 const CAP_DIA_PADRAO=240, TOL_DIA=15;
 // Minutos planejados por dia (seg..dom) = soma do plano (sábado e domingo refeitos em 07/11 de manhã com os dados do conector). Dá para mudar em Estudo › Ciclo › Horas por dia.
-const CAP_PLANO=[240,240,240,0,240,240,240]; // qui12 sex13 sáb14 dom15 seg16 ter17 qua18 · 4h por dia (1h TI + 2h Contabilidade + 1h revisão) · domingo livre (0)
+const CAP_PLANO=[240,270,240,30,285,240,270]; // qui12 sex13 sáb14 dom15 seg16 ter17 qua18 · plano de cada dia (Meta 1 + caderno qua/sex/dom + Profunda seg). O teto é 5h por dia: o que sobra até 300 é folga (tempo livre).
 const MAT_INFO={
   'Dir. Constitucional':{ic:'📜'},'Dir. Administrativo':{ic:'🏛️'},'Dir. Financeiro / AFO':{ic:'📈'},
   'Dir. Previdenciário':{ic:'🛡️'},'Dir. Civil':{ic:'📘'},'Dir. Penal':{ic:'⚖️'},'Reforma Tributária':{ic:'🧾'},
   'Português':{ic:'📝'},'Ciência e Análise de Dados':{ic:'📊'},'Ética Pública':{ic:'🤝'},
   'Conhecimentos Regionais de SC':{ic:'🗺️'},'Raciocínio Lógico':{ic:'🧩'},
   'Matemática Financeira e Estatística':{ic:'🧮'},'Orientações Gerais':{ic:'🧭'},
-  'Contabilidade Geral':{ic:'📒'},'Auditoria':{ic:'🔎'},'Dir. Tributário':{ic:'🧾'},'Legislação Tributária Estadual':{ic:'🏷️'},'Tecnologia da Informação':{ic:'💾'},'Direito Empresarial (Comercial)':{ic:'🏢'}
+  'Contabilidade Geral':{ic:'📒'},'Auditoria':{ic:'🔎'},'Dir. Tributário':{ic:'🧾'},'Legislação Tributária Estadual':{ic:'🏷️'},'Tecnologia da Informação':{ic:'💾'},'Direito Empresarial (Comercial)':{ic:'🏢'},
+  'Revisão · Caderno de erros':{ic:'📕'},'Revisão · Profunda':{ic:'🔄'}
 };
 const fmtMinG=m=>m<=0?'0min':m>=60?`${Math.floor(m/60)}h${m%60?String(m%60).padStart(2,'0'):''}`:`${m}min`;
 const faixaMin=m=>m>=90?{cor:'#f87171',tag:'🔴 PESADA'}:m>=60?{cor:'#fbbf24',tag:'🟡 MÉDIA'}:{cor:'#34d399',tag:'🟢 LEVE'};
@@ -298,17 +300,19 @@ const PLANO_RAW=[
   [801, "Contabilidade Geral", "Questões de Contabilidade Geral (FCC) — Conceitos e Patrimônio", 30, 3, 2, 10, "Questões", "Plano · rotina do mentor", "Rotina do seu mentor: 1h TI + 2h Contabilidade + 1h de revisão por dia. Questões FCC do que você viu no dia. Se o dia apertar, esta linha é a primeira a cortar."],
   [118180, "Dir. Administrativo", "Conceitos iniciais, Regime Jurídico e Princípios", 30, 4, 2, 99, "Questões", "Meta 1 · Consolidar a base", "Tempo estimado por mim (o Guruja não informa minutos)."],
   [118356, "Dir. Constitucional", "Teoria Geral do Direito Constitucional", 30, 3, 2, 99, "Questões", "Meta 1 · Consolidar a base", "Tempo estimado por mim (o Guruja não informa minutos)."],
+  [811, "Revisão · Caderno de erros", "Caderno de erros do TEC — 30 min (matéria da vez em Revisão › Questões)", 30, 4, 2, 99, "Revisão", "Plano · rotina de revisão", "Rotina de revisão: caderno de erros 3×30 min (qua/sex/dom), da matéria mais difícil para a mais fácil."],
   [109358, "Tecnologia da Informação", "[TI I] Mapeamento — Aula 02", 30, 4, 3, 99, "Mapeamento", "Meta 1 · Consolidar a base", "Mapa mental da aula 02. Tempo estimado por mim (o Guruja não informa minutos)."],
   [109356, "Tecnologia da Informação", "[TI I] Revisão — Aula 02", 30, 3, 3, 99, "Revisão", "Meta 1 · Consolidar a base", "Fecha a Aula 02 de TI. Tempo estimado por mim (o Guruja não informa minutos)."],
   [78669, "Contabilidade Geral", "Representação Gráfica e Equiparação Patrimonial", 75, 5, 3, 99, "Teoria", "Meta 1 · Consolidar a base", "Tempo estimado por mim (o Guruja não informa minutos)."],
   [802, "Contabilidade Geral", "Questões de Contabilidade Geral (FCC) — Representação gráfica e equação patrimonial", 45, 3, 3, 9, "Questões", "Plano · rotina do mentor", "Rotina do seu mentor: 1h TI + 2h Contabilidade + 1h de revisão por dia. Questões FCC do que você viu no dia. Se o dia apertar, esta linha é a primeira a cortar."],
   [106235, "Raciocínio Lógico", "Introdução às proposições", 30, 5, 3, 99, "Teoria", "Meta 1 · Consolidar a base", "Tempo estimado por mim (o Guruja não informa minutos)."],
   [106236, "Raciocínio Lógico", "Distinção entre proposição, sentença e expressão", 30, 5, 3, 99, "Teoria", "Meta 1 · Consolidar a base", "Tempo estimado por mim (o Guruja não informa minutos)."],
+  [812, "Revisão · Caderno de erros", "Caderno de erros do TEC — 30 min (matéria da vez em Revisão › Questões)", 30, 4, 4, 99, "Revisão", "Plano · rotina de revisão", "Rotina de revisão: caderno de erros 3×30 min (qua/sex/dom). Domingo só tem isto."],
   [803, "Tecnologia da Informação", "Questões de TI (FCC) — Banco de Dados: conceitos básicos", 60, 3, 5, 7, "Questões", "Plano · rotina do mentor", "Rotina do seu mentor: 1h TI + 2h Contabilidade + 1h de revisão por dia. Questões de TI sobre o que você viu até sábado. Se o dia apertar, esta linha é a primeira a cortar."],
   [78679, "Contabilidade Geral", "Patrimônio, Componentes Patrimoniais e Equiparação — Questões (CESPE e FGV)", 60, 4, 5, 99, "Questões", "Meta 1 · Consolidar a base", "Tempo estimado por mim (o Guruja não informa minutos)."],
-  [804, "Contabilidade Geral", "Questões de Contabilidade Geral (FCC) — Patrimônio e equação patrimonial", 45, 3, 5, 8, "Questões", "Plano · rotina do mentor", "Rotina do seu mentor: 1h TI + 2h Contabilidade + 1h de revisão por dia. Questões FCC da semana. Se o dia apertar, esta linha é a primeira a cortar."],
   [105748, "Auditoria", "Contextualização e Classificação de Auditoria", 30, 3, 5, 99, "Teoria", "Meta 1 · Consolidar a base", "Só depois da base de Contabilidade. Tempo estimado por mim (o Guruja não informa minutos)."],
   [105750, "Auditoria", "Classificação de Auditoria. NBC TA 200", 45, 4, 5, 99, "Teoria", "Meta 1 · Consolidar a base", "Tempo estimado por mim (o Guruja não informa minutos)."],
+  [813, "Revisão · Profunda", "Revisão Profunda de segunda — 1h30 (TI, Contabilidade e as 3 prioridades da semana)", 90, 4, 5, 99, "Revisão", "Plano · rotina de revisão", "Rotina de revisão: Profunda 1h30 toda segunda, sobre as matérias com mais dificuldade. Cobre o que seria o bloco de questões de Contabilidade de segunda."],
   [805, "Tecnologia da Informação", "Questões de TI (FCC) — Mapeamento e revisão da Aula 02", 60, 3, 6, 5, "Questões", "Plano · rotina do mentor", "Rotina do seu mentor: 1h TI + 2h Contabilidade + 1h de revisão por dia. Questões de TI. Se o dia apertar, esta linha é a primeira a cortar."],
   [806, "Contabilidade Geral", "Questões de Contabilidade Geral (FCC) — bloco 1 da semana", 60, 3, 6, 6, "Questões", "Plano · rotina do mentor", "Rotina do seu mentor: 1h TI + 2h Contabilidade + 1h de revisão por dia. Questões FCC de tudo que você viu em Contabilidade. Se o dia apertar, esta linha é a primeira a cortar."],
   [809, "Contabilidade Geral", "Questões de Contabilidade Geral (FCC) — bloco 2 da semana", 45, 3, 6, 4, "Questões", "Plano · rotina do mentor", "Rotina do seu mentor: 1h TI + 2h Contabilidade + 1h de revisão por dia. Questões FCC de tudo que você viu em Contabilidade. Se o dia apertar, esta linha é a primeira a cortar."],
@@ -319,12 +323,13 @@ const PLANO_RAW=[
   [810, "Contabilidade Geral", "Revisão de Contabilidade Geral — questões FCC para fechar a semana", 45, 3, 7, 1, "Revisão", "Plano · rotina do mentor", "Rotina do seu mentor: 1h TI + 2h Contabilidade + 1h de revisão por dia. Fecha a semana: refaz o que errou. Se o dia apertar, esta linha é a primeira a cortar."],
   [117775, "Português", "Morfologia, Formação das Palavras, Colocação Pronominal e Pontuação", 30, 3, 7, 99, "Questões", "Meta 1 · Consolidar a base", "Tempo estimado por mim (o Guruja não informa minutos)."],
   [118483, "Dir. Civil", "LINDB", 45, 5, 7, 99, "Questões", "Meta 1 · Consolidar a base", "Tempo estimado por mim (o Guruja não informa minutos)."],
+  [814, "Revisão · Caderno de erros", "Caderno de erros do TEC — 30 min (matéria da vez em Revisão › Questões)", 30, 4, 7, 99, "Revisão", "Plano · rotina de revisão", "Rotina de revisão: caderno de erros 3×30 min (qua/sex/dom)."],
 ];
 const CICLO_BASE=PLANO_RAW.map(([id,mat,conteudo,min,est,diaPlano,corte,tipo,origem,por],idx)=>{
   const f=faixaMin(min);
   const gl=gurujaLabel(origem);
   const dica=`📍 Guruja: ${gl.longo}\n⏱ ${fmtMinG(min)} · ${tipo}\n${por}\n${corte<99?`✂️ Se apertar, esta é a nº ${corte} a cortar.`:'🔒 Não corta: é matéria de peso.'}`;
-  return{id,mat,ic:(MAT_INFO[mat]||{}).ic||'📚',cor:f.cor,tag:f.tag,min,h:min/60,tipo,ferramenta:'Guruja',est,conteudo,diaPlano,corte,origem,por,dica,ord:idx,gl:gl.curto,glLongo:gl.longo};
+  return{id,mat,ic:(MAT_INFO[mat]||{}).ic||'📚',cor:f.cor,tag:f.tag,min,h:min/60,tipo,ferramenta:'Guruja',est,conteudo,diaPlano,corte,origem,por,dica,ord:idx,gl:gl.curto,glLongo:gl.longo,rotina:/rotina de revisão/.test(origem)};
 });
 // ── FORA DO PLANO (52) — em ordem de prioridade: se sobrar tempo, faça de cima para baixo ("ordem" = volta nº) ──
 // [id, matéria, assunto, min, estrelas, tipo, origem, ordem, motivo, alternativa]
@@ -369,8 +374,12 @@ function distribuirCiclo(base,feitos,feitosDt,diasTrab,hojeMs,capFn,fixosHoje){
   const fx=new Set(Array.isArray(fixosHoje)?fixosHoje:[]);
   const usaFx=fx.size>0&&pend.some(i=>fx.has(i.id));
   if(usaFx){pend.filter(i=>fx.has(i.id)).forEach(i=>dia.set(i.id,diaHoje));pend=pend.filter(i=>!fx.has(i.id));}
+  // rotinas de revisão (caderno qua/sex/dom, Profunda segunda) ficam fixas no dia combinado; só ocupam espaço do dia
+  const rotFix=pend.filter(i=>i.rotina);
+  rotFix.forEach(i=>dia.set(i.id,Math.min(7,i.diaPlano)));
+  pend=pend.filter(i=>!i.rotina);
   const dias=[];for(let d=(usaFx&&diaHoje<7?diaHoje+1:diaHoje);d<=7;d++)dias.push(d);
-  const caps=dias.map(d=>Math.max(0,cap(d)-(d===diaHoje?minHoje:0)));
+  const caps=dias.map(d=>Math.max(0,cap(d)-(d===diaHoje?minHoje:0)-rotFix.filter(i=>dia.get(i.id)===d).reduce((x,i)=>x+i.min,0)));
   const totCap=caps.reduce((s,v)=>s+v,0);
   let totPend=pend.reduce((s,i)=>s+i.min,0);
   if(totPend>totCap){
@@ -519,6 +528,18 @@ const CICLO=(()=>{
       localStorage.setItem('ciclo_versao',JSON.stringify('v57'));
     }
   }catch(e){}
+  // v59 (13/11): Revisão refeita para o SEFAZ-RS. Arquiva (não apaga) o que sobrou de SC/TCE em listas manuais: pode ser recuperado em *_arquivo.
+  try{
+    if(cv<59){
+      const fora=txt=>/\bSC\b|Santa Catarina|TCE|CGSN|Previdenci|Regional|Regionais|Ética|Etica|Reforma Tribut|\bAFO\b|Dir\. Financeiro|Or[çc]ament|Fundiári|Controle Externo|Auditoria Governamental/i.test(String(txt||''));
+      const lim=(k,f)=>{const l=lsj(k,[]);if(!Array.isArray(l))return;const sai=l.filter(f),fica=l.filter(x=>!f(x));if(sai.length){localStorage.setItem(k+'_arquivo',JSON.stringify([...lsj(k+'_arquivo',[]),...sai]));localStorage.setItem(k,JSON.stringify(fica));}};
+      lim('criticos_manuais',x=>fora((x.mat||'')+' '+(x.assunto||'')+' '+(x.motivo||'')));
+      lim('rev_manual',x=>fora((x.mat||'')+' '+(x.assunto||'')));
+      lim('rev_topicos',x=>fora(x.txt||''));
+      localStorage.removeItem('tm_ia_cache');
+      localStorage.setItem('ciclo_versao',JSON.stringify('v59'));
+    }
+  }catch(e){}
   try{seedRegistro101((k,v)=>localStorage.setItem(k,JSON.stringify(v)),false);}catch(e){}
   try{seedRegistroEtica((k,v)=>localStorage.setItem(k,JSON.stringify(v)),false);}catch(e){}
   let dw=lsj('dias_trabalho',[2,4,5]);
@@ -592,7 +613,7 @@ const LEGISLACAO_ALVO=[
 
 const CRONOGRAMA_MACRO=[
   {periodo:'NOV/2026 — Virada para o SEFAZ-RS',eventos:[
-    {data:'12-18/11',acao:'Meta 1 do planejamento "Consolidar a base" — 20 atividades, 4h por dia (1h TI + 2h Contabilidade + 1h revisão), domingo livre',tipo:'estudo'},
+    {data:'12-18/11',acao:'Meta 1 do planejamento "Consolidar a base" — 20 atividades, até 5h por dia (1h TI + 2h Contabilidade + revisão; caderno qua/sex/dom, Profunda segunda 1h30), domingo só caderno',tipo:'estudo'},
     {data:'13/11',acao:'📋 SEFAZ-SC: Edital de Convocação — confirmar local da prova',tipo:'edital'},
     {data:'20-21/11',acao:'Viagem a Florianópolis (sem conteúdo novo)',tipo:'descanso'},
     {data:'22/11',acao:'📋 Prova SEFAZ-SC como treino FCC — manhã Gerais (4h) · tarde Específicos (5h)',tipo:'prova',alerta:'alto'},
@@ -803,7 +824,7 @@ let _syncSt='idle';
 const canon=v=>{if(Array.isArray(v))return '['+v.map(canon).join(',')+']';if(v&&typeof v==='object')return '{'+Object.keys(v).sort().map(k=>JSON.stringify(k)+':'+canon(v[k])).join(',')+'}';return JSON.stringify(v);};
 const canonRaw=raw=>{try{return canon(JSON.parse(raw));}catch(e){return String(raw);}};
 const hsh=s=>{let h=5381;for(let i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))|0;return h+':'+s.length;};
-const SYNC_KEYS=['feitos','feitos_dt','fora_feitos','ciclo_volta','cicloNum','horas','horas_dia','dias_trabalho','historico_diario','rev_anki','rev_nlm','rev_caderno','rev_1h30','rev_topicos','anki_meta','dif_base_materias','criticos_manuais','edital_status','guruja_data','plano_semanal','urgentes_ia','ia_hist','theme_mode','ciclo_versao','ciclo_extras','rev_profunda_hist','decisao_cfg','mit','semana_cfg','ia_ajustes','ia_combinados','ia_briefing','ia_fechamentos','ia_dia','alvo_nota'];
+const SYNC_KEYS=['feitos','feitos_dt','fora_feitos','ciclo_volta','cicloNum','horas','horas_dia','dias_trabalho','historico_diario','rev_anki','rev_nlm','rev_caderno','rev_1h30','rev_topicos','anki_meta','dif_base_materias','criticos_manuais','edital_status','guruja_data','plano_semanal','urgentes_ia','ia_hist','theme_mode','ciclo_versao','ciclo_extras','rev_profunda_hist','decisao_cfg','mit','semana_cfg','ia_ajustes','ia_combinados','ia_briefing','ia_fechamentos','ia_dia','alvo_nota','cad_rot','anki_filtro','anki_filtro_hist','lacunas_semana','edital_rs_saiu'];
 const SYNC_VOLATEIS=new Set(['ultimo_acesso']);   // por aparelho: nunca sincroniza
 const SYNC_LAYOUT=new Set(['feitos','feitos_dt','ciclo_volta','horas_dia','dias_trabalho']);
 const _mkClient=()=>{const{url,key}=Sync.getCfg();return window.supabase.createClient(url,key);};
@@ -1642,7 +1663,7 @@ function statusPct(pct){
   return'critico';
 }
 
-const MATS_JURIDICAS=EDITAL_MATS.filter(m=>m.startsWith('Dir.')||m==='Direito Empresarial (Comercial)'||m==='Legislação TCE-SP'||m==='Ética Pública');
+const MATS_JURIDICAS=EDITAL_MATS.filter(m=>m.startsWith('Dir.')||m==='Direito Empresarial (Comercial)'||m==='Legislação Tributária Estadual');
 
 // ── 1. QUESTÕES — pior desempenho ponderado dos últimos 7 dias (ontem pesa 3x) ──
 function calcQuestoesPrioridade(historico){
@@ -4235,7 +4256,7 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
         <div>
           <div style={{fontSize:20,fontWeight:900,color:'var(--text)',fontFamily:"'DM Serif Display',serif"}}>{NOMES_DW[dw]}</div>
-          <div style={{fontSize:14,color:'var(--text4)'}}>{totalH}h disponíveis · bloco {feitos?.length||0}/{N}{trabalha?' · 💼 trabalho':''}</div>
+          <div style={{fontSize:14,color:'var(--text4)'}}>{totalH}h no plano{(()=>{const dI=Math.min(7,Math.max(1,Math.round((new Date().setHours(0,0,0,0)-CICLO_INI_MS)/86400000)+1));const cap=CICLO.filter(c=>c.dia===dI&&!c.estouro).reduce((x,c)=>x+c.min,0);const f=REV_META_MIN-cap;return(dI!==4&&f>0)?` · folga de ${fmtMinG(f)} até 5h (tempo livre)`:'';})()} · bloco {feitos?.length||0}/{N}{trabalha?' · 💼 trabalho':''}</div>
         </div>
         <div style={{display:'flex',gap:6,alignItems:'center'}}>
           {/* Saúde colapsada — chip */}
@@ -6494,8 +6515,15 @@ function TabRevProfunda({totalBlocos}){
 
   if(!proxima&&!matSel){}
 
+  const prioSem=prioridadesDaSemana(false);
+  const proxSeg=(()=>{const d=new Date();d.setHours(0,0,0,0);do{d.setDate(d.getDate()+((d.getDay()===1&&d.getTime()===new Date().setHours(0,0,0,0))?0:1));}while(d.getDay()!==1);return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;})();
   return(
     <div>
+      <div style={{padding:'11px 14px',borderRadius:12,background:'rgba(167,139,250,.06)',border:'1px solid rgba(167,139,250,.3)',marginBottom:12}}>
+        <div style={{fontSize:13,color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:3}}>🔄 PROFUNDA · TODA SEGUNDA · 1h30 (próxima: {proxSeg})</div>
+        <div style={{fontSize:13,color:'var(--text4)',lineHeight:1.5,marginBottom:prioSem.length?6:0}}>Matérias com mais dificuldade (TI, Contabilidade...). A lista abaixo é sua; as prioridades da semana (Estratégia › Lacunas) podem ser levadas para ela com um toque.</div>
+        {prioSem.map((p,i)=>(<div key={i} style={{display:'flex',alignItems:'center',gap:8,padding:'4px 0',fontSize:14,color:'var(--text)'}}><span style={{flex:1,minWidth:0}}>{p.mat!=='—'?<b>{p.mat}</b>:null}{p.mat!=='—'?' — ':''}{p.assunto||'(matéria inteira)'}</span><button onClick={()=>{const ja=manual.some(x=>!x.feito&&x.mat===(p.mat!=='—'?p.mat:(p.assunto||'')) &&x.assunto===(p.mat!=='—'?(p.assunto||''):''));if(!ja)gravaManual([...manual,{id:'rm_'+Date.now()+i,mat:p.mat!=='—'?p.mat:(p.assunto||'Tópico'),assunto:p.mat!=='—'?(p.assunto||''):'',dt:Date.now(),feito:false}]);}} style={{padding:'4px 9px',borderRadius:6,border:'1px solid rgba(167,139,250,.4)',background:'rgba(167,139,250,.1)',color:'#a78bfa',fontSize:12,fontWeight:800,cursor:'pointer',flexShrink:0}}>+ levar</button></div>))}
+      </div>
       {/* Lista manual — o que EU preciso revisar */}
       <div style={{padding:'12px 14px',borderRadius:12,background:'rgba(167,139,250,.07)',border:'1px solid rgba(167,139,250,.3)',marginBottom:14}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
@@ -6659,96 +6687,482 @@ function TabRevProfunda({totalBlocos}){
 
 // ─── REFORÇOS DO GURUJA — ciclo (nº 1 a 12, recomeça ao fechar a volta) ──────────────────
 // Cada registro vai para o histórico (matéria, tempo, questões, acertos) e alimenta o nível por matéria (Decisão) e Dados.
-const REFORCOS_GURUJA=[
-  {n:1,mat:'Dir. Financeiro / AFO',t:'PPA e LDO',est:4,cod:'AFO.4654.125332',dtg:16},
-  {n:2,mat:'Dir. Penal',t:'Princípios e Crimes Contra a Fé Pública',est:5,cod:'DPEN.4637.123970',dtg:17},
-  {n:3,mat:'Dir. Financeiro / AFO',t:'LOA, emendas, ciclo orçamentário. DREM',est:5,cod:'AFO.4654.125335',dtg:19},
-  {n:4,mat:'Dir. Penal',t:'Crimes Contra a Administração Pública - Parte I',est:5,cod:'DPEN.4637.125393',dtg:19},
-  {n:5,mat:'Dir. Civil',t:'Pessoas Jurídicas e Domicílio',est:4,cod:'DCIV.4636.125391',dtg:20},
-  {n:6,mat:'Dir. Penal',t:'Crimes Contra a Administração Pública - Parte II',est:5,cod:'DPEN.4637.125394',dtg:21},
-  {n:7,mat:'Dir. Financeiro / AFO',t:'Lei nº 7.541/1988 (Lei das taxas)',est:4,cod:'AFO.4654.126537',dtg:25},
-  {n:8,mat:'Reforma Tributária',t:'Imposto Seletivo',est:4,cod:'RETRI.4643.1264…',dtg:25},
-  {n:9,mat:'Dir. Civil',t:'Bens',est:4,cod:'DCIV.4636.126694',dtg:25},
-  {n:10,mat:'Dir. Penal',t:'Crimes Contra as Finanças Públicas',est:3,cod:'DPEN.4637.126684',dtg:26},
-  {n:11,mat:'Dir. Constitucional',t:'Bloco B (Poder Legislativo; Poder Executivo; e Controle de Constitucionalidade…)',est:5,cod:'DCON.4639.131080',dtg:26},
-  {n:12,mat:'Dir. Penal',t:'Lei nº 8.137/1990 - Crimes contra a ordem tributária, econômica e contra as…',est:4,cod:'DPEN.4637.128018',dtg:30},
-  {n:13,mat:'Dir. Previdenciário',t:'Regime de Previdência Complementar e Emenda Constitucional 103/2019',est:4,cod:'DPREV.4681.128204',dtg:30},
-];
+const REFORCOS_GURUJA=[]; // arquivado em 13/11: a lista agora vem do snapshot do Guruja (planejamento ativo)
+// ═══ REVISÃO · decisões de 13/11 (SEFAZ-RS) ═════════════════════════════════════════════
+// 5h por dia · caderno de erros qua/sex/dom (30 min) · baralho filtrado de 100 (segunda) · 2 áudios por dia · Profunda segunda 1h30.
+const REV_META_MIN=300;
+const CADERNO_DIAS=[3,5,0]; // qua, sex, dom
+const NOMES_DIA_LONGO=['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
+const dkDe=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const semanaChave=(d)=>{const x=new Date(d||Date.now());x.setHours(0,0,0,0);x.setDate(x.getDate()-((x.getDay()+6)%7));return dkDe(x);};
+const diaDK=(offset)=>{const x=new Date();x.setHours(0,0,0,0);x.setDate(x.getDate()+offset);return dkDe(x);};
+const ehForaRS=txt=>/\bSC\b|Santa Catarina|TCE|CGSN|Previdenci|Regional|Regionais|Ética|Etica|Reforma Tribut|\bAFO\b|Dir\. Financeiro|Or[çc]ament|Fundiári|Controle Externo|Auditoria Governamental/i.test(String(txt||''));
+// Disciplina do Guruja (texto) → nome da matéria no app
+function matDaDisciplina(d){
+  const s=String(d||'');
+  const tabela=[[/Legisla[çc][ãa]o Tribut[áa]ria Estadual|ICMS/i,'Legislação Tributária Estadual'],[/Cont[áa]bil/i,'Contabilidade Geral'],[/Auditoria/i,'Auditoria'],[/Tribut/i,'Dir. Tributário'],
+    [/Inform[áa]tica|Tecnologia/i,'Tecnologia da Informação'],[/Portugu/i,'Português'],[/Racioc/i,'Raciocínio Lógico'],[/Constitu/i,'Dir. Constitucional'],[/Administrativ/i,'Dir. Administrativo'],
+    [/Civil/i,'Dir. Civil'],[/Penal/i,'Dir. Penal'],[/Empresar|Comercial/i,'Direito Empresarial (Comercial)'],[/Financeiro|AFO|Or[çc]ament/i,'Dir. Financeiro / AFO']];
+  for(const[re,m] of tabela)if(re.test(s))return m;
+  return s||'Outras';
+}
+function matDaSigla(sig,disc){return (typeof GURUJA_SIGLA_APP!=='undefined'&&GURUJA_SIGLA_APP[sig])||matDaDisciplina(disc);}
+function snapGuruja(){try{return GurujaLink.lerCache();}catch(e){return null;}}
+// Reforços do planejamento ativo, lidos do snapshot (metas[].reforcos). null = ainda sem snapshot.
+function reforcosDoSnapshot(){
+  const s=snapGuruja();if(!s||!Array.isArray(s.metas))return null;
+  const out=[];const vistos=new Set();
+  s.metas.forEach(m=>(m.reforcos||[]).forEach(r=>{if(!r||r.ignorado||vistos.has(r.aid))return;vistos.add(r.aid);out.push({...r,meta:m.ordem,mat:matDaDisciplina(r.disciplina)});}));
+  if(Array.isArray(s.reforcos))s.reforcos.forEach(r=>{if(!r||r.ignorado||vistos.has(r.aid))return;vistos.add(r.aid);out.push({...r,mat:matDaDisciplina(r.disciplina)});});
+  return out;
+}
+// Matérias que ela já tocou (têm item no ciclo ou nível com dado real), da mais difícil para a mais fácil.
+function materiasIniciadasPorDificuldade(){
+  return EDITAL_MATS.map(m=>({mat:m,...nivelRealMat(m)})).filter(x=>CICLO.some(c=>c.mat===x.mat)||x.origem!=='estimado').sort((a,b)=>a.pct-b.pct);
+}
+function proximoDiaCaderno(){
+  for(let i=0;i<=7;i++){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()+i);if(CADERNO_DIAS.includes(d.getDay()))return{offset:i,dia:d,label:`${NOMES_DIA_LONGO[d.getDay()]} ${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`};}
+  return null;
+}
+function minutosPorDia(dias){ // {dk:{total,porMat}} a partir do histórico (+ horas sem registro correspondente)
+  const hist=lsGet('historico_diario',[]),horas=lsGet('horas',[]);
+  const ids=new Set(hist.map(h=>h&&h.id));
+  const out={};dias.forEach(d=>{out[d]={total:0,porMat:{}};});
+  const add=(dk,mat,min)=>{if(!out[dk]||!(min>0))return;out[dk].total+=min;out[dk].porMat[mat]=(out[dk].porMat[mat]||0)+min;};
+  hist.forEach(h=>{if(!h)return;const dk=h.dia||(h.dt?dkDe(new Date(h.dt)):null);if(dk)add(dk,h.materia||'—',parseInt(h.tempo)||0);});
+  horas.forEach(h=>{if(!h||(h.rid&&ids.has(h.rid)))return;const dk=h.dt?dkDe(new Date(h.dt)):null;if(dk)add(dk,String(h.mat||'—').replace(/^(Anki|NLM|1h30)\s—\s/,''),parseInt(h.min)||0);});
+  return out;
+}
+
+// ── Reforços do Guruja (lista do que tenho que fazer) ──
 function ReforcosCiclo({onRapido,ver}){
-  const hist=useMemo(()=>lsGet('historico_diario',[]),[ver]);
-  const D=useMemo(()=>{
-    const por={};REFORCOS_GURUJA.forEach(r=>{por[r.n]={regs:[],q:0,a:0,min:0};});
-    (hist||[]).forEach(h=>{
-      const n=h&&h.reforcoN;
-      if(!n||!por[n]||h.parcial)return;
-      const p=por[n];p.regs.push(h);p.q+=parseInt(h.questoes)||0;p.a+=parseInt(h.acertei)||0;p.min+=parseInt(h.tempo)||0;
-    });
-    const cont=REFORCOS_GURUJA.map(r=>por[r.n].regs.length);
-    const menor=Math.min(...cont);
-    const tot=REFORCOS_GURUJA.reduce((s,r)=>({q:s.q+por[r.n].q,a:s.a+por[r.n].a,min:s.min+por[r.n].min,n:s.n+por[r.n].regs.length}),{q:0,a:0,min:0,n:0});
-    return{por,menor,volta:menor+1,proximo:REFORCOS_GURUJA.find(r=>por[r.n].regs.length===menor),feitosVolta:cont.filter(c=>c>menor).length,tot};
-  },[hist]);
+  const[tick,setTick]=useState(0);
+  useEffect(()=>{const f=()=>setTick(t=>t+1);window.addEventListener('guruja-atualizado',f);return()=>window.removeEventListener('guruja-atualizado',f);},[]);
+  const lista=useMemo(()=>reforcosDoSnapshot(),[ver,tick]);
+  const snap=snapGuruja();
+  const ff=lsGet('fora_feitos',{});
+  const mono="'DM Mono',monospace";
   const pctDe=(a,q)=>q>0?Math.round(a/q*100):null;
   const corPct=p=>p==null?'#aab6c6':p>=80?'#34d399':p>=60?'#fbbf24':'#f87171';
-  const mono="'DM Mono',monospace";
-  const estrelas=n=>'★'.repeat(n)+'☆'.repeat(5-n);
-  const abrir=r=>{if(onRapido)onRapido({id:600+r.n,mat:r.mat,ic:(MAT_INFO[r.mat]||{}).ic||'🔁',conteudo:`Reforço nº ${r.n} — ${r.t}`,min:30,fora:!CICLO.some(c=>c.id===600+r.n),reforcoN:r.n});};
-  const planDia=n=>{const c=CICLO.find(x=>x.id===600+n);return c?diaCicloLabel(c.dia):null;};
-  const regra=est=>est>=5?'10 questões do tema · o que errar vira Anki (3C)':'5 questões do tema + 5 cartões de Anki dos erros';
-  const pr=D.proximo;const pTot=pctDe(D.tot.a,D.tot.q);
+  const feitoLocal=r=>!!ff['rf'+r.aid];
+  const pend=(lista||[]).filter(r=>!r.concluido&&!feitoLocal(r));
+  const feitos=(lista||[]).filter(r=>r.concluido||feitoLocal(r));
+  const abrir=r=>{if(onRapido)onRapido({id:'rf'+r.aid,mat:r.mat,ic:(MAT_INFO[r.mat]||{}).ic||'🔁',conteudo:`Reforço — ${r.titulo}`,min:r.min||30,fora:true,reforcoAid:r.aid});};
+  const quando=snap&&snap.gerado_em?new Date(snap.gerado_em):null;
+  const pad=n=>String(n).padStart(2,'0');
   return(
     <div>
       <div style={{padding:'12px 14px',borderRadius:12,background:'rgba(125,211,252,.07)',border:'1px solid rgba(125,211,252,.3)',marginBottom:12}}>
         <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
-          <div style={{flex:1,fontSize:13,color:'#7dd3fc',fontFamily:mono,fontWeight:800,letterSpacing:'1px'}}>🔁 REFORÇOS DO GURUJA · VOLTA {D.volta}</div>
-          <div style={{fontSize:14,color:'#e8edf5',fontFamily:mono,fontWeight:800}}>{D.feitosVolta}/12</div>
+          <div style={{flex:1,fontSize:13,color:'#7dd3fc',fontFamily:mono,fontWeight:800,letterSpacing:'1px'}}>🔁 REFORÇOS DO GURUJA · {pend.length} PENDENTE(S)</div>
+          <div style={{fontSize:14,color:'#e8edf5',fontFamily:mono,fontWeight:800}}>{feitos.length}/{(lista||[]).length}</div>
         </div>
-        <div style={{height:7,borderRadius:4,background:'rgba(148,163,184,.2)',overflow:'hidden',marginBottom:8}}><div style={{height:'100%',width:`${D.feitosVolta/12*100}%`,background:'#7dd3fc'}}/></div>
-        <div style={{display:'flex',gap:14,flexWrap:'wrap',fontSize:13,color:'#c2ccd8'}}>
-          <span>⏱ {fmtMinG(D.tot.min)} no total</span>
-          <span>📝 {D.tot.q} questões</span>
-          <span>✅ {D.tot.a} acertos</span>
-          <span style={{color:corPct(pTot),fontWeight:800}}>{pTot==null?'—%':pTot+'%'}</span>
+        <div style={{fontSize:13,color:'var(--text4)',lineHeight:1.5}}>
+          {quando?`Lido do Guruja em ${pad(quando.getDate())}/${pad(quando.getMonth()+1)} às ${pad(quando.getHours())}h${pad(quando.getMinutes())} (as rotinas das 04h10 e do meio-dia atualizam). `:'Ainda sem leitura do Guruja neste aparelho. '}
+          O reforço aparece aqui quando o Guruja gera; ao concluir no portal, ele sai da lista na próxima leitura. Regra: 10 questões do tema quando for 5★ (o que errar vira Anki), 5 questões + 5 cards nos demais.
         </div>
-        <div style={{fontSize:13,color:'var(--text4)',marginTop:6,lineHeight:1.5}}>Um por dia, na ordem do Guruja. Ao fechar os 12, recomeça. Tempo, questões e acertos entram no seu nível por matéria (Decisão) e em Dados.</div>
       </div>
-      {pr&&<div style={{padding:'13px 14px',borderRadius:12,background:'rgba(52,211,153,.08)',border:'2px solid rgba(52,211,153,.45)',marginBottom:12}}>
-        <div style={{fontSize:13,color:'#34d399',fontFamily:mono,fontWeight:800,letterSpacing:'1px',marginBottom:4}}>▶ PRÓXIMO REFORÇO · Nº {pr.n} DE 12</div>
-        <div style={{fontSize:17,fontWeight:900,color:'#e8edf5'}}>{(MAT_INFO[pr.mat]||{}).ic||'🔁'} {pr.mat}</div>
-        <div style={{fontSize:15,color:'#e8edf5',margin:'2px 0 4px'}}>{pr.t}</div>
-        <div style={{fontSize:13,color:'#c2ccd8',fontFamily:mono,marginBottom:6}}>{estrelas(pr.est)} · {pr.cod} · prazo no Guruja: dia {pr.dtg}{planDia(pr.n)?` · no plano: ${planDia(pr.n)}`:''}</div>
-        <div style={{fontSize:13,color:'#b4c0d1',marginBottom:10}}>Como fazer (30 min): {regra(pr.est)}</div>
-        <button onClick={()=>abrir(pr)} style={{width:'100%',padding:'12px',borderRadius:10,border:'none',background:'#34d399',color:'#050a14',fontSize:15,fontWeight:900,cursor:'pointer'}}>⚡ Registrar tempo, questões e acertos</button>
-      </div>}
-      <div style={{fontSize:13,color:'var(--text4)',fontFamily:mono,letterSpacing:'1px',marginBottom:6}}>OS 12 REFORÇOS, NA ORDEM DO GURUJA</div>
-      {REFORCOS_GURUJA.map(r=>{
-        const x=D.por[r.n];const feito=x.regs.length>D.menor;const atual=pr&&pr.n===r.n;
-        const ult=x.regs[x.regs.length-1];
-        const pUlt=ult?pctDe(parseInt(ult.acertei)||0,parseInt(ult.questoes)||0):null;
-        const pAc=pctDe(x.a,x.q);
-        return(
-          <div key={r.n} style={{padding:'9px 11px',borderRadius:10,marginBottom:6,border:`1px solid ${atual?'rgba(52,211,153,.5)':feito?'rgba(52,211,153,.25)':'rgba(148,163,184,.2)'}`,background:feito?'rgba(52,211,153,.05)':'transparent'}}>
-            <div style={{display:'flex',alignItems:'center',gap:8}}>
-              <span style={{width:24,height:24,borderRadius:'50%',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:800,fontFamily:mono,border:`2px solid ${feito?'#34d399':atual?'#34d399':'rgba(148,163,184,.3)'}`,background:feito?'#34d399':'transparent',color:feito?'#050a14':atual?'#34d399':'#aab6c8'}}>{feito?'✓':atual?'▶':r.n}</span>
-              <div style={{flex:1,minWidth:0}}>
-                <div style={{fontSize:14,fontWeight:700,color:'#e8edf5',lineHeight:1.3}}>{(MAT_INFO[r.mat]||{}).ic||'🔁'} {r.mat} <span style={{color:'#fbbf24',fontFamily:mono,fontSize:12}}>{'★'.repeat(r.est)}</span></div>
-                <div style={{fontSize:13,color:'#c2ccd8',lineHeight:1.4}}>{r.t}</div>
-                <div style={{fontSize:12,color:'#7dd3fc',fontFamily:mono,marginTop:1}}>#{r.n} · {r.cod} · prazo dia {r.dtg}{planDia(r.n)?` · plano: ${planDia(r.n)}`:''}</div>
-                {x.regs.length>0&&<div style={{fontSize:12,color:'#c2ccd8',fontFamily:mono,marginTop:2}}>
-                  {x.regs.length}× feito · ⏱ {fmtMinG(x.min)} · 📝 {x.q}q · ✅ {x.a} · <span style={{color:corPct(pAc),fontWeight:800}}>{pAc==null?'—':pAc+'%'}</span>{pUlt!=null&&x.regs.length>1?` · última ${pUlt}%`:''}
-                </div>}
-              </div>
-              <CadernoBtn id={600+r.n} curto style={{padding:'8px 10px',fontSize:14}}/>
-              <button onClick={()=>abrir(r)} style={{padding:'8px 10px',borderRadius:8,border:'1px solid rgba(52,211,153,.4)',background:'rgba(52,211,153,.1)',color:'#34d399',fontSize:14,fontWeight:800,cursor:'pointer',flexShrink:0}}>⚡</button>
+      {lista&&lista.length===0&&<div style={{padding:'18px 14px',borderRadius:12,border:'1px dashed var(--border)',textAlign:'center',fontSize:14,color:'var(--text4)',lineHeight:1.6}}>✅ Nenhum reforço no planejamento “Consolidar a base” até agora.<br/>O Guruja gera reforços depois que você acumula erros nas atividades — quando aparecerem, entram aqui sozinhos.</div>}
+      {lista===null&&<div style={{padding:'18px 14px',borderRadius:12,border:'1px dashed var(--border)',textAlign:'center',fontSize:14,color:'var(--text4)'}}>Sem dados do Guruja neste aparelho ainda. Abra o app com internet para ler o arquivo das rotinas.</div>}
+      {pend.map((r,i)=>(
+        <div key={r.aid} style={{padding:'11px 12px',borderRadius:11,marginBottom:7,border:`2px solid ${i===0?'rgba(52,211,153,.5)':'rgba(148,163,184,.25)'}`,background:i===0?'rgba(52,211,153,.06)':'transparent'}}>
+          <div style={{display:'flex',alignItems:'center',gap:8}}>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontSize:14,fontWeight:800,color:'#e8edf5'}}>{(MAT_INFO[r.mat]||{}).ic||'🔁'} {r.mat}{r.tipo_reforco&&<span style={{fontSize:12,color:'#fbbf24',fontFamily:mono,marginLeft:6}}>{r.tipo_reforco}</span>}</div>
+              <div style={{fontSize:14,color:'#c2ccd8',lineHeight:1.4}}>{r.titulo}</div>
+              <div style={{fontSize:12,color:'#7dd3fc',fontFamily:mono,marginTop:2}}>#{r.aid}{r.meta?` · Meta ${r.meta}`:''}{i===0?' · FAÇA PRIMEIRO':''}</div>
             </div>
+            {r.link&&<a href={r.link} target="_blank" rel="noopener noreferrer" title="Abrir o caderno no TEC" style={{padding:'8px 10px',borderRadius:8,border:'1px solid rgba(125,211,252,.4)',background:'rgba(125,211,252,.1)',color:'#7dd3fc',fontSize:14,fontWeight:800,textDecoration:'none',flexShrink:0}}>📓</a>}
+            <button onClick={()=>abrir(r)} style={{padding:'8px 10px',borderRadius:8,border:'1px solid rgba(52,211,153,.4)',background:'rgba(52,211,153,.1)',color:'#34d399',fontSize:14,fontWeight:800,cursor:'pointer',flexShrink:0}}>⚡</button>
           </div>
-        );
-      })}
+        </div>
+      ))}
+      {feitos.length>0&&<div style={{marginTop:10}}>
+        <div style={{fontSize:13,color:'var(--text4)',fontFamily:mono,letterSpacing:'1px',marginBottom:5}}>✅ FEITOS ({feitos.length})</div>
+        {feitos.map(r=>{const p=pctDe(r.a,r.q);return(
+          <div key={r.aid} style={{display:'flex',alignItems:'center',gap:8,padding:'6px 10px',fontSize:13,color:'#aab6c6'}}>
+            <span style={{flex:1,minWidth:0}}>{r.mat} — {r.titulo}</span>
+            {r.q>0&&<span style={{fontFamily:mono,color:corPct(p)}}>{r.a}/{r.q} · {p}%</span>}
+          </div>);})}
+      </div>}
     </div>
   );
 }
 
-function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,ankiSugestoes=[],nlmSugestao=null,onRapido,rapidoVer}){
+// ── Questões · caderno de erros do TEC (3×30 min, da matéria mais difícil para a mais fácil) ──
+function CadernoTEC({onAddHoras,onSyncHistorico,onConcluir}){
+  const hoje=getDK();
+  const[rot,setRot]=useState(()=>lsGet('cad_rot',{ultima:null,hist:[]}));
+  const[q,setQ]=useState('');const[a,setA]=useState('');
+  const mono="'DM Mono',monospace";
+  const lista=materiasIniciadasPorDificuldade();
+  const feitoHoje=(rot.hist||[]).find(h=>h.dia===hoje);
+  const ehDia=CADERNO_DIAS.includes(new Date().getDay());
+  const prox=proximoDiaCaderno();
+  let idxUlt=lista.findIndex(x=>x.mat===rot.ultima);
+  const sugerida=lista.length?lista[(idxUlt+1)%lista.length]:null;
+  const [mat,setMat]=useState(null);
+  const escolhida=mat||(sugerida&&sugerida.mat);
+  const seteDias=diaDK(-6);
+  const semana=(rot.hist||[]).filter(h=>h.dia>=seteDias);
+  const registrar=()=>{
+    if(!escolhida)return;
+    const agora=Date.now();
+    const nq=parseInt(q)||0,na=parseInt(a)||0;
+    const novo={dia:hoje,dt:agora,mat:escolhida,min:30,q:nq,a:na};
+    const n={ultima:escolhida,hist:[...(rot.hist||[]),novo].slice(-60)};
+    lsSet('cad_rot',n);setRot(n);
+    if(onAddHoras)onAddHoras({mat:`Caderno de erros — ${escolhida}`,min:30,dt:agora});
+    if(nq>0){
+      const rid=`${hoje}_cadtec_${agora}`;
+      lsSet('historico_diario',[...lsGet('historico_diario',[]),{id:rid,materia:escolhida,assunto:'Caderno de erros (TEC)',tempo:'30',questoes:String(nq),acertei:String(na),dificuldade:0,obs:'Sessão do caderno de erros',dia:hoje,dt:agora,origem:'caderno_tec'}].sort((x,y)=>(x.dt||0)-(y.dt||0)));
+    }
+    try{const fs=lsGet('feitos',[]);const it=CICLO.find(c=>[811,812,814].includes(c.id)&&!fs.includes(c.id)&&diaCicloLabel(c.dia).endsWith(hoje.slice(8)+'/'+hoje.slice(5,7)));if(it&&onConcluir)onConcluir(it.id);}catch(e){}
+    if(onSyncHistorico)onSyncHistorico();
+    setQ('');setA('');setMat(null);
+  };
+  const desfazer=()=>{const h=(rot.hist||[]).filter(x=>x.dia!==hoje);const ult=h.length?h[h.length-1].mat:null;const n={ultima:ult,hist:h};lsSet('cad_rot',n);setRot(n);};
+  return(
+    <div style={{padding:'12px 14px',borderRadius:12,background:'rgba(251,146,60,.07)',border:'2px solid rgba(251,146,60,.4)',marginBottom:12}}>
+      <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:4}}>
+        <div style={{flex:1,fontSize:13,color:'#fb923c',fontFamily:mono,fontWeight:800,letterSpacing:'1px'}}>📕 CADERNO DE ERROS DO TEC · 30 MIN · QUA / SEX / DOM</div>
+        <div style={{fontSize:14,color:'#e8edf5',fontFamily:mono,fontWeight:800}}>{semana.length}/3</div>
+      </div>
+      <div style={{fontSize:13,color:'var(--text4)',lineHeight:1.5,marginBottom:8}}>Uma matéria por sessão, da que você mais erra para a que menos erra, e a rotação recomeça no fim da lista. Abra o caderno dessa matéria no TEC e refaça os erros por 30 minutos.</div>
+      {feitoHoje&&<div style={{padding:'10px 12px',borderRadius:9,background:'rgba(52,211,153,.1)',border:'1px solid rgba(52,211,153,.35)',marginBottom:8,display:'flex',alignItems:'center',gap:8}}>
+        <div style={{flex:1,fontSize:14,color:'#34d399',fontWeight:800}}>✅ Feito hoje: {feitoHoje.mat}{feitoHoje.q>0?` · ${feitoHoje.a}/${feitoHoje.q} (${Math.round(feitoHoje.a/feitoHoje.q*100)}%)`:''}</div>
+        <button onClick={desfazer} style={{padding:'4px 9px',borderRadius:6,border:'1px solid var(--border)',background:'transparent',color:'var(--text4)',fontSize:13,cursor:'pointer'}}>desfazer</button>
+      </div>}
+      {!feitoHoje&&!ehDia&&prox&&<div style={{padding:'9px 12px',borderRadius:9,background:'rgba(148,163,184,.08)',fontSize:14,color:'#c2ccd8',marginBottom:8}}>Hoje não é dia de caderno. Próximo: <b>{prox.label}</b>{sugerida?<> — começa por <b>{sugerida.mat}</b>.</>:'.'}</div>}
+      {!feitoHoje&&sugerida&&<div>
+        <div style={{fontSize:13,color:'#fb923c',fontFamily:mono,marginBottom:3}}>{ehDia?'DA VEZ HOJE':'PRÓXIMA DA FILA'}</div>
+        <div style={{fontSize:18,fontWeight:900,color:'var(--text)',marginBottom:2}}>{(MAT_INFO[escolhida]||{}).ic||'📕'} {escolhida}</div>
+        <div style={{fontSize:13,color:'var(--text4)',marginBottom:8}}>{(()=>{const x=lista.find(l=>l.mat===escolhida);return x?`nível ${Math.round(x.pct)}% (${x.origem})`:'';})()}</div>
+        <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:8}}>
+          {lista.map((x,i)=>(<button key={x.mat} onClick={()=>setMat(x.mat)} style={{padding:'3px 8px',borderRadius:6,border:`1px solid ${x.mat===escolhida?'#fb923c':'var(--border)'}`,background:x.mat===escolhida?'rgba(251,146,60,.18)':'transparent',color:x.mat===escolhida?'#fb923c':'var(--text4)',fontSize:12,cursor:'pointer'}}>{i+1}º {x.mat.split(' ')[0]} {Math.round(x.pct)}%</button>))}
+        </div>
+        <div style={{display:'flex',gap:8,marginBottom:8}}>
+          <input type="number" value={q} onChange={e=>setQ(e.target.value)} placeholder="questões (opcional)" style={{flex:1,minWidth:0,padding:'9px 10px',borderRadius:7,border:'1px solid rgba(251,146,60,.3)',background:'rgba(251,146,60,.04)',color:'#f1f5f9',fontSize:15,outline:'none',boxSizing:'border-box'}}/>
+          <input type="number" value={a} onChange={e=>setA(e.target.value)} placeholder="acertos" style={{flex:1,minWidth:0,padding:'9px 10px',borderRadius:7,border:'1px solid rgba(251,146,60,.3)',background:'rgba(251,146,60,.04)',color:'#34d399',fontSize:15,outline:'none',boxSizing:'border-box'}}/>
+        </div>
+        <button onClick={registrar} style={{width:'100%',padding:'12px',borderRadius:9,border:'none',background:'#fb923c',color:'#0f172a',fontSize:15,fontWeight:900,cursor:'pointer'}}>✅ Fiz os 30 min do caderno</button>
+      </div>}
+      {!sugerida&&<div style={{fontSize:14,color:'var(--text4)'}}>Ainda não há matéria iniciada para montar a fila.</div>}
+    </div>
+  );
+}
+
+// ── Memorização · baralho filtrado de 100 notas (montado toda segunda) ──
+function FiltroCem({onAddHoras}){
+  const hoje=getDK();const sem=semanaChave();
+  const[f,setF]=useState(()=>lsGet('anki_filtro',null));
+  const[hist,setHist]=useState(()=>lsGet('anki_filtro_hist',[]));
+  const[tam,setTam]=useState('100');
+  const[cards,setCards]=useState('');const[min,setMin]=useState('30');
+  const mono="'DM Mono',monospace";
+  const atual=f&&f.semana===sem?f:null;
+  const anterior=f&&f.semana!==sem?f:null;
+  const ankiHoje=lsGet('rev_anki',[]).filter(r=>r.dia===hoje).reduce((s,r)=>s+(parseInt(r.tempo)||0),0);
+  const montar=()=>{
+    const t=Math.max(1,parseInt(tam)||100);
+    if(anterior){const h=[...hist,{semana:anterior.semana,total:anterior.total,restam:anterior.restam}].slice(-12);lsSet('anki_filtro_hist',h);setHist(h);}
+    const n={semana:sem,total:t,restam:t,montado:Date.now()};lsSet('anki_filtro',n);setF(n);
+  };
+  const registrar=()=>{
+    if(!atual)return;
+    const c=Math.max(0,parseInt(cards)||0),m=Math.max(0,parseInt(min)||0);
+    if(!c&&!m)return;
+    const agora=Date.now();
+    const n={...atual,restam:Math.max(0,atual.restam-c)};lsSet('anki_filtro',n);setF(n);
+    lsSet('rev_anki',[...lsGet('rev_anki',[]),{id:agora,dt:agora,dia:hoje,mat:'Baralho filtrado',tempo:String(m),cards:String(c),dif:3,origem:'filtro'}]);
+    if(m>0&&onAddHoras)onAddHoras({mat:'Anki — Baralho filtrado',min:m,dt:agora});
+    setCards('');
+  };
+  const corrigir=v=>{if(!atual)return;const n={...atual,restam:Math.max(0,Math.min(atual.total,v))};lsSet('anki_filtro',n);setF(n);};
+  const feitosN=atual?atual.total-atual.restam:0;
+  const pct=atual?Math.round(feitosN/atual.total*100):0;
+  return(
+    <div style={{padding:'12px 14px',borderRadius:12,background:'rgba(167,139,250,.08)',border:'2px solid rgba(167,139,250,.4)',marginBottom:12}}>
+      <div style={{fontSize:13,color:'#a78bfa',fontFamily:mono,fontWeight:800,letterSpacing:'1px',marginBottom:4}}>🃏 BARALHO FILTRADO DA SEMANA · ANKI TODO DIA (≥ 30 MIN)</div>
+      {!atual&&<div>
+        <div style={{fontSize:14,color:'#c2ccd8',lineHeight:1.5,marginBottom:8}}>{anterior?`Semana passada terminou com ${anterior.restam} de ${anterior.total} sem fazer. `:''}Nova semana: monte no Anki o baralho filtrado com as 100 notas de prioridade e confirme aqui.</div>
+        <div style={{display:'flex',gap:8}}>
+          <input type="number" value={tam} onChange={e=>setTam(e.target.value)} style={{width:90,padding:'9px 10px',borderRadius:7,border:'1px solid rgba(167,139,250,.3)',background:'rgba(167,139,250,.05)',color:'#f1f5f9',fontSize:16,outline:'none'}}/>
+          <button onClick={montar} style={{flex:1,padding:'10px',borderRadius:9,border:'none',background:'#a78bfa',color:'#0f172a',fontSize:15,fontWeight:900,cursor:'pointer'}}>Montei o filtro desta semana</button>
+        </div>
+      </div>}
+      {atual&&<div>
+        <div style={{display:'flex',alignItems:'baseline',gap:8,marginBottom:4}}>
+          <div style={{fontSize:30,fontWeight:900,color:atual.restam===0?'#34d399':'var(--text)',fontFamily:mono,lineHeight:1}}>{atual.restam}</div>
+          <div style={{fontSize:14,color:'var(--text4)'}}>restam de {atual.total} · meta: zerar até a próxima segunda</div>
+        </div>
+        <div style={{height:7,borderRadius:4,background:'rgba(148,163,184,.2)',overflow:'hidden',marginBottom:8}}><div style={{height:'100%',width:`${pct}%`,background:atual.restam===0?'#34d399':'#a78bfa'}}/></div>
+        {atual.restam===0?<div style={{fontSize:14,color:'#34d399',fontWeight:800,marginBottom:8}}>✅ Filtro zerado. Meta da semana cumprida — segunda tem um novo.</div>:null}
+        <div style={{display:'flex',gap:6,marginBottom:8}}>
+          <input type="number" value={cards} onChange={e=>setCards(e.target.value)} placeholder="notas feitas" style={{flex:1,minWidth:0,padding:'9px 10px',borderRadius:7,border:'1px solid rgba(167,139,250,.3)',background:'rgba(167,139,250,.05)',color:'#f1f5f9',fontSize:15,outline:'none',boxSizing:'border-box'}}/>
+          <input type="number" value={min} onChange={e=>setMin(e.target.value)} placeholder="min" style={{width:80,padding:'9px 10px',borderRadius:7,border:'1px solid rgba(167,139,250,.3)',background:'rgba(167,139,250,.05)',color:'#f1f5f9',fontSize:15,outline:'none',boxSizing:'border-box'}}/>
+          <button onClick={registrar} style={{padding:'9px 14px',borderRadius:8,border:'none',background:'#a78bfa',color:'#0f172a',fontSize:15,fontWeight:900,cursor:'pointer'}}>Somar</button>
+        </div>
+        <div style={{display:'flex',alignItems:'center',gap:8,fontSize:13,color:'var(--text4)'}}>
+          <span>Anki hoje: <b style={{color:ankiHoje>=30?'#34d399':'#fbbf24'}}>{ankiHoje} min</b> / 30</span>
+          <span style={{flex:1}}/>
+          <span>ajustar restantes:</span>
+          <input type="number" defaultValue={atual.restam} key={atual.restam} onBlur={e=>corrigir(parseInt(e.target.value)||0)} style={{width:64,padding:'4px 6px',borderRadius:6,border:'1px solid var(--border)',background:'transparent',color:'var(--text)',fontSize:14}}/>
+        </div>
+      </div>}
+      {hist.length>0&&<div style={{fontSize:12,color:'var(--text4)',fontFamily:mono,marginTop:8}}>Semanas anteriores: {hist.slice(-4).map(h=>`${h.semana.slice(5)}: ${h.total-h.restam}/${h.total}`).join(' · ')}</div>}
+    </div>
+  );
+}
+
+// ── Passiva · 2 áudios por dia (calculado 1× por dia, na primeira abertura) ──
+function calcPassivaDoDia(){
+  const hoje=getDK();
+  const hist=lsGet('historico_diario',[]),fd=lsGet('feitos_dt',{}),feitos=lsGet('feitos',[]);
+  const snap=snapGuruja();
+  // dia de estudo anterior mais recente (até 7 dias atrás)
+  const porDia={};
+  const somar=(dk,mat,tema,min)=>{if(!dk||dk>=hoje||!EDITAL_MATS.includes(mat))return;const d=porDia[dk]=porDia[dk]||{};const k=mat;d[k]=d[k]||{min:0,tema:'',maxMin:0};d[k].min+=min;if(min>=d[k].maxMin&&tema){d[k].maxMin=min;d[k].tema=tema;}};
+  hist.forEach(h=>{if(!h||h.origem==='caderno_tec')return;somar(h.dia||(h.dt?dkDe(new Date(h.dt)):null),h.materia,String(h.assunto||''),parseInt(h.tempo)||0);});
+  feitos.forEach(id=>{const it=CICLO.find(c=>c.id===id);if(!it||!fd[id])return;somar(dkDe(new Date(fd[id])),it.mat,it.conteudo||'',it.min||30);});
+  const limiteOntem=diaDK(-3);
+  const diasOrd=Object.keys(porDia).filter(dk=>dk>=limiteOntem).sort().reverse();
+  let ontem=null;
+  for(const dk of diasOrd){const m=Object.entries(porDia[dk]).sort((a,b)=>b[1].min-a[1].min)[0];if(m){ontem={mat:m[0],tema:m[1].tema,dia:dk,quando:dk===diaDK(-1)?'ontem':dk};break;}}
+  // manutenção: a matéria com menos contato nos últimos 7 dias (empate: mais peso, depois mais tempo sem áudio)
+  const ini=materiasIniciadasPorDificuldade().map(x=>x.mat);
+  const sete=diaDK(-6);
+  const contato={};ini.forEach(m=>{contato[m]=0;});
+  const mm=minutosPorDia([...Array(7)].map((_,i)=>diaDK(-i)));
+  Object.values(mm).forEach(d=>Object.entries(d.porMat).forEach(([m,v])=>{if(m in contato)contato[m]+=v;}));
+  const ultAudio={};lsGet('rev_nlm',[]).forEach(r=>{if(r.mat&&(r.dt||0)>(ultAudio[r.mat]||0))ultAudio[r.mat]=r.dt||0;});
+  const cands=ini.filter(m=>!ontem||m!==ontem.mat).sort((a,b)=>(contato[a]-contato[b])||(pesoGate(b)-pesoGate(a))||((ultAudio[a]||0)-(ultAudio[b]||0)));
+  const manut=cands[0]||null;
+  const temaManut=m=>{
+    if(!snap||!Array.isArray(snap.fracos))return 'visão geral da matéria';
+    const f=snap.fracos.filter(x=>matDaSigla(x.sigla,x.disciplina)===m).sort((a,b)=>(a.pct??100)-(b.pct??100))[0];
+    return f?f.titulo:'visão geral da matéria';
+  };
+  const itens=[];
+  if(ontem)itens.push({tipo:'ontem',mat:ontem.mat,tema:ontem.tema||'o que você estudou',motivo:`${ontem.quando==='ontem'?'Foi a matéria em que você mais estudou ontem':'Última matéria em que você mais estudou ('+ontem.quando.slice(5)+')'} — o áudio fixa antes de esfriar.`});
+  if(manut)itens.push({tipo:'manutencao',mat:manut,tema:temaManut(manut),motivo:contato[manut]>0?`Só ${fmtMinG(contato[manut])} nos últimos 7 dias — é a de menor contato.`:'Sem nenhum contato nos últimos 7 dias — é a de menor contato.'});
+  if(itens.length<2&&cands[1])itens.push({tipo:'manutencao',mat:cands[1],tema:temaManut(cands[1]),motivo:`Segunda de menor contato (${fmtMinG(contato[cands[1]]||0)} em 7 dias).`});
+  return itens;
+}
+function PassivaDoDia({onSyncNlm}){
+  const hoje=getDK();
+  const[cache,setCache]=useState(()=>{
+    const c=lsGet('passiva_dia',null);
+    if(c&&c.dia===hoje&&Array.isArray(c.itens))return c;
+    let itens=[];try{itens=calcPassivaDoDia();}catch(e){itens=[];}
+    const n={dia:hoje,gerado:Date.now(),itens,feitos:[]};lsSet('passiva_dia',n);return n;
+  });
+  const mono="'DM Mono',monospace";
+  const hh=new Date(cache.gerado||Date.now());
+  const toggle=i=>{
+    const feito=(cache.feitos||[]).includes(i);
+    const n={...cache,feitos:feito?cache.feitos.filter(x=>x!==i):[...(cache.feitos||[]),i]};
+    lsSet('passiva_dia',n);setCache(n);
+    const it=cache.itens[i];const regs=lsGet('rev_nlm',[]);
+    if(!feito){lsSet('rev_nlm',[...regs,{id:Date.now(),dt:Date.now(),dia:hoje,mat:it.mat,oque:it.tema,tempo:'',questoes:'',dif:3,fonte:'NLM',pct:null,origem:'passiva_dia',slot:i}]);}
+    else lsSet('rev_nlm',regs.filter(r=>!(r.origem==='passiva_dia'&&r.dia===hoje&&r.slot===i)));
+    if(onSyncNlm)onSyncNlm();
+  };
+  return(
+    <div style={{padding:'12px 14px',borderRadius:12,background:'rgba(52,211,153,.07)',border:'2px solid rgba(52,211,153,.35)',marginBottom:12}}>
+      <div style={{fontSize:13,color:'#34d399',fontFamily:mono,fontWeight:800,letterSpacing:'1px',marginBottom:3}}>🎧 ÁUDIOS DE HOJE (NOTEBOOKLM) · {(cache.feitos||[]).length}/{cache.itens.length}</div>
+      <div style={{fontSize:12,color:'var(--text4)',marginBottom:8}}>Calculado hoje às {String(hh.getHours()).padStart(2,'0')}h{String(hh.getMinutes()).padStart(2,'0')}, com os registros do app e a leitura do Guruja. Muda uma vez por dia.</div>
+      {cache.itens.length===0&&<div style={{fontSize:14,color:'var(--text4)'}}>Ainda não há estudo registrado para sugerir. Registre o que estudar hoje e amanhã aparece aqui.</div>}
+      {cache.itens.map((it,i)=>{const ok=(cache.feitos||[]).includes(i);return(
+        <div key={i} style={{padding:'10px 12px',borderRadius:10,marginBottom:6,border:`1px solid ${ok?'rgba(52,211,153,.4)':'rgba(148,163,184,.25)'}`,background:ok?'rgba(52,211,153,.08)':'rgba(255,255,255,.02)'}}>
+          <div style={{display:'flex',alignItems:'center',gap:8}}>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontSize:12,color:it.tipo==='ontem'?'#60a5fa':'#fbbf24',fontFamily:mono}}>{it.tipo==='ontem'?'1 · DO QUE VOCÊ ESTUDOU':`${i+1} · MANUTENÇÃO`}</div>
+              <div style={{fontSize:16,fontWeight:900,color:ok?'#34d399':'var(--text)',textDecoration:ok?'line-through':'none'}}>{(MAT_INFO[it.mat]||{}).ic||'🎧'} {it.mat}</div>
+              <div style={{fontSize:14,color:'#c2ccd8',lineHeight:1.4}}>{it.tema}</div>
+              <div style={{fontSize:13,color:'var(--text4)',marginTop:2}}>{it.motivo}</div>
+            </div>
+            <button onClick={()=>toggle(i)} style={{padding:'9px 12px',borderRadius:8,border:`1px solid ${ok?'rgba(52,211,153,.5)':'var(--border)'}`,background:ok?'rgba(52,211,153,.2)':'transparent',color:ok?'#34d399':'var(--text4)',fontSize:14,fontWeight:800,cursor:'pointer',flexShrink:0}}>{ok?'✅ Ouvi':'Ouvi'}</button>
+          </div>
+        </div>);})}
+    </div>
+  );
+}
+
+// ── Estratégia · fila única de lacunas + prioridades da semana ──
+function calcFilaLacunas(){
+  const out=[];
+  const snap=snapGuruja();
+  const add=(o)=>{if(!o.mat||isDescartado(o.mat,o.assunto))return;out.push(o);};
+  if(snap&&Array.isArray(snap.metas))snap.metas.forEach(m=>(m.atividades||[]).forEach(a=>{
+    if(!a.concluida||!(a.q>=5))return;const pct=Math.round(a.a/a.q*100);if(pct>=80)return;
+    const mat=matDaSigla(String(a.codigo||'').split('.')[0],a.disciplina);
+    add({fonte:'Guruja',mat,assunto:String(a.titulo||'').replace(/\s+/g,' ').slice(0,80),pct,detalhe:`${a.a}/${a.q} na atividade`,score:(80-pct)*pesoGate(mat)});
+  }));
+  lsGet('rev_caderno',[]).forEach(t=>{
+    if(t.dominado||!EDITAL_MATS.includes(t.mat))return;const rodadas=(t.historico||[]).filter(h=>h.questoes).length;
+    if(rodadas>=2&&t.pct!=null&&t.pct<70)add({fonte:'Caderno',mat:t.mat,assunto:t.assunto||t.obs||'',pct:t.pct,detalhe:`${rodadas} rodadas abaixo de 70%`,score:(80-t.pct)*pesoGate(t.mat)*1.2});
+  });
+  lsGet('criticos_manuais',[]).forEach(c=>{
+    if(c.prioridade==='descartar'||c.prioridade==='baixa')return;
+    add({fonte:'Crítico',mat:c.mat,assunto:c.assunto||c.motivo||'',pct:null,detalhe:c.prioridade==='alta'?'marcado como alta':'marcado como média',score:(c.prioridade==='alta'?55:35)*Math.max(.7,pesoGate(c.mat))});
+  });
+  lsGet('rev_topicos',[]).forEach(t=>{if(!t.feito)add({fonte:'Digitado',mat:'—',assunto:t.txt,pct:null,detalhe:'tópico digitado para revisitar',score:40,semMat:true});});
+  const fs=new Set(lsGet('feitos',[]));
+  CICLO.filter(c=>c.estouro&&!fs.has(c.id)).forEach(c=>add({fonte:'Sobra',mat:c.mat,assunto:c.conteudo,pct:null,detalhe:'ficou de fora do plano da semana',score:25}));
+  // tópicos digitados entram com mat '—' (sem matéria): liberar o filtro isDescartado
+  return out.sort((a,b)=>b.score-a.score);
+}
+function prioridadesDaSemana(refazer){
+  const sem=semanaChave();
+  const c=lsGet('lacunas_semana',null);
+  if(!refazer&&c&&c.semana===sem&&Array.isArray(c.itens))return c.itens;
+  const fila=calcFilaLacunas();const itens=[];const mats=new Set();
+  for(const f of fila){if(itens.length>=3)break;if(f.mat!=='—'&&mats.has(f.mat)&&fila.some(x=>!mats.has(x.mat)&&x!==f))continue;itens.push(f);mats.add(f.mat);}
+  lsSet('lacunas_semana',{semana:sem,itens,em:Date.now()});
+  return itens;
+}
+
+// ── Estratégia · Semana: fechamento, checkpoints por matéria, projeção provisória ──
+function calcFechamentoSemana(){
+  const dias=[...Array(7)].map((_,i)=>diaDK(-(6-i)));
+  const mm=minutosPorDia(dias);
+  const porDia=dias.map(dk=>({dk,total:mm[dk].total,ti:mm[dk].porMat[MAT_TI]||0,ct:mm[dk].porMat['Contabilidade Geral']||0}));
+  const diaHojeIdx=Math.min(7,Math.max(1,Math.round((new Date().setHours(0,0,0,0)-CICLO_INI_MS)/86400000)+1));
+  const diasPlano=[1,2,3,5,6,7].filter(d=>d<=diaHojeIdx).length; // domingo não tem TI/Contab
+  const totTI=porDia.reduce((s,d)=>s+d.ti,0),totCT=porDia.reduce((s,d)=>s+d.ct,0);
+  const cad=(lsGet('cad_rot',{hist:[]}).hist||[]).filter(h=>h.dia>=dias[0]).length;
+  const nlm=lsGet('rev_nlm',[]).filter(r=>r.dia>=dias[0]).length;
+  const f=lsGet('anki_filtro',null);const filtro=f&&f.semana===semanaChave()?f:null;
+  const snap=snapGuruja();const ma=snap&&snap.meta_atual?snap.meta_atual:null;
+  const feitosApp=lsGet('feitos',[]).filter(id=>PLANO_RAW.some(r=>r[0]===id&&/^Meta/.test(r[8]))).length;
+  const metaFeitas=Math.max(ma?ma.atividades_concluidas||0:0,feitosApp);
+  const metaTotal=ma?ma.atividades_totais||20:20;
+  const mediaHoras=porDia.length?Math.round(porDia.reduce((s,d)=>s+d.total,0)/porDia.length):0;
+  return{porDia,diasPlano,totTI,totCT,metaTI:60*diasPlano,metaCT:120*diasPlano,cad,nlm,filtro,metaFeitas,metaTotal,mediaHoras};
+}
+function decisaoDaSemana(F){
+  const diaHojeIdx=Math.min(7,Math.max(1,Math.round((new Date().setHours(0,0,0,0)-CICLO_INI_MS)/86400000)+1));
+  const esperado=Math.round(F.metaTotal*Math.min(1,diaHojeIdx/7));
+  if(F.metaFeitas<esperado-2){const c=(typeof calcOrdemCorte==='function'?calcOrdemCorte():[])[0];return{t:'A Meta 1 está atrasada',x:`${F.metaFeitas} de ${F.metaTotal} feitas; o ritmo pediria ~${esperado}. Decisão: ${c?`cortar “${(c.conteudo||'').slice(0,60)}” (${c.mat}) primeiro ou`:'cortar o que for de menor peso ou'} esticar o dia.`};}
+  if(F.diasPlano>=3&&F.totCT<F.metaCT*0.7)return{t:'Contabilidade abaixo do combinado',x:`${fmtMinG(F.totCT)} de ${fmtMinG(F.metaCT)} (2h por dia). Decisão: onde encaixar o que faltou — folga até 5h ou tirar de outra matéria.`};
+  if(F.diasPlano>=3&&F.totTI<F.metaTI*0.7)return{t:'TI abaixo do combinado',x:`${fmtMinG(F.totTI)} de ${fmtMinG(F.metaTI)} (1h por dia). Decisão: repor na folga ou aceitar o atraso.`};
+  if(F.filtro&&F.filtro.restam>F.filtro.total*0.6&&new Date().getDay()>=4)return{t:'Filtro do Anki atrasado',x:`Restam ${F.filtro.restam} de ${F.filtro.total} e a semana está acabando. Decisão: dobrar o Anki nos próximos dias.`};
+  return{t:'Sem desvio grande nesta semana',x:'Decisão única: manter o plano como está. Se quiser mexer em algo, que seja na folga até 5h.'};
+}
+function EstrategiaSemana(){
+  const F=calcFechamentoSemana();
+  const proj=calcProjecaoNotaFinal();
+  const dec=decisaoDaSemana(F);
+  const prio=prioridadesDaSemana(false);
+  const[saiu,setSaiu]=useState(()=>lsGet('edital_rs_saiu',null));
+  const mono="'DM Mono',monospace";
+  const barra=(v,max,cor)=><div style={{height:5,borderRadius:3,background:'rgba(148,163,184,.2)',overflow:'hidden',marginTop:3}}><div style={{height:'100%',width:`${Math.min(100,max>0?v/max*100:0)}%`,background:cor}}/></div>;
+  const corV=(v,max)=>max<=0?'#94a3b8':v>=max*0.9?'#34d399':v>=max*0.6?'#fbbf24':'#f87171';
+  const niveis=EDITAL_MATS.map(m=>({mat:m,...nivelRealMat(m),teto:(DECISAO_PADRAO[m]||{}).teto||85})).sort((a,b)=>a.pct-b.pct);
+  const semaforo=n=>n.origem==='estimado'?'⚪':n.pct>=n.teto-5?'🟢':n.pct>=n.teto-20?'🟡':'🔴';
+  const linha=(rot,txt,v,max,extra)=>(
+    <div style={{marginBottom:8}}>
+      <div style={{display:'flex',justifyContent:'space-between',fontSize:14,color:'var(--text)'}}><span>{rot}</span><span style={{fontFamily:mono,color:corV(v,max)}}>{txt}</span></div>
+      {barra(v,max,corV(v,max))}{extra&&<div style={{fontSize:12,color:'var(--text4)',marginTop:2}}>{extra}</div>}
+    </div>);
+  return(
+    <div>
+      <div style={{padding:'10px 13px',borderRadius:11,background:'rgba(167,139,250,.06)',border:'1px solid rgba(167,139,250,.25)',marginBottom:12}}>
+        <div style={{fontSize:13,color:'#a78bfa',fontFamily:mono,fontWeight:800,letterSpacing:'1px'}}>🗓️ FECHAMENTO DA SEMANA — últimos 7 dias, uma decisão</div>
+        <div style={{fontSize:13,color:'var(--text4)',marginTop:2}}>Prestação de contas contra o que você combinou. Só aqui você decide; o resto executa sozinho.</div>
+      </div>
+      <div style={{padding:'12px 14px',borderRadius:12,background:'rgba(251,191,36,.08)',border:'2px solid rgba(251,191,36,.4)',marginBottom:12}}>
+        <div style={{fontSize:13,color:'#fbbf24',fontFamily:mono,fontWeight:800,letterSpacing:'1px',marginBottom:3}}>⚡ DECISÃO DA SEMANA</div>
+        <div style={{fontSize:15,fontWeight:900,color:'var(--text)'}}>{dec.t}</div>
+        <div style={{fontSize:14,color:'#c2ccd8',marginTop:2,lineHeight:1.5}}>{dec.x}</div>
+      </div>
+      <div style={{padding:'12px 14px',borderRadius:12,background:'rgba(255,255,255,.02)',border:'1px solid var(--border)',marginBottom:12}}>
+        <div style={{fontSize:13,color:'var(--text4)',fontFamily:mono,fontWeight:700,letterSpacing:'1px',marginBottom:8}}>HORAS POR DIA (meta 5h)</div>
+        <div style={{display:'flex',gap:4,alignItems:'flex-end',height:70,marginBottom:4}}>
+          {F.porDia.map(d=>{const h=Math.min(100,d.total/REV_META_MIN*100);return(
+            <div key={d.dk} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'flex-end',height:'100%'}}>
+              <div style={{fontSize:11,color:'var(--text4)',fontFamily:mono}}>{d.total?fmtMinG(d.total):'—'}</div>
+              <div style={{width:'100%',height:`${Math.max(2,h)*0.5}px`,background:corV(d.total,REV_META_MIN),borderRadius:3,minHeight:2}}/>
+              <div style={{fontSize:11,color:'var(--text4)'}}>{NOMES_DIA3[new Date(d.dk+'T12:00:00').getDay()]}</div>
+            </div>);})}
+        </div>
+        <div style={{fontSize:12,color:'var(--text4)',marginBottom:10}}>Média: {fmtMinG(F.mediaHoras)} por dia. A 5ª hora é do caderno e da Profunda; o que sobra é folga.</div>
+        {linha('TI (1h por dia de plano)',`${fmtMinG(F.totTI)} / ${fmtMinG(F.metaTI)}`,F.totTI,F.metaTI)}
+        {linha('Contabilidade (2h por dia de plano)',`${fmtMinG(F.totCT)} / ${fmtMinG(F.metaCT)}`,F.totCT,F.metaCT)}
+        {linha('Caderno de erros (3×30 min)',`${F.cad} / 3`,F.cad,3)}
+        {linha('Áudios NotebookLM (2 por dia)',`${F.nlm} / 14`,F.nlm,14)}
+        {F.filtro?linha('Baralho filtrado do Anki',`${F.filtro.total-F.filtro.restam} / ${F.filtro.total}`,F.filtro.total-F.filtro.restam,F.filtro.total,F.filtro.restam===0?'zerado ✅':`restam ${F.filtro.restam}`):<div style={{fontSize:13,color:'var(--text4)',marginBottom:8}}>Baralho filtrado: ainda não montado nesta semana (Revisão › Memorização).</div>}
+        {linha('Meta 1 (Consolidar a base)',`${F.metaFeitas} / ${F.metaTotal}`,F.metaFeitas,F.metaTotal)}
+      </div>
+      <div style={{padding:'12px 14px',borderRadius:12,background:'rgba(248,113,113,.06)',border:'1px solid rgba(248,113,113,.25)',marginBottom:12}}>
+        <div style={{fontSize:13,color:'#f87171',fontFamily:mono,fontWeight:800,letterSpacing:'1px',marginBottom:6}}>🎯 3 PRIORIDADES DA SEMANA → alimentam a Profunda de segunda</div>
+        {prio.length===0&&<div style={{fontSize:14,color:'var(--text4)'}}>Sem lacunas detectadas ainda. Elas surgem de atividades do Guruja abaixo de 80%, erros do caderno e do que você digita em Lacunas.</div>}
+        {prio.map((p,i)=>(<div key={i} style={{display:'flex',gap:8,padding:'5px 0',fontSize:14,color:'var(--text)'}}><b style={{fontFamily:mono,color:'#f87171'}}>{i+1}</b><span style={{flex:1}}>{p.mat!=='—'?<b>{p.mat}</b>:null}{p.mat!=='—'?' — ':''}{p.assunto||'(matéria inteira)'} <span style={{color:'var(--text4)',fontSize:12}}>· {p.fonte}{p.pct!=null?` · ${p.pct}%`:''}</span></span></div>))}
+      </div>
+      <div style={{padding:'12px 14px',borderRadius:12,background:'rgba(96,165,250,.06)',border:'2px solid rgba(96,165,250,.3)',marginBottom:12}}>
+        <div style={{fontSize:13,color:'#60a5fa',fontFamily:mono,fontWeight:800,letterSpacing:'1px',marginBottom:8}}>📊 SE A PROVA FOSSE HOJE · provisório ({PROVA_TOTAL} questões, edital de 2018)</div>
+        <div style={{display:'flex',gap:8,marginBottom:8}}>
+          {[['Gerais',proj.pontosGerais,PROVA.qG,proj.passaGerais],['Específicos',proj.pontosEspec,PROVA.qE,proj.passaEspec]].map(([l,v,max,ok])=>(
+            <div key={l} style={{flex:1,padding:'8px',borderRadius:9,background:ok?'rgba(52,211,153,.1)':'rgba(248,113,113,.1)',border:`1px solid ${ok?'rgba(52,211,153,.3)':'rgba(248,113,113,.3)'}`,textAlign:'center'}}>
+              <div style={{fontSize:18,fontWeight:900,color:ok?'#34d399':'#f87171',fontFamily:mono}}>{v}/{max}</div>
+              <div style={{fontSize:12,color:'var(--text4)'}}>{l} · alvo {Math.round(max*0.8)}</div>
+            </div>))}
+          <div style={{flex:1,padding:'8px',borderRadius:9,background:'rgba(96,165,250,.1)',border:'1px solid rgba(96,165,250,.3)',textAlign:'center'}}>
+            <div style={{fontSize:18,fontWeight:900,color:'#60a5fa',fontFamily:mono}}>{proj.pontosObjetiva}/{PROVA_TOTAL}</div>
+            <div style={{fontSize:12,color:'var(--text4)'}}>total · alvo {ALVO_NOTA_PADRAO}</div>
+          </div>
+        </div>
+        <div style={{fontSize:12,color:'var(--text4)',lineHeight:1.5}}>Matérias com dado real: Gerais {proj.cobGerais}/{proj.totalGerais} · Específicos {proj.cobEspec}/{proj.totalEspec}. As demais entram com nível estimado (⚪ abaixo), então a nota é um palpite até você registrar questões. Discursiva: o pré-edital não informa; fica fora da conta.</div>
+      </div>
+      <div style={{padding:'12px 14px',borderRadius:12,background:'rgba(255,255,255,.02)',border:'1px solid var(--border)',marginBottom:12}}>
+        <div style={{fontSize:13,color:'var(--text4)',fontFamily:mono,fontWeight:700,letterSpacing:'1px',marginBottom:6}}>SEMÁFORO POR MATÉRIA (nível × meta)</div>
+        <div style={{display:'flex',flexWrap:'wrap',gap:5}}>
+          {niveis.map(n=>(<span key={n.mat} style={{fontSize:12,padding:'3px 8px',borderRadius:6,background:'rgba(148,163,184,.1)',color:'var(--text)'}}>{semaforo(n)} {n.mat.replace('Direito ','Dir. ').split(' (')[0]} {n.origem==='estimado'?'~':''}{Math.round(n.pct)}%</span>))}
+        </div>
+        <div style={{fontSize:12,color:'var(--text4)',marginTop:6}}>🟢 perto da meta · 🟡 a até 20 pontos · 🔴 mais de 20 abaixo · ⚪ só estimativa (~).</div>
+      </div>
+      <div style={{padding:'12px 14px',borderRadius:12,background:'rgba(52,211,153,.05)',border:'1px solid rgba(52,211,153,.25)',marginBottom:12}}>
+        <div style={{fontSize:13,color:'#34d399',fontFamily:mono,fontWeight:800,letterSpacing:'1px',marginBottom:4}}>🧭 MARCOS</div>
+        <div style={{fontSize:14,color:'#c2ccd8',lineHeight:1.6}}>• <b>22/11</b> — prova SEFAZ-SC como treino FCC. Ao sair o gabarito, registre acertos por matéria: é o primeiro diagnóstico de prova real.<br/>• <b>Edital do RS</b> — quando sair, os pesos e as matérias provisórios precisam ser trocados.</div>
+        {!saiu?<button onClick={()=>{const n={em:Date.now()};lsSet('edital_rs_saiu',n);setSaiu(n);}} style={{marginTop:8,padding:'9px 12px',borderRadius:8,border:'1px solid rgba(52,211,153,.4)',background:'rgba(52,211,153,.1)',color:'#34d399',fontSize:14,fontWeight:800,cursor:'pointer'}}>📣 Saiu o edital do RS</button>
+        :<div style={{marginTop:8,padding:'9px 12px',borderRadius:8,background:'rgba(251,191,36,.1)',border:'1px solid rgba(251,191,36,.4)',fontSize:14,color:'#fbbf24',lineHeight:1.5}}>📣 Edital marcado como publicado. Me peça no chat: “atualiza o app com o edital do RS” — eu troco matérias, pesos e a projeção. <button onClick={()=>{lsSet('edital_rs_saiu',null);setSaiu(null);}} style={{marginLeft:6,padding:'2px 8px',borderRadius:5,border:'1px solid var(--border)',background:'transparent',color:'var(--text4)',fontSize:12,cursor:'pointer'}}>desfazer</button></div>}
+      </div>
+    </div>
+  );
+}
+
+function FilaLacunas(){
+  const[v,setV]=useState(0);
+  const fila=calcFilaLacunas();
+  const prio=prioridadesDaSemana(false);
+  const mono="'DM Mono',monospace";
+  const corF={Guruja:'#60a5fa',Caderno:'#fb923c',Crítico:'#f87171',Digitado:'#fbbf24',Sobra:'#94a3b8'};
+  return(
+    <div style={{marginBottom:14}}>
+      <div style={{padding:'10px 13px',borderRadius:11,background:'rgba(248,113,113,.06)',border:'1px solid rgba(248,113,113,.25)',marginBottom:10}}>
+        <div style={{fontSize:13,color:'#f87171',fontFamily:mono,fontWeight:800,letterSpacing:'1px'}}>🧩 FILA ÚNICA DE LACUNAS</div>
+        <div style={{fontSize:13,color:'var(--text4)',marginTop:3,lineHeight:1.5}}>Junta o que o Guruja mostra abaixo de 80%, os erros do caderno com 2 rodadas abaixo de 70%, o que você marcou como crítico, os tópicos que digitou e as sobras do plano. As 3 primeiras viram as prioridades da semana e alimentam a Profunda de segunda.</div>
+        <button onClick={()=>{prioridadesDaSemana(true);setV(x=>x+1);}} style={{marginTop:6,padding:'5px 10px',borderRadius:7,border:'1px solid var(--border)',background:'transparent',color:'var(--text4)',fontSize:12,cursor:'pointer'}}>recalcular as 3 prioridades</button>
+      </div>
+      {fila.length===0&&<div style={{padding:'14px',textAlign:'center',fontSize:14,color:'var(--text4)'}}>Nenhuma lacuna detectada ainda. Registre questões, use o caderno ou adicione abaixo.</div>}
+      {fila.slice(0,12).map((f,i)=>{const top=prio.some(p=>p.fonte===f.fonte&&p.assunto===f.assunto&&p.mat===f.mat);return(
+        <div key={i} style={{padding:'9px 12px',borderRadius:10,marginBottom:5,border:`1px solid ${top?'rgba(248,113,113,.5)':'rgba(148,163,184,.2)'}`,background:top?'rgba(248,113,113,.06)':'transparent'}}>
+          <div style={{display:'flex',alignItems:'center',gap:8}}>
+            <span style={{fontSize:12,fontFamily:mono,color:'var(--text4)',width:18}}>{i+1}</span>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontSize:14,fontWeight:700,color:'var(--text)'}}>{f.mat!=='—'?f.mat:'Tópico'}{f.pct!=null&&<span style={{fontFamily:mono,color:f.pct<60?'#f87171':'#fbbf24',marginLeft:8}}>{f.pct}%</span>}</div>
+              <div style={{fontSize:13,color:'#c2ccd8',lineHeight:1.4}}>{f.assunto||'(matéria inteira)'}</div>
+              <div style={{fontSize:12,color:'var(--text4)'}}>{f.detalhe}</div>
+            </div>
+            <span style={{fontSize:11,padding:'2px 7px',borderRadius:5,background:`${corF[f.fonte]||'#94a3b8'}22`,color:corF[f.fonte]||'#94a3b8',fontFamily:mono,flexShrink:0}}>{f.fonte}</span>
+          </div>
+        </div>);})}
+    </div>
+  );
+}
+
+function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,ankiSugestoes=[],nlmSugestao=null,onRapido,rapidoVer,onConcluir}){
   const hoje=getDK();
   const[aba,setAba]=useState('reforcos');
   const[ankiRegs,setAnkiRegs]=useState(()=>lsGet('rev_anki',[]));
@@ -6967,7 +7381,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
     {id:'estrategia',l:`🎯 Estratégia${criticosManuais.length>0?` (${criticosManuais.length})`:''}`},
   ];
   // Sub-navegação fina dentro de Passiva e Estratégia
-  const[subPassiva,setSubPassiva]=useState('nlm');
+  const[subPassiva,setSubPassiva]=useState('motor');
   const[subEstrategia,setSubEstrategia]=useState('semanal');
 
   return(
@@ -7003,6 +7417,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
         todosItens.forEach(t=>{(t.historico||[]).forEach(h=>{if(h.data>=seteAtrasStr&&h.questoes)questoesSemana+=h.questoes;}); });
         return(
           <div>
+            <CadernoTEC onAddHoras={onAddHoras} onSyncHistorico={onSyncHistorico} onConcluir={onConcluir}/>
             {questPrior.top&&(
               <div style={{padding:'11px 14px',borderRadius:12,background:'rgba(248,113,113,.07)',border:'1px solid rgba(248,113,113,.3)',marginBottom:10}}>
                 <div style={{fontSize:13,color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:3}}>🎯 PRIORIDADE DA SEMANA</div>
@@ -7107,8 +7522,10 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
         const filaMem=calcFilaMemorizacao();
         return(
           <div>
+            <FiltroCem onAddHoras={onAddHoras}/>
+            <details style={{marginBottom:12}}><summary style={{cursor:'pointer',fontSize:13,color:'var(--text4)',padding:'6px 2px'}}>🗂️ Apoio: fila por matéria (opcional — o foco agora é o baralho filtrado)</summary>
             <div style={{padding:'11px 14px',borderRadius:12,background:'rgba(167,139,250,.07)',border:'1px solid rgba(167,139,250,.3)',marginBottom:12}}>
-              <div style={{fontSize:13,color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:6}}>🃏 FILA FIXA — as 12 matérias do edital, da mais difícil pra você até a mais fácil</div>
+              <div style={{fontSize:13,color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:6}}>🃏 FILA POR MATÉRIA — da mais difícil pra você até a mais fácil</div>
               {filaMem.hoje&&(
                 <div style={{padding:'8px 10px',borderRadius:9,background:'rgba(167,139,250,.12)',marginBottom:8}}>
                   <div style={{fontSize:13,color:'#a78bfa'}}>HOJE — há mais tempo sem Anki</div>
@@ -7143,8 +7560,9 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
               </div>
             )}
 
+            </details>
             <div style={{padding:'12px',borderRadius:12,background:'rgba(167,139,250,.05)',border:'1px solid rgba(167,139,250,.2)'}}>
-              <div style={{fontSize:13,letterSpacing:'2px',color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:10}}>🃏 REGISTRAR SESSÃO</div>
+              <div style={{fontSize:13,letterSpacing:'2px',color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:10}}>🃏 REGISTRAR SESSÃO (por matéria, opcional)</div>
               <div style={{marginBottom:8}}>
                 <div style={{fontSize:13,color:'#c2ccd8',marginBottom:4}}>MATÉRIA</div>
                 <MatBtn value={ankiForm.mat} onChange={v=>setAnkiForm(f=>({...f,mat:v}))} placeholder="Ou digitar matéria..."/>
@@ -7171,8 +7589,27 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
         );
       })()}
 
+      {aba==='passiva'&&(
+        <div style={{display:'flex',gap:6,marginBottom:14}}>
+          {[{id:'motor',l:'🎧 Hoje (2 áudios)'},{id:'nlm',l:'✏️ Registrar o que estudei'}].map(s=>(
+            <button key={s.id} onClick={()=>setSubPassiva(s.id)} style={{flex:1,padding:'9px',borderRadius:9,border:`1px solid ${subPassiva===s.id?'rgba(52,211,153,.45)':'var(--border)'}`,background:subPassiva===s.id?'rgba(52,211,153,.12)':'transparent',color:subPassiva===s.id?'#34d399':'var(--text4)',fontSize:14,fontWeight:700,cursor:'pointer'}}>{s.l}</button>
+          ))}
+        </div>
+      )}
+
+      {/* Sub-nav: ESTRATÉGIA (Semanal + Críticos + Revisitar) — Radar do Edital fica só na aba Mapa */}
+      {aba==='estrategia'&&(
+        <div style={{display:'flex',gap:6,marginBottom:14,flexWrap:'wrap'}}>
+          {[{id:'semanal',l:'🗓️ Semana'},{id:'lacunas',l:'🧩 Lacunas'}].map(s=>(
+            <button key={s.id} onClick={()=>setSubEstrategia(s.id)} style={{flex:1,minWidth:70,padding:'9px 6px',borderRadius:9,border:`1px solid ${subEstrategia===s.id?'rgba(167,139,250,.45)':'var(--border)'}`,background:subEstrategia===s.id?'rgba(167,139,250,.12)':'transparent',color:subEstrategia===s.id?'#a78bfa':'var(--text4)',fontSize:14,fontWeight:700,cursor:'pointer'}}>{s.l}</button>
+          ))}
+        </div>
+      )}
+
+      {aba==='passiva'&&subPassiva==='motor'&&<div>
+        <PassivaDoDia onSyncNlm={()=>setNlmRegs(lsGet('rev_nlm',[]))}/>
       {/* PASSIVA — motor novo: decoreba + dificuldade jurídica, ponderado pelo peso do gate */}
-      {aba==='passiva'&&(()=>{
+      {(()=>{
         const passivaLista=calcPassivaJuridica().slice(0,8);
         return(
           <div style={{padding:'11px 14px',borderRadius:12,background:'rgba(52,211,153,.06)',border:'1px solid rgba(52,211,153,.25)',marginBottom:12}}>
@@ -7195,65 +7632,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
         );
       })()}
 
-      {aba==='passiva'&&(
-        <div style={{display:'flex',gap:6,marginBottom:14}}>
-          {[{id:'nlm',l:'✏️ Registrar o que estudei'},{id:'motor',l:'⏳ Sugestão do dia'}].map(s=>(
-            <button key={s.id} onClick={()=>setSubPassiva(s.id)} style={{flex:1,padding:'9px',borderRadius:9,border:`1px solid ${subPassiva===s.id?'rgba(52,211,153,.45)':'var(--border)'}`,background:subPassiva===s.id?'rgba(52,211,153,.12)':'transparent',color:subPassiva===s.id?'#34d399':'var(--text4)',fontSize:14,fontWeight:700,cursor:'pointer'}}>{s.l}</button>
-          ))}
-        </div>
-      )}
-
-      {/* Sub-nav: ESTRATÉGIA (Semanal + Críticos + Revisitar) — Radar do Edital fica só na aba Mapa */}
-      {aba==='estrategia'&&(
-        <div style={{display:'flex',gap:6,marginBottom:14,flexWrap:'wrap'}}>
-          {[{id:'semanal',l:'🗓️ Semanal'},{id:'criticos',l:'🎯 Críticos'},{id:'revisitar',l:'📌 Revisitar'}].map(s=>(
-            <button key={s.id} onClick={()=>setSubEstrategia(s.id)} style={{flex:1,minWidth:70,padding:'9px 6px',borderRadius:9,border:`1px solid ${subEstrategia===s.id?'rgba(167,139,250,.45)':'var(--border)'}`,background:subEstrategia===s.id?'rgba(167,139,250,.12)':'transparent',color:subEstrategia===s.id?'#a78bfa':'var(--text4)',fontSize:14,fontWeight:700,cursor:'pointer'}}>{s.l}</button>
-          ))}
-        </div>
-      )}
-
-      {/* TEMPO MORTO — agora dentro de Passiva > Sugestão do dia */}
-      {aba==='passiva'&&subPassiva==='motor'&&(()=>{
-        const hist=lsGet('historico_diario',[]);
-        const motor=calcMotorCanais([],lsGet('horas',[]),hist);
-        const hoje2=getDK();
-        const ia=lsGet('tm_ia_cache',null);
-        return(
-          <div>
-            <div style={{padding:'10px 12px',borderRadius:10,background:'rgba(96,165,250,.06)',border:'1px solid rgba(96,165,250,.2)',marginBottom:12}}>
-              <div style={{fontSize:13,color:'#60a5fa',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:2}}>🔄 MOTOR DE CANAIS — Forma 1 + Forma 4</div>
-              <div style={{fontSize:13,color:'var(--text4)'}}>Cada canal tem sugestão independente. Penalidade de ausência garante rotação entre todas as matérias.</div>
-            </div>
-            {ia&&ia.dia===hoje2&&(
-              <div style={{padding:'8px 12px',borderRadius:9,background:'rgba(251,191,36,.08)',border:'1px solid rgba(251,191,36,.25)',marginBottom:10,display:'flex',gap:8,alignItems:'flex-start'}}>
-                <span style={{fontSize:15,flexShrink:0}}>🤖</span>
-                <div><div style={{fontSize:13,color:'#fbbf24',fontFamily:"'DM Mono',monospace",marginBottom:2}}>IA ASSESSORA — hoje</div>
-                <div style={{fontSize:14,color:'var(--text)'}}>{ia.motivo}</div></div>
-              </div>
-            )}
-            <div style={{padding:'13px',borderRadius:12,background:tmFeitoAnki?'rgba(52,211,153,.08)':'rgba(167,139,250,.08)',border:`2px solid ${tmFeitoAnki?'rgba(52,211,153,.4)':'rgba(167,139,250,.4)'}`,marginBottom:10}}>
-              <div style={{fontSize:13,color:'#a78bfa',fontFamily:"'DM Mono',monospace",letterSpacing:'2px',marginBottom:6}}>🃏 ANKI — deficit × 3 + ausência × 0.4 + travou × 1.5</div>
-              <div style={{fontSize:20,fontWeight:900,color:tmFeitoAnki?'#34d399':'var(--text)',fontFamily:"'DM Serif Display',serif",marginBottom:4}}>{ia&&ia.dia===hoje2?ia.anki:motor.anki.materias[0]?.mat||'—'}</div>
-              {motor.anki.materias[0]&&<div style={{fontSize:13,color:'var(--text4)',marginBottom:8}}>{motor.anki.materias[0].motivo}</div>}
-              <div style={{display:'flex',gap:5,marginBottom:10,flexWrap:'wrap'}}>
-                {motor.anki.ranking.slice(0,5).map((r,i)=>(<span key={r.mat} style={{fontSize:13,padding:'2px 7px',borderRadius:5,background:i===0?'rgba(167,139,250,.2)':'rgba(148,163,184,.1)',color:i===0?'#a78bfa':'var(--text4)',fontFamily:"'DM Mono',monospace"}}>{i+1}. {r.mat.split(' ')[0]} {r.pct!==null?r.pct+'%':'?%'}</span>))}
-              </div>
-              {tmFeitoAnki?<div style={{fontSize:14,color:'#34d399',fontWeight:700}}>✅ Feito hoje!</div>:<button onClick={()=>{setTmFeitoAnki(true);lsSet(`tm_anki_${hoje}`,true);}} style={{padding:'8px 18px',borderRadius:8,border:'none',background:'#a78bfa',color:'#0f172a',fontSize:14,fontWeight:800,cursor:'pointer'}}>✓ Fiz!</button>}
-            </div>
-            {/* NLM — card mínimo com fila ≥80% */}
-            <CardNlmTempoMorto motor={motor} tmFeitoNlm={tmFeitoNlm} setTmFeitoNlm={setTmFeitoNlm} hoje={hoje}/>
-            <div style={{padding:'13px',borderRadius:12,background:'rgba(251,191,36,.06)',border:'2px solid rgba(251,191,36,.3)',marginBottom:10}}>
-              <div style={{fontSize:13,color:'#fbbf24',fontFamily:"'DM Mono',monospace",letterSpacing:'2px',marginBottom:8}}>📖 REVISÃO 1h — peso edital × 2 + ausência × 0.5 + deficit × 1</div>
-              {motor.rev1h.top.slice(0,3).map((r,i)=>(<div key={r.mat} style={{display:'flex',alignItems:'center',gap:8,padding:'7px 10px',borderRadius:9,background:i===0?'rgba(251,191,36,.1)':'rgba(255,255,255,.03)',border:`1px solid ${i===0?'rgba(251,191,36,.3)':'rgba(255,255,255,.06)'}`,marginBottom:5}}><span style={{fontSize:14,fontWeight:900,color:'#fbbf24',width:16,flexShrink:0}}>{i+1}</span><div style={{flex:1}}><div style={{fontSize:15,color:'var(--text)',fontWeight:700}}>{r.mat}</div><div style={{fontSize:13,color:'var(--text4)'}}>{r.diasSemRev!==null?`${r.diasSemRev}d sem revisão`:'sem revisão registrada'} · {r.pct!==null?r.pct+'% acerto':'sem dado'}</div></div></div>))}
-            </div>
-            <button onClick={()=>{lsSet('tm_ia_cache',null);chamarIaTempoMorto();}} style={{width:'100%',padding:'8px',borderRadius:8,border:'1px solid rgba(251,191,36,.25)',background:'rgba(251,191,36,.05)',color:'#fbbf24',fontSize:13,cursor:'pointer',marginBottom:10}}>🔄 Recalcular com IA</button>
-            {motor.travouRecente.length>0&&(<div style={{padding:'10px 12px',borderRadius:10,background:'rgba(248,113,113,.06)',border:'1px solid rgba(248,113,113,.2)'}}>
-              <div style={{fontSize:13,color:'#f87171',fontFamily:"'DM Mono',monospace",marginBottom:6}}>🔴 TRAVOU RECENTEMENTE</div>
-              {motor.travouRecente.map((t,i)=><div key={i} style={{fontSize:14,color:'var(--text4)',marginBottom:2}}>{t}</div>)}
-            </div>)}
-          </div>
-        );
-      })()}
+      </div>}
 
       {/* ═══ PASSIVA — REGISTRAR / HISTÓRICO ═══ */}
       {aba==='passiva'&&subPassiva==='nlm'&&(()=>{
@@ -7347,86 +7726,13 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
       })()}
 
       {/* SEMANAL — motor novo: delta da semana, cobertura do edital, decisão sugerida */}
-      {aba==='estrategia'&&subEstrategia==='semanal'&&(()=>{
-        const estr=calcEstrategiaSemanal();
-        const proj=calcProjecaoNotaFinal();
-        const CORD=v=>v>0?'#34d399':v<0?'#f87171':'#94a3b8';
-        return(
-          <div>
-            <div style={{padding:'10px 13px',borderRadius:11,background:'rgba(167,139,250,.06)',border:'1px solid rgba(167,139,250,.25)',marginBottom:14}}>
-              <div style={{fontSize:13,color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px'}}>🗓️ PAINEL DE DOMINGO — 15 minutos, uma decisão</div>
-              <div style={{fontSize:13,color:'var(--text4)',marginTop:2}}>As outras 3 sub-abas executam sozinhas. Aqui é o único lugar onde você decide.</div>
-            </div>
+      {aba==='estrategia'&&subEstrategia==='semanal'&&<EstrategiaSemana/>}
 
-            {/* PROJEÇÃO DE NOTA FINAL — se a prova fosse hoje */}
-            <div style={{padding:'13px 15px',borderRadius:12,background:'rgba(96,165,250,.06)',border:'2px solid rgba(96,165,250,.3)',marginBottom:14}}>
-              <div style={{fontSize:13,color:'#60a5fa',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:8}}>📊 SE A PROVA FOSSE HOJE</div>
-              <div style={{display:'flex',gap:8,marginBottom:10}}>
-                {[
-                  ['Gerais',proj.pontosGerais,'/20',12,proj.passaGerais],
-                  ['Específicos',proj.pontosEspec,'/60',36,proj.passaEspec],
-                  ['Discursiva',proj.pontosDiscursiva,'/40',24,proj.passaDiscursiva],
-                ].map(([l,v,max,corte,passa])=>(
-                  <div key={l} style={{flex:1,padding:'8px',borderRadius:9,background:passa===null?'rgba(148,163,184,.08)':passa?'rgba(52,211,153,.1)':'rgba(248,113,113,.1)',border:`1px solid ${passa===null?'rgba(148,163,184,.2)':passa?'rgba(52,211,153,.3)':'rgba(248,113,113,.3)'}`,textAlign:'center'}}>
-                    <div style={{fontSize:18,fontWeight:900,color:passa===null?'#aab6c8':passa?'#34d399':'#f87171',fontFamily:"'DM Mono',monospace"}}>{v!=null?v:'—'}{max}</div>
-                    <div style={{fontSize:13,color:'var(--text4)',marginTop:2}}>{l} · corte {corte}</div>
-                  </div>
-                ))}
-              </div>
-              <div style={{textAlign:'center',padding:'8px',borderRadius:9,background:'rgba(96,165,250,.1)'}}>
-                <div style={{fontSize:23,fontWeight:900,color:'#60a5fa',fontFamily:"'DM Mono',monospace"}}>{proj.notaFinal}/120</div>
-                <div style={{fontSize:13,color:'var(--text4)'}}>nota final estimada</div>
-              </div>
-              <div style={{fontSize:13,color:'var(--text4)',marginTop:8,lineHeight:1.5}}>
-                Gerais: {proj.cobGerais}/{proj.totalGerais} matérias com dado real · Específicos: {proj.cobEspec}/{proj.totalEspec} · Discursiva: {proj.correcoesRegistradas} correção(ões) registrada(s).
-                {proj.correcoesRegistradas===0&&' Sem correção registrada ainda, a nota de discursiva conta como 0 — registre correções na aba Discursiva pra essa projeção ficar real.'}
-              </div>
-            </div>
-
-            {/* (c) Decisão da semana */}
-            {estr.decisao&&(
-              <div style={{padding:'12px 14px',borderRadius:12,background:'rgba(251,191,36,.08)',border:'2px solid rgba(251,191,36,.4)',marginBottom:14}}>
-                <div style={{fontSize:13,color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:4}}>⚡ DECISÃO DA SEMANA</div>
-                <div style={{fontSize:15,fontWeight:800,color:'var(--text)'}}>{estr.decisao.texto}</div>
-              </div>
-            )}
-
-            {/* (a) Delta da semana */}
-            <div style={{marginBottom:14}}>
-              <div style={{fontSize:13,color:'var(--text4)',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:8,letterSpacing:'1px'}}>DELTA DA SEMANA — vs. semana anterior</div>
-              {estr.delta.length===0&&<div style={{fontSize:14,color:'var(--text4)',padding:'8px 0'}}>Sem dado comparável ainda (precisa de 2 semanas registradas na mesma matéria).</div>}
-              {estr.delta.map(d=>(
-                <div key={d.mat} style={{display:'flex',alignItems:'center',gap:8,padding:'7px 10px',borderRadius:8,background:'rgba(255,255,255,.02)',marginBottom:4}}>
-                  <span style={{flex:1,fontSize:14,color:'var(--text)'}}>{d.mat}</span>
-                  <span style={{fontSize:13,color:'var(--text4)',fontFamily:"'DM Mono',monospace"}}>{d.pctAnterior}%→{d.pctAtual}%</span>
-                  <span style={{fontSize:14,fontWeight:800,color:CORD(d.delta),fontFamily:"'DM Mono',monospace",width:40,textAlign:'right'}}>{d.delta>0?'+':''}{d.delta}%</span>
-                </div>
-              ))}
-            </div>
-
-            {/* (b) Cobertura do edital */}
-            <div>
-              <div style={{fontSize:13,color:'var(--text4)',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:8,letterSpacing:'1px'}}>COBERTURA DO EDITAL — % de tópicos com dado real (Guruja/TEC), não checklist manual</div>
-              {estr.cobertura.map(c=>(
-                <div key={c.mat} style={{marginBottom:6}}>
-                  <div style={{display:'flex',justifyContent:'space-between',fontSize:13,marginBottom:2}}>
-                    <span style={{color:'var(--text)',display:'flex',alignItems:'center'}}>{c.mat}<BadgeMateria mat={c.mat} tamanho={8}/></span>
-                    <span style={{color:'var(--text4)',fontFamily:"'DM Mono',monospace"}}>{c.tocados}/{c.total} · {c.pct}%</span>
-                  </div>
-                  <div style={{height:4,borderRadius:2,background:'rgba(148,163,184,.15)',overflow:'hidden'}}>
-                    <div style={{height:'100%',width:`${c.pct}%`,background:c.pct===0?'#f87171':c.pct<50?'#fb923c':'#34d399',borderRadius:2}}/>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        );
-      })()}
-
-      {aba==='estrategia'&&subEstrategia==='criticos'&&<div>
+      {aba==='estrategia'&&subEstrategia==='lacunas'&&<div>
+        <FilaLacunas/>
         {/* Header */}
         <div style={{padding:'10px 13px',borderRadius:11,background:'rgba(248,113,113,.06)',border:'1px solid rgba(248,113,113,.25)',marginBottom:10}}>
-          <div style={{fontSize:13,color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px'}}>PONTOS CRÍTICOS — por assunto específico</div>
+          <div style={{fontSize:13,color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px'}}>ADICIONAR / REVISAR PONTOS CRÍTICOS (entram na fila acima)</div>
           <div style={{fontSize:13,color:'var(--text4)',marginTop:4}}>🔴 Alta vira Bloco 1 do "Hoje sem pensar" · 🚫 Descartar some de verdade da fila em todo o app — não é só cosmético.</div>
         </div>
         {/* Dificuldade Base — matérias sem questões */}
@@ -7568,7 +7874,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
       {/* ═══ PROFUNDA ═══ */}
       {aba==='rev1h30'&&<TabRevProfunda totalBlocos={totalBlocos}/>}
 
-      {aba==='estrategia'&&subEstrategia==='revisitar'&&<div>
+      {aba==='estrategia'&&subEstrategia==='lacunas'&&<div style={{marginTop:14}}>
         <div style={{padding:'10px 12px',borderRadius:10,background:'rgba(251,191,36,.06)',border:'1px solid rgba(251,191,36,.2)',marginBottom:12}}>
           <div style={{fontSize:13,color:'#fbbf24',fontFamily:"'DM Mono',monospace",marginBottom:4}}>📌 TÓPICOS PARA REVISITAR</div>
           <div style={{fontSize:14,color:'#c2ccd8'}}>Lista pessoal de tópicos que precisa voltar — sem data, sem pressão.</div>
@@ -9051,6 +9357,17 @@ const GurujaLink={
         }
       }
     });
+    // Reforços do planejamento ativo concluídos no Guruja: entram no histórico (alimentam o nível) se você ainda não registrou aqui.
+    try{
+      const pad2=x=>String(x).padStart(2,'0');
+      idxR.forEach((r,aid)=>{
+        if(!r.concluido||!(r.q>0))return;
+        if(hist.some(h=>h&&h.reforcoAid===aid&&!h.parcial))return;
+        const dt=Math.min(dia+12*3600000,snapTs-60000);const d=new Date(dia);
+        hist.push({id:`${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}_guruja_rfa${aid}`,materia:matDaDisciplina(r.disciplina),assunto:`Reforço — ${r.titulo||aid}`,tempo:String(r.min||30),questoes:String(r.q),acertei:String(r.a||0),dificuldade:0,obs:'Lido do Guruja',dia:`${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`,dt,origem:'guruja',reforcoAid:aid,parcial:false});
+        histMudou=true;mudou=true;
+      });
+    }catch(e){}
     if(mudou){
       localStorage.setItem('feitos',JSON.stringify(feitos));localStorage.setItem('feitos_dt',JSON.stringify(fd));
       if(histMudou)localStorage.setItem('historico_diario',JSON.stringify(hist.sort((a,b)=>(a.dt||0)-(b.dt||0))));
@@ -9823,7 +10140,7 @@ function App(){
             {mat:'Legislação TCE-SP',assunto:'',motivo:'Só estudei teoria — nunca testei com questão',prioridade:'media',id:Date.now()+5,dt:Date.now()},
             {mat:'Ética Pública',assunto:'Lei de Conflito de Interesses',motivo:'Avaliação da Ritchely: nunca caiu na VUNESP, extremamente difícil de cair (não confirmado de forma independente)',prioridade:'descartar',id:Date.now()+6,dt:Date.now()},
           ];
-          localStorage.setItem('criticos_manuais',JSON.stringify([...atuais,...novos]));
+          localStorage.setItem('criticos_manuais',JSON.stringify([...atuais,...novos.filter(n=>!ehForaRS((n.mat||'')+' '+(n.assunto||'')+' '+(n.motivo||'')))]));
           localStorage.setItem(KEY,'done');
         }catch(e){}
       }
@@ -9850,7 +10167,7 @@ function App(){
             {mat:'Dir. Civil',assunto:'Atos Unilaterais e Responsabilidade Civil',motivo:'Novo dado real 10-16/08: 64% — pior número de Civil já registrado, abaixo de Contratos (72,7%) e Obrigações Pt1 (70%)',prioridade:'alta',id:Date.now()+1,dt:Date.now()},
             {mat:'Direito Empresarial (Comercial)',assunto:'Direito Societário',motivo:'70% (20q, 14 acertos) — abaixo da média da plataforma, mesmo padrão das outras 2 atividades da matéria',prioridade:'media',id:Date.now()+2,dt:Date.now()},
           ];
-          localStorage.setItem('criticos_manuais',JSON.stringify([...atuais,...novos]));
+          localStorage.setItem('criticos_manuais',JSON.stringify([...atuais,...novos.filter(n=>!ehForaRS((n.mat||'')+' '+(n.assunto||'')+' '+(n.motivo||'')))]));
           localStorage.setItem(KEY,'done');
         }catch(e){}
       }
@@ -9927,7 +10244,7 @@ function App(){
     try{
       const agora=Date.now();
       const rid=getDK()+'_r'+item.id+'_'+agora;
-      const reg={id:rid,materia:item.mat,assunto:item.conteudo||'',tempo:String(d.tempo),questoes:d.temQ?String(d.questoes):'',acertei:d.temQ?String(d.acertei):'',dificuldade:d.dif||0,obs:(d.obs||'')+(d.inteira?'':(d.obs?' · ':'')+'feita só em parte'),pendente:'',dia:getDK(),dt:agora,origem:'rapido',itemId:item.id,...((item.reforcoN||(item.id>=601&&item.id<=612))?{reforcoN:item.reforcoN||(item.id-600)}:{}),parcial:!d.inteira};
+      const reg={id:rid,materia:item.mat,assunto:item.conteudo||'',tempo:String(d.tempo),questoes:d.temQ?String(d.questoes):'',acertei:d.temQ?String(d.acertei):'',dificuldade:d.dif||0,obs:(d.obs||'')+(d.inteira?'':(d.obs?' · ':'')+'feita só em parte'),pendente:'',dia:getDK(),dt:agora,origem:'rapido',itemId:item.id,...((item.reforcoN||(typeof item.id==='number'&&item.id>=601&&item.id<=612))?{reforcoN:item.reforcoN||(item.id-600)}:{}),...(item.reforcoAid?{reforcoAid:item.reforcoAid}:{}),parcial:!d.inteira};
       lsSet('historico_diario',[...lsGet('historico_diario',[]),reg].sort((a,b)=>(a.dt||0)-(b.dt||0)));
       addHoras({mat:item.mat,min:d.tempo,dt:agora,rid});
       if(item.fora){const ff=lsGet('fora_feitos',{});ff[item.id]={dt:agora,min:d.tempo,q:d.temQ?d.questoes:0,a:d.temQ?d.acertei:0};lsSet('fora_feitos',ff);}
@@ -10079,7 +10396,7 @@ function App(){
         {tab==='ia'     &&<TabIA     appCtx={appCtx} onMIT={saveMIT} onRapido={setRapido} onSetTab={setTab} rapidoVer={rapidoVer}/>}
         {tab==='estudo' &&<TabEstudo feitos={feitos} cicloNum={cicloNum} horas={horas} onConcluir={concluir} onIrPara={irPara} onDesmarcar={desmarcar} onAddHoras={addHoras} onSyncHistorico={syncHistorico} mit={mit} planoSemana={planoSemana} onSavePlano={savePlano} onSetTab={setTab} onRapido={setRapido}/>}
         {tab==='hoje'   &&<TabHoje feitos={feitos} onAddHoras={addHoras} onSetTab={setTab} onRapido={setRapido} rapidoVer={rapidoVer}/>}
-        {tab==='revisao'&&<TabRevisao onRapido={setRapido} rapidoVer={rapidoVer} totalBlocos={feitos.length} tmSugestao={tmSugestao} tmIA={tmIA} onSyncHistorico={syncHistorico} onAddHoras={addHoras} ankiSugestoes={calcMotorCanais(feitos,horas,historico).anki.materias||[]} nlmSugestao={calcMotorCanais(feitos,horas,historico).nlm.top||null}/>}
+        {tab==='revisao'&&<TabRevisao onConcluir={concluir} onRapido={setRapido} rapidoVer={rapidoVer} totalBlocos={feitos.length} tmSugestao={tmSugestao} tmIA={tmIA} onSyncHistorico={syncHistorico} onAddHoras={addHoras} ankiSugestoes={calcMotorCanais(feitos,horas,historico).anki.materias||[]} nlmSugestao={calcMotorCanais(feitos,horas,historico).nlm.top||null}/>}
         {tab==='dados'  &&<TabDados horas={horas}/>}
         {tab==='discursiva'&&<TabDiscursiva onRapido={setRapido} rapidoVer={rapidoVer}/>}
         {tab==='mapa'   &&<TabMapa/>}
