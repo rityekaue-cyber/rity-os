@@ -1,683 +1,54 @@
 {
  "versao": 1,
- "gerado_em": "2026-11-11T15:09:55Z",
+ "gerado_em": "2026-11-14T15:06:19Z",
  "origem": "chrome meio-dia",
- "planejamento_id": 100470,
+ "planejamento_id": 105325,
  "total": {
-  "erros": 197,
-  "com_motivo": 72,
-  "cobertura_pct": 36.5,
+  "erros": 6,
+  "com_motivo": 6,
+  "cobertura_pct": 100.0,
   "motivo_predominante": "Desconhecimento",
-  "motivo_predominante_pct": 68.1
+  "motivo_predominante_pct": 100.0
  },
  "motivos": [
   {
    "motivo": "Desconhecimento",
-   "n": 49,
-   "pct": 68.1
-  },
-  {
-   "motivo": "Esquecimento",
-   "n": 10,
-   "pct": 13.9
-  },
-  {
-   "motivo": "Confusão conceitual",
-   "n": 8,
-   "pct": 11.1
-  },
-  {
-   "motivo": "Falta de atenção",
-   "n": 3,
-   "pct": 4.2
-  },
-  {
-   "motivo": "Erro de interpretação",
-   "n": 2,
-   "pct": 2.8
+   "n": 6,
+   "pct": 100.0
   }
  ],
  "disciplinas": [
   {
-   "nome": "AFO e Direito Financeiro",
-   "erros": 24,
-   "com_motivo": 18,
-   "cobertura_pct": 75.0,
-   "motivo_predominante": "Desconhecimento",
-   "motivo_predominante_pct": 61.1,
-   "atividades": [
-    {
-     "codigo": "AFO.4654.125332",
-     "meta": 1,
-     "assunto": "PPA e LDO",
-     "q": 22,
-     "a": 19,
-     "erros": 3,
-     "motivo_predominante": "Desconhecimento"
-    },
-    {
-     "codigo": "AFO.4654.125335",
-     "meta": 1,
-     "assunto": "LOA, emendas, ciclo orçamentário. DREM",
-     "q": 16,
-     "a": 13,
-     "erros": 3,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "AFO.4654.126537",
-     "meta": 1,
-     "assunto": "Lei nº 7.541/1988 (Lei das taxas)",
-     "q": 18,
-     "a": 14,
-     "erros": 4,
-     "motivo_predominante": "Desconhecimento"
-    },
-    {
-     "codigo": "AFO.4654.127782",
-     "meta": 2,
-     "assunto": "Despesa: Conceito, classificação",
-     "q": 17,
-     "a": 16,
-     "erros": 1,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "AFO.4654.129571",
-     "meta": 3,
-     "assunto": "RP, DEA, SF, dívida",
-     "q": 20,
-     "a": 18,
-     "erros": 2,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "AFO.4654.130777",
-     "meta": 4,
-     "assunto": "LRF - PARTE II (Despesa e endividamento)",
-     "q": 20,
-     "a": 16,
-     "erros": 4,
-     "motivo_predominante": "Desconhecimento"
-    },
-    {
-     "codigo": "AFO.4654.132863",
-     "meta": 4,
-     "assunto": "LRF - PARTE III (Transparência e prestação de contas)",
-     "q": 20,
-     "a": 19,
-     "erros": 1,
-     "motivo_predominante": "Erro de interpretação"
-    },
-    {
-     "codigo": "AFO.4654.132864",
-     "meta": 4,
-     "assunto": "Bloco B (Lei das Taxas, Receita, Despesa, DEA, RP, divida, SF)",
-     "q": 24,
-     "a": 18,
-     "erros": 6,
-     "motivo_predominante": "Desconhecimento"
-    }
-   ]
-  },
-  {
-   "nome": "Direito Previdenciário",
-   "erros": 32,
-   "com_motivo": 13,
-   "cobertura_pct": 40.6,
-   "motivo_predominante": "Desconhecimento",
-   "motivo_predominante_pct": 84.6,
-   "atividades": [
-    {
-     "codigo": "DPREV.4681.124044",
-     "meta": 1,
-     "assunto": "Regime Geral da Previdência Social: Segurados e Benefícios",
-     "q": 15,
-     "a": 10,
-     "erros": 5,
-     "motivo_predominante": "Desconhecimento"
-    },
-    {
-     "codigo": "DPREV.4681.125592",
-     "meta": 1,
-     "assunto": "Regime Geral da Previdência Social: Dependentes e seus benefícios",
-     "q": 20,
-     "a": 17,
-     "erros": 3,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "DPREV.4681.125593",
-     "meta": 2,
-     "assunto": "Custeio da Seguridade Social I",
-     "q": 19,
-     "a": 16,
-     "erros": 3,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "DPREV.4681.126749",
-     "meta": 2,
-     "assunto": "Custeio da Seguridade Social II",
-     "q": 20,
-     "a": 17,
-     "erros": 3,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "DPREV.4681.126760",
-     "meta": 2,
-     "assunto": "Resolução de questões favoritas",
-     "q": 20,
-     "a": 19,
-     "erros": 1,
-     "motivo_predominante": "Desconhecimento"
-    },
-    {
-     "codigo": "DPREV.4681.128203",
-     "meta": 3,
-     "assunto": "Regime Próprio da Previdência Social",
-     "q": 20,
-     "a": 17,
-     "erros": 3,
-     "motivo_predominante": "Desconhecimento"
-    },
-    {
-     "codigo": "DPREV.4681.128204",
-     "meta": 3,
-     "assunto": "Regime de Previdência Complementar e Emenda Constitucional 103/2019",
-     "q": 15,
-     "a": 11,
-     "erros": 4,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "DPREV.4681.129616",
-     "meta": 3,
-     "assunto": "Lei Complementar nº 412/2008 (RPPS/SC)",
-     "q": 20,
-     "a": 17,
-     "erros": 3,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "DPREV.4681.131095",
-     "meta": 4,
-     "assunto": "Bloco A (RGPS: Segurados, dependentes, benefícios e custeio da Seguridade Social)",
-     "q": 22,
-     "a": 18,
-     "erros": 4,
-     "motivo_predominante": "Desconhecimento"
-    },
-    {
-     "codigo": "DPREV.4681.131180",
-     "meta": 4,
-     "assunto": "Resolução de questões favoritas",
-     "q": 20,
-     "a": 17,
-     "erros": 3,
-     "motivo_predominante": null
-    }
-   ]
-  },
-  {
-   "nome": "Direito Administrativo",
-   "erros": 26,
-   "com_motivo": 10,
-   "cobertura_pct": 38.5,
-   "motivo_predominante": "Desconhecimento",
-   "motivo_predominante_pct": 90.0,
-   "atividades": [
-    {
-     "codigo": "DADM.4672.125520",
-     "meta": 1,
-     "assunto": "Lei Complementar nº 741/2019 (parte 1).",
-     "q": 11,
-     "a": 9,
-     "erros": 2,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "DADM.4672.126578",
-     "meta": 1,
-     "assunto": "Lei Complementar nº 741/2019 (parte 2).",
-     "q": 15,
-     "a": 12,
-     "erros": 3,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "DADM.4672.126597",
-     "meta": 2,
-     "assunto": "Toda a Ementa.",
-     "q": 22,
-     "a": 19,
-     "erros": 3,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "DADM.4672.127879",
-     "meta": 2,
-     "assunto": "Bloco A - Licitações, Improbidade, Organização, Atos, Poderes.",
-     "q": 14,
-     "a": 12,
-     "erros": 2,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "DADM.4672.129385",
-     "meta": 3,
-     "assunto": "Bloco B - Responsabilidade, Serviços, Concessões, PPP, Agentes, Bens Públicos.",
-     "q": 23,
-     "a": 20,
-     "erros": 3,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "DADM.4672.129391",
-     "meta": 3,
-     "assunto": "Bloco C - Controle, Lei Anticorrupção, Conceitos, Regime Jurídico, Lei de Acesso à Informação.",
-     "q": 22,
-     "a": 19,
-     "erros": 3,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "DADM.4672.130452",
-     "meta": 3,
-     "assunto": "Lei nº 6.745/1985 (Parte 1).",
-     "q": 25,
-     "a": 21,
-     "erros": 4,
-     "motivo_predominante": "Desconhecimento"
-    },
-    {
-     "codigo": "DADM.4672.130858",
-     "meta": 4,
-     "assunto": "Lei nº 6.745/1985 (Parte 2).",
-     "q": 20,
-     "a": 19,
-     "erros": 1,
-     "motivo_predominante": "Desconhecimento"
-    },
-    {
-     "codigo": "DADM.4672.132619",
-     "meta": 4,
-     "assunto": "Toda a Ementa.",
-     "q": 21,
-     "a": 18,
-     "erros": 3,
-     "motivo_predominante": "Desconhecimento"
-    },
-    {
-     "codigo": "DADM.4672.134364",
-     "meta": 5,
-     "assunto": "Jurisprudências I.",
-     "q": 15,
-     "a": 13,
-     "erros": 2,
-     "motivo_predominante": "Desconhecimento"
-    }
-   ]
-  },
-  {
    "nome": "Direito Constitucional",
-   "erros": 19,
-   "com_motivo": 9,
-   "cobertura_pct": 47.4,
+   "erros": 4,
+   "com_motivo": 4,
+   "cobertura_pct": 100.0,
    "motivo_predominante": "Desconhecimento",
-   "motivo_predominante_pct": 77.8,
+   "motivo_predominante_pct": 100.0,
    "atividades": [
     {
-     "codigo": "DCON.4639.126557",
+     "codigo": "DCON.4299.118356",
      "meta": 1,
-     "assunto": "Imersão - Constituição do Estado de Santa Catarina",
-     "q": 21,
-     "a": 18,
-     "erros": 3,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "DCON.4639.129526",
-     "meta": 1,
-     "assunto": "Bloco A (Direitos e Garantias Fundamentais; Organização do Estado; e Administração pública)",
-     "q": 22,
-     "a": 21,
-     "erros": 1,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "DCON.4639.131080",
-     "meta": 2,
-     "assunto": "Bloco B (Poder Legislativo; Poder Executivo; e Controle de Constitucionalidade)",
-     "q": 18,
-     "a": 15,
-     "erros": 3,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "DCON.4639.131081",
-     "meta": 2,
-     "assunto": "Bloco C (Poder Judiciário; Funções Essenciais à Justiça; Ordem Econômica e Financeira; Ordem Social; CE SC)",
-     "q": 15,
-     "a": 14,
-     "erros": 1,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "DCON.4639.132996",
-     "meta": 3,
-     "assunto": "Jurisprudência - Toda a Ementa",
-     "q": 20,
-     "a": 15,
-     "erros": 5,
-     "motivo_predominante": "Desconhecimento"
-    },
-    {
-     "codigo": "DCON.4639.132997",
-     "meta": 3,
-     "assunto": "Resolução das questões favoritas",
-     "q": 25,
-     "a": 23,
-     "erros": 2,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "DCON.4639.134158",
-     "meta": 4,
-     "assunto": "Toda a Ementa do Edital",
-     "q": 22,
-     "a": 18,
-     "erros": 4,
-     "motivo_predominante": "Desconhecimento"
-    }
-   ]
-  },
-  {
-   "nome": "Direito Penal",
-   "erros": 29,
-   "com_motivo": 8,
-   "cobertura_pct": 27.6,
-   "motivo_predominante": "Desconhecimento",
-   "motivo_predominante_pct": 50.0,
-   "atividades": [
-    {
-     "codigo": "DPEN.4637.123970",
-     "meta": 1,
-     "assunto": "Princípios e Crimes Contra a Fé Pública",
-     "q": 15,
-     "a": 11,
-     "erros": 4,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "DPEN.4637.125393",
-     "meta": 1,
-     "assunto": "Crimes Contra a Administração Pública - Parte I",
-     "q": 22,
-     "a": 20,
-     "erros": 2,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "DPEN.4637.125394",
-     "meta": 1,
-     "assunto": "Crimes Contra a Administração Pública - Parte II",
-     "q": 22,
-     "a": 18,
-     "erros": 4,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "DPEN.4637.126684",
-     "meta": 2,
-     "assunto": "Crimes Contra as Finanças Públicas",
-     "q": 14,
-     "a": 11,
-     "erros": 3,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "DPEN.4637.128018",
-     "meta": 2,
-     "assunto": "Lei nº 8.137/1990 - Crimes contra a ordem tributária, econômica e contra as relações de consumo",
-     "q": 20,
-     "a": 15,
-     "erros": 5,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "DPEN.4637.129613",
-     "meta": 3,
-     "assunto": "Lei nº 13.869/19 - Lei de Abuso de Autoridade",
+     "assunto": "Teoria Geral do Direito Constitucional - Conceitos Iniciais; Poder Constituinte; Aplicação das Normas no Tempo; Interpretação Constitucional",
      "q": 24,
-     "a": 22,
-     "erros": 2,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "DPEN.4637.131150",
-     "meta": 4,
-     "assunto": "Bloco A - Crimes Contra a Fé Pública e Crimes Contra a Administração Pública",
-     "q": 25,
-     "a": 22,
-     "erros": 3,
-     "motivo_predominante": "Desconhecimento"
-    },
-    {
-     "codigo": "DPEN.4637.133327",
-     "meta": 4,
-     "assunto": "Bloco B - Crimes Contra as Finanças Públicas, Crimes Contra a Ordem Tributária e Abuso de Autoridade",
-     "q": 25,
-     "a": 19,
-     "erros": 6,
-     "motivo_predominante": "Desconhecimento"
-    }
-   ]
-  },
-  {
-   "nome": "Português",
-   "erros": 11,
-   "com_motivo": 6,
-   "cobertura_pct": 54.5,
-   "motivo_predominante": "Desconhecimento",
-   "motivo_predominante_pct": 33.3,
-   "atividades": [
-    {
-     "codigo": "PORT.4666.123936",
-     "meta": 1,
-     "assunto": "Interpretação de Textos e Redação Oficial",
-     "q": 18,
-     "a": 16,
-     "erros": 2,
-     "motivo_predominante": "Desconhecimento"
-    },
-    {
-     "codigo": "PORT.4666.125427",
-     "meta": 1,
-     "assunto": "Resolução de prova: Auditor Fiscal da Fazenda Estadual (SEFAZ CE) / 2026 e Auditor Municipal de Controle Interno (CGM SP) / 2025",
-     "q": 11,
-     "a": 10,
-     "erros": 1,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "PORT.4666.127592",
-     "meta": 2,
-     "assunto": "Sintaxe, Verbos, Regência e Crase",
-     "q": 20,
-     "a": 16,
-     "erros": 4,
-     "motivo_predominante": "Esquecimento"
-    },
-    {
-     "codigo": "PORT.4666.130829",
-     "meta": 3,
-     "assunto": "Resolução de questões favoritas",
-     "q": 14,
-     "a": 12,
-     "erros": 2,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "PORT.4666.132571",
-     "meta": 4,
-     "assunto": "Ortografia, Coordenação e Subordinação e Concordância",
-     "q": 20,
-     "a": 18,
-     "erros": 2,
-     "motivo_predominante": null
-    }
-   ]
-  },
-  {
-   "nome": "Reforma Tributária",
-   "erros": 15,
-   "com_motivo": 4,
-   "cobertura_pct": 26.7,
-   "motivo_predominante": "Desconhecimento",
-   "motivo_predominante_pct": 50.0,
-   "atividades": [
-    {
-     "codigo": "RETRI.4643.124103",
-     "meta": 1,
-     "assunto": "Aspectos Gerais e Novos Princípios",
-     "q": 21,
-     "a": 19,
-     "erros": 2,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "RETRI.4643.125402",
-     "meta": 1,
-     "assunto": "IBS, CBS e Comitê Gestor",
-     "q": 18,
-     "a": 16,
-     "erros": 2,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "RETRI.4643.126499",
-     "meta": 2,
-     "assunto": "Imposto Seletivo",
-     "q": 17,
-     "a": 13,
-     "erros": 4,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "RETRI.4643.128206",
-     "meta": 2,
-     "assunto": "Aspectos Gerais, Novos Princípios IBS, CBS, Comitê Gestor e Imposto Seletivo",
-     "q": 20,
-     "a": 17,
-     "erros": 3,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "RETRI.4643.129537",
-     "meta": 3,
-     "assunto": "Repartição da Receita Tributária, Criação de Novos Fundos e alterações nos demais dispositivos constitucionais",
-     "q": 22,
-     "a": 18,
-     "erros": 4,
-     "motivo_predominante": "Desconhecimento"
-    }
-   ]
-  },
-  {
-   "nome": "Direito Civil",
-   "erros": 23,
-   "com_motivo": 4,
-   "cobertura_pct": 17.4,
-   "motivo_predominante": "Desconhecimento",
-   "motivo_predominante_pct": 75.0,
-   "atividades": [
-    {
-     "codigo": "DCIV.4636.123907",
-     "meta": 1,
-     "assunto": "LINDB - Lei de Introdução às Normas do Direito Brasileiro",
-     "q": 25,
-     "a": 23,
-     "erros": 2,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "DCIV.4636.123917",
-     "meta": 1,
-     "assunto": "Pessoas Naturais",
-     "q": 25,
-     "a": 23,
-     "erros": 2,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "DCIV.4636.125391",
-     "meta": 1,
-     "assunto": "Pessoas Jurídicas e Domicílio",
-     "q": 25,
-     "a": 21,
-     "erros": 4,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "DCIV.4636.126694",
-     "meta": 2,
-     "assunto": "Bens",
-     "q": 16,
-     "a": 14,
-     "erros": 2,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "DCIV.4636.126714",
-     "meta": 2,
-     "assunto": "Resolução de Questões Favoritas",
-     "q": 21,
      "a": 20,
-     "erros": 1,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "DCIV.4636.127982",
-     "meta": 3,
-     "assunto": "Fato e Negócio Jurídico",
-     "q": 25,
-     "a": 22,
-     "erros": 3,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "DCIV.4636.129946",
-     "meta": 3,
-     "assunto": "Prescrição e Decadência",
-     "q": 25,
-     "a": 23,
-     "erros": 2,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "DCIV.4636.129949",
-     "meta": 3,
-     "assunto": "Obrigações",
-     "q": 20,
-     "a": 17,
-     "erros": 3,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "DCIV.4636.133149",
-     "meta": 4,
-     "assunto": "Resolução de Questões Favoritas",
-     "q": 25,
-     "a": 23,
-     "erros": 2,
+     "erros": 4,
      "motivo_predominante": "Desconhecimento"
-    },
+    }
+   ]
+  },
+  {
+   "nome": "Direito Tributário",
+   "erros": 2,
+   "com_motivo": 2,
+   "cobertura_pct": 100.0,
+   "motivo_predominante": "Desconhecimento",
+   "motivo_predominante_pct": 100.0,
+   "atividades": [
     {
-     "codigo": "DCIV.4636.133915",
-     "meta": 5,
-     "assunto": "Responsabilidade Civil",
+     "codigo": "DTRIB.4306.118437",
+     "meta": 1,
+     "assunto": "Conceito, Classificação, Natureza Jurídica e Espécies de Tributos",
      "q": 25,
      "a": 23,
      "erros": 2,
@@ -686,7 +57,7 @@
    ]
   },
   {
-   "nome": "Estatística",
+   "nome": "Contabilidade Geral e Avançada",
    "erros": 0,
    "com_motivo": 0,
    "cobertura_pct": null,
@@ -695,35 +66,34 @@
    "atividades": []
   },
   {
-   "nome": "Ética no Serviço Público",
-   "erros": 4,
+   "nome": "Auditoria Privada",
+   "erros": 0,
    "com_motivo": 0,
    "cobertura_pct": null,
    "motivo_predominante": null,
    "motivo_predominante_pct": null,
-   "atividades": [
-    {
-     "codigo": "ETICA.4647.124101",
-     "meta": 1,
-     "assunto": "Decreto 1.171/1994",
-     "q": 17,
-     "a": 16,
-     "erros": 1,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "ETICA.4647.125429",
-     "meta": 1,
-     "assunto": "Ética no setor público",
-     "q": 10,
-     "a": 7,
-     "erros": 3,
-     "motivo_predominante": null
-    }
-   ]
+   "atividades": []
   },
   {
-   "nome": "Matemática Financeira",
+   "nome": "Direito Administrativo",
+   "erros": 0,
+   "com_motivo": 0,
+   "cobertura_pct": null,
+   "motivo_predominante": null,
+   "motivo_predominante_pct": null,
+   "atividades": []
+  },
+  {
+   "nome": "Direito Civil",
+   "erros": 0,
+   "com_motivo": 0,
+   "cobertura_pct": null,
+   "motivo_predominante": null,
+   "motivo_predominante_pct": null,
+   "atividades": []
+  },
+  {
+   "nome": "Português",
    "erros": 0,
    "com_motivo": 0,
    "cobertura_pct": null,
@@ -733,58 +103,12 @@
   },
   {
    "nome": "Tecnologia da Informação",
-   "erros": 12,
+   "erros": 0,
    "com_motivo": 0,
    "cobertura_pct": null,
    "motivo_predominante": null,
    "motivo_predominante_pct": null,
-   "atividades": [
-    {
-     "codigo": "TINFO.4673.124097",
-     "meta": 1,
-     "assunto": "Lei Geral de Proteção de Dados Pessoais (LGPD – Lei nº 13.709/2018)",
-     "q": 13,
-     "a": 11,
-     "erros": 2,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "TINFO.4673.124104",
-     "meta": 1,
-     "assunto": "Conceitos fundamentais de Ciência de Dados. Dados estruturados, semiestruturados e não estruturados.",
-     "q": 7,
-     "a": 6,
-     "erros": 1,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "TINFO.4673.125615",
-     "meta": 2,
-     "assunto": "Análise e interpretação de dados. Identificação de padrões, tendências, correlações e anomalias.",
-     "q": 15,
-     "a": 11,
-     "erros": 4,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "TINFO.4673.126764",
-     "meta": 2,
-     "assunto": "Teste Bloco A",
-     "q": 17,
-     "a": 13,
-     "erros": 4,
-     "motivo_predominante": null
-    },
-    {
-     "codigo": "TINFO.4673.127920",
-     "meta": 3,
-     "assunto": "Conceitos fundamentais de Inteligência Artificial, aprendizado de máquina e IA generativa",
-     "q": 13,
-     "a": 12,
-     "erros": 1,
-     "motivo_predominante": null
-    }
-   ]
+   "atividades": []
   },
   {
    "nome": "Raciocínio Lógico",
@@ -794,34 +118,6 @@
    "motivo_predominante": null,
    "motivo_predominante_pct": null,
    "atividades": []
-  },
-  {
-   "nome": "Orientações Gerais",
-   "erros": 0,
-   "com_motivo": 0,
-   "cobertura_pct": null,
-   "motivo_predominante": null,
-   "motivo_predominante_pct": null,
-   "atividades": []
-  },
-  {
-   "nome": "Geografia",
-   "erros": 2,
-   "com_motivo": 0,
-   "cobertura_pct": null,
-   "motivo_predominante": null,
-   "motivo_predominante_pct": null,
-   "atividades": [
-    {
-     "codigo": "GEO.4648.125507",
-     "meta": 1,
-     "assunto": "Conhecimentos de SC",
-     "q": 23,
-     "a": 21,
-     "erros": 2,
-     "motivo_predominante": null
-    }
-   ]
   }
  ],
  "evolucao_motivos": null

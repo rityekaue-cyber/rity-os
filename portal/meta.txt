@@ -1,41 +1,26 @@
-# meta — lido em 2026-11-11T15:10Z
-5ª Meta | SEFAZ-SC: pós edital (Kamikaze) • Início em 09 de novembro | 3 / 34 atividades
-31 atividades pendentes | 7 reforços | 2 aprofundamentos | 15 disciplinas
-Desempenho atingido 90,0% | Horas estudadas 4h 50m | Questões resolvidas 40 | Média diária 2h 09m
-6ª Meta: prevista para 16 de novembro (bloqueada). Sequência de estudos: 6 dias.
-Abas: Atividades 34 | Reforços 9 | Aprofundamentos 3
-# | Disciplina | Tipo | Título | Relevância | Tempo | Desempenho | Código
-1|Orientações Gerais|Teoria|Orientações Gerais sobre a Meta 5|-|00h20m|-|GERAL.4886.130018
-2|Geografia|Teste|Resolução de questões favoritas|Dispensável|00h00m|-|GEO.4648.132856
-3|AFO e Direito Financeiro|Teste|Resolução de questões favoritas|Dispensável|00h00m|-|AFO.4654.133918
-4|Direito Previdenciário|Questões|Toda a Ementa do Edital|Dispensável|00h00m|-|DPREV.4681.133021
-5|Direito Civil|Questões|Contratos|Desejável|00h00m|-|DCIV.4636.133318
-6|Ética no Serviço Público|Questões|Todo conteúdo|Dispensável|00h00m|-|ETICA.4647.133198
-7|Direito Administrativo|Questões|Decreto nº 2.094/2022.|Desejável|00h00m|-|DADM.4672.134350
-8|AFO e Direito Financeiro|Teste|Imersão Temática - Classificação de despesa|Desejável|00h00m|-|AFO.4654.133919
-9|Português|Questões|Morfologia, Formação das Palavras, Colocação Pronominal e Pontuação|Desejável|00h00m|-|PORT.4666.134093
-10|Estatística|Questões|Toda a Ementa do Edital|Dispensável|00h00m|-|ESTAT.4660.135299
-11|Geografia|Teoria|Aspectos econômicos de SC|Dispensável|00h00m|-|GEO.4648.134150
-12|Direito Penal|Questões|Toda a Ementa|Dispensável|00h00m|-|DPEN.4637.134016
-13|Tecnologia da Informação|Questões|Revisão B|Desejável|00h00m|-|TINFO.4673.133201
-14|Direito Previdenciário|Questões|Toda a Ementa do Edital|Dispensável|00h00m|-|DPREV.4681.134255
-15|Direito Civil|Questões|Responsabilidade Civil|Indispensável|01h00m|92,0%|DCIV.4636.133915
-16|Ética no Serviço Público|Questões|Todo conteúdo|Dispensável|00h00m|-|ETICA.4647.134094
-17|Direito Constitucional|Teste|Toda a Ementa do Edital|Dispensável|00h00m|-|DCON.4639.135272
-18|Direito Administrativo|Questões|Jurisprudências I.|Desejável|01h00m|86,6%|DADM.4672.134364
-19|Geografia|Questões|Conhecimentos de SC|Dispensável|00h00m|-|GEO.4648.134198
-20|AFO e Direito Financeiro|Questões|Revisão (Lei Complementar nº 898/2026 e Lei nº 7.541/1988)|Dispensável|00h00m|-|AFO.4654.134954
-21|Português|Questões|Resolução de prova: Fiscal de Tributos Estaduais (MT) / 2026 e Auditor Fiscal da Receita Estadual (SEFAZ GO) / 2026|Dispensável|00h00m|-|PORT.4666.135316
-22|Reforma Tributária|Questões|Repartição da Receita Tributária, Criação de Novos Fundos, Regras de Transição e Demais dispositivos da EC 132|Dispensável|00h00m|-|RETRI.4643.133836
-23|Matemática Financeira|Questões|Toda a ementa|Dispensável|00h00m|-|MATFI.4671.134884
-24|Direito Penal|Teste|Toda a Ementa|Dispensável|00h00m|-|DPEN.4637.134038
-25|Estatística|Questões|Toda a Ementa da Disciplina|Dispensável|00h00m|-|ESTAT.4663.135324
-26|Tecnologia da Informação|Questões|Toda a Ementa|Dispensável|00h00m|-|TINFO.4673.134341
-27|Geografia|Teoria|Boletim de Indicadores Econômico-Fiscais – Dezembro 2025|Dispensável|00h00m|-|GEO.4648.134200
-28|Raciocínio Lógico|Questões|Toda a Ementa do Edital|Dispensável|00h00m|-|RLOG.4659.136468
-29|Direito Previdenciário|Teste|Toda a Ementa do Edital|Dispensável|00h00m|-|DPREV.4681.135437
-30|Direito Civil|Questões|Formas de direito de exploração de propriedades (posse, usufruto, contratos de compra e venda, comodato, arrendamento, inventários)|Desejável|00h00m|-|DCIV.4636.135406
-31|Ética no Serviço Público|Questões|Todo conteúdo|Dispensável|00h00m|-|ETICA.4647.134103
-32|Direito Constitucional|Teste|Toda a Ementa do Edital|Dispensável|00h00m|-|DCON.4639.135278
-33|Direito Administrativo|Questões|Jurisprudências II.|Desejável|00h00m|-|DADM.4672.135376
-34|AFO e Direito Financeiro|Questões|Todo conteúdo|Dispensável|00h00m|-|AFO.4654.134958
+# meta — lido em 2026-11-14T15:06Z
+Meta - 1ª Meta: Consolidar a base • Início em 12 de novembro
+7 / 20 atividades | 13 pendentes | 0 reforços | 0 aprofundamentos | 9 disciplinas
+Desempenho atingido 87,7% | Horas estudadas 10h 30m | Questões resolvidas 49 | Média diária 4h 31m
+2ª Meta: prevista para 19 de novembro (Bloqueada) | Sequência de estudos: 9 dias consecutivos
+Atividades (ordem; status; disciplina; tipo; título; relevância; tempo; desempenho; código):
+1|Concluída|Contabilidade Geral e Avançada|Teoria|Histórico da Contabilidade. Conceitos Introdutórios. Técnicas Contábeis.|5|01h30m|-|CTBGA.2739.78591
+2|Concluída|Tecnologia da Informação|Teoria|[TI I] Conceitos Básicos de Banco de Dados|4|02h00m|-|TINFO.3857.109351
+3|Pendente|Auditoria Privada|Teoria|Contextualização e Classificação de Auditoria.|3|00h00m|-|AUD.3709.105748
+4|Concluída|Tecnologia da Informação|Teoria|[TI I] Conceitos Básicos de Banco de Dados|4|01h30m|-|TINFO.3857.109353
+5|Concluída|Contabilidade Geral e Avançada|Teoria|Conceitos, Objetivos e Finalidades da Contabilidade - Questões.|4|01h00m|-|CTBGA.2739.78647
+6|Pendente|Português|Questões|Ortografia e Formação das Palavras|3|00h00m|-|PORT.4262.117720
+7|Pendente|Raciocínio Lógico|Teoria|Introdução às proposições. Proposição lógica.|5|00h00m|-|RLOG.3723.106235
+8|Pendente|Tecnologia da Informação|Mapeamento|[TI I] Mapeamento Aula 02|4|00h00m|-|TINFO.3857.109358
+9|Concluída|Contabilidade Geral e Avançada|Teoria|Patrimônio. Componentes Patrimoniais.|5|01h30m|-|CTBGA.2739.78664
+10|Pendente|Auditoria Privada|Teoria|Classificação de Auditoria. NBC TA 200.|4|00h00m|-|AUD.3709.105750
+11|Pendente|Português|Questões|Morfologia: Substantivo, Adjetivo, Advérbio, Artigo, Numeral, Interjeição e Palavras Especiais|3|00h00m|-|PORT.4262.117775
+12|Pendente|Raciocínio Lógico|Teoria|Distinção entre proposição, sentença e expressão. Lógica Bivalente e Leis do Pensamento.|5|00h00m|-|RLOG.3723.106236
+13|Pendente|Contabilidade Geral e Avançada|Teoria|Representação Gráfica. Equiparação Patrimonial e Situações Patrimoniais.|5|00h00m|-|CTBGA.2739.78669
+14|Concluída|Direito Constitucional|Questões|Teoria Geral do Direito Constitucional - Conceitos Iniciais; Poder Constituinte...|3|01h30m|83,3%|DCON.4299.118356
+15|Pendente|Direito Administrativo|Questões|Conceitos iniciais, Regime Jurídico e Princípios.|4|00h00m|-|DADM.4290.118180
+16|Pendente|Tecnologia da Informação|Revisão|[TI I] Revisão Aula 02|3|00h00m|-|TINFO.3857.109356
+17|Pendente|Contabilidade Geral e Avançada|Teoria|Patrimônio. Componentes Patrimoniais. Representação Gráfica. Equiparação Patrimonial e Situações Patrimoniais.|4|00h00m|-|CTBGA.2739.78679
+18|Pendente|Auditoria Privada|Teoria|NBC TA 200: Definições.|5|00h00m|-|AUD.3709.106101
+19|Concluída|Direito Tributário|Questões|Conceito, Classificação, Natureza Jurídica e Espécies de Tributos|4|01h30m|92,0%|DTRIB.4306.118437
+20|Pendente|Direito Civil|Questões|LINDB - Lei de Introdução às Normas do Direito Brasileiro|5|00h00m|-|DCIV.4273.118483

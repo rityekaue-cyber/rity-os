@@ -1,23 +1,11 @@
-# desempenho — lido em 2026-11-11T15:10Z
-Desempenho Acumulado | SEFAZ-SC: pós edital (Kamikaze) | todas as disciplinas
-Desempenho atingido 86,3% | Horas estudadas 108h | Questões resolvidas 1.438 | Média diária 3h 34m
-Disciplina | Questões | Acertos | Desempenho | Atividades | Reforços | Aprofundamentos | Totais
-AFO e Direito Financeiro|199|175|87,9%|1h05m|40m|-|14h
-Direito Administrativo|188|162|86,1%|1h03m|-|-|10h30m
-Direito Civil|232|209|90,0%|1h|30m|-|10h30m
-Direito Constitucional|165|146|88,4%|1h30m|-|-|12h
-Direito Penal|167|138|82,6%|1h04m|30m|-|10h
-Direito Previdenciário|191|159|83,2%|1h33m|-|-|15h30m
-Estatística|sem registro
-Ética no Serviço Público|27|23|85,1%|1h|-|-|4h
-Geografia|23|21|91,3%|1h18m|-|-|6h30m
-Matemática Financeira|sem registro
-Português|83|72|86,7%|48m|-|-|4h
-Raciocínio Lógico|sem registro
-Reforma Tributária|98|83|84,6%|1h18m|-|-|6h30m
-Tecnologia da Informação|65|53|81,5%|2h24m|-|1h15m|14h30m
-Total|1438|1241|86,3%|1h15m|34m|1h15m|108h
-Tempo médio por dia da semana: Dom 2h | Seg 4h | Ter 3h54m | Qua 4h36m | Qui 4h50m | Sex 4h30m | Sáb 4h20m
-Questões resolvidas por disciplina: DPREV 14,3% | TINFO 13,4% | AFO 12,9% | DCON 11,1% | DADM 9,7% | DCIV 9,7% | DPEN 9,2% | GEO 6,0% | RETRI 6,0% | ETICA 3,7% | PORT 3,7%
-Sistemática de revisão (período): Revisou 48,6% | Não revisou 48,6% | Não informado 2,7%
-Sistemática de conferência (período): A cada questão 90,5% | Só ao final 6,7% | Não informado 2,7%
+# desempenho — lido em 2026-11-14T15:06Z
+Desempenho Acumulado - Consolidar a base
+Desempenho atingido 87,7% | Horas estudadas 10h 30m | Questões resolvidas 49 | Média diária hora/estudo 4h 31m
+Direito Constitucional: 24 questões, 20 acertos, 83,3%, atividades 1h30m
+Direito Tributário: 25 questões, 23 acertos, 92,0%, atividades 1h30m
+Total: 49 questões, 43 acertos, 87,7%, atividades 1h30m (reforços -, aprofundamentos -), total 10h30m
+Tempo médio por dia da semana: Qui 3h, Sex 5h, Sáb 2h30m
+Distribuição questões resolvidas: CTBGA 38,0% | TINFO 33,3% | DCON 14,2% | DTRIB 14,2%
+Sistemática de revisão: Revisou 0,0% | Não revisou 100,0% | Não informado 0,0%
+Sistemática de conferência: A cada questão 100,0% | Só ao final 0,0%
+Tempo por disciplina: tabela do portal veio achatada; valores por disciplina nao atribuidos (ambiguo). Totais acima.
