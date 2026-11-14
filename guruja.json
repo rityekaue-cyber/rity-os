@@ -1,6 +1,6 @@
 {
  "versao": 1,
- "gerado_em": "2026-11-13T07:14:12Z",
+ "gerado_em": "2026-11-14T07:11:46Z",
  "origem": "tarefa agendada",
  "planejamento_id": 105325,
  "meta_atual": {
@@ -11,12 +11,12 @@
   "vezes_adiada": 0,
   "status": "ontime",
   "atividades_totais": 20,
-  "atividades_concluidas": 2,
-  "atividades_pendentes": 18,
+  "atividades_concluidas": 5,
+  "atividades_pendentes": 15,
   "atividades_ignoradas": 0,
-  "questoes": 24,
-  "acertos": 20,
-  "minutos": 180
+  "questoes": 49,
+  "acertos": 43,
+  "minutos": 480
  },
  "metas": [
   {
@@ -26,11 +26,11 @@
    "data_inicio": "2026-11-12T04:21:31.01",
    "data_conclusao": null,
    "atividades_totais": 20,
-   "atividades_concluidas": 2,
+   "atividades_concluidas": 5,
    "atividades_ignoradas": 0,
-   "questoes": 24,
-   "acertos": 20,
-   "minutos": 180,
+   "questoes": 49,
+   "acertos": 43,
+   "minutos": 480,
    "atividades": [
     {
      "aid": 78591,
@@ -57,10 +57,10 @@
      "tipo": "Teoria",
      "rel": 4,
      "prio": null,
-     "q": null,
-     "a": null,
-     "min": 0,
-     "concluida": false,
+     "q": 0,
+     "a": 0,
+     "min": 120,
+     "concluida": true,
      "ignorada": false,
      "link": null
     },
@@ -89,10 +89,10 @@
      "tipo": "Teoria",
      "rel": 4,
      "prio": null,
-     "q": null,
-     "a": null,
-     "min": 0,
-     "concluida": false,
+     "q": 0,
+     "a": 0,
+     "min": 90,
+     "concluida": true,
      "ignorada": false,
      "link": null
     },
@@ -329,10 +329,10 @@
      "tipo": "Questões",
      "rel": 4,
      "prio": null,
-     "q": null,
-     "a": null,
-     "min": 0,
-     "concluida": false,
+     "q": 25,
+     "a": 23,
+     "min": 90,
+     "concluida": true,
      "ignorada": false,
      "link": null
     },
@@ -358,10 +358,10 @@
  ],
  "desempenho": [],
  "tempo": {
-  "total_min": 180,
+  "total_min": 480,
   "por_tipo": {
-   "Teoria": 90,
-   "Questões": 90,
+   "Teoria": 300,
+   "Questões": 180,
    "Mapeamento": 0,
    "Revisão": 0
   },
@@ -369,7 +369,15 @@
   "aprofundamentos_min": 0,
   "disciplinas": [
    {
+    "sigla": "TINFO",
+    "min": 210
+   },
+   {
     "sigla": "DCON",
+    "min": 90
+   },
+   {
+    "sigla": "DTRIB",
     "min": 90
    },
    {
@@ -377,19 +385,11 @@
     "min": 90
    },
    {
-    "sigla": "TINFO",
-    "min": 0
-   },
-   {
     "sigla": "DADM",
     "min": 0
    },
    {
     "sigla": "DCIV",
-    "min": 0
-   },
-   {
-    "sigla": "DTRIB",
     "min": 0
    },
    {
@@ -407,20 +407,16 @@
   ]
  },
  "ritmo": {
-  "meu_ritmo": "no_ritmo",
+  "meu_ritmo": null,
   "meus_dias_por_meta": null,
-  "mediana_dias_por_meta": 10.6,
+  "mediana_dias_por_meta": null,
   "dias_atraso": 0,
-  "decil_progresso": 1,
+  "decil_progresso": null,
   "meus_min_por_meta": null,
-  "mediana_min_por_meta": 930,
+  "mediana_min_por_meta": null,
   "minhas_q_por_meta": null,
-  "mediana_q_por_meta": 230
+  "mediana_q_por_meta": null
  },
  "fracos": [],
- "dificeis_turma": [
-  "Economia e Finanças Públicas",
-  "TINFO",
-  "PORT"
- ]
+ "dificeis_turma": []
 }
