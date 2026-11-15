@@ -1,6 +1,6 @@
 {
  "versao": 1,
- "gerado_em": "2026-11-14T07:11:46Z",
+ "gerado_em": "2026-11-15T07:11:53Z",
  "origem": "tarefa agendada",
  "planejamento_id": 105325,
  "meta_atual": {
@@ -11,12 +11,12 @@
   "vezes_adiada": 0,
   "status": "ontime",
   "atividades_totais": 20,
-  "atividades_concluidas": 5,
-  "atividades_pendentes": 15,
+  "atividades_concluidas": 9,
+  "atividades_pendentes": 11,
   "atividades_ignoradas": 0,
   "questoes": 49,
   "acertos": 43,
-  "minutos": 480
+  "minutos": 780
  },
  "metas": [
   {
@@ -26,11 +26,11 @@
    "data_inicio": "2026-11-12T04:21:31.01",
    "data_conclusao": null,
    "atividades_totais": 20,
-   "atividades_concluidas": 5,
+   "atividades_concluidas": 9,
    "atividades_ignoradas": 0,
    "questoes": 49,
    "acertos": 43,
-   "minutos": 480,
+   "minutos": 780,
    "atividades": [
     {
      "aid": 78591,
@@ -73,10 +73,10 @@
      "tipo": "Teoria",
      "rel": 3,
      "prio": null,
-     "q": null,
-     "a": null,
-     "min": 0,
-     "concluida": false,
+     "q": 0,
+     "a": 0,
+     "min": 90,
+     "concluida": true,
      "ignorada": false,
      "link": null
     },
@@ -105,10 +105,10 @@
      "tipo": "Teoria",
      "rel": 4,
      "prio": null,
-     "q": null,
-     "a": null,
-     "min": 0,
-     "concluida": false,
+     "q": 0,
+     "a": 0,
+     "min": 60,
+     "concluida": true,
      "ignorada": false,
      "link": null
     },
@@ -169,10 +169,10 @@
      "tipo": "Teoria",
      "rel": 5,
      "prio": null,
-     "q": null,
-     "a": null,
-     "min": 0,
-     "concluida": false,
+     "q": 0,
+     "a": 0,
+     "min": 90,
+     "concluida": true,
      "ignorada": false,
      "link": null
     },
@@ -233,10 +233,10 @@
      "tipo": "Teoria",
      "rel": 5,
      "prio": null,
-     "q": null,
-     "a": null,
-     "min": 0,
-     "concluida": false,
+     "q": 0,
+     "a": 0,
+     "min": 60,
+     "concluida": true,
      "ignorada": false,
      "link": null
     },
@@ -358,9 +358,9 @@
  ],
  "desempenho": [],
  "tempo": {
-  "total_min": 480,
+  "total_min": 780,
   "por_tipo": {
-   "Teoria": 300,
+   "Teoria": 600,
    "Questões": 180,
    "Mapeamento": 0,
    "Revisão": 0
@@ -368,6 +368,10 @@
   "reforcos_min": 0,
   "aprofundamentos_min": 0,
   "disciplinas": [
+   {
+    "sigla": "CTBGA",
+    "min": 300
+   },
    {
     "sigla": "TINFO",
     "min": 210
@@ -381,7 +385,7 @@
     "min": 90
    },
    {
-    "sigla": "CTBGA",
+    "sigla": "AUD",
     "min": 90
    },
    {
@@ -394,10 +398,6 @@
    },
    {
     "sigla": "PORT",
-    "min": 0
-   },
-   {
-    "sigla": "AUD",
     "min": 0
    },
    {
