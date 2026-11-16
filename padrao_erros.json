@@ -1,20 +1,40 @@
 {
  "versao": 1,
- "gerado_em": "2026-11-14T15:06:19Z",
+ "gerado_em": "2026-11-16T16:27:47Z",
  "origem": "chrome meio-dia",
  "planejamento_id": 105325,
  "total": {
-  "erros": 6,
-  "com_motivo": 6,
+  "erros": 12,
+  "com_motivo": 12,
   "cobertura_pct": 100.0,
   "motivo_predominante": "Desconhecimento",
-  "motivo_predominante_pct": 100.0
+  "motivo_predominante_pct": 58.3
  },
  "motivos": [
   {
    "motivo": "Desconhecimento",
-   "n": 6,
-   "pct": 100.0
+   "n": 7,
+   "pct": 58.3
+  },
+  {
+   "motivo": "Confusão conceitual",
+   "n": 2,
+   "pct": 16.7
+  },
+  {
+   "motivo": "Esquecimento",
+   "n": 1,
+   "pct": 8.3
+  },
+  {
+   "motivo": "Erro de interpretação",
+   "n": 1,
+   "pct": 8.3
+  },
+  {
+   "motivo": "Falta de atenção",
+   "n": 1,
+   "pct": 8.3
   }
  ],
  "disciplinas": [
@@ -32,6 +52,25 @@
      "assunto": "Teoria Geral do Direito Constitucional - Conceitos Iniciais; Poder Constituinte; Aplicação das Normas no Tempo; Interpretação Constitucional",
      "q": 24,
      "a": 20,
+     "erros": 4,
+     "motivo_predominante": "Desconhecimento"
+    }
+   ]
+  },
+  {
+   "nome": "Direito Civil",
+   "erros": 4,
+   "com_motivo": 4,
+   "cobertura_pct": 100.0,
+   "motivo_predominante": "Desconhecimento",
+   "motivo_predominante_pct": 25.0,
+   "atividades": [
+    {
+     "codigo": "DCIV.4273.118483",
+     "meta": 1,
+     "assunto": "LINDB - Lei de Introdução às Normas do Direito Brasileiro",
+     "q": 25,
+     "a": 21,
      "erros": 4,
      "motivo_predominante": "Desconhecimento"
     }
@@ -57,9 +96,28 @@
    ]
   },
   {
+   "nome": "Português",
+   "erros": 2,
+   "com_motivo": 2,
+   "cobertura_pct": 100.0,
+   "motivo_predominante": "Confusão conceitual",
+   "motivo_predominante_pct": 50.0,
+   "atividades": [
+    {
+     "codigo": "PORT.4262.117720",
+     "meta": 1,
+     "assunto": "Ortografia e Formação das Palavras",
+     "q": 19,
+     "a": 17,
+     "erros": 2,
+     "motivo_predominante": "Confusão conceitual"
+    }
+   ]
+  },
+  {
    "nome": "Contabilidade Geral e Avançada",
    "erros": 0,
-   "com_motivo": 0,
+   "com_motivo": null,
    "cobertura_pct": null,
    "motivo_predominante": null,
    "motivo_predominante_pct": null,
@@ -68,7 +126,7 @@
   {
    "nome": "Auditoria Privada",
    "erros": 0,
-   "com_motivo": 0,
+   "com_motivo": null,
    "cobertura_pct": null,
    "motivo_predominante": null,
    "motivo_predominante_pct": null,
@@ -77,25 +135,7 @@
   {
    "nome": "Direito Administrativo",
    "erros": 0,
-   "com_motivo": 0,
-   "cobertura_pct": null,
-   "motivo_predominante": null,
-   "motivo_predominante_pct": null,
-   "atividades": []
-  },
-  {
-   "nome": "Direito Civil",
-   "erros": 0,
-   "com_motivo": 0,
-   "cobertura_pct": null,
-   "motivo_predominante": null,
-   "motivo_predominante_pct": null,
-   "atividades": []
-  },
-  {
-   "nome": "Português",
-   "erros": 0,
-   "com_motivo": 0,
+   "com_motivo": null,
    "cobertura_pct": null,
    "motivo_predominante": null,
    "motivo_predominante_pct": null,
@@ -104,7 +144,7 @@
   {
    "nome": "Tecnologia da Informação",
    "erros": 0,
-   "com_motivo": 0,
+   "com_motivo": null,
    "cobertura_pct": null,
    "motivo_predominante": null,
    "motivo_predominante_pct": null,
@@ -113,7 +153,7 @@
   {
    "nome": "Raciocínio Lógico",
    "erros": 0,
-   "com_motivo": 0,
+   "com_motivo": null,
    "cobertura_pct": null,
    "motivo_predominante": null,
    "motivo_predominante_pct": null,

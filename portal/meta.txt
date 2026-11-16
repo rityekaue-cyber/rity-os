@@ -1,26 +1,26 @@
-# meta — lido em 2026-11-14T15:06Z
+# meta — lido em 2026-11-16T16:27Z
 Meta - 1ª Meta: Consolidar a base • Início em 12 de novembro
-7 / 20 atividades | 13 pendentes | 0 reforços | 0 aprofundamentos | 9 disciplinas
-Desempenho atingido 87,7% | Horas estudadas 10h 30m | Questões resolvidas 49 | Média diária 4h 31m
-2ª Meta: prevista para 19 de novembro (Bloqueada) | Sequência de estudos: 9 dias consecutivos
-Atividades (ordem; status; disciplina; tipo; título; relevância; tempo; desempenho; código):
-1|Concluída|Contabilidade Geral e Avançada|Teoria|Histórico da Contabilidade. Conceitos Introdutórios. Técnicas Contábeis.|5|01h30m|-|CTBGA.2739.78591
-2|Concluída|Tecnologia da Informação|Teoria|[TI I] Conceitos Básicos de Banco de Dados|4|02h00m|-|TINFO.3857.109351
-3|Pendente|Auditoria Privada|Teoria|Contextualização e Classificação de Auditoria.|3|00h00m|-|AUD.3709.105748
-4|Concluída|Tecnologia da Informação|Teoria|[TI I] Conceitos Básicos de Banco de Dados|4|01h30m|-|TINFO.3857.109353
-5|Concluída|Contabilidade Geral e Avançada|Teoria|Conceitos, Objetivos e Finalidades da Contabilidade - Questões.|4|01h00m|-|CTBGA.2739.78647
-6|Pendente|Português|Questões|Ortografia e Formação das Palavras|3|00h00m|-|PORT.4262.117720
-7|Pendente|Raciocínio Lógico|Teoria|Introdução às proposições. Proposição lógica.|5|00h00m|-|RLOG.3723.106235
-8|Pendente|Tecnologia da Informação|Mapeamento|[TI I] Mapeamento Aula 02|4|00h00m|-|TINFO.3857.109358
-9|Concluída|Contabilidade Geral e Avançada|Teoria|Patrimônio. Componentes Patrimoniais.|5|01h30m|-|CTBGA.2739.78664
-10|Pendente|Auditoria Privada|Teoria|Classificação de Auditoria. NBC TA 200.|4|00h00m|-|AUD.3709.105750
-11|Pendente|Português|Questões|Morfologia: Substantivo, Adjetivo, Advérbio, Artigo, Numeral, Interjeição e Palavras Especiais|3|00h00m|-|PORT.4262.117775
-12|Pendente|Raciocínio Lógico|Teoria|Distinção entre proposição, sentença e expressão. Lógica Bivalente e Leis do Pensamento.|5|00h00m|-|RLOG.3723.106236
-13|Pendente|Contabilidade Geral e Avançada|Teoria|Representação Gráfica. Equiparação Patrimonial e Situações Patrimoniais.|5|00h00m|-|CTBGA.2739.78669
-14|Concluída|Direito Constitucional|Questões|Teoria Geral do Direito Constitucional - Conceitos Iniciais; Poder Constituinte...|3|01h30m|83,3%|DCON.4299.118356
-15|Pendente|Direito Administrativo|Questões|Conceitos iniciais, Regime Jurídico e Princípios.|4|00h00m|-|DADM.4290.118180
-16|Pendente|Tecnologia da Informação|Revisão|[TI I] Revisão Aula 02|3|00h00m|-|TINFO.3857.109356
-17|Pendente|Contabilidade Geral e Avançada|Teoria|Patrimônio. Componentes Patrimoniais. Representação Gráfica. Equiparação Patrimonial e Situações Patrimoniais.|4|00h00m|-|CTBGA.2739.78679
-18|Pendente|Auditoria Privada|Teoria|NBC TA 200: Definições.|5|00h00m|-|AUD.3709.106101
-19|Concluída|Direito Tributário|Questões|Conceito, Classificação, Natureza Jurídica e Espécies de Tributos|4|01h30m|92,0%|DTRIB.4306.118437
-20|Pendente|Direito Civil|Questões|LINDB - Lei de Introdução às Normas do Direito Brasileiro|5|00h00m|-|DCIV.4273.118483
+13 / 20 atividades | 7 pendentes | 0 reforços | 0 aprofundamentos | 9 disciplinas
+Desempenho atingido 87,0% | Horas estudadas 17h 20m | Questões resolvidas 93 | Média diária 3h 57m
+2ª Meta: prevista para 19 de novembro (Bloqueada) | Sequência de estudos: 11 dias consecutivos
+Atividades (#|disciplina|tipo|título|tempo|desempenho|código; status não lido nesta varredura):
+1|Contabilidade Geral e Avançada|Teoria|Histórico da Contabilidade. Conceitos Introdutórios. Técnicas Contábeis.|01h30m|-|CTBGA.2739.78591
+2|Tecnologia da Informação|Teoria|[TI I] Conceitos Básicos de Banco de Dados|02h00m|-|TINFO.3857.109351
+3|Auditoria Privada|Teoria|Contextualização e Classificação de Auditoria.|01h30m|-|AUD.3709.105748
+4|Tecnologia da Informação|Teoria|[TI I] Conceitos Básicos de Banco de Dados|01h30m|-|TINFO.3857.109353
+5|Contabilidade Geral e Avançada|Teoria|Conceitos, Objetivos e Finalidades da Contabilidade - Questões.|01h00m|-|CTBGA.2739.78647
+6|Português|Questões|Ortografia e Formação das Palavras|01h00m|89,4%|PORT.4262.117720
+7|Raciocínio Lógico|Teoria|Introdução às proposições. Proposição lógica.|00h00m|-|RLOG.3723.106235
+8|Tecnologia da Informação|Mapeamento|[TI I] Mapeamento Aula 02|01h00m|-|TINFO.3857.109358
+9|Contabilidade Geral e Avançada|Teoria|Patrimônio. Componentes Patrimoniais.|01h30m|-|CTBGA.2739.78664
+10|Auditoria Privada|Teoria|Classificação de Auditoria. NBC TA 200.|01h20m|-|AUD.3709.105750
+11|Português|Questões|Morfologia: Substantivo, Adjetivo, Advérbio, Artigo, Numeral, Interjeição e Palavras Especiais|00h00m|-|PORT.4262.117775
+12|Raciocínio Lógico|Teoria|Distinção entre proposição, sentença e expressão. Lógica Bivalente e Leis do Pensamento. Proposições simples|00h00m|-|RLOG.3723.106236
+13|Contabilidade Geral e Avançada|Teoria|Representação Gráfica. Equiparação Patrimonial e Situações Patrimoniais.|01h00m|-|CTBGA.2739.78669
+14|Direito Constitucional|Questões|Teoria Geral do Direito Constitucional - Conceitos Iniciais; Poder Constituinte; Aplicação das Normas no Tempo; Interpretação Constitucional|01h30m|83,3%|DCON.4299.118356
+15|Direito Administrativo|Questões|Conceitos iniciais, Regime Jurídico e Princípios.|00h00m|-|DADM.4290.118180
+16|Tecnologia da Informação|Revisão|[TI I] Revisão Aula 02|00h00m|-|TINFO.3857.109356
+17|Contabilidade Geral e Avançada|Teoria|Patrimônio. Componentes Patrimoniais. Representação Gráfica. Equiparação Patrimonial e Situações Patrimoniais - (Questões CESPE e FGV)|00h00m|-|CTBGA.2739.78679
+18|Auditoria Privada|Teoria|NBC TA 200: Definições.|00h00m|-|AUD.3709.106101
+19|Direito Tributário|Questões|Conceito, Classificação, Natureza Jurídica e Espécies de Tributos|01h30m|92,0%|DTRIB.4306.118437
+20|Direito Civil|Questões|LINDB - Lei de Introdução às Normas do Direito Brasileiro|01h00m|84,0%|DCIV.4273.118483

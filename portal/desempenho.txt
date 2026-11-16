@@ -1,11 +1,7 @@
-# desempenho — lido em 2026-11-14T15:06Z
-Desempenho Acumulado - Consolidar a base
-Desempenho atingido 87,7% | Horas estudadas 10h 30m | Questões resolvidas 49 | Média diária hora/estudo 4h 31m
-Direito Constitucional: 24 questões, 20 acertos, 83,3%, atividades 1h30m
-Direito Tributário: 25 questões, 23 acertos, 92,0%, atividades 1h30m
-Total: 49 questões, 43 acertos, 87,7%, atividades 1h30m (reforços -, aprofundamentos -), total 10h30m
-Tempo médio por dia da semana: Qui 3h, Sex 5h, Sáb 2h30m
-Distribuição questões resolvidas: CTBGA 38,0% | TINFO 33,3% | DCON 14,2% | DTRIB 14,2%
-Sistemática de revisão: Revisou 0,0% | Não revisou 100,0% | Não informado 0,0%
-Sistemática de conferência: A cada questão 100,0% | Só ao final 0,0%
-Tempo por disciplina: tabela do portal veio achatada; valores por disciplina nao atribuidos (ambiguo). Totais acima.
+# desempenho — lido em 2026-11-16T16:27Z
+Desempenho Acumulado (Consolidar a base): atingido 87,0% | Horas 17h20m | Questões 93 | Média diária 3h58m
+Tabela por disciplina (linhas com dados): Direito Civil 25q/21a/84,0%/1h; Direito Constitucional 24q/20a/83,3%/1h30m; Direito Tributário 25q/23a/92,0%/1h30m; Português 19q/17a/89,4%/1h; Total 93q/81a/87,0%/17h20m. Demais disciplinas sem questões (tempo apenas): totais de tempo 1h25m, 2h50m, 1h15m, 5h, 4h30m, 1h20m conforme coluna Totais.
+Tempo médio por dia da semana: Dom 2h20m | Seg 2h | Ter - | Qua - | Qui 3h | Sex 5h | Sáb 5h
+Distribuição de tempo por disciplina: CTBGA 28,8% | TINFO 25,9% | AUD 16,3% | DCON 8,6% | DTRIB 8,6% | DCIV 5,7% | PORT 5,7%
+Sistemática de revisão: Revisou 25,0% | Não revisou 75,0% | Não informado 0,0%
+Sistemática de conferência: A cada questão 100,0% | Só ao final 0,0% | Não informado 0,0%
