@@ -1,6 +1,6 @@
 {
  "versao": 1,
- "gerado_em": "2026-11-15T07:11:53Z",
+ "gerado_em": "2026-11-16T07:15:10Z",
  "origem": "tarefa agendada",
  "planejamento_id": 105325,
  "meta_atual": {
@@ -11,12 +11,12 @@
   "vezes_adiada": 0,
   "status": "ontime",
   "atividades_totais": 20,
-  "atividades_concluidas": 9,
-  "atividades_pendentes": 11,
+  "atividades_concluidas": 11,
+  "atividades_pendentes": 9,
   "atividades_ignoradas": 0,
-  "questoes": 49,
-  "acertos": 43,
-  "minutos": 780
+  "questoes": 68,
+  "acertos": 60,
+  "minutos": 920
  },
  "metas": [
   {
@@ -26,11 +26,11 @@
    "data_inicio": "2026-11-12T04:21:31.01",
    "data_conclusao": null,
    "atividades_totais": 20,
-   "atividades_concluidas": 9,
+   "atividades_concluidas": 11,
    "atividades_ignoradas": 0,
-   "questoes": 49,
-   "acertos": 43,
-   "minutos": 780,
+   "questoes": 68,
+   "acertos": 60,
+   "minutos": 920,
    "atividades": [
     {
      "aid": 78591,
@@ -121,10 +121,10 @@
      "tipo": "Questões",
      "rel": 3,
      "prio": null,
-     "q": null,
-     "a": null,
-     "min": 0,
-     "concluida": false,
+     "q": 19,
+     "a": 17,
+     "min": 60,
+     "concluida": true,
      "ignorada": false,
      "link": null
     },
@@ -185,10 +185,10 @@
      "tipo": "Teoria",
      "rel": 4,
      "prio": null,
-     "q": null,
-     "a": null,
-     "min": 0,
-     "concluida": false,
+     "q": 0,
+     "a": 0,
+     "min": 80,
+     "concluida": true,
      "ignorada": false,
      "link": null
     },
@@ -358,10 +358,10 @@
  ],
  "desempenho": [],
  "tempo": {
-  "total_min": 780,
+  "total_min": 920,
   "por_tipo": {
-   "Teoria": 600,
-   "Questões": 180,
+   "Teoria": 680,
+   "Questões": 240,
    "Mapeamento": 0,
    "Revisão": 0
   },
@@ -377,6 +377,10 @@
     "min": 210
    },
    {
+    "sigla": "AUD",
+    "min": 170
+   },
+   {
     "sigla": "DCON",
     "min": 90
    },
@@ -385,8 +389,8 @@
     "min": 90
    },
    {
-    "sigla": "AUD",
-    "min": 90
+    "sigla": "PORT",
+    "min": 60
    },
    {
     "sigla": "DADM",
@@ -394,10 +398,6 @@
    },
    {
     "sigla": "DCIV",
-    "min": 0
-   },
-   {
-    "sigla": "PORT",
     "min": 0
    },
    {
