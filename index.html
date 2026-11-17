@@ -261,7 +261,7 @@ const REGRAS_PLANO=[
   {ic:'🧱',t:'Ordem de pré-requisitos',d:'Contabilidade vem antes de Auditoria (a Auditoria só entra a partir de segunda 16/11, depois da base contábil). Direito Tributário vem antes de Legislação Tributária Estadual.'},
   {ic:'🧪',t:'Os minutos são estimativa minha',d:'O Guruja não informa quanto tempo leva cada atividade. As linhas "Questões FCC" marcadas como rotina do mentor não são do Guruja: elas completam a carga de Contabilidade e de TI e são as primeiras a cortar se o dia apertar.'},
   {ic:'📓',t:'Caderno do TEC em cada tarefa',d:'Cada atividade com caderno no TEC ganha o botão 📓 que abre o caderno direto (o link vem do Guruja, lido pelas rotinas das 04h10 e do meio-dia).'},
-  {ic:'📡',t:'Dados do Guruja: eu leio pelo conector e atualizo o app',d:'O app é um arquivo estático e não se conecta sozinho ao Guruja. Quando você pedir "atualiza", eu leio as metas e marco o que você já fez lá. O planejamento novo ainda não tem desempenho nem edital no Guruja, então a nota 40/40/10/10 e os níveis por matéria só voltam quando houver dados.'},
+  {ic:'📡',t:'Dados do Guruja: o app se atualiza sozinho',d:'O robô lê o Guruja de madrugada e grava o arquivo; o app o relê ao abrir, ao voltar para a aba e a cada 10 minutos, e marca o que você já fez lá. O Guruja ainda não tem edital vinculado: pesos e nota 40/40/10/10 são provisórios, e os níveis por matéria usam o Guruja onde já há questões e estimativa nas demais.'},
 ];
 const CAP_DIA_PADRAO=240, TOL_DIA=15;
 // Minutos planejados por dia (seg..dom) = soma do plano (sábado e domingo refeitos em 07/11 de manhã com os dados do conector). Dá para mudar em Estudo › Ciclo › Horas por dia.
@@ -9298,6 +9298,7 @@ const GurujaLink={
   KEY:'guruja_snap',ST:'guruja_snap_st',
   lerCache(){try{const v=localStorage.getItem('guruja_snap');return v?JSON.parse(v):null;}catch(e){return null;}},
   status(){try{return JSON.parse(localStorage.getItem('guruja_snap_st')||'null');}catch(e){return null;}},
+  lerSerie(){try{const v=localStorage.getItem('guruja_serie');return v?JSON.parse(v):null;}catch(e){return null;}},
   valido(s){return !!(s&&s.versao===1&&s.gerado_em&&!isNaN(Date.parse(s.gerado_em))&&Array.isArray(s.metas)&&Array.isArray(s.desempenho)&&s.meta_atual);},
   aplicarCache(){const s=this.lerCache();if(!this.valido(s))return false;try{this.aplicarNumeros(s);return true;}catch(e){return false;}},
   // Números do snapshot → as estruturas que o app já usa (nível por matéria e painel Dados › Guruja)
@@ -9408,6 +9409,8 @@ const GurujaLink={
       this.aplicarNumeros(s);
       st.ok=true;st.em=s.gerado_em;
     }catch(e){st.erro=String(e&&e.message||e).slice(0,120);}
+    // Histórico diário (guruja_serie.json): alimenta a aba Dados. Falha aqui não derruba a leitura do snapshot.
+    try{const rs=await fetch('guruja_serie.json?t='+Date.now(),{cache:'no-store'});if(rs.ok){const se=await rs.json();if(se&&se.dias&&typeof se.dias==='object')localStorage.setItem('guruja_serie',JSON.stringify(se));}}catch(e){}
     try{localStorage.setItem('guruja_snap_st',JSON.stringify(st));}catch(e){}
     try{window.dispatchEvent(new Event('guruja-atualizado'));}catch(e){}
     return st;
@@ -9451,543 +9454,269 @@ function FaixaGuruja(){
     </div>
   );
 }
-function PainelGurujaNovo(){
-  const S=GURUJA_SYNC;const mono="'DM Mono',monospace";
+// ═══ DADOS · SEFAZ-RS — tudo vem do Guruja (snapshot + série diária) e do que você registra no app, sem lista fixa de matérias ═══
+const DADOS_INI='2026-11-12'; // início do planejamento do SEFAZ-RS: nada anterior entra aqui
+const META_SEMANA_MIN=5*60*6+30; // plano: 5h por dia de segunda a sábado + 30 min no domingo
+const DADOS_MONO="'DM Mono',monospace";
+const fm1=(x,d=1)=>x==null||isNaN(x)?'—':Number(x).toFixed(d).replace('.',',');
+const dkDoRegistro=r=>{const s=String(r&&(r.dia||(r.id||'').split('_')[0])||'');if(/^\d{4}-\d{2}-\d{2}$/.test(s))return s;return r&&r.dt?dkDe(new Date(r.dt)):'';};
+const corPct=p=>p==null?'#aab6c8':p>=88?'#34d399':p>=83?'#a3e635':p>=75?'#fbbf24':'#f87171';
+function useTickGuruja(){const[,tk]=useState(0);useEffect(()=>{const f=()=>tk(x=>x+1);window.addEventListener('guruja-atualizado',f);return()=>window.removeEventListener('guruja-atualizado',f);},[]);}
+// Junta, por dia e por matéria: o que o Guruja contou (série diária) e o que você registrou no app.
+// Tempo = o maior dos dois (descrevem o mesmo estudo); questões = Guruja + o que você registrou fora dele.
+function dadosMontar(horas){
+  const dias={};
+  const cel=(dk,mat)=>{const m=EDITAL_MATS.includes(mat)?mat:'Outras';const d=(dias[dk]=dias[dk]||{});return d[m]=d[m]||{qG:0,aG:0,minG:0,qA:0,aA:0,minA:0};};
+  const serie=GurujaLink.lerSerie();
+  if(serie&&serie.dias)Object.keys(serie.dias).forEach(dk=>{if(dk<DADOS_INI)return;const dd=serie.dias[dk]||{};Object.keys(dd.mat||{}).forEach(sg=>{const v=dd.mat[sg],x=cel(dk,matDaSigla(sg,''));x.qG+=v.q||0;x.aG+=v.a||0;x.minG+=v.min||0;});});
+  (lsGet('historico_diario',[])||[]).forEach(r=>{
+    if(!r||/guruja/i.test(String(r.id||''))||/guruja/i.test(String(r.origem||'')))return;
+    const dk=dkDoRegistro(r);if(!dk||dk<DADOS_INI)return;
+    const q=parseInt(r.questoes)||0,a=parseInt(r.acertei)||0;if(!q&&!a)return;
+    const x=cel(dk,r.materia);x.qA+=q;x.aA+=a;
+  });
+  (horas||[]).forEach(e=>{if(!e||!e.dt||!e.min)return;const dk=dkDe(new Date(e.dt));if(dk<DADOS_INI)return;cel(dk,e.mat).minA+=e.min;});
+  Object.keys(dias).forEach(dk=>Object.keys(dias[dk]).forEach(m=>{const x=dias[dk][m];x.min=Math.max(x.minG,x.minA);x.q=x.qG+x.qA;x.a=x.aG+x.aA;}));
+  return dias;
+}
+const semDks=off=>{const seg=new Date();seg.setHours(0,0,0,0);seg.setDate(seg.getDate()-((seg.getDay()+6)%7)+off*7);return Array.from({length:7},(_,i)=>{const d=new Date(seg);d.setDate(seg.getDate()+i);return dkDe(d);});};
+const somaDks=(D,dks,mat)=>{const r={min:0,q:0,a:0};dks.forEach(dk=>{const d=D[dk];if(!d)return;(mat?[mat]:Object.keys(d)).forEach(m=>{const x=d[m];if(!x)return;r.min+=x.min;r.q+=x.q;r.a+=x.a;});});r.pct=r.q>0?r.a/r.q*100:null;return r;};
+const fmtDK=dk=>`${dk.slice(8,10)}/${dk.slice(5,7)}`;
+const diasEntre=(a,b)=>Math.round((Date.parse(b+'T12:00:00')-Date.parse(a+'T12:00:00'))/86400000);
+function gurujaPorMat(s){
+  const out={};if(!GurujaLink.valido(s))return out;
+  (s.desempenho||[]).forEach(d=>{const m=matDaSigla(d.sigla,d.disciplina);const x=out[m]=out[m]||{q:0,a:0,min:0};x.q+=d.q||0;x.a+=d.a||0;x.peso=d.peso;x.media=d.media;x.mediana=d.mediana;x.decil=d.decil;x.tendencia=d.tendencia;});
+  ((s.tempo&&s.tempo.disciplinas)||[]).forEach(d=>{const m=matDaSigla(d.sigla,d.disciplina);const x=out[m]=out[m]||{q:0,a:0,min:0};x.min+=d.min||0;});
+  Object.keys(out).forEach(m=>{out[m].pct=out[m].q>0?out[m].a/out[m].q*100:null;});
+  return out;
+}
+function BarraH({v,max,cor}){return(<div style={{flex:1,height:9,borderRadius:5,background:'rgba(148,163,184,.15)',overflow:'hidden'}}><div style={{height:'100%',width:`${max>0?Math.min(100,v/max*100):0}%`,background:cor||'#60a5fa'}}/></div>);}
+const cardSt={padding:'10px 12px',borderRadius:10,background:'rgba(255,255,255,.03)',border:'1px solid rgba(148,163,184,.15)',marginBottom:6};
+const tituloSt={fontSize:13,color:'var(--text4)',fontFamily:DADOS_MONO,letterSpacing:'1px',margin:'14px 0 6px',fontWeight:700};
+
+// Faixa de status: de onde vêm os números e há quanto tempo foram lidos
+function DadosStatus(){
+  useTickGuruja();
+  const[carregando,setCarregando]=useState(false);
+  const s=GurujaLink.lerCache(),st=GurujaLink.status(),serie=GurujaLink.lerSerie();
+  const ok=GurujaLink.valido(s);
+  const idade=ok?Date.now()-Date.parse(s.gerado_em):null;
+  const cor=!ok?'#f87171':idade>54*3600000?'#f87171':idade>30*3600000?'#fbbf24':'#34d399';
+  const pad=n=>String(n).padStart(2,'0');const dt=ok?new Date(s.gerado_em):null;
+  const atualizar=()=>{setCarregando(true);GurujaLink.buscar().finally(()=>setCarregando(false));};
   return(
-    <div>
-      <div style={{padding:'12px 14px',borderRadius:12,background:'rgba(96,165,250,.07)',border:'1px solid rgba(96,165,250,.3)',marginBottom:12}}>
-        <div style={{fontSize:13,color:'#60a5fa',fontFamily:mono,fontWeight:800,letterSpacing:'1px',marginBottom:5}}>📡 GURUJA · LIDO PELO CONECTOR EM {S.em.toUpperCase()}</div>
-        <div style={{fontSize:15,color:'var(--text)',fontWeight:800}}>{S.planejamento}</div>
-        <div style={{fontSize:14,color:'var(--text3)',lineHeight:1.6,marginTop:4}}>Meta {S.metaAtual.n}: <b>{S.metaAtual.feitas}/{S.metaAtual.total}</b> atividades. O planejamento é novo: ainda não há questões, acertos nem tempo registrados nele, e o Guruja não tem edital vinculado (sem pesos oficiais).</div>
+    <div style={{padding:'10px 12px',borderRadius:11,background:`${cor}0d`,border:`1px solid ${cor}45`,marginBottom:12}}>
+      <div style={{display:'flex',flexWrap:'wrap',gap:'6px 12px',alignItems:'center',justifyContent:'space-between'}}>
+        <div style={{fontSize:13,color:cor,fontFamily:DADOS_MONO,fontWeight:800,letterSpacing:'.5px'}}>📡 {ok?`GURUJA · LIDO ${pad(dt.getDate())}/${pad(dt.getMonth()+1)} ÀS ${pad(dt.getHours())}H${pad(dt.getMinutes())} (HÁ ${fmtIdade(idade).toUpperCase()})`:'GURUJA · SEM LEITURA AINDA'}</div>
+        <button onClick={atualizar} disabled={carregando} style={{padding:'5px 11px',borderRadius:8,border:'1px solid rgba(96,165,250,.4)',background:'rgba(96,165,250,.1)',color:'#60a5fa',fontSize:13,fontWeight:700,cursor:'pointer'}}>{carregando?'⏳ lendo…':'🔄 Atualizar agora'}</button>
       </div>
-      <div style={{fontSize:13,color:'var(--text4)',fontFamily:mono,fontWeight:700,letterSpacing:'1px',marginBottom:6}}>JORNADA NO GURUJA — PROGRESSO DE GRADE (não é acerto)</div>
-      {S.jornada.map(([nome,nivel,feitas,total])=>(
-        <div key={nome} style={{padding:'9px 12px',borderRadius:10,marginBottom:6,border:'1px solid rgba(148,163,184,.25)',background:'rgba(148,163,184,.04)'}}>
-          <div style={{display:'flex',justifyContent:'space-between',gap:8,fontSize:14,color:'var(--text)'}}><b>{nome}</b><span style={{color:nivel==='Expert'?'#34d399':'#fbbf24',fontWeight:800,whiteSpace:'nowrap'}}>{nivel}</span></div>
-          <div style={{height:6,borderRadius:3,background:'rgba(148,163,184,.2)',marginTop:6}}><div style={{height:6,borderRadius:3,width:`${Math.min(100,feitas/total*100)}%`,background:'#60a5fa'}}/></div>
-          <div style={{fontSize:13,color:'var(--text4)',marginTop:3}}>{feitas} de {total} atividades percorridas</div>
-        </div>
-      ))}
-      <div style={{fontSize:13,color:'var(--text4)',lineHeight:1.5,marginTop:8}}>O nível "Expert" do Guruja mede progresso de grade herdado dos planejamentos anteriores, não o seu acerto atual. Os níveis por matéria do app usam o histórico real de Constitucional, Administrativo, Civil, Penal e Português (planejamento do SEFAZ-SC) e estimativa minha nas matérias sem questões.</div>
+      <div style={{fontSize:13,color:'var(--text4)',lineHeight:1.5,marginTop:5}}>Atualiza sozinho: o robô lê o Guruja de madrugada e guarda o histórico dia a dia; o app confere se há leitura nova ao abrir, ao voltar para a aba e a cada 10 minutos enquanto fica aberto. {serie&&serie.dias?`Histórico diário desde ${fmtDK(Object.keys(serie.dias)[0]||DADOS_INI)}.`:'Histórico diário ainda não carregado.'}</div>
+      {st&&!st.ok&&st.erro&&<div style={{fontSize:13,color:'#fbbf24',marginTop:4}}>Última tentativa falhou ({st.erro}); mostrando a leitura anterior.</div>}
     </div>
   );
 }
-function PainelGuruja(){
-  if(!GURUJA_SYNC.total.q)return <PainelGurujaNovo/>;
-  const S=GURUJA_SYNC;const mono="'DM Mono',monospace";
-  const fm=(x,d=1)=>x==null?'—':x.toFixed(d).replace('.',',');
-  const cor=p=>p==null?'#aab6c8':p>=88?'#34d399':p>=83?'#a3e635':p>=78?'#fbbf24':'#f87171';
-  const hm=m=>m>=60?`${Math.floor(m/60)}h${m%60?String(m%60).padStart(2,'0'):''}`:`${m}min`;
-  const hist=lsGet('historico_diario',[]);
-  const novas=hist.filter(r=>(r.dt||0)>=GURUJA_REF_MS&&r.origem!=='guruja_simulado').reduce((s,r)=>s+(parseInt(r.questoes)||0),0);
-  const semDado=S.disc.filter(d=>d[2]===0);
-  const pesoSem=semDado.reduce((s,d)=>s+d[1],0);
-  const minQ=S.ritmo.minMeta/S.ritmo.qMeta,minQT=S.ritmo.minMetaTurma/S.ritmo.qMetaTurma;
-  const piorando=S.disc.filter(d=>d[8]==='piorando');
-  const totPct=S.total.a/S.total.q*100;
+
+// Aviso de matéria parada (7 dias) e melhor faixa de horário
+function DadosNegligencia({D}){
+  const hoje=getDK();
+  const lista=EDITAL_MATS.map(m=>{let ult=null;Object.keys(D).forEach(dk=>{const x=D[dk][m];if(x&&(x.min>0||x.q>0)&&(!ult||dk>ult))ult=dk;});const dias=ult?diasEntre(ult,hoje):diasEntre(DADOS_INI,hoje);return{m,ult,dias};}).filter(x=>x.dias>=7).sort((a,b)=>b.dias-a.dias);
+  const faixas={mad:{q:0,a:0,l:'🌙 Madrugada',h:'0–5h'},man:{q:0,a:0,l:'🌅 Manhã',h:'5–12h'},tar:{q:0,a:0,l:'☀️ Tarde',h:'12–18h'},noi:{q:0,a:0,l:'🌆 Noite',h:'18–24h'}};
+  (lsGet('historico_diario',[])||[]).forEach(r=>{if(!r||!r.dt||/guruja/i.test(String(r.id||''))||/guruja/i.test(String(r.origem||'')))return;if(dkDoRegistro(r)<DADOS_INI)return;const h=new Date(r.dt).getHours();const f=faixas[h<5?'mad':h<12?'man':h<18?'tar':'noi'];f.q+=parseInt(r.questoes)||0;f.a+=parseInt(r.acertei)||0;});
+  const tot=Object.values(faixas).reduce((s,f)=>s+f.q,0);
+  const pico=tot>=40?Object.values(faixas).filter(f=>f.q>=15).sort((a,b)=>b.a/b.q-a.a/a.q)[0]:null;
+  return(
+    <div style={{marginBottom:14}}>
+      <div style={{padding:'10px 13px',borderRadius:11,background:lista.length?'rgba(248,113,113,.06)':'rgba(52,211,153,.06)',border:`1px solid ${lista.length?'rgba(248,113,113,.2)':'rgba(52,211,153,.2)'}`,marginBottom:pico?8:0}}>
+        <div style={{fontSize:13,color:lista.length?'#f87171':'#34d399',fontFamily:DADOS_MONO,fontWeight:800,marginBottom:lista.length?6:0}}>{lista.length?'⚠️ MATÉRIA DO EDITAL PARADA HÁ 7 DIAS OU MAIS':'✅ NENHUMA MATÉRIA PARADA HÁ MAIS DE 7 DIAS'}</div>
+        {lista.length>0&&<div style={{display:'flex',flexWrap:'wrap',gap:5}}>{lista.map(x=><span key={x.m} style={{fontSize:13,padding:'2px 8px',borderRadius:5,background:'rgba(248,113,113,.12)',color:'#f87171',fontFamily:DADOS_MONO}}>{x.m.replace('Dir. ','').replace(' (Comercial)','').replace('Legislação Tributária Estadual','Leg. Trib. Est.').replace('Tecnologia da Informação','TI')} · {x.ult?`${x.dias}d`:`${x.dias}d sem nada`}</span>)}</div>}
+      </div>
+      {pico&&<div style={{padding:'9px 13px',borderRadius:11,background:'rgba(96,165,250,.06)',border:'1px solid rgba(96,165,250,.18)'}}><div style={{fontSize:13,color:'#60a5fa',fontFamily:DADOS_MONO,fontWeight:800,marginBottom:3}}>⚡ SUA MELHOR FAIXA DE HORÁRIO (QUESTÕES REGISTRADAS NO APP)</div><div style={{fontSize:15,color:'#60a5fa',fontWeight:700}}>{pico.l} · {pico.h} · <span style={{color:'#34d399'}}>{fm1(pico.a/pico.q*100,0)}% de acerto</span></div></div>}
+    </div>
+  );
+}
+
+function DadosGuruja(){
+  useTickGuruja();
+  const s=GurujaLink.lerCache();
+  if(!GurujaLink.valido(s))return(<div style={{...cardSt,fontSize:14,color:'var(--text3)',lineHeight:1.6}}>Ainda não há leitura do Guruja neste aparelho. Toque em “Atualizar agora”; se continuar vazio, confira a conexão: o app lê o arquivo <b>guruja.json</b> que o robô grava todo dia.</div>);
+  const G=gurujaPorMat(s),ma=s.meta_atual||{},r=s.ritmo||{},tempo=s.tempo||{};
+  const cur=(s.metas||[]).find(m=>m.ordem===ma.ordem)||{};
+  const totQ=Object.values(G).reduce((x,v)=>x+v.q,0),totA=Object.values(G).reduce((x,v)=>x+v.a,0);
+  const totMin=tempo.total_min||0;
+  const tipos=Object.entries(tempo.por_tipo||{}).concat([['Reforços',tempo.reforcos_min||0]]).filter(([,v])=>v!=null);
+  const maxT=Math.max(1,...tipos.map(t=>t[1]));
+  const ref=Array.isArray(cur.reforcos)?cur.reforcos:[];
+  const refPend=ref.filter(x=>!x.concluido&&!x.ignorado);
+  const semQ=EDITAL_MATS.filter(m=>!(G[m]&&G[m].q>0));
+  const qEst=semQ.reduce((x,m)=>x+((DECISAO_PADRAO[m]&&DECISAO_PADRAO[m].q)||0),0);
   const alertas=[];
-  if(semDado.length)alertas.push(['🚨',`${semDado.map(d=>d[0]).join(', ')}: 0 questões e 0 min em ${S.metasFechadas} metas`,`Juntas valem ${fm(pesoSem)}% da prova (bloco geral, peso 1). Os níveis "Expert/Ninja" da Jornada do Guruja medem o avanço da grade, não o seu acerto. Os 26% / 30% / 82% que o app usa nessas três são estimativa minha até você fazer questões.`]);
-  alertas.push(['⏱',`Ritmo de questão: ${fm(minQ)} min/questão contra ${fm(minQT)} na mediana por meta`,`Por meta você estuda mais (${S.ritmo.minMeta} contra ${S.ritmo.minMetaTurma} min) e resolve menos (${S.ritmo.qMeta} contra ${S.ritmo.qMetaTurma} questões). Parte é leitura do comentário, mas vale cronometrar no simulado de sábado 14/11.`]);
-  alertas.push(['📖',`Revisão: 0 min registrados · Teoria: ${hm(S.tempo[1][1])} de ${hm(S.total.min)}`,`${fm(S.tempo[0][1]/S.total.min*100,0)}% do seu tempo no Guruja é questão. O que corrige erro é o 3C + Anki; sem isso a questão só mede.`]);
-  piorando.forEach(d=>alertas.push(['📉',`${d[0]}: tendência piorando e ${fm(d[4]-d[5])} p.p. contra a média`,'Tem prioridade Indispensável na Meta 3 (Repartição da Receita) e reforço do Imposto Seletivo na fila.']));
-  alertas.push(['🔁',`Reforços do Guruja: ${S.reforcos.feitos} de ${S.reforcos.total} feitos`,'Um por dia no plano, na ordem do Guruja (aba Revisão › Reforços).']);
-  const rows=[...S.disc].sort((a,b)=>b[1]-a[1]||(a[4]==null?-1:b[4]==null?1:a[4]-b[4]));
-  const maxT=Math.max(...S.tempo.map(t=>t[1]));
+  if(semQ.length)alertas.push(['🚨',`${semQ.length} de ${EDITAL_MATS.length} matérias do edital sem nenhuma questão no Guruja`,`${semQ.join(', ')}. Pelo peso provisório da prova, valem cerca de ${fm1(qEst,0)} das ${PROVA_TOTAL} questões. Onde não há histórico antigo, o nível delas no app é só estimativa.`]);
+  if(ma.dias_atraso>0)alertas.push(['⏰',`Meta ${ma.ordem} com ${ma.dias_atraso} dia(s) de atraso`,'O atraso conta a partir da data planejada no Guruja. Termine a teoria da meta antes de abrir a próxima.']);
+  const pq=(tempo.por_tipo||{})['Questões']||0;
+  if(totMin>0)alertas.push(['📝',`Questões são ${fm1(pq/totMin*100,0)}% do seu tempo no Guruja`,'Só questão mede. O que corrige o erro é o método 3C + Anki; confira se o tempo de revisão não está zerado abaixo.']);
+  if(((tempo.por_tipo||{})['Revisão']||0)===0&&totMin>0)alertas.push(['📖','Revisão: 0 min registrados no Guruja','Se você revisa no Anki e no caderno do TEC, isso não aparece aqui: o Guruja só conta o que é feito dentro dele.']);
+  (s.desempenho||[]).filter(d=>d.tendencia==='piorando').forEach(d=>alertas.push(['📉',`${matDaSigla(d.sigla,d.disciplina)}: tendência piorando${d.media!=null&&d.pct!=null?` · ${fm1(d.pct-d.media)} p.p. contra a média`:''}`,'Trate antes de avançar: entra como reforço no próximo caderno de erros.']));
+  if(refPend.length)alertas.push(['🔁',`${refPend.length} reforço(s) pendente(s) do Guruja na meta ${ma.ordem}`,'Fazem parte da aba Revisão › Reforços, um por dia, na ordem do Guruja.']);
+  const rows=EDITAL_MATS.map(m=>({m,g:G[m]||null})).sort((a,b)=>{const pa=a.g&&a.g.pct!=null?a.g.pct:999,pb=b.g&&b.g.pct!=null?b.g.pct:999;return pa-pb;});
+  const fracos=Array.isArray(s.fracos)?s.fracos.filter(f=>f&&f.titulo):[];
+  const concl=(cur.atividades||[]).filter(a=>a.concluida&&(a.q>0||a.min>0));
   return(
     <div>
-      <div style={{padding:'12px 14px',borderRadius:12,background:'rgba(96,165,250,.07)',border:'1px solid rgba(96,165,250,.3)',marginBottom:12}}>
-        <div style={{fontSize:13,color:'#60a5fa',fontFamily:mono,fontWeight:800,letterSpacing:'1px',marginBottom:5}}>📡 GURUJA · LIDO PELO CONECTOR EM {S.em.toUpperCase()}</div>
-        <div style={{display:'flex',gap:14,flexWrap:'wrap',fontSize:14,color:'var(--text3)'}}>
-          <span>📝 {S.total.q} questões</span><span>✅ {S.total.a} acertos</span><span style={{color:cor(totPct),fontWeight:800}}>{fm(totPct)}%</span><span>⏱ {hm(S.total.min)}</span>
+      <div style={{padding:'12px 14px',borderRadius:12,background:'rgba(96,165,250,.07)',border:'1px solid rgba(96,165,250,.3)',marginBottom:10}}>
+        <div style={{fontSize:15,color:'var(--text)',fontWeight:800}}>Meta {ma.ordem}: {ma.atividades_concluidas}/{ma.atividades_totais} atividades</div>
+        <div style={{display:'flex',gap:'4px 14px',flexWrap:'wrap',fontSize:14,color:'var(--text3)',marginTop:4}}>
+          <span>📝 {totQ} questões</span><span>✅ {totA} acertos</span><span style={{color:corPct(totQ?totA/totQ*100:null),fontWeight:800}}>{totQ?fm1(totA/totQ*100)+'%':'sem % ainda'}</span><span>⏱ {fmtMinG(totMin)}</span>
         </div>
-        <div style={{fontSize:13,color:'var(--text4)',marginTop:6,lineHeight:1.5}}>Meta {S.metaAtual.n}: {S.metaAtual.feitas}/{S.metaAtual.total} atividades · {S.metaAtual.a}/{S.metaAtual.q} ({fm(S.metaAtual.a/S.metaAtual.q*100)}%) · {hm(S.metaAtual.min)}. Ritmo: {S.ritmo.status} ({S.ritmo.diasMeu} dias por meta, igual à mediana) e progresso no {S.ritmo.decilProgresso}º decil. {novas>0?`Você registrou ${novas} questões no app depois desta leitura; elas somam por cima.`:'Nada registrado no app depois desta leitura.'}</div>
-        <div style={{fontSize:13,color:'var(--text4)',marginTop:4,lineHeight:1.5}}>O app é um arquivo estático e não lê o Guruja sozinho: peça "atualiza" e eu releio, corrijo a base e marco o que você já fez lá.</div>
+        {(r.meu_ritmo||r.meus_dias_por_meta!=null)&&<div style={{fontSize:13,color:'var(--text4)',marginTop:5}}>Ritmo: {({no_ritmo:'no ritmo',adiantado:'adiantado',atrasado:'atrasado',muito_atrasado:'muito atrasado'})[r.meu_ritmo]||String(r.meu_ritmo||'—').replace('_',' ')}{r.meus_dias_por_meta!=null?` · ${r.meus_dias_por_meta} dia(s) por meta (mediana ${r.mediana_dias_por_meta??'—'})`:''}</div>}
       </div>
-
-      <div style={{fontSize:13,color:'var(--text4)',fontFamily:mono,letterSpacing:'1px',marginBottom:6}}>PONTOS DE ATENÇÃO</div>
-      {alertas.map((a,i)=>(
-        <div key={i} style={{padding:'10px 12px',borderRadius:10,background:'rgba(248,113,113,.05)',border:'1px solid rgba(248,113,113,.2)',marginBottom:7}}>
-          <div style={{fontSize:14,fontWeight:800,color:'var(--text)'}}>{a[0]} {a[1]}</div>
-          <div style={{fontSize:13,color:'var(--text3)',lineHeight:1.55,marginTop:3}}>{a[2]}</div>
-        </div>
-      ))}
-
-      <div style={{fontSize:13,color:'var(--text4)',fontFamily:mono,letterSpacing:'1px',margin:'14px 0 6px'}}>POR DISCIPLINA · PESO NA PROVA · SEU ACERTO × MÉDIA GERAL</div>
-      {rows.map(d=>{
-        const dif=d[4]==null?null:d[4]-d[5];
-        return(
-          <div key={d[0]} style={{padding:'9px 12px',borderRadius:10,background:'rgba(255,255,255,.03)',border:'1px solid rgba(148,163,184,.15)',marginBottom:6}}>
-            <div style={{display:'flex',alignItems:'center',gap:8}}>
-              <div style={{flex:1,fontSize:14,fontWeight:800,color:'var(--text)'}}>{d[0]}</div>
-              <div style={{fontSize:13,fontFamily:mono,color:'var(--text4)'}}>peso {fm(d[1])}%</div>
-              <div style={{fontSize:16,fontWeight:900,fontFamily:mono,color:cor(d[4])}}>{d[4]==null?'sem dado':fm(d[4])+'%'}</div>
-            </div>
-            {d[4]!=null&&<div style={{fontSize:13,color:'var(--text3)',marginTop:3,lineHeight:1.5}}>
-              {d[3]}/{d[2]} questões · média geral {fm(d[5])}% (<span style={{color:dif>=0?'#34d399':'#f87171',fontWeight:700}}>{dif>=0?'+':''}{fm(dif)} p.p.</span>) · mediana dos outros {fm(d[6])}% · {d[7]}º decil{d[8]?` · ${d[8]}`:''} · {hm(d[9])} estudados
-            </div>}
-            {d[4]==null&&<div style={{fontSize:13,color:'#f87171',marginTop:3}}>0 questões feitas · nível no app: estimativa</div>}
+      {alertas.length>0&&<><div style={tituloSt}>PONTOS DE ATENÇÃO</div>{alertas.map((a,i)=>(<div key={i} style={{...cardSt,background:'rgba(248,113,113,.05)',border:'1px solid rgba(248,113,113,.2)'}}><div style={{fontSize:14,fontWeight:800,color:'var(--text)'}}>{a[0]} {a[1]}</div><div style={{fontSize:13,color:'var(--text3)',lineHeight:1.55,marginTop:3}}>{a[2]}</div></div>))}</>}
+      <div style={tituloSt}>AS 12 MATÉRIAS DO EDITAL · SEU ACERTO × MÉDIA GERAL (DO MENOR PARA O MAIOR)</div>
+      {rows.map(({m,g})=>{const dif=g&&g.pct!=null&&g.media!=null?g.pct-g.media:null;const nv=nivelRealMat(m);return(
+        <div key={m} style={cardSt}>
+          <div style={{display:'flex',alignItems:'center',gap:8}}>
+            <div style={{flex:1,fontSize:14,fontWeight:800,color:'var(--text)'}}>{(MAT_INFO[m]&&MAT_INFO[m].ic)||'📚'} {m}</div>
+            <div style={{fontSize:16,fontWeight:900,fontFamily:DADOS_MONO,color:corPct(g&&g.pct)}}>{g&&g.pct!=null?fm1(g.pct)+'%':'sem questão'}</div>
           </div>
-        );
-      })}
-
-      <div style={{fontSize:13,color:'var(--text4)',fontFamily:mono,letterSpacing:'1px',margin:'14px 0 6px'}}>PONTOS FRACOS (ABAIXO DA MÉDIA GERAL) · CADERNO NO TEC</div>
-      {S.fracos.map((f,i)=>(
-        <a key={i} href={f[6]} target="_blank" rel="noopener noreferrer" style={{display:'flex',alignItems:'center',gap:8,padding:'8px 12px',borderRadius:10,background:'rgba(255,255,255,.03)',border:'1px solid rgba(148,163,184,.15)',marginBottom:6,textDecoration:'none'}}>
-          <div style={{flex:1,minWidth:0}}>
-            <div style={{fontSize:14,fontWeight:700,color:'var(--text)'}}>{f[0]}</div>
-            <div style={{fontSize:13,color:'var(--text4)'}}>{f[1]} · {f[3]}/{f[2]} · média geral {fm(f[5])}%</div>
-          </div>
-          <div style={{fontSize:15,fontWeight:900,fontFamily:mono,color:cor(f[4])}}>{fm(f[4])}%</div>
-        </a>
-      ))}
-
-      <div style={{fontSize:13,color:'var(--text4)',fontFamily:mono,letterSpacing:'1px',margin:'14px 0 6px'}}>ONDE FOI O SEU TEMPO</div>
-      {S.tempo.map(t=>(
-        <div key={t[0]} style={{display:'flex',alignItems:'center',gap:8,marginBottom:5}}>
-          <div style={{width:70,fontSize:13,color:'var(--text3)'}}>{t[0]}</div>
-          <div style={{flex:1,height:9,borderRadius:5,background:'rgba(148,163,184,.15)',overflow:'hidden'}}><div style={{height:'100%',width:`${t[1]/maxT*100}%`,background:t[1]===0?'#f87171':'#60a5fa'}}/></div>
-          <div style={{width:56,textAlign:'right',fontSize:13,fontFamily:mono,color:t[1]===0?'#f87171':'var(--text3)'}}>{hm(t[1])}</div>
-        </div>
-      ))}
-
-      <div style={{fontSize:13,color:'var(--text4)',fontFamily:mono,letterSpacing:'1px',margin:'14px 0 6px'}}>META {S.metaAtual.n} · CONCLUÍDAS NO GURUJA</div>
-      {S.feitoMeta4.map((f,i)=>(
-        <div key={i} style={{display:'flex',gap:8,fontSize:14,color:'var(--text3)',padding:'4px 2px'}}>
-          <span style={{flex:1}}>✅ {f[0]}</span><span style={{fontFamily:mono}}>{f[3]}/{f[2]} · {fm(f[3]/f[2]*100,0)}% · {hm(f[4])}</span>
-        </div>
-      ))}
+          {g&&g.q>0?<div style={{fontSize:13,color:'var(--text3)',marginTop:3,lineHeight:1.5}}>{g.a}/{g.q} questões{g.media!=null?<> · média geral {fm1(g.media)}% (<span style={{color:dif>=0?'#34d399':'#f87171',fontWeight:700}}>{dif>=0?'+':''}{fm1(dif)} p.p.</span>)</>:''}{g.decil!=null?` · ${g.decil}º decil`:''}{g.tendencia?` · ${({estavel:'estável',melhorando:'melhorando',piorando:'piorando'})[g.tendencia]||g.tendencia}`:''} · {fmtMinG(g.min)} estudados</div>
+          :<div style={{fontSize:13,color:'var(--text4)',marginTop:3}}>0 questões no Guruja{g&&g.min?` · ${fmtMinG(g.min)} estudados`:''} · nível no app: {nv.origem==='estimado'?'~':''}{fm1(nv.pct,0)}% ({nv.origem})</div>}
+        </div>);})}
+      {fracos.length>0&&<><div style={tituloSt}>PONTOS FRACOS (ABAIXO DA MÉDIA GERAL) · CADERNO NO TEC</div>{fracos.slice(0,10).map((f,i)=>(<a key={i} href={f.link||undefined} target="_blank" rel="noopener noreferrer" style={{display:'flex',alignItems:'center',gap:8,...cardSt,textDecoration:'none'}}><div style={{flex:1,minWidth:0}}><div style={{fontSize:14,fontWeight:700,color:'var(--text)'}}>{f.titulo}</div><div style={{fontSize:13,color:'var(--text4)'}}>{matDaSigla(f.sigla,f.disciplina)} · {f.a}/{f.q}{f.media!=null?` · média geral ${fm1(f.media)}%`:''}</div></div><div style={{fontSize:15,fontWeight:900,fontFamily:DADOS_MONO,color:corPct(f.pct)}}>{fm1(f.pct)}%</div></a>))}</>}
+      {fracos.length===0&&<div style={{fontSize:13,color:'var(--text4)',margin:'12px 2px',lineHeight:1.5}}>Pontos fracos: o Guruja ainda não apontou assuntos abaixo da média neste planejamento (precisa de mais questões por assunto).</div>}
+      <div style={tituloSt}>ONDE FOI O SEU TEMPO NO GURUJA</div>
+      {tipos.map(([k,v])=>(<div key={k} style={{display:'flex',alignItems:'center',gap:8,marginBottom:5}}><div style={{width:78,fontSize:13,color:'var(--text3)'}}>{k}</div><BarraH v={v} max={maxT} cor={v===0?'#f87171':'#60a5fa'}/><div style={{width:56,textAlign:'right',fontSize:13,fontFamily:DADOS_MONO,color:v===0?'#f87171':'var(--text3)'}}>{fmtMinG(v)}</div></div>))}
+      {concl.length>0&&<><div style={tituloSt}>META {ma.ordem} · CONCLUÍDAS COM QUESTÃO OU TEMPO</div>{concl.map((a,i)=>(<div key={i} style={{display:'flex',gap:8,fontSize:14,color:'var(--text3)',padding:'4px 2px'}}><span style={{flex:1}}>✅ {String(a.titulo||'').replace(/\s+/g,' ').slice(0,60)}</span><span style={{fontFamily:DADOS_MONO,whiteSpace:'nowrap'}}>{a.q>0?`${a.a||0}/${a.q} · `:''}{fmtMinG(a.min||0)}</span></div>))}</>}
     </div>
   );
 }
+
+function DadosSemana({D}){
+  const[off,setOff]=useState(0);
+  const dks=semDks(off),ant=semDks(off-1),hoje=getDK();
+  const tot=somaDks(D,dks),totAnt=somaDks(D,ant);
+  const nomes=['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
+  const porDia=dks.map(dk=>somaDks(D,[dk]));
+  const maxMin=Math.max(60,...porDia.map(x=>x.min));
+  const diasEstudo=porDia.filter(x=>x.min>0||x.q>0).length;
+  const mats=EDITAL_MATS.concat(['Outras']).map(m=>({m,...somaDks(D,dks,m)}));
+  const com=mats.filter(x=>x.min>0||x.q>0).sort((a,b)=>b.min-a.min);
+  const sem=mats.filter(x=>x.m!=='Outras'&&x.min===0&&x.q===0);
+  const cmp=comQ=>comQ.filter(x=>x.q>=5).sort((a,b)=>b.pct-a.pct);
+  const rk=cmp(com),melhor=rk[0],pior=rk[rk.length-1];
+  let streak=0;{let d=hoje;if(!(D[d]&&Object.values(D[d]).some(x=>x.min>0||x.q>0)))d=diaDK(-1);for(let i=0;i<60;i++){const dd=D[d];if(dd&&Object.values(dd).some(x=>x.min>0||x.q>0)){streak++;const x=new Date(d+'T12:00:00');x.setDate(x.getDate()-1);d=dkDe(x);}else break;}}
+  const pctMeta=tot.min/META_SEMANA_MIN*100;
+  // O Guruja só passou a informar questões numa leitura posterior ao início: elas aparecem juntas no primeiro dia com questão.
+  const dksOrd=Object.keys(D).sort();const dq=dksOrd.find(dk=>Object.values(D[dk]).some(x=>x.qG>0));
+  const avisoQ=dq&&dksOrd.some(dk=>dk<dq&&Object.values(D[dk]).some(x=>x.minG>0))&&dks.includes(dq)?dq:null;
+  const sub=(a,b)=>a-b;
+  const btn={padding:'6px 14px',borderRadius:8,border:'1px solid rgba(99,102,241,.3)',background:'rgba(99,102,241,.1)',color:'#a5b4fc',fontSize:18,cursor:'pointer'};
+  return(
+    <div>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'10px 14px',borderRadius:12,background:'rgba(99,102,241,.06)',border:'1px solid rgba(99,102,241,.2)',marginBottom:12}}>
+        <button onClick={()=>setOff(v=>v-1)} style={btn}>←</button>
+        <div style={{textAlign:'center'}}><div style={{fontSize:15,fontWeight:900,color:'var(--text)'}}>Semana de {fmtDK(dks[0])} a {fmtDK(dks[6])}</div><div style={{fontSize:13,color:'var(--text4)',fontFamily:DADOS_MONO}}>{off===0?'SEMANA ATUAL':off===-1?'SEMANA PASSADA':`HÁ ${Math.abs(off)} SEMANAS`}</div></div>
+        <button onClick={()=>setOff(v=>Math.min(v+1,0))} disabled={off===0} style={{...btn,opacity:off===0?.4:1,cursor:off===0?'default':'pointer'}}>→</button>
+      </div>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(130px,1fr))',gap:8,marginBottom:12}}>
+        {[['⏱ TEMPO',fmtMinG(tot.min),`${fm1(pctMeta,0)}% da meta de ${fmtMinG(META_SEMANA_MIN)}`,pctMeta>=90?'#34d399':pctMeta>=60?'#fbbf24':'#f87171'],
+          ['📝 QUESTÕES',String(tot.q),off===0&&totAnt.q?`semana passada: ${totAnt.q}`:'',null],
+          ['🎯 ACERTO',tot.pct==null?'—':fm1(tot.pct,0)+'%',totAnt.pct!=null&&tot.pct!=null?`${tot.pct-totAnt.pct>=0?'+':''}${fm1(tot.pct-totAnt.pct,0)} p.p. vs. anterior`:'',corPct(tot.pct)],
+          ['📅 DIAS',`${diasEstudo}/7`,streak>0?`sequência atual: ${streak} dia(s)`:'sem sequência',null]].map(([t,v,sb,c])=>(
+          <div key={t} style={{...cardSt,marginBottom:0}}><div style={{fontSize:12,color:'var(--text4)',fontFamily:DADOS_MONO,fontWeight:800}}>{t}</div><div style={{fontSize:22,fontWeight:900,color:c||'var(--text)'}}>{v}</div><div style={{fontSize:12,color:'var(--text4)',lineHeight:1.4}}>{sb}</div></div>))}
+      </div>
+      <div style={tituloSt}>DIA A DIA</div>
+      {dks.map((dk,i)=>{const x=porDia[i],fut=dk>hoje;return(
+        <div key={dk} style={{display:'flex',alignItems:'center',gap:8,marginBottom:5,opacity:fut?.45:1}}>
+          <div style={{width:54,fontSize:13,color:dk===hoje?'#60a5fa':'var(--text3)',fontWeight:dk===hoje?800:500}}>{nomes[i]} {dk.slice(8)}</div>
+          <BarraH v={x.min} max={maxMin} cor={x.min>=270?'#34d399':x.min>0?'#60a5fa':'#475569'}/>
+          <div style={{width:150,textAlign:'right',fontSize:13,fontFamily:DADOS_MONO,color:'var(--text3)'}}>{fut?'—':`${fmtMinG(x.min)}${x.q?` · ${x.q}q ${fm1(x.pct,0)}%`:''}`}</div>
+        </div>);})}
+      <div style={tituloSt}>POR MATÉRIA NA SEMANA</div>
+      {com.length===0&&<div style={{fontSize:14,color:'var(--text4)'}}>Nada registrado nesta semana ainda.</div>}
+      {com.map(x=>(<div key={x.m} style={{display:'flex',alignItems:'center',gap:8,marginBottom:5}}><div style={{width:150,fontSize:13,color:'var(--text)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{x.m==='Outras'?'Revisões e outras':x.m}</div><BarraH v={x.min} max={com[0].min||1}/><div style={{width:130,textAlign:'right',fontSize:13,fontFamily:DADOS_MONO,color:'var(--text3)'}}>{fmtMinG(x.min)}{x.q?` · ${x.a}/${x.q}`:''}</div></div>))}
+      {sem.length>0&&off<=0&&<div style={{...cardSt,marginTop:8,background:'rgba(251,191,36,.05)',border:'1px solid rgba(251,191,36,.25)'}}><div style={{fontSize:13,color:'#fbbf24',fontWeight:800}}>Sem nenhum estudo nesta semana</div><div style={{fontSize:13,color:'var(--text3)',marginTop:2}}>{sem.map(x=>x.m).join(' · ')}</div></div>}
+      {melhor&&pior&&melhor.m!==pior.m&&<div style={{fontSize:13,color:'var(--text3)',marginTop:8,lineHeight:1.6}}>Melhor acerto: <b style={{color:'#34d399'}}>{melhor.m} {fm1(melhor.pct,0)}%</b> · Pior: <b style={{color:'#f87171'}}>{pior.m} {fm1(pior.pct,0)}%</b> (matérias com 5+ questões na semana).</div>}
+      {avisoQ&&<div style={{fontSize:13,color:'#fbbf24',marginTop:8,lineHeight:1.5}}>⚠️ O Guruja só começou a informar questões na leitura de {fmtDK(avisoQ)}: as questões feitas desde 12/11 aparecem somadas em {fmtDK(avisoQ)}, não dia a dia.</div>}
+      <div style={{fontSize:12,color:'var(--text4)',marginTop:10,lineHeight:1.5}}>O dia de hoje só aparece depois da próxima leitura do Guruja. Tempo = o maior entre o que o Guruja contou e o que você marcou no app (é o mesmo estudo). Questões = Guruja + o que você registrou no app; se registrar nos dois a mesma sessão, conta em dobro, então registre no app só o que fez fora do Guruja (caderno de erros do TEC, por exemplo).</div>
+    </div>
+  );
+}
+
+function DadosMateria({D}){
+  useTickGuruja();
+  const[mat,setMat]=useState(EDITAL_MATS[0]);
+  const s=GurujaLink.lerCache(),G=gurujaPorMat(s),g=G[mat]||null,nv=nivelRealMat(mat),hoje=getDK();
+  const dec=DECISAO_PADRAO[mat]||{};
+  const semanas=Array.from({length:6},(_,i)=>{const dks=semDks(-5+i);return{dks,...somaDks(D,dks,mat)};});
+  const maxMin=Math.max(60,...semanas.map(x=>x.min));
+  let ult=null;Object.keys(D).forEach(dk=>{const x=D[dk][mat];if(x&&(x.min>0||x.q>0)&&(!ult||dk>ult))ult=dk;});
+  const dias=ult?diasEntre(ult,hoje):null;
+  const tot=somaDks(D,Object.keys(D),mat);
+  const rotulo={estavel:'estável',melhorando:'melhorando',piorando:'piorando'};
+  return(
+    <div>
+      <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:12}}>
+        {EDITAL_MATS.map(m=>(<button key={m} onClick={()=>setMat(m)} style={{padding:'6px 10px',borderRadius:8,fontSize:13,fontWeight:mat===m?800:600,border:`1px solid ${mat===m?'#60a5fa':'rgba(148,163,184,.25)'}`,background:mat===m?'rgba(96,165,250,.15)':'transparent',color:mat===m?'#60a5fa':'var(--text3)',cursor:'pointer'}}>{(MAT_INFO[m]&&MAT_INFO[m].ic)||''} {m.replace('Dir. ','').replace(' (Comercial)','').replace('Legislação Tributária Estadual','Leg. Trib. Est.').replace('Tecnologia da Informação','TI')}</button>))}
+      </div>
+      <div style={{padding:'12px 14px',borderRadius:12,background:'rgba(96,165,250,.07)',border:'1px solid rgba(96,165,250,.3)',marginBottom:10}}>
+        <div style={{fontSize:16,fontWeight:900,color:'var(--text)'}}>{mat}</div>
+        <div style={{fontSize:13,color:'var(--text4)',marginTop:2}}>{dec.tipo||''}{dec.q?` · ~${dec.q} questões na prova (provisório)`:''}</div>
+        <div style={{display:'flex',gap:'4px 16px',flexWrap:'wrap',fontSize:14,color:'var(--text3)',marginTop:8}}>
+          <span>Nível no plano: <b style={{color:corPct(nv.pct)}}>{nv.origem==='estimado'?'~':''}{fm1(nv.pct,0)}%</b> <span style={{color:'var(--text4)'}}>({nv.origem})</span></span>
+          <span>Último estudo: <b style={{color:dias==null||dias>=7?'#f87171':dias>=4?'#fbbf24':'#34d399'}}>{dias==null?'nenhum desde 12/11':dias===0?'hoje':dias===1?'ontem':`há ${dias} dias`}</b></span>
+        </div>
+      </div>
+      <div style={tituloSt}>NO GURUJA</div>
+      {g&&(g.q>0||g.min>0)?<div style={cardSt}>
+        <div style={{fontSize:14,color:'var(--text)',lineHeight:1.7}}>{g.q>0?<><b style={{color:corPct(g.pct)}}>{fm1(g.pct)}%</b> de acerto · {g.a}/{g.q} questões{g.media!=null?` · média geral ${fm1(g.media)}% (${g.pct-g.media>=0?'+':''}${fm1(g.pct-g.media)} p.p.)`:''}{g.mediana!=null?` · mediana dos outros ${fm1(g.mediana)}%`:''}{g.decil!=null?` · ${g.decil}º decil`:''}{g.tendencia?` · ${rotulo[g.tendencia]||g.tendencia}`:''}<br/></>:'Nenhuma questão no Guruja ainda. '}{fmtMinG(g.min)} estudados no Guruja.</div>
+      </div>:<div style={{...cardSt,fontSize:14,color:'var(--text4)'}}>O Guruja ainda não registrou questões nem tempo nesta matéria no planejamento atual.</div>}
+      <div style={tituloSt}>ÚLTIMAS 6 SEMANAS · TEMPO E ACERTO (GURUJA + APP)</div>
+      {semanas.map((x,i)=>(<div key={i} style={{display:'flex',alignItems:'center',gap:8,marginBottom:5}}><div style={{width:54,fontSize:13,color:i===5?'#60a5fa':'var(--text3)'}}>{fmtDK(x.dks[0])}</div><BarraH v={x.min} max={maxMin}/><div style={{width:130,textAlign:'right',fontSize:13,fontFamily:DADOS_MONO,color:'var(--text3)'}}>{fmtMinG(x.min)}{x.q?` · ${fm1(x.pct,0)}% (${x.q}q)`:''}</div></div>))}
+      <div style={{fontSize:13,color:'var(--text3)',marginTop:8}}>Total desde 12/11 (app + Guruja): {fmtMinG(tot.min)}{tot.q?` · ${tot.a}/${tot.q} questões (${fm1(tot.pct,0)}%)`:''}.</div>
+    </div>
+  );
+}
+
+function DadosCiclos({D}){
+  const at=semDks(0),an=semDks(-1);
+  const rows=EDITAL_MATS.map(m=>({m,a:somaDks(D,at,m),b:somaDks(D,an,m)}));
+  const ta=somaDks(D,at),tb=somaDks(D,an);
+  const seta=(x,y)=>x==null||y==null?'':x-y>=0?'▲':'▼';
+  return(
+    <div>
+      <div style={{...cardSt,background:'rgba(99,102,241,.06)',border:'1px solid rgba(99,102,241,.2)'}}>
+        <div style={{fontSize:15,fontWeight:900,color:'var(--text)'}}>Esta semana ({fmtDK(at[0])}–{fmtDK(at[6])}) × semana passada ({fmtDK(an[0])}–{fmtDK(an[6])})</div>
+        <div style={{fontSize:13,color:'var(--text3)',marginTop:4}}>Tempo: {fmtMinG(ta.min)} × {fmtMinG(tb.min)} · Questões: {ta.q} × {tb.q} · Acerto: {ta.pct==null?'—':fm1(ta.pct,0)+'%'} × {tb.pct==null?'—':fm1(tb.pct,0)+'%'}</div>
+      </div>
+      <div style={tituloSt}>POR MATÉRIA · TEMPO · QUESTÕES · ACERTO (ESTA × ANTERIOR)</div>
+      {rows.map(({m,a,b})=>{const parado=a.min===0&&a.q===0;return(
+        <div key={m} style={{...cardSt,opacity:parado&&b.min===0&&b.q===0?.55:1}}>
+          <div style={{display:'flex',alignItems:'center',gap:8}}><div style={{flex:1,fontSize:14,fontWeight:800,color:'var(--text)'}}>{m}</div>{parado&&<span style={{fontSize:12,color:'#f87171',fontFamily:DADOS_MONO}}>PARADA</span>}</div>
+          <div style={{fontSize:13,color:'var(--text3)',marginTop:3,lineHeight:1.6}}>⏱ {fmtMinG(a.min)} <span style={{color:'var(--text4)'}}>× {fmtMinG(b.min)}</span> {seta(a.min,b.min)} · 📝 {a.q} <span style={{color:'var(--text4)'}}>× {b.q}</span> · 🎯 {a.pct==null?'—':fm1(a.pct,0)+'%'} <span style={{color:'var(--text4)'}}>× {b.pct==null?'—':fm1(b.pct,0)+'%'}</span> {a.pct!=null&&b.pct!=null&&<span style={{color:a.pct>=b.pct?'#34d399':'#f87171',fontWeight:700}}>{a.pct-b.pct>=0?'+':''}{fm1(a.pct-b.pct,0)} p.p.</span>}</div>
+        </div>);})}
+    </div>
+  );
+}
+
 function TabDados({horas}){
   const[sub,setSub]=useState('guruja');
-  const[semOffset,setSemOffset]=useState(0);
-  const[matIdx,setMatIdx]=useState(0);
-  const[insightTexto,setInsightTexto]=useState({diario:'',materia:'',geral:''});
-  const[insightLoad,setInsightLoad]=useState('');
-
-  const hist=useMemo(()=>lsGet('historico_diario',[]),[]);
-  const feitos=useMemo(()=>lsGet('feitos',[]),[]);
-
-  // ── helpers ──────────────────────────────────────────────────
-  const corAc=p=>p===null?'#aab6c8':p>=85?'#34d399':p>=70?'#fbbf24':p>=60?'#fb923c':'#f87171';
-  const fmtMin=m=>{if(!m)return'0min';const h=Math.floor(m/60);const mn=m%60;return h>0?(mn>0?`${h}h${mn}min`:`${h}h`):`${mn}min`;};
-
-  // ── semana ISO ───────────────────────────────────────────────
-  const getSemana=(offset=0)=>{
-    const d=new Date(); d.setHours(0,0,0,0);
-    const dow=(d.getDay()+6)%7;
-    const seg=new Date(d); seg.setDate(d.getDate()-dow+offset*7);
-    const dom=new Date(seg); dom.setDate(seg.getDate()+6);
-    return{ini:seg,fim:dom,iniMs:seg.getTime(),fimMs:dom.getTime()+86399999};
-  };
-  const sem=useMemo(()=>getSemana(semOffset),[semOffset]);
-  const fmtData=d=>`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;
-
-  // ── dados da semana ──────────────────────────────────────────
-  const histSem=useMemo(()=>hist.filter(r=>{const dt=r.dt||0;return dt>=sem.iniMs&&dt<=sem.fimMs;}),[hist,sem]);
-  const horasSem=useMemo(()=>horas.filter(e=>e.dt>=sem.iniMs&&e.dt<=sem.fimMs),[horas,sem]);
-  const minSem=horasSem.reduce((s,e)=>s+e.min,0);
-  const totalQ=histSem.reduce((s,r)=>s+(parseInt(r.questoes)||0),0);
-  const totalAc=histSem.reduce((s,r)=>s+(parseInt(r.acertei)||0),0);
-  const pctSem=totalQ>0?Math.round(totalAc/totalQ*100):null;
-  const diasSem=new Set(histSem.map(r=>r.dia||r.id?.split('_')[0]||'')).size;
-
-  // streak
-  const streak=useMemo(()=>{
-    const dias=[...new Set(hist.map(r=>r.dia||r.id?.split('_')[0]||'').filter(Boolean))].sort().reverse();
-    let s=0; const hoje=new Date().toISOString().split('T')[0];
-    for(let i=0;i<dias.length;i++){
-      const exp=new Date(hoje); exp.setDate(exp.getDate()-i);
-      if(dias[i]===exp.toISOString().split('T')[0]) s++;
-      else break;
-    }
-    return s;
-  },[hist]);
-
-  // top/pior matéria da semana
-  const porMatSem=useMemo(()=>{
-    const m={};
-    histSem.forEach(r=>{
-      if(!r.materia)return;
-      if(!m[r.materia])m[r.materia]={q:0,ac:0,min:0};
-      m[r.materia].q+=parseInt(r.questoes)||0;
-      m[r.materia].ac+=parseInt(r.acertei)||0;
-    });
-    horasSem.forEach(e=>{if(e.mat&&m[e.mat])m[e.mat].min+=e.min;});
-    return Object.entries(m).map(([mat,v])=>({mat,q:v.q,ac:v.ac,min:v.min,pct:v.q>0?Math.round(v.ac/v.q*100):null}));
-  },[histSem,horasSem]);
-
-  const comDados=porMatSem.filter(x=>x.q>=5);
-  const melhor=comDados.sort((a,b)=>(b.pct||0)-(a.pct||0))[0]||null;
-  const pior=comDados.sort((a,b)=>(a.pct||0)-(b.pct||0))[0]||null;
-  const top3=[...porMatSem].sort((a,b)=>b.min-a.min).slice(0,3);
-
-  // negligenciadas (sem registro há 7 dias)
-  const negligentes=useMemo(()=>{
-    const limite=Date.now()-7*86400000;
-    return Object.keys(GURUJA_SEED).filter(mat=>{
-      const ult=hist.filter(r=>r.materia===mat).sort((a,b)=>(b.dt||0)-(a.dt||0))[0];
-      return!ult||(ult.dt||0)<limite;
-    });
-  },[hist]);
-
-  // horário de pico
-  const picoPorFaixa=useMemo(()=>{
-    const faixas={madrugada:{q:0,ac:0,l:'🌙 Madrugada',h:'0–5h'},manha:{q:0,ac:0,l:'🌅 Manhã',h:'5–12h'},tarde:{q:0,ac:0,l:'☀️ Tarde',h:'12–18h'},noite:{q:0,ac:0,l:'🌆 Noite',h:'18–24h'}};
-    hist.forEach(r=>{
-      if(!r.dt)return;
-      const h=new Date(r.dt).getHours();
-      const f=h<5?'madrugada':h<12?'manha':h<18?'tarde':'noite';
-      faixas[f].q+=parseInt(r.questoes)||0;
-      faixas[f].ac+=parseInt(r.acertei)||0;
-    });
-    const total=Object.values(faixas).reduce((s,f)=>s+f.q,0);
-    if(total<10)return null;
-    const melhorFaixa=Object.values(faixas).filter(f=>f.q>=5).sort((a,b)=>(b.ac/Math.max(b.q,1))-(a.ac/Math.max(a.q,1)))[0];
-    return melhorFaixa?{...melhorFaixa,pct:Math.round(melhorFaixa.ac/melhorFaixa.q*100)}:null;
-  },[hist]);
-
-  // ── matérias ordenadas por prioridade Meirelles para sub-aba Por Matéria ─
-  const matsOrdenadas=useMemo(()=>{
-    const ordem={urgente:0,alta:1,media:2,leve:3,cortar:4};
-    return Object.keys(GURUJA_SEED).sort((a,b)=>(ordem[getPrioridadeMeirelles(a).prioridade]||5)-(ordem[getPrioridadeMeirelles(b).prioridade]||5));
-  },[]);
-  const matAtual=matsOrdenadas[matIdx]||matsOrdenadas[0]||'';
-  const gseedAtual=GURUJA_SEED[matAtual]||{};
-  const meir=getPrioridadeMeirelles(matAtual);
-
-  // dados históricos da matéria atual
-  const histMat=useMemo(()=>hist.filter(r=>r.materia===matAtual),[hist,matAtual]);
-  const horasMat=useMemo(()=>horas.filter(e=>e.mat===matAtual),[horas,matAtual]);
-  const minMatTotal=horasMat.reduce((s,e)=>s+e.min,0);
-  const qMatTotal=histMat.reduce((s,r)=>s+(parseInt(r.questoes)||0),0);
-  const acMatTotal=histMat.reduce((s,r)=>s+(parseInt(r.acertei)||0),0);
-  const pctMat=qMatTotal>0?Math.round(acMatTotal/qMatTotal*100):null;
-
-  // evolução semanal da matéria (6 semanas)
-  const evolMat=useMemo(()=>Array.from({length:6},(_,i)=>{
-    const s=getSemana(-5+i);
-    const ss=histMat.filter(r=>(r.dt||0)>=s.iniMs&&(r.dt||0)<=s.fimMs);
-    const q=ss.reduce((s,r)=>s+(parseInt(r.questoes)||0),0);
-    const ac=ss.reduce((s,r)=>s+(parseInt(r.acertei)||0),0);
-    return{label:`S${i+1}`,pct:q>0?Math.round(ac/q*100):null,q};
-  }),[histMat]);
-
-  // comparativo períodos (Forma 3) — janela rolante de 14 dias, nunca fica desatualizado
-  const cicloAtualData={ini:new Date(Date.now()-14*86400000),label:'Últimos 14 dias'};
-  const ciclsComp=useMemo(()=>{
-    const mats=Object.keys(GURUJA_SEED);
-    return mats.map(mat=>{
-      const ant=hist.filter(r=>r.materia===mat&&new Date(r.dia||r.id?.split('_')[0]||'2000-01-01')<cicloAtualData.ini);
-      const atu=hist.filter(r=>r.materia===mat&&new Date(r.dia||r.id?.split('_')[0]||'2000-01-01')>=cicloAtualData.ini);
-      const calc=arr=>{const q=arr.reduce((s,r)=>s+(parseInt(r.questoes)||0),0);const ac=arr.reduce((s,r)=>s+(parseInt(r.acertei)||0),0);return q>0?Math.round(ac/q*100):null;};
-      const pAnt=calc(ant); const pAtu=calc(atu);
-      const minAtu=horas.filter(e=>e.mat===mat&&new Date(e.dt||0)>=cicloAtualData.ini).reduce((s,e)=>s+e.min,0);
-      return{mat,pAnt,pAtu,delta:pAnt!==null&&pAtu!==null?pAtu-pAnt:null,minAtu};
-    });
-  },[hist,horas]);
-
-  // ── gerar insight IA ─────────────────────────────────────────
-  const gerarInsight=async(tipo)=>{
-    setInsightLoad(tipo);
-    const ctx=tipo==='diario'
-      ?`Semana ${fmtData(sem.ini)}-${fmtData(sem.fim)}: ${fmtMin(minSem)} estudados, ${totalQ} questões, ${pctSem}% acerto, ${diasSem} dias. Top matérias: ${top3.map(t=>`${t.mat} ${t.pct}%`).join(', ')}. Negligenciadas: ${negligentes.slice(0,3).join(', ')||'nenhuma'}.`
-      :tipo==='materia'
-      ?`Matéria: ${matAtual}. Acerto total: ${pctMat}%. Horas: ${fmtMin(minMatTotal)}. Prioridade: ${meir.prioridade}. Jornada Guruja: ${gseedAtual.jornada}%. Evolução: ${evolMat.map(e=>e.pct!==null?e.pct+'%':'—').join('→')}.`
-      :`Comparativo ciclos: ${ciclsComp.filter(c=>c.pAtu!==null).map(c=>`${c.mat}: ant ${c.pAnt}% → atu ${c.pAtu}% (${c.delta!==null?(c.delta>=0?'+':'')+c.delta+'pts':'novo'})`).join('; ')}.`;
-    try{
-      const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-5',max_tokens:200,system:'Você é analista de estudos para concursos. Responda em português, máximo 100 palavras, identifique o padrão mais importante e dê UMA ação concreta. Seja direto.',messages:[{role:'user',content:`Analise: ${ctx} Ciclo: ${feitos.length}/48 blocos feitos.`}]})});
-      const d=await resp.json();
-      const txt=d.content?.[0]?.text||'Sem resposta.';
-      setInsightTexto(prev=>({...prev,[tipo]:txt}));
-    }catch(e){setInsightTexto(prev=>({...prev,[tipo]:'Erro ao gerar insight.'}));}
-    setInsightLoad('');
-  };
-
-  // ── Painel de negligência + pico (Forma 4) ───────────────────
-  const PainelNegligencia=()=>(
-    <div style={{marginBottom:14}}>
-      <div style={{padding:'10px 13px',borderRadius:11,background:'rgba(248,113,113,.06)',border:'1px solid rgba(248,113,113,.18)',marginBottom:8}}>
-        <div style={{fontSize:13,color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:6}}>⚠️ SEM REGISTRO HÁ +7 DIAS</div>
-        {negligentes.length===0
-          ?<div style={{fontSize:13,color:'#34d399'}}>✅ Todas as matérias ativas esta semana</div>
-          :<div style={{display:'flex',flexWrap:'wrap',gap:5}}>
-            {negligentes.slice(0,6).map(m=>{
-              const ult=hist.filter(r=>r.materia===m).sort((a,b)=>(b.dt||0)-(a.dt||0))[0];
-              const dias=ult?Math.floor((Date.now()-(ult.dt||0))/86400000):null;
-              return<span key={m} style={{fontSize:13,padding:'2px 8px',borderRadius:5,background:'rgba(248,113,113,.12)',color:'#f87171',fontFamily:"'DM Mono',monospace"}}>{m.replace('Dir. ','').slice(0,14)}{dias?` · ${dias}d`:''}</span>;
-            })}
-          </div>
-        }
-      </div>
-      {picoPorFaixa&&(
-        <div style={{padding:'9px 13px',borderRadius:11,background:'rgba(96,165,250,.06)',border:'1px solid rgba(96,165,250,.18)'}}>
-          <div style={{fontSize:13,color:'#60a5fa',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:3}}>⚡ SEU HORÁRIO DE PICO</div>
-          <div style={{fontSize:15,color:'#60a5fa',fontWeight:700}}>{picoPorFaixa.l} · {picoPorFaixa.h} · <span style={{color:'#34d399'}}>{picoPorFaixa.pct}% acerto</span></div>
-        </div>
-      )}
-    </div>
-  );
-
-  // ── Botão insight (Forma 5) ───────────────────────────────────
-  const BotaoInsight=({tipo})=>(
-    <div style={{marginTop:16}}>
-      {!insightTexto[tipo]
-        ?<button onClick={()=>gerarInsight(tipo)} disabled={insightLoad===tipo}
-          style={{width:'100%',padding:'12px',borderRadius:11,border:'1px solid rgba(99,102,241,.4)',background:'rgba(99,102,241,.08)',color:'#a5b4fc',fontSize:15,fontWeight:700,cursor:'pointer'}}>
-          {insightLoad===tipo?'⏳ Gerando insight...':'💡 Gerar insight desta análise'}
-        </button>
-        :<div style={{padding:'13px',borderRadius:11,background:'rgba(99,102,241,.1)',border:'1px solid rgba(99,102,241,.3)'}}>
-          <div style={{fontSize:13,color:'#a5b4fc',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:6}}>💡 INSIGHT IA</div>
-          <div style={{fontSize:14,color:'#e8edf5',lineHeight:1.6}}>{insightTexto[tipo]}</div>
-        </div>
-      }
-    </div>
-  );
-
-  // ── SUB-ABA DIÁRIO — Relatório Semanal (Forma 1) ─────────────
-  function SubDiario(){
-    return(
-      <div>
-        {/* Navegação de semanas */}
-        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'10px 14px',borderRadius:12,background:'rgba(99,102,241,.06)',border:'1px solid rgba(99,102,241,.2)',marginBottom:14}}>
-          <button onClick={()=>setSemOffset(v=>v-1)} style={{padding:'6px 14px',borderRadius:8,border:'1px solid rgba(99,102,241,.3)',background:'rgba(99,102,241,.1)',color:'#a5b4fc',fontSize:18,cursor:'pointer'}}>←</button>
-          <div style={{textAlign:'center'}}>
-            <div style={{fontSize:15,fontWeight:900,color:'#e8edf5'}}>Semana de {fmtData(sem.ini)} a {fmtData(sem.fim)}</div>
-            <div style={{fontSize:13,color:'#c2ccd8',fontFamily:"'DM Mono',monospace"}}>{semOffset===0?'SEMANA ATUAL':semOffset===-1?'SEMANA PASSADA':`há ${Math.abs(semOffset)} semanas`}</div>
-          </div>
-          <button onClick={()=>setSemOffset(v=>Math.min(v+1,0))} disabled={semOffset===0} style={{padding:'6px 14px',borderRadius:8,border:'1px solid rgba(99,102,241,.3)',background:semOffset===0?'rgba(148,163,184,.08)':'rgba(99,102,241,.1)',color:semOffset===0?'#aab6c8':'#a5b4fc',fontSize:18,cursor:semOffset===0?'default':'pointer'}}>→</button>
-        </div>
-
-        {/* Cards de métricas */}
-        <div style={{display:'grid',gridTemplateColumns:'repeat(2,1fr)',gap:8,marginBottom:14}}>
-          {[
-            ['⏱',fmtMin(minSem),'Horas estudadas',`${Math.round(minSem/36/60*100)}% da meta 36h`,'#a5b4fc'],
-            ['📅',diasSem,'Dias estudados',`${streak} dia(s) consecutivos`,'#60a5fa'],
-            ['📝',totalQ||'—','Questões','nesta semana','#fbbf24'],
-            ['🎯',pctSem!==null?pctSem+'%':'—','Acerto médio',pctSem!==null?(pctSem>=80?'✅ acima da meta':'⚠️ abaixo de 80%'):'sem dados','#34d399'],
-          ].map(([ic,v,l,sub,c])=>(
-            <div key={l} style={{padding:'14px',borderRadius:12,background:`${c}08`,border:`1px solid ${c}25`}}>
-              <div style={{fontSize:14,marginBottom:4}}>{ic}</div>
-              <div style={{fontSize:23,fontWeight:900,color:c,fontFamily:"'DM Mono',monospace",lineHeight:1}}>{v}</div>
-              <div style={{fontSize:13,color:'var(--text3)',marginTop:4}}>{l}</div>
-              <div style={{fontSize:13,color:'#aab6c6',marginTop:2}}>{sub}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* Barra de progresso da meta */}
-        <div style={{marginBottom:14,padding:'12px',borderRadius:11,background:'rgba(99,102,241,.06)',border:'1px solid rgba(99,102,241,.18)'}}>
-          <div style={{display:'flex',justifyContent:'space-between',marginBottom:6}}>
-            <span style={{fontSize:13,color:'#a5b4fc',fontWeight:700}}>Meta semanal: 36h</span>
-            <span style={{fontSize:13,color:'#a5b4fc',fontFamily:"'DM Mono',monospace",fontWeight:900}}>{Math.min(100,Math.round(minSem/36/60*100))}%</span>
-          </div>
-          <div style={{height:8,borderRadius:4,background:'rgba(255,255,255,.06)',overflow:'hidden'}}>
-            <div style={{width:`${Math.min(100,Math.round(minSem/36/60*100))}%`,height:'100%',background:'#a5b4fc',borderRadius:4,transition:'width .5s'}}/>
-          </div>
-        </div>
-
-        {/* Melhor e pior matéria */}
-        {(melhor||pior)&&(
-          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:14}}>
-            {melhor&&<div style={{padding:'12px',borderRadius:11,background:'rgba(52,211,153,.06)',border:'1px solid rgba(52,211,153,.2)'}}>
-              <div style={{fontSize:13,color:'#34d399',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:4}}>🏆 MELHOR SEMANA</div>
-              <div style={{fontSize:15,fontWeight:800,color:'var(--text)'}}>{melhor.mat.replace('Dir. ','').slice(0,16)}</div>
-              <div style={{fontSize:20,fontWeight:900,color:'#34d399',fontFamily:"'DM Mono',monospace"}}>{melhor.pct}%</div>
-            </div>}
-            {pior&&pior.mat!==melhor?.mat&&<div style={{padding:'12px',borderRadius:11,background:'rgba(248,113,113,.06)',border:'1px solid rgba(248,113,113,.2)'}}>
-              <div style={{fontSize:13,color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:4}}>⚠️ ATENÇÃO</div>
-              <div style={{fontSize:15,fontWeight:800,color:'var(--text)'}}>{pior.mat.replace('Dir. ','').slice(0,16)}</div>
-              <div style={{fontSize:20,fontWeight:900,color:'#f87171',fontFamily:"'DM Mono',monospace"}}>{pior.pct}%</div>
-            </div>}
-          </div>
-        )}
-
-        {/* Top 3 matérias */}
-        {top3.length>0&&(
-          <div style={{marginBottom:14}}>
-            <div style={{fontSize:13,color:'#c2ccd8',fontFamily:"'DM Mono',monospace",letterSpacing:'1px',marginBottom:8}}>📊 TOP MATÉRIAS DA SEMANA</div>
-            {top3.map((t,i)=>{
-              const c=corAc(t.pct);
-              return(
-                <div key={t.mat} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',borderRadius:10,background:'rgba(255,255,255,.02)',border:'1px solid rgba(255,255,255,.06)',marginBottom:5}}>
-                  <span style={{fontSize:16,fontWeight:900,color:'#9fabbc',fontFamily:"'DM Mono',monospace",width:20}}>{i+1}</span>
-                  <div style={{flex:1}}>
-                    <div style={{fontSize:15,fontWeight:700,color:'var(--text)'}}>{t.mat}</div>
-                    <div style={{fontSize:13,color:'#aab6c6'}}>{fmtMin(t.min)} · {t.q} questões</div>
-                  </div>
-                  <div style={{fontSize:18,fontWeight:900,color:c,fontFamily:"'DM Mono',monospace"}}>{t.pct!==null?t.pct+'%':'—'}</div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {histSem.length===0&&<div style={{textAlign:'center',padding:'24px',color:'#9fabbc',fontSize:15,border:'1px dashed rgba(148,163,184,.15)',borderRadius:12,marginBottom:14}}>Nenhuma sessão registrada nesta semana.</div>}
-
-        <BotaoInsight tipo="diario"/>
-      </div>
-    );
-  }
-
-  // ── SUB-ABA POR MATÉRIA (Forma 2) ────────────────────────────
-  function SubPorMateria(){
-    const corM=corMeirelles(meir.prioridade);
-    const maxEvolPct=Math.max(...evolMat.map(e=>e.pct||0),100);
-    return(
-      <div>
-        {/* Navegação de matérias */}
-        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12}}>
-          <button onClick={()=>setMatIdx(v=>Math.max(0,v-1))} disabled={matIdx===0} style={{padding:'8px 14px',borderRadius:9,border:'1px solid rgba(255,255,255,.08)',background:'rgba(255,255,255,.03)',color:matIdx===0?'#aab6c8':'var(--text3)',fontSize:15,cursor:matIdx===0?'default':'pointer'}}>←</button>
-          <div style={{textAlign:'center',flex:1}}>
-            <div style={{fontSize:13,color:'#c2ccd8',fontFamily:"'DM Mono',monospace",marginBottom:2}}>{matIdx+1} / {matsOrdenadas.length}</div>
-            <div style={{fontSize:16,fontWeight:900,color:'var(--text)'}}>{matAtual}</div>
-            <span style={{fontSize:13,padding:'1px 7px',borderRadius:4,background:`${corM}20`,color:corM,fontFamily:"'DM Mono',monospace",fontWeight:700}}>{labelMeirelles(meir.prioridade)}</span>
-          </div>
-          <button onClick={()=>setMatIdx(v=>Math.min(matsOrdenadas.length-1,v+1))} disabled={matIdx===matsOrdenadas.length-1} style={{padding:'8px 14px',borderRadius:9,border:'1px solid rgba(255,255,255,.08)',background:'rgba(255,255,255,.03)',color:matIdx===matsOrdenadas.length-1?'#aab6c8':'var(--text3)',fontSize:15,cursor:matIdx===matsOrdenadas.length-1?'default':'pointer'}}>→</button>
-        </div>
-
-        {/* Card principal da matéria */}
-        <div style={{padding:'16px',borderRadius:14,background:`${corM}08`,border:`2px solid ${corM}30`,marginBottom:12}}>
-          <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:12}}>
-            <div>
-              <div style={{fontSize:14,color:corM,fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:4}}>{meir.ferramenta} · {gseedAtual.jornada||0}% jornada</div>
-              <div style={{fontSize:36,fontWeight:900,color:corAc(pctMat),fontFamily:"'DM Mono',monospace",lineHeight:1}}>{pctMat!==null?pctMat+'%':'—'}</div>
-              <div style={{fontSize:13,color:'#c2ccd8',marginTop:4}}>{acMatTotal}/{qMatTotal} questões · {fmtMin(minMatTotal)}</div>
-            </div>
-            <div style={{textAlign:'right'}}>
-              <div style={{fontSize:13,color:'#c2ccd8',marginBottom:4}}>nível</div>
-              <div style={{fontSize:15,fontWeight:700,color:'#b4c0d1'}}>{gseedAtual.nivel||'—'}</div>
-            </div>
-          </div>
-
-          {/* Mini gráfico SVG evolução 6 semanas */}
-          {evolMat.some(e=>e.pct!==null)&&(
-            <div style={{marginTop:8}}>
-              <div style={{fontSize:13,color:'#c2ccd8',fontFamily:"'DM Mono',monospace",marginBottom:4}}>EVOLUÇÃO 6 SEMANAS</div>
-              <svg viewBox="0 0 200 50" style={{width:'100%',height:50}}>
-                <line x1="0" y1={50-(70/maxEvolPct)*50} x2="200" y2={50-(70/maxEvolPct)*50} stroke="#fbbf24" strokeWidth="0.5" strokeDasharray="3,3" opacity="0.5"/>
-                <line x1="0" y1={50-(85/maxEvolPct)*50} x2="200" y2={50-(85/maxEvolPct)*50} stroke="#34d399" strokeWidth="0.5" strokeDasharray="3,3" opacity="0.5"/>
-                {evolMat.map((e,i)=>{
-                  if(e.pct===null)return null;
-                  const x=i*(200/5);
-                  const y=50-(e.pct/maxEvolPct)*50;
-                  const next=evolMat[i+1];
-                  return(
-                    <g key={i}>
-                      {next&&next.pct!==null&&<line x1={x} y1={y} x2={x+40} y2={50-(next.pct/maxEvolPct)*50} stroke="#a5b4fc" strokeWidth="1.5"/>}
-                      <circle cx={x} cy={y} r="3" fill={corAc(e.pct)}/>
-                    </g>
-                  );
-                })}
-              </svg>
-            </div>
-          )}
-        </div>
-
-        {/* Assuntos ordenados do pior para melhor */}
-        {gseedAtual.assuntos?.length>0&&(
-          <div style={{marginBottom:12}}>
-            <div style={{fontSize:13,color:'#c2ccd8',fontFamily:"'DM Mono',monospace",letterSpacing:'1px',marginBottom:8}}>📖 ASSUNTOS — pior para melhor</div>
-            {[...gseedAtual.assuntos].sort((a,b)=>(a.acerto||100)-(b.acerto||100)).map((as,i)=>{
-              const c=corAc(as.acerto);
-              return(
-                <div key={i} style={{padding:'9px 12px',borderRadius:10,background:`${c}06`,border:`1px solid ${c}20`,marginBottom:5}}>
-                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:4}}>
-                    <div style={{fontSize:14,color:'var(--text)',fontWeight:700,flex:1,marginRight:8,lineHeight:1.3}}>{as.titulo}</div>
-                    <div style={{fontSize:18,fontWeight:900,color:c,fontFamily:"'DM Mono',monospace",flexShrink:0}}>{as.acerto!==null?as.acerto+'%':'—'}</div>
-                  </div>
-                  <div style={{height:4,borderRadius:2,background:'rgba(255,255,255,.05)',overflow:'hidden'}}>
-                    <div style={{width:`${as.acerto||0}%`,height:'100%',background:c,borderRadius:2}}/>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        <BotaoInsight tipo="materia"/>
-      </div>
-    );
-  }
-
-  // ── SUB-ABA VISÃO GERAL — Comparativo de Ciclos (Forma 3) ────
-  function SubVisaoGeral(){
-    const comParacomp=ciclsComp.filter(c=>c.pAtu!==null||c.pAnt!==null);
-    const melhorouMais=[...comParacomp].filter(c=>c.delta!==null).sort((a,b)=>b.delta-a.delta)[0];
-    const piorouMais=[...comParacomp].filter(c=>c.delta!==null).sort((a,b)=>a.delta-b.delta)[0];
-    return(
-      <div>
-        {/* Resumo geral dos ciclos */}
-        {(melhorouMais||piorouMais)&&(
-          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:14}}>
-            {melhorouMais&&<div style={{padding:'12px',borderRadius:11,background:'rgba(52,211,153,.06)',border:'1px solid rgba(52,211,153,.2)'}}>
-              <div style={{fontSize:13,color:'#34d399',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:4}}>📈 MAIS EVOLUIU</div>
-              <div style={{fontSize:15,fontWeight:800,color:'var(--text)'}}>{melhorouMais.mat.replace('Dir. ','').slice(0,16)}</div>
-              <div style={{fontSize:20,fontWeight:900,color:'#34d399',fontFamily:"'DM Mono',monospace"}}>+{melhorouMais.delta}pts</div>
-            </div>}
-            {piorouMais&&piorouMais.delta<0&&<div style={{padding:'12px',borderRadius:11,background:'rgba(248,113,113,.06)',border:'1px solid rgba(248,113,113,.2)'}}>
-              <div style={{fontSize:13,color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:4}}>📉 MAIS CAIU</div>
-              <div style={{fontSize:15,fontWeight:800,color:'var(--text)'}}>{piorouMais.mat.replace('Dir. ','').slice(0,16)}</div>
-              <div style={{fontSize:20,fontWeight:900,color:'#f87171',fontFamily:"'DM Mono',monospace"}}>{piorouMais.delta}pts</div>
-            </div>}
-          </div>
-        )}
-
-        {/* Tabela comparativa */}
-        <div style={{marginBottom:14}}>
-          <div style={{fontSize:13,color:'#c2ccd8',fontFamily:"'DM Mono',monospace",letterSpacing:'1px',marginBottom:8}}>📊 CICLO 9 vs CICLO 10</div>
-          <div style={{padding:'8px 12px',borderRadius:8,background:'rgba(255,255,255,.02)',border:'1px solid rgba(255,255,255,.06)',display:'grid',gridTemplateColumns:'1fr 52px 52px 40px',gap:4,marginBottom:4}}>
-            {['MATÉRIA','ANT.','ATUAL','Δ'].map(h=><div key={h} style={{fontSize:13,color:'#9fabbc',fontFamily:"'DM Mono',monospace",fontWeight:700,textAlign:h==='MATÉRIA'?'left':'center'}}>{h}</div>)}
-          </div>
-          {comParacomp.sort((a,b)=>(b.pAtu||0)-(a.pAtu||0)).map(c=>{
-            const corAtu=corAc(c.pAtu);
-            const seta=c.delta===null?'—':c.delta>0?'↑':c.delta<0?'↓':'→';
-            const corSeta=c.delta===null?'#aab6c8':c.delta>0?'#34d399':c.delta<0?'#f87171':'#aab6c8';
-            return(
-              <div key={c.mat} style={{padding:'9px 12px',borderRadius:8,background:'rgba(255,255,255,.02)',border:'1px solid rgba(255,255,255,.05)',display:'grid',gridTemplateColumns:'1fr 52px 52px 40px',gap:4,marginBottom:4,alignItems:'center'}}>
-                <div style={{fontSize:14,color:'var(--text)',fontWeight:700,lineHeight:1.2}}>{c.mat.replace('Dir. ','').replace('Governamental','Gov.').slice(0,18)}</div>
-                <div style={{fontSize:14,color:'#c2ccd8',fontFamily:"'DM Mono',monospace",textAlign:'center'}}>{c.pAnt!==null?c.pAnt+'%':'—'}</div>
-                <div style={{fontSize:15,fontWeight:900,color:corAtu,fontFamily:"'DM Mono',monospace",textAlign:'center'}}>{c.pAtu!==null?c.pAtu+'%':'—'}</div>
-                <div style={{fontSize:16,fontWeight:900,color:corSeta,textAlign:'center'}}>{seta}{c.delta!==null&&c.delta!==0?Math.abs(c.delta):''}
-                </div>
-              </div>
-            );
-          })}
-          {comParacomp.length===0&&<div style={{textAlign:'center',padding:'20px',color:'#9fabbc',fontSize:14}}>Registre sessões para ver a comparação entre ciclos.</div>}
-        </div>
-
-        <BotaoInsight tipo="geral"/>
-      </div>
-    );
-  }
-
-  // ── RENDER PRINCIPAL ─────────────────────────────────────────
+  useTickGuruja();
+  const D=dadosMontar(horas);
+  const abas=[['guruja','📡 Guruja'],['diario','📅 Semana'],['materia','📈 Matéria'],['geral','📊 Ciclos']];
   return(
-    <div style={{maxWidth:680,margin:'0 auto'}}>
-      <div style={{fontSize:13,letterSpacing:'3px',color:'#fbbf24',fontFamily:"'DM Mono',monospace",fontWeight:800,marginBottom:12}}>📓 DADOS DE ESTUDO</div>
-
-      {/* Painel de negligência + pico — sempre visível (Forma 4) */}
-      <PainelNegligencia/>
-
-      {/* Sub-abas */}
-      <div style={{display:'flex',gap:0,marginBottom:16,borderRadius:11,overflow:'hidden',border:'1px solid rgba(148,163,184,.15)'}}>
-        {[['guruja','📡 Guruja'],['diario','📅 Semana'],['materia','📈 Matéria'],['geral','📊 Ciclos']].map(([id,l])=>(
-          <button key={id} onClick={()=>setSub(id)}
-            style={{flex:1,padding:'10px 4px',border:'none',borderRight:'1px solid rgba(148,163,184,.1)',background:sub===id?'rgba(99,102,241,.15)':'rgba(255,255,255,.02)',color:sub===id?'#a5b4fc':'#aab6c8',fontSize:13,fontWeight:sub===id?900:400,cursor:'pointer',fontFamily:"'DM Mono',monospace",transition:'all .15s'}}>
-            {l}
-          </button>
-        ))}
+    <div style={{padding:'0 0 80px'}}>
+      <DadosStatus/>
+      <DadosNegligencia D={D}/>
+      <div style={{display:'flex',gap:6,marginBottom:14,flexWrap:'wrap'}}>
+        {abas.map(([k,l])=>(<button key={k} onClick={()=>setSub(k)} style={{flex:'1 1 auto',padding:'9px 12px',borderRadius:10,fontSize:14,fontWeight:sub===k?800:600,border:`1px solid ${sub===k?'#60a5fa':'rgba(148,163,184,.25)'}`,background:sub===k?'rgba(96,165,250,.15)':'transparent',color:sub===k?'#60a5fa':'var(--text3)',cursor:'pointer'}}>{l}</button>))}
       </div>
-
-      {sub==='guruja'  &&<PainelGuruja/>}
-      {sub==='diario'  &&<SubDiario/>}
-      {sub==='materia' &&<SubPorMateria/>}
-      {sub==='geral'   &&<SubVisaoGeral/>}
+      {sub==='guruja'&&<DadosGuruja/>}
+      {sub==='diario'&&<DadosSemana D={D}/>}
+      {sub==='materia'&&<DadosMateria D={D}/>}
+      {sub==='geral'&&<DadosCiclos D={D}/>}
     </div>
   );
 }
+
 // ─── APP RAIZ ────────────────────────────────────────────────
 function App(){
   // Estado inicial já lido do aparelho: antes começava vazio e o carimbo de datas (feitos_dt) apagava as datas de TODAS as
@@ -10052,14 +9781,16 @@ function App(){
     };
     if(Sync.isConfigured()){Sync.init().then(aplicarSync);}
     // Guruja: lê o guruja.json ao abrir e quando você volta para a aba (no máx. a cada 10 min)
-    const lerGuruja=()=>{GurujaLink.buscar().then(st=>{
+    const lerGuruja=(semReload)=>{GurujaLink.buscar().then(st=>{
       try{
-        if(st&&st.ok&&st.mudou){const u=parseInt(sessionStorage.getItem('rity_rl_g')||'0');if(Date.now()-u>20000){sessionStorage.setItem('rity_rl_g',String(Date.now()));window.location.reload();return;}}
+        if(!semReload&&st&&st.ok&&st.mudou){const u=parseInt(sessionStorage.getItem('rity_rl_g')||'0');if(Date.now()-u>20000){sessionStorage.setItem('rity_rl_g',String(Date.now()));window.location.reload();return;}}
         setFeitos(lerFeitosValidos());setHistorico(lsGet('historico_diario',[]));
       }catch(e){}
     });};
     lerGuruja();
     try{let ultG=Date.now();document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='visible')return;if(Date.now()-ultG<600000)return;ultG=Date.now();lerGuruja();});}catch(e){}
+    // Com o app aberto: confere a cada 10 min (sem recarregar a página, para não perder o que você está digitando)
+    try{setInterval(()=>{if(document.visibilityState==='visible')lerGuruja(true);},600000);}catch(e){}
     // Ao voltar para esta aba/janela (depois de usar o app em outro aparelho), baixa o que mudou
     try{
       let ult=Date.now();

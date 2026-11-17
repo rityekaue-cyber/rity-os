@@ -1,8 +1,9 @@
 # Atualização do guruja.json (rotina automática do RITY OS)
 
-Esta rotina lê o Guruja (conector MCP, somente leitura) e grava **um único arquivo**, `guruja.json`, na raiz do
-repositório. O app (`index.html`) lê esse arquivo ao abrir. **Nunca altere `index.html`** nem outro arquivo além de
-`guruja.json`.
+Esta rotina lê o Guruja (conector MCP, somente leitura) e grava **dois arquivos** na raiz do repositório:
+`guruja.json` (a leitura do momento) e `guruja_serie.json` (histórico diário, gerado por script a partir do primeiro).
+O app (`index.html`) lê os dois: a aba Dados usa a série para mostrar tempo e questões por dia e por matéria.
+**Nunca altere `index.html`** nem outro arquivo além desses dois.
 
 ## Regras do conector Guruja (obrigatórias)
 - Nunca escreva, estime ou insinue quantos alunos existem na plataforma ou na grade.
@@ -23,7 +24,10 @@ repositório. O app (`index.html`) lê esse arquivo ao abrir. **Nunca altere `in
 5. Monte o JSON abaixo, **copiando os números exatamente** (sem arredondar, sem inventar). Se um dado não existir, use `null`.
 6. Salve em `guruja.json` (UTF-8, indentação de 1 espaço está ok) e rode `python3 automacao/validar_snapshot.py guruja.json`.
    Se o validador falhar, **corrija** o JSON e rode de novo. Não faça commit enquanto não passar.
-7. `git add guruja.json && git commit -m "Guruja: snapshot AAAA-MM-DD HH:MM" && git push origin HEAD:main`.
+7. Atualize o histórico diário: `python3 automacao/atualizar_serie.py guruja.json guruja_serie.json`
+   (ele compara com o total da leitura anterior e soma a diferença ao dia certo; leitura repetida é ignorada; não edite o
+   `guruja_serie.json` na mão). Depois:
+   `git add guruja.json guruja_serie.json && git commit -m "Guruja: snapshot AAAA-MM-DD HH:MM" && git push origin HEAD:main`.
    Se `git push` for rejeitado por divergência: `git fetch origin main && git rebase origin/main` e tente de novo (uma vez).
 8. Relate em 3 linhas: gerado_em, meta atual (n, concluídas/total) e se o push foi OK.
 

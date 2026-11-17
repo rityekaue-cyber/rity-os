@@ -1,0 +1,180 @@
+{
+ "versao": 1,
+ "planejamento_id": 105325,
+ "ultimo": {
+  "gerado_em": "2026-11-17T07:12:53Z",
+  "mat": {
+   "DCON": {
+    "q": 24,
+    "a": 20,
+    "min": 90
+   },
+   "DTRIB": {
+    "q": 25,
+    "a": 23,
+    "min": 90
+   },
+   "DADM": {
+    "q": 20,
+    "a": 20,
+    "min": 30
+   },
+   "PORT": {
+    "q": 19,
+    "a": 17,
+    "min": 60
+   },
+   "DCIV": {
+    "q": 25,
+    "a": 21,
+    "min": 60
+   },
+   "TINFO": {
+    "q": 0,
+    "a": 0,
+    "min": 300
+   },
+   "CTBGA": {
+    "q": 0,
+    "a": 0,
+    "min": 300
+   },
+   "AUD": {
+    "q": 0,
+    "a": 0,
+    "min": 170
+   },
+   "RLOG": {
+    "q": 0,
+    "a": 0,
+    "min": 0
+   }
+  },
+  "tipo": {
+   "Teoria": 680,
+   "Questões": 330,
+   "Mapeamento": 60,
+   "Revisão": 0,
+   "Reforços": 0,
+   "Aprofundamentos": 30
+  },
+  "atividades": 14
+ },
+ "dias": {
+  "2026-11-12": {
+   "atividades": 2,
+   "mat": {
+    "DCON": {
+     "q": 0,
+     "a": 0,
+     "min": 90
+    },
+    "CTBGA": {
+     "q": 0,
+     "a": 0,
+     "min": 90
+    }
+   },
+   "tipo": {
+    "Teoria": 90,
+    "Questões": 90
+   }
+  },
+  "2026-11-13": {
+   "atividades": 3,
+   "mat": {
+    "TINFO": {
+     "q": 0,
+     "a": 0,
+     "min": 210
+    },
+    "DTRIB": {
+     "q": 0,
+     "a": 0,
+     "min": 90
+    }
+   },
+   "tipo": {
+    "Teoria": 210,
+    "Questões": 90
+   }
+  },
+  "2026-11-14": {
+   "atividades": 4,
+   "mat": {
+    "CTBGA": {
+     "q": 0,
+     "a": 0,
+     "min": 210
+    },
+    "AUD": {
+     "q": 0,
+     "a": 0,
+     "min": 90
+    }
+   },
+   "tipo": {
+    "Teoria": 300
+   }
+  },
+  "2026-11-15": {
+   "atividades": 2,
+   "mat": {
+    "AUD": {
+     "q": 0,
+     "a": 0,
+     "min": 80
+    },
+    "PORT": {
+     "q": 0,
+     "a": 0,
+     "min": 60
+    }
+   },
+   "tipo": {
+    "Teoria": 80,
+    "Questões": 60
+   }
+  },
+  "2026-11-16": {
+   "atividades": 3,
+   "mat": {
+    "DCON": {
+     "q": 24,
+     "a": 20,
+     "min": 0
+    },
+    "DTRIB": {
+     "q": 25,
+     "a": 23,
+     "min": 0
+    },
+    "DADM": {
+     "q": 20,
+     "a": 20,
+     "min": 30
+    },
+    "PORT": {
+     "q": 19,
+     "a": 17,
+     "min": 0
+    },
+    "DCIV": {
+     "q": 25,
+     "a": 21,
+     "min": 60
+    },
+    "TINFO": {
+     "q": 0,
+     "a": 0,
+     "min": 90
+    }
+   },
+   "tipo": {
+    "Questões": 90,
+    "Mapeamento": 60,
+    "Aprofundamentos": 30
+   }
+  }
+ }
+}
