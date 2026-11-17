@@ -1,6 +1,6 @@
 {
  "versao": 1,
- "gerado_em": "2026-11-16T07:15:10Z",
+ "gerado_em": "2026-11-17T07:12:53Z",
  "origem": "tarefa agendada",
  "planejamento_id": 105325,
  "meta_atual": {
@@ -11,12 +11,12 @@
   "vezes_adiada": 0,
   "status": "ontime",
   "atividades_totais": 20,
-  "atividades_concluidas": 11,
-  "atividades_pendentes": 9,
+  "atividades_concluidas": 14,
+  "atividades_pendentes": 6,
   "atividades_ignoradas": 0,
-  "questoes": 68,
-  "acertos": 60,
-  "minutos": 920
+  "questoes": 113,
+  "acertos": 101,
+  "minutos": 1100
  },
  "metas": [
   {
@@ -26,11 +26,11 @@
    "data_inicio": "2026-11-12T04:21:31.01",
    "data_conclusao": null,
    "atividades_totais": 20,
-   "atividades_concluidas": 11,
+   "atividades_concluidas": 14,
    "atividades_ignoradas": 0,
-   "questoes": 68,
-   "acertos": 60,
-   "minutos": 920,
+   "questoes": 113,
+   "acertos": 101,
+   "minutos": 1100,
    "atividades": [
     {
      "aid": 78591,
@@ -153,10 +153,10 @@
      "tipo": "Mapeamento",
      "rel": 4,
      "prio": null,
-     "q": null,
-     "a": null,
-     "min": 0,
-     "concluida": false,
+     "q": 0,
+     "a": 0,
+     "min": 60,
+     "concluida": true,
      "ignorada": false,
      "link": null
     },
@@ -265,10 +265,10 @@
      "tipo": "Questões",
      "rel": 4,
      "prio": null,
-     "q": null,
-     "a": null,
-     "min": 0,
-     "concluida": false,
+     "q": 20,
+     "a": 20,
+     "min": 30,
+     "concluida": true,
      "ignorada": false,
      "link": null
     },
@@ -345,10 +345,10 @@
      "tipo": "Questões",
      "rel": 5,
      "prio": null,
-     "q": null,
-     "a": null,
-     "min": 0,
-     "concluida": false,
+     "q": 25,
+     "a": 21,
+     "min": 60,
+     "concluida": true,
      "ignorada": false,
      "link": null
     }
@@ -356,25 +356,86 @@
    "reforcos": []
   }
  ],
- "desempenho": [],
+ "desempenho": [
+  {
+   "sigla": "DCON",
+   "disciplina": "Direito Constitucional",
+   "peso": 0,
+   "q": 24,
+   "a": 20,
+   "pct": 83.33,
+   "media": 67.34,
+   "mediana": 70.8,
+   "decil": 10,
+   "tendencia": null
+  },
+  {
+   "sigla": "DTRIB",
+   "disciplina": "Direito Tributário",
+   "peso": 0,
+   "q": 25,
+   "a": 23,
+   "pct": 92,
+   "media": 77.04,
+   "mediana": 80,
+   "decil": 10,
+   "tendencia": null
+  },
+  {
+   "sigla": "DADM",
+   "disciplina": "Direito Administrativo",
+   "peso": 0,
+   "q": 20,
+   "a": 20,
+   "pct": 100,
+   "media": 86.17,
+   "mediana": 85,
+   "decil": 10,
+   "tendencia": null
+  },
+  {
+   "sigla": "PORT",
+   "disciplina": "Português",
+   "peso": 0,
+   "q": 19,
+   "a": 17,
+   "pct": 89.47,
+   "media": 86.23,
+   "mediana": 89.4,
+   "decil": 6,
+   "tendencia": null
+  },
+  {
+   "sigla": "DCIV",
+   "disciplina": "Direito Civil",
+   "peso": 0,
+   "q": 25,
+   "a": 21,
+   "pct": 84,
+   "media": 82.44,
+   "mediana": 84,
+   "decil": 6,
+   "tendencia": null
+  }
+ ],
  "tempo": {
-  "total_min": 920,
+  "total_min": 1100,
   "por_tipo": {
    "Teoria": 680,
-   "Questões": 240,
-   "Mapeamento": 0,
+   "Questões": 330,
+   "Mapeamento": 60,
    "Revisão": 0
   },
   "reforcos_min": 0,
-  "aprofundamentos_min": 0,
+  "aprofundamentos_min": 30,
   "disciplinas": [
    {
-    "sigla": "CTBGA",
+    "sigla": "TINFO",
     "min": 300
    },
    {
-    "sigla": "TINFO",
-    "min": 210
+    "sigla": "CTBGA",
+    "min": 300
    },
    {
     "sigla": "AUD",
@@ -389,16 +450,16 @@
     "min": 90
    },
    {
+    "sigla": "DCIV",
+    "min": 60
+   },
+   {
     "sigla": "PORT",
     "min": 60
    },
    {
     "sigla": "DADM",
-    "min": 0
-   },
-   {
-    "sigla": "DCIV",
-    "min": 0
+    "min": 30
    },
    {
     "sigla": "RLOG",
