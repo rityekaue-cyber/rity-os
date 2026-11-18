@@ -1,6 +1,6 @@
 {
  "versao": 1,
- "gerado_em": "2026-11-17T07:12:53Z",
+ "gerado_em": "2026-11-18T07:12:45Z",
  "origem": "tarefa agendada",
  "planejamento_id": 105325,
  "meta_atual": {
@@ -11,12 +11,12 @@
   "vezes_adiada": 0,
   "status": "ontime",
   "atividades_totais": 20,
-  "atividades_concluidas": 14,
-  "atividades_pendentes": 6,
+  "atividades_concluidas": 15,
+  "atividades_pendentes": 5,
   "atividades_ignoradas": 0,
   "questoes": 113,
   "acertos": 101,
-  "minutos": 1100
+  "minutos": 1190
  },
  "metas": [
   {
@@ -26,11 +26,11 @@
    "data_inicio": "2026-11-12T04:21:31.01",
    "data_conclusao": null,
    "atividades_totais": 20,
-   "atividades_concluidas": 14,
+   "atividades_concluidas": 15,
    "atividades_ignoradas": 0,
    "questoes": 113,
    "acertos": 101,
-   "minutos": 1100,
+   "minutos": 1190,
    "atividades": [
     {
      "aid": 78591,
@@ -281,10 +281,10 @@
      "tipo": "Revisão",
      "rel": 3,
      "prio": null,
-     "q": null,
-     "a": null,
-     "min": 0,
-     "concluida": false,
+     "q": 0,
+     "a": 0,
+     "min": 90,
+     "concluida": true,
      "ignorada": false,
      "link": null
     },
@@ -364,8 +364,8 @@
    "q": 24,
    "a": 20,
    "pct": 83.33,
-   "media": 67.34,
-   "mediana": 70.8,
+   "media": 67.59,
+   "mediana": 72,
    "decil": 10,
    "tendencia": null
   },
@@ -376,7 +376,7 @@
    "q": 25,
    "a": 23,
    "pct": 92,
-   "media": 77.04,
+   "media": 77.02,
    "mediana": 80,
    "decil": 10,
    "tendencia": null
@@ -388,7 +388,7 @@
    "q": 20,
    "a": 20,
    "pct": 100,
-   "media": 86.17,
+   "media": 86.29,
    "mediana": 85,
    "decil": 10,
    "tendencia": null
@@ -400,7 +400,7 @@
    "q": 19,
    "a": 17,
    "pct": 89.47,
-   "media": 86.23,
+   "media": 86.35,
    "mediana": 89.4,
    "decil": 6,
    "tendencia": null
@@ -412,26 +412,26 @@
    "q": 25,
    "a": 21,
    "pct": 84,
-   "media": 82.44,
+   "media": 81.17,
    "mediana": 84,
    "decil": 6,
    "tendencia": null
   }
  ],
  "tempo": {
-  "total_min": 1100,
+  "total_min": 1190,
   "por_tipo": {
    "Teoria": 680,
    "Questões": 330,
-   "Mapeamento": 60,
-   "Revisão": 0
+   "Revisão": 90,
+   "Mapeamento": 60
   },
   "reforcos_min": 0,
   "aprofundamentos_min": 30,
   "disciplinas": [
    {
     "sigla": "TINFO",
-    "min": 300
+    "min": 390
    },
    {
     "sigla": "CTBGA",

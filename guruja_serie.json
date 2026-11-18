@@ -2,7 +2,7 @@
  "versao": 1,
  "planejamento_id": 105325,
  "ultimo": {
-  "gerado_em": "2026-11-17T07:12:53Z",
+  "gerado_em": "2026-11-18T07:12:45Z",
   "mat": {
    "DCON": {
     "q": 24,
@@ -32,7 +32,7 @@
    "TINFO": {
     "q": 0,
     "a": 0,
-    "min": 300
+    "min": 390
    },
    "CTBGA": {
     "q": 0,
@@ -53,12 +53,12 @@
   "tipo": {
    "Teoria": 680,
    "Questões": 330,
+   "Revisão": 90,
    "Mapeamento": 60,
-   "Revisão": 0,
    "Reforços": 0,
    "Aprofundamentos": 30
   },
-  "atividades": 14
+  "atividades": 15
  },
  "dias": {
   "2026-11-12": {
@@ -174,6 +174,19 @@
     "Questões": 90,
     "Mapeamento": 60,
     "Aprofundamentos": 30
+   }
+  },
+  "2026-11-17": {
+   "atividades": 1,
+   "mat": {
+    "TINFO": {
+     "q": 0,
+     "a": 0,
+     "min": 90
+    }
+   },
+   "tipo": {
+    "Revisão": 90
    }
   }
  }
