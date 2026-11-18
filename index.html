@@ -1976,7 +1976,7 @@ function calcRankingAproveitamento(){
 
   // Grupo 1: matérias com questões reais
   historico.forEach(r=>{
-    if(!r.materia)return;
+    if(!r.materia||!EDITAL_MATS.includes(r.materia))return;   // só as matérias do edital do SEFAZ-RS
     const q=parseInt(r.questoes)||0;
     const a=parseInt(r.acertei)||0;
     if(!q)return;
@@ -1987,6 +1987,7 @@ function calcRankingAproveitamento(){
 
   // Grupo 2: matérias sem questões mas com dificuldade base definida
   Object.entries(difBase).forEach(([mat,dif])=>{
+    if(!EDITAL_MATS.includes(mat))return;
     if(porMat[mat])return; // já tem dado real, ignora
     if(!dif)return;
     // Converte dif 1-5 em % equivalente: 5⭐=0%, 4⭐=30%, 3⭐=55%, 2⭐=75%, 1⭐=90%
@@ -2025,6 +2026,13 @@ function fmtRanking(){
     ? 'SEM QUESTÕES (dif base): '+semDado.map(r=>`${r.label} ${r.mat} dif${r.difBase}⭐`).join(' | ')
     : '';
   return [escala,parteComDado,parteSemDado].filter(Boolean).join(' || ');
+}
+
+function fmtRankingLista(){
+  const{comDado,semDado}=calcRankingAproveitamento();
+  const a=comDado.length?'**Com questões (pior → melhor)**\n'+comDado.map(r=>`- ${r.label} · ${r.mat}: ${r.pct}% (${r.q}Q)`).join('\n'):'Sem questões registradas ainda.';
+  const b=semDado.length?'\n\n**Sem questões (dificuldade que você marcou)**\n'+semDado.map(r=>`- ${r.label} · ${r.mat}: dif ${r.difBase}★`).join('\n'):'';
+  return a+b;
 }
 
 // ─── IA MENTORA (aba 1) — "a mentora fala primeiro" ─────────────────────────────────────────────
@@ -2583,7 +2591,7 @@ function PainelMentora({onRapido,onSetTab,onAbrirChat,rapidoVer}){
             <div style={{fontSize:14,color:'#d5dde8',marginTop:4,lineHeight:1.55}}>{r.acao}{r.link&&<> <a href={r.link} target="_blank" rel="noreferrer" style={{color:'#60a5fa',fontWeight:700}}>abrir no TEC ↗</a></>}</div>
           </div>
         ))}
-        <div style={{fontSize:12,color:'#aab6c8',marginTop:8,lineHeight:1.5}}>Pontos em jogo = peso na prova × o que falta para 100%, ajustado por tendência, média geral e matéria sem dado. Dados do Guruja de {GURUJA_SYNC.em}; para atualizar, peça “atualiza” no Claude.</div>
+        <div style={{fontSize:12,color:'#aab6c8',marginTop:8,lineHeight:1.5}}>Pontos em jogo = peso na prova × o que falta para 100%, ajustado por tendência, média geral e matéria sem dado. Dados do Guruja lidos em {(()=>{const sg=GurujaLink.lerCache();return GurujaLink.valido(sg)?new Date(sg.gerado_em).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):GURUJA_SYNC.em;})()} (o app atualiza sozinho).</div>
       </div>
 
       {/* Sheet: ajuste (apertado / travada / imprevisto) */}
@@ -2690,19 +2698,86 @@ function PainelMentora({onRapido,onSetTab,onAbrirChat,rapidoVer}){
 
 // ─── ABA 1: mentora (painel) + conversa livre embaixo ───
 function TabIA({appCtx,onMIT,onRapido,onSetTab,rapidoVer}){
-  const[chat,setChat]=useState(false);
+  const[vista,setVistaR]=useState(()=>{const v=lsGet('ia_vista','painel');return v==='chat'?'chat':'painel';});
+  const setVista=v=>{setVistaR(v);lsSet('ia_vista',v);try{window.scrollTo(0,0);}catch(e){}};
+  const seg=(k,l)=>(<button key={k} onClick={()=>setVista(k)} style={{flex:1,padding:'11px 8px',borderRadius:10,border:`1px solid ${vista===k?'#fbbf24':'rgba(148,163,184,.3)'}`,background:vista===k?'rgba(251,191,36,.16)':'rgba(255,255,255,.04)',color:vista===k?'#fde68a':'#cbd5e1',fontSize:15.5,fontWeight:800,cursor:'pointer'}}>{l}</button>);
   return(
-    <div style={{paddingBottom:24}}>
-      <PainelMentora onRapido={onRapido} onSetTab={onSetTab} rapidoVer={rapidoVer} onAbrirChat={()=>{setChat(true);}}/>
-      <button onClick={()=>setChat(v=>!v)} style={{width:'100%',padding:'11px 13px',borderRadius:11,border:'1px solid rgba(96,165,250,.35)',background:'rgba(96,165,250,.08)',color:'#60a5fa',fontSize:15,fontWeight:800,cursor:'pointer',fontFamily:IA_MN,display:'flex',justifyContent:'space-between',marginBottom:chat?9:0}}>
-        <span>💬 Conversar com a mentora</span><span>{chat?'▲':'▼'}</span>
-      </button>
-      <div style={{display:chat?'block':'none'}}>
+    <div style={{paddingBottom:vista==='chat'?0:24}}>
+      <div style={{display:'flex',gap:8,marginBottom:10}}>{seg('painel','🎯 Painel do dia')}{seg('chat','💬 Conversar')}</div>
+      <div style={{display:vista==='painel'?'block':'none'}}>
+        <PainelMentora onRapido={onRapido} onSetTab={onSetTab} rapidoVer={rapidoVer} onAbrirChat={()=>setVista('chat')}/>
+        <button onClick={()=>setVista('chat')} style={{width:'100%',padding:'12px 13px',borderRadius:11,border:'1px solid rgba(96,165,250,.35)',background:'rgba(96,165,250,.08)',color:'#93c5fd',fontSize:15.5,fontWeight:800,cursor:'pointer'}}>💬 Conversar com a mentora</button>
+      </div>
+      <div style={{display:vista==='chat'?'block':'none'}}>
         <ChatIA appCtx={appCtx} onMIT={onMIT} embed/>
       </div>
     </div>
   );
 }
+
+// ─── MARKDOWN SEGURO PARA O CHAT (sem dangerouslySetInnerHTML) ───────────────────────────────────
+function mdInlineIA(s){
+  const out=[];const re=/(\*\*[^*]+\*\*|\*[^*\s][^*]*\*|`[^`]+`|\[[^\]]+\]\(https?:\/\/[^)\s]+\))/g;
+  let m,last=0,k=0;
+  while((m=re.exec(s))){
+    if(m.index>last)out.push(s.slice(last,m.index));
+    const t=m[0];
+    if(t.startsWith('**'))out.push(<strong key={k++} style={{color:'#fcd34d',fontWeight:800}}>{mdInlineIA(t.slice(2,-2))}</strong>);
+    else if(t[0]==='*')out.push(<em key={k++}>{mdInlineIA(t.slice(1,-1))}</em>);
+    else if(t[0]==='`')out.push(<code key={k++} style={{fontFamily:"'DM Mono',monospace",fontSize:'.88em',background:'rgba(255,255,255,.1)',padding:'1px 5px',borderRadius:4}}>{t.slice(1,-1)}</code>);
+    else{const mm=/^\[([^\]]+)\]\((.+)\)$/.exec(t);out.push(<a key={k++} href={mm[2]} target="_blank" rel="noopener noreferrer" style={{color:'#7dd3fc'}}>{mm[1]}</a>);}
+    last=m.index+t.length;
+  }
+  if(last<s.length)out.push(s.slice(last));
+  return out;
+}
+function MdIA({texto}){
+  const L=String(texto||'').replace(/\r/g,'').split('\n');
+  const els=[];let i=0,k=0;
+  const ehHr=l=>/^\s*(-{3,}|─{3,}|\*{3,})\s*$/.test(l);
+  const ehTab=l=>/^\s*\|.*\|\s*$/.test(l);
+  const ehSep=l=>/^\s*\|?[\s:|-]+\|?\s*$/.test(l)&&l.includes('-');
+  const ehUl=l=>/^\s*[-*•]\s+/.test(l);
+  const ehOl=l=>/^\s*\d+[.)]\s+/.test(l);
+  const ehH=l=>/^\s*#{1,4}\s+/.test(l);
+  const ehBloco=l=>ehHr(l)||ehTab(l)||ehUl(l)||ehOl(l)||ehH(l)||/^\s*>\s?/.test(l);
+  const cels=l=>l.trim().replace(/^\|/,'').replace(/\|$/,'').split('|').map(c=>c.trim());
+  while(i<L.length){
+    const l=L[i];
+    if(!l.trim()){i++;continue;}
+    if(ehHr(l)){els.push(<hr key={k++} style={{border:'none',borderTop:'1px solid rgba(255,255,255,.14)',margin:'10px 0'}}/>);i++;continue;}
+    let m=/^\s*(#{1,4})\s+(.*)$/.exec(l);
+    if(m){const n=m[1].length;els.push(<div key={k++} style={{fontWeight:800,color:'#fbbf24',fontSize:n<=2?17:15.5,margin:'12px 0 4px',lineHeight:1.35}}>{mdInlineIA(m[2])}</div>);i++;continue;}
+    if(ehTab(l)&&i+1<L.length&&ehTab(L[i+1])&&ehSep(L[i+1])){
+      const cab=cels(l);i+=2;const rows=[];
+      while(i<L.length&&ehTab(L[i])){rows.push(cels(L[i]));i++;}
+      els.push(<div key={k++} style={{overflowX:'auto',margin:'8px 0'}}><table style={{borderCollapse:'collapse',fontSize:14,minWidth:'100%'}}><thead><tr>{cab.map((c,j)=><th key={j} style={{textAlign:'left',padding:'5px 8px',background:'rgba(255,255,255,.1)',border:'1px solid rgba(255,255,255,.16)',color:'#fcd34d'}}>{mdInlineIA(c)}</th>)}</tr></thead><tbody>{rows.map((r,a)=><tr key={a}>{r.map((c,j)=><td key={j} style={{padding:'5px 8px',border:'1px solid rgba(255,255,255,.14)',verticalAlign:'top'}}>{mdInlineIA(c)}</td>)}</tr>)}</tbody></table></div>);
+      continue;
+    }
+    if(ehUl(l)||ehOl(l)){
+      const ord=ehOl(l);const ini=ord?parseInt(l.trim(),10):1;const itens=[];
+      while(i<L.length&&(ord?ehOl(L[i]):ehUl(L[i]))){
+        let t=L[i].replace(/^\s*([-*•]|\d+[.)])\s+/,'');i++;
+        const extra=[];
+        while(i<L.length&&L[i].trim()&&/^\s{2,}/.test(L[i])&&!ehOl(L[i])&&!ehUl(L[i])){extra.push(L[i].trim());i++;}
+        itens.push([t,extra]);
+        while(i<L.length&&!L[i].trim()&&i+1<L.length&&(ord?ehOl(L[i+1]):ehUl(L[i+1])))i++;
+      }
+      const filhos=itens.map(([t,ex],a)=><li key={a} style={{margin:'3px 0'}}>{mdInlineIA(t)}{ex.map((e,b)=><div key={b} style={{color:'#cbd5e1',fontSize:14.5}}>{mdInlineIA(e)}</div>)}</li>);
+      els.push(ord?<ol key={k++} start={ini} style={{margin:'6px 0',paddingLeft:22}}>{filhos}</ol>:<ul key={k++} style={{margin:'6px 0',paddingLeft:20}}>{filhos}</ul>);
+      continue;
+    }
+    if(/^\s*>\s?/.test(l)){
+      const q=[];while(i<L.length&&/^\s*>\s?/.test(L[i])){q.push(L[i].replace(/^\s*>\s?/,''));i++;}
+      els.push(<div key={k++} style={{borderLeft:'3px solid #fbbf24',paddingLeft:10,margin:'8px 0',color:'#e2e8f0'}}>{q.map((t,a)=><div key={a}>{mdInlineIA(t)}</div>)}</div>);continue;
+    }
+    const par=[];while(i<L.length&&L[i].trim()&&!(par.length&&ehBloco(L[i]))){par.push(L[i].trim());i++;}
+    els.push(<p key={k++} style={{margin:'6px 0'}}>{par.map((t,a)=><React.Fragment key={a}>{a>0&&<br/>}{mdInlineIA(t)}</React.Fragment>)}</p>);
+  }
+  return <div style={{wordBreak:'break-word'}}>{els}</div>;
+}
+
+function rolarIA(el,top){try{el.scrollTo({top,behavior:'smooth'});}catch(e){try{el.scrollTop=top;}catch(e2){}}}
 
 // ─── CHAT LIVRE (a antiga TabIA; agora fica embaixo do painel da mentora) ─────────────────────────
 function ChatIA({appCtx,onMIT,embed}){
@@ -2727,7 +2802,14 @@ function ChatIA({appCtx,onMIT,embed}){
       setHist([]);lsSet('ia_hist',[]);   // dia novo: conversa nova
     }
   },[]);
-  useEffect(()=>{finalRef.current?.scrollIntoView({behavior:'smooth'});},[hist,carregando]);
+  const scrollerRef=useRef(null);const ultMsgRef=useRef(null);
+  useEffect(()=>{
+    const sc=scrollerRef.current;if(!sc)return;
+    const ult=hist[hist.length-1];
+    // resposta nova da assessora: abre no INÍCIO dela (não no fim), para ler de cima para baixo
+    if(!carregando&&ult&&ult.role==='assistant'&&ultMsgRef.current)rolarIA(sc,Math.max(0,ultMsgRef.current.offsetTop-6));
+    else rolarIA(sc,sc.scrollHeight);
+  },[hist,carregando]);
 
   function buildSystem(){
     const d=new Date();
@@ -2815,7 +2897,7 @@ ANTI-BURNOUT — PRINCÍPIOS GERAIS (aplicar se ela relatar sinal, não presumir
 ESTADO DO DIA, GURUJA E RISCOS (mesmos dados do painel da mentora; o plano só muda pelos botões do painel, com confirmação dela):
 ${blocoMentora()}
 
-ESTILO: Direta, calorosa, sem frases vazias. Máx 120 palavras. Uma ação concreta sempre, ancorada nos dados reais acima — não em suposição genérica.
+ESTILO: Direta, calorosa, sem frases vazias. Máx 120 palavras. Formate para tela de celular: parágrafos curtos, **negrito** nos pontos-chave, listas com "- " ou "1. ", sem tabelas e sem títulos grandes. Uma ação concreta sempre, ancorada nos dados reais acima — não em suposição genérica.
 Se mencionar MITs, inclua: MIT:["t1","t2","t3"]`;
   }
 
@@ -2861,7 +2943,7 @@ Se mencionar MITs, inclua: MIT:["t1","t2","t3"]`;
       ...urgIA2.map(u=>`${u.mat}${u.contexto?' — '+u.contexto:''}`)
     ];
 
-    diag.push(`\n🚨 **MATÉRIAS CRÍTICAS**\n${criticos.length>0?criticos.map((c,i)=>`${i+1}. ${c}`).join('\n'):'Nenhuma crítica detectada.'}\n\n📊 **APROVEITAMENTO**\n${fmtRanking()}`);
+    diag.push(`\n🚨 **MATÉRIAS CRÍTICAS**\n${criticos.length>0?criticos.map((c,i)=>`${i+1}. ${c}`).join('\n'):'Nenhuma crítica detectada.'}\n\n📊 **APROVEITAMENTO**\n${fmtRankingLista()}`);
 
     if(deveRP) diag.push(`\n🔄 **REVISÃO PROFUNDA — HORA!**\nMatéria da vez: ${proximaRP?.mat||'?'}${proximaRP?.maxScore?` (urgência ${proximaRP.maxScore})`:''}\nAdicione ao Foco na aba Revisão → Rev. Prof.`);
 
@@ -2869,7 +2951,7 @@ Se mencionar MITs, inclua: MIT:["t1","t2","t3"]`;
 
     diag.push(`\n🏆 **REFLEXÃO**\n• Maior vitória de ontem:\n• Meta mínima hoje (se tudo der errado, isso não pode faltar):\n• O que preparo hoje à noite para amanhã (fricção zero):`);
 
-    const semStatus=appCtx.minSemana<26*60?`faltam ${fmtMin(26*60-appCtx.minSemana)} para a meta mínima (26h)`:appCtx.minSemana<30*60?`no caminho (${fmtMin(appCtx.minSemana)} de 30h)`:'meta batida! ✅';
+    const semStatus=appCtx.minSemana<META_SEMANA_MIN?`faltam ${fmtMin(META_SEMANA_MIN-appCtx.minSemana)} para a meta da semana (${fmtMin(META_SEMANA_MIN)})`:'meta da semana batida! ✅';
 
     return`✦ BOM DIA, RITCHELY!\n\n${['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'][dw]} · ${fH(d)} · Ciclo ${appCtx.cicloNum} · Semana: ${fmtMin(appCtx.minSemana)} · ${semStatus}\n\n${'─'.repeat(40)}\n🎯 5 PERGUNTAS DE IGNIÇÃO\n${'─'.repeat(40)}\n\n${perguntas5.join('\n\n')}\n\n${'─'.repeat(40)}\n📋 DIAGNÓSTICO DO DIA\n${'─'.repeat(40)}\n${diag.join('\n')}\n\n${'─'.repeat(40)}\n\n📝 *Responda o que quiser. A IA cruza com seus dados reais e monta o plano.*`;
   }
@@ -2880,7 +2962,7 @@ Se mencionar MITs, inclua: MIT:["t1","t2","t3"]`;
     const nova=[...hist,{role:'user',content:texto}];
     setHist(nova);lsSet('ia_hist',nova);
     try{
-      const resposta=await chamarClaude(buildSystem(),nova.slice(-18));
+      const resposta=await chamarClaude(buildSystem(),nova.slice(-18),1000);
       const mitMatch=resposta.match(/MIT:\["([^"]+)","([^"]+)","([^"]+)"\]/);
       if(mitMatch){
         const itens=[mitMatch[1],mitMatch[2],mitMatch[3]];
@@ -3197,75 +3279,74 @@ Cole este texto no Claude.ai para análise completa.
     ['⚓ Kauê','Dica rápida para apoiar o Kauê hoje.'],
   ];
 
+  const[copiado,setCopiado]=useState(-1);
+  const copiarMsg=(i,t)=>{try{navigator.clipboard.writeText(t).then(()=>{setCopiado(i);setTimeout(()=>setCopiado(-1),1800);});}catch(e){}};
+  const novaConversa=()=>{setHist([]);lsSet('ia_hist',[]);setTimeout(()=>inputRef.current?.focus(),100);};
+  const btnTop={background:'rgba(255,255,255,.07)',border:'1px solid rgba(255,255,255,.16)',borderRadius:9,padding:'7px 10px',fontSize:13.5,fontWeight:700,color:'#e2e8f0',cursor:'pointer',whiteSpace:'nowrap'};
   return(
-    <div style={{display:'flex',flexDirection:'column',height:embed?'min(640px,calc(100dvh - 160px))':'calc(100dvh - 155px)'}}>
-      <div style={{background:'linear-gradient(135deg,rgba(30,20,10,.95),rgba(10,7,3,.98))',border:'1px solid rgba(251,191,36,.15)',borderRadius:13,padding:'11px 13px',marginBottom:8,display:'flex',justifyContent:'space-between',alignItems:'center',flexShrink:0}}>
-        <div>
-          <div style={{fontSize:13,color:'rgba(251,191,36,.5)',letterSpacing:'3px',fontFamily:"'DM Mono',monospace",fontWeight:700}}>{embed?'CONVERSA LIVRE':'ASSESSORA IA · SEFAZ-RS'}</div>
-          <div style={{fontFamily:"'DM Serif Display',serif",color:'#f0e6d0',fontSize:17,marginTop:2}}>{embed?'Pergunte o que quiser':'Perguntas · Plano · Suporte'}</div>
-        </div>
-        <div style={{display:'flex',gap:6}}>
-          <button onClick={gerarExporte} style={{background:'rgba(96,165,250,.15)',border:'1px solid rgba(96,165,250,.35)',borderRadius:9,padding:'8px 11px',fontFamily:"'DM Mono',monospace",fontSize:13,fontWeight:800,color:'#60a5fa',cursor:'pointer'}}>
-            📤 Exportar
-          </button>
-          <button onClick={iniciarDia} style={{background:'linear-gradient(135deg,#c8850a,#fbbf24)',border:'none',borderRadius:9,padding:'8px 13px',fontFamily:"'DM Mono',monospace",fontSize:14,fontWeight:800,color:'#050a14',cursor:'pointer'}}>
-            {embed?'📝 Ritual completo':(hist.length>0?'🔄 Novo dia':'☀️ Começar dia')}
-          </button>
-        </div>
+    <div style={{display:'flex',flexDirection:'column',height:embed?'calc(100dvh - 262px)':'calc(100dvh - 155px)',minHeight:embed?360:undefined}}>
+      <div style={{display:'flex',gap:6,alignItems:'center',marginBottom:8,flexShrink:0}}>
+        <div style={{flex:1,minWidth:0,fontFamily:"'DM Serif Display',serif",color:'#f8fafc',fontSize:18,lineHeight:1.2}}>{embed?'Conversa com a mentora':'Assessora IA · SEFAZ-RS'}</div>
+        <button onClick={iniciarDia} style={{...btnTop,background:'linear-gradient(135deg,#c8850a,#fbbf24)',border:'none',color:'#050a14',fontWeight:800}}>{embed?'📝 Ritual':(hist.length>0?'🔄 Novo dia':'☀️ Começar')}</button>
+        <button onClick={gerarExporte} style={btnTop} title="Exportar dados para colar no Claude.ai">📤</button>
+        <button onClick={novaConversa} style={btnTop} title="Limpar a conversa de hoje">🗑</button>
       </div>
       <div style={{overflowX:'auto',scrollbarWidth:'none',marginBottom:8,flexShrink:0}}>
-        <div style={{display:'flex',gap:5,width:'max-content',padding:'1px 0'}}>
+        <div style={{display:'flex',gap:6,width:'max-content',padding:'1px 0'}}>
           {ATALHOS.map(([l,p])=>(
-            <button key={l} onClick={()=>enviar(p)} style={{background:'rgba(148,163,184,.25)',border:'1px solid rgba(255,255,255,.08)',borderRadius:18,padding:'6px 11px',whiteSpace:'nowrap',fontSize:14,color:'#b4c0d1',cursor:'pointer',fontFamily:"'DM Mono',monospace"}}>{l}</button>
+            <button key={l} onClick={()=>enviar(p)} style={{background:'rgba(148,163,184,.22)',border:'1px solid rgba(255,255,255,.14)',borderRadius:18,padding:'7px 12px',whiteSpace:'nowrap',fontSize:14,color:'#e2e8f0',cursor:'pointer'}}>{l}</button>
           ))}
         </div>
       </div>
       {/* Matérias Urgentes */}
       <div style={{marginBottom:8,flexShrink:0}}>
         <button onClick={()=>setMostrarUrg(v=>!v)} style={{width:'100%',padding:'7px 12px',borderRadius:9,border:`1px solid ${urgIA.length>0?'rgba(248,113,113,.4)':'rgba(148,163,184,.2)'}`,background:urgIA.length>0?'rgba(248,113,113,.08)':'rgba(255,255,255,.03)',display:'flex',justifyContent:'space-between',alignItems:'center',cursor:'pointer'}}>
-          <span style={{fontSize:13,fontWeight:700,color:urgIA.length>0?'#f87171':'#aab6c8',fontFamily:"'DM Mono',monospace"}}>🚨 MATÉRIAS URGENTES {urgIA.length>0?`(${urgIA.length})`:''}</span>
-          <span style={{fontSize:13,color:'#b4c0d1'}}>{mostrarUrg?'▲':'▼'}</span>
+          <span style={{fontSize:13,fontWeight:700,color:urgIA.length>0?'#fca5a5':'#cbd5e1'}}>🚨 Matérias urgentes {urgIA.length>0?`(${urgIA.length})`:''}</span>
+          <span style={{fontSize:13,color:'#cbd5e1'}}>{mostrarUrg?'▲':'▼'}</span>
         </button>
         {mostrarUrg&&<div style={{padding:'10px',borderRadius:'0 0 9px 9px',border:'1px solid rgba(248,113,113,.3)',borderTop:'none',background:'rgba(248,113,113,.05)'}}>
           {urgIA.map((u,i)=>(
             <div key={i} style={{display:'flex',alignItems:'center',gap:8,padding:'6px 8px',borderRadius:7,background:'rgba(248,113,113,.08)',border:'1px solid rgba(248,113,113,.2)',marginBottom:5}}>
               <div style={{flex:1}}>
-                <div style={{fontSize:15,fontWeight:700,color:'#f87171'}}>{u.mat}</div>
-                {u.contexto&&<div style={{fontSize:13,color:'#b4c0d1'}}>{u.contexto}</div>}
+                <div style={{fontSize:15,fontWeight:700,color:'#fca5a5'}}>{u.mat}</div>
+                {u.contexto&&<div style={{fontSize:13,color:'#cbd5e1'}}>{u.contexto}</div>}
               </div>
-              <button onClick={()=>{const n=urgIA.filter((_,j)=>j!==i);setUrgIA(n);lsSet('urgentes_ia',n);}} style={{padding:'3px 8px',borderRadius:5,border:'1px solid rgba(248,113,113,.3)',background:'transparent',color:'#f87171',fontSize:13,cursor:'pointer'}}>✓ ok</button>
+              <button onClick={()=>{const n=urgIA.filter((_,j)=>j!==i);setUrgIA(n);lsSet('urgentes_ia',n);}} style={{padding:'3px 8px',borderRadius:5,border:'1px solid rgba(248,113,113,.3)',background:'transparent',color:'#fca5a5',fontSize:13,cursor:'pointer'}}>✓ ok</button>
             </div>
           ))}
           <div style={{display:'flex',gap:6,marginTop:6}}>
-            <input value={urgForm} onChange={e=>setUrgForm(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&urgForm.trim()){const n=[...urgIA,{mat:urgForm.trim(),dt:Date.now()}];setUrgIA(n);lsSet('urgentes_ia',n);setUrgForm('');setUrgSalvo(true);setTimeout(()=>setUrgSalvo(false),1500);}}} placeholder="ex: Equivalências lógicas, LRF art.15..." style={{flex:1,padding:'7px 10px',borderRadius:7,border:'1px solid rgba(248,113,113,.25)',background:'rgba(248,113,113,.06)',color:'#e0e8f8',fontSize:15,outline:'none'}}/>
+            <input value={urgForm} onChange={e=>setUrgForm(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&urgForm.trim()){const n=[...urgIA,{mat:urgForm.trim(),dt:Date.now()}];setUrgIA(n);lsSet('urgentes_ia',n);setUrgForm('');setUrgSalvo(true);setTimeout(()=>setUrgSalvo(false),1500);}}} placeholder="ex: Equivalências lógicas, LRF art.15..." style={{flex:1,padding:'8px 10px',borderRadius:7,border:'1px solid rgba(248,113,113,.3)',background:'rgba(248,113,113,.05)',color:'#f1f5f9',fontSize:15,outline:'none'}}/>
             <button onClick={()=>{if(!urgForm.trim())return;const n=[...urgIA,{mat:urgForm.trim(),dt:Date.now()}];setUrgIA(n);lsSet('urgentes_ia',n);setUrgForm('');setUrgSalvo(true);setTimeout(()=>setUrgSalvo(false),1500);}} style={{padding:'7px 12px',borderRadius:7,border:'none',background:'#f87171',color:'#050a14',fontSize:14,fontWeight:800,cursor:'pointer'}}>{urgSalvo?'✅':'+'}</button>
           </div>
-          <div style={{fontSize:13,color:'#b4c0d1',marginTop:5,fontStyle:'italic'}}>💡 A IA lembra dessas matérias todo dia no check-in</div>
+          <div style={{fontSize:13,color:'#cbd5e1',marginTop:5}}>💡 A IA lembra dessas matérias todo dia.</div>
         </div>}
       </div>
-      <div style={{flex:1,overflowY:'auto',display:'flex',flexDirection:'column',gap:9,paddingBottom:6}}>
+      <div ref={scrollerRef} style={{flex:1,overflowY:'auto',display:'flex',flexDirection:'column',gap:10,paddingBottom:6,minHeight:0,position:'relative'}}>
         {hist.length===0&&(
-          <div style={{textAlign:'center',padding:'40px 20px'}}>
-            <div style={{fontSize:34,marginBottom:10}}>💬</div>
-            <div style={{fontFamily:"'DM Serif Display',serif",fontSize:19,color:'#f1f5f9',marginBottom:8}}>Pergunte o que quiser</div>
-            <div style={{fontSize:15,color:'#c2ccd8',lineHeight:1.7}}>A mentora já abriu o dia no painel acima.<br/>Aqui você conversa livre — ou toque em um atalho. O <strong style={{color:'#fbbf24'}}>ritual completo</strong> de 5 perguntas continua disponível, só que agora é opcional.</div>
+          <div style={{textAlign:'center',padding:'28px 18px'}}>
+            <div style={{fontSize:34,marginBottom:8}}>💬</div>
+            <div style={{fontFamily:"'DM Serif Display',serif",fontSize:19,color:'#f8fafc',marginBottom:8}}>Pergunte o que quiser</div>
+            <div style={{fontSize:15.5,color:'#e2e8f0',lineHeight:1.65}}>Escreva abaixo ou toque em um atalho. O <strong style={{color:'#fbbf24'}}>Ritual</strong> faz as 5 perguntas do dia, mas é opcional.</div>
           </div>
         )}
         {hist.map((m,i)=>{
           const user=m.role==='user';
           return(
-            <div key={i} style={{display:'flex',justifyContent:user?'flex-end':'flex-start'}}>
-              <div style={{background:user?'linear-gradient(135deg,#1a2540,#1e2d50)':'rgba(148,163,184,.2)',border:user?'none':'1px solid rgba(255,255,255,.08)',borderRadius:user?'14px 14px 4px 14px':'14px 14px 14px 4px',padding:'10px 13px',maxWidth:'90%',fontSize:15,lineHeight:1.7,color:user?'#c8d8f8':'#b8c0d0'}}>
-                {!user&&<div style={{fontSize:13,color:'rgba(251,191,36,.6)',letterSpacing:'2px',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:5}}>✦ ASSESSORA</div>}
-                <span dangerouslySetInnerHTML={{__html:m.content.replace(/\n/g,'<br/>').replace(/\*\*(.*?)\*\*/g,'<strong style="color:#fbbf24">$1</strong>').replace(/─+/g,'<hr style="border:none;border-top:1px solid rgba(255,255,255,.08);margin:6px 0"/>')}}/>
+            <div key={i} ref={!user&&i===hist.length-1?ultMsgRef:null} style={{display:'flex',justifyContent:user?'flex-end':'flex-start'}}>
+              <div style={{background:user?'#2b4f8c':'#232f44',border:user?'1px solid rgba(147,197,253,.35)':'1px solid rgba(255,255,255,.16)',borderRadius:user?'16px 16px 4px 16px':'16px 16px 16px 4px',padding:'10px 13px',maxWidth:user?'88%':'96%',fontSize:15.5,lineHeight:1.6,color:'#f8fafc'}}>
+                {!user&&<div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:3}}>
+                  <span style={{fontSize:12.5,color:'#fbbf24',letterSpacing:'1.5px',fontWeight:800}}>✦ ASSESSORA</span>
+                  <button onClick={()=>copiarMsg(i,m.content)} style={{background:'transparent',border:'none',color:copiado===i?'#4ade80':'#94a3b8',fontSize:13,cursor:'pointer',padding:'0 2px'}}>{copiado===i?'✅ copiado':'📋 copiar'}</button>
+                </div>}
+                {user?<div style={{whiteSpace:'pre-wrap',wordBreak:'break-word'}}>{m.content}</div>:<MdIA texto={m.content}/>}
               </div>
             </div>
           );
         })}
         {carregando&&(
           <div style={{display:'flex'}}>
-            <div style={{background:'rgba(148,163,184,.28)',border:'1px solid rgba(255,255,255,.08)',borderRadius:'14px 14px 14px 4px',padding:'14px 16px',display:'flex',gap:5,alignItems:'center'}}>
-              {[0,1,2].map(i=><div key={i} style={{width:7,height:7,borderRadius:'50%',background:'#fbbf24',animation:'pulse 1.2s ease-in-out infinite',animationDelay:`${i*.2}s`}}/>)}
+            <div style={{background:'#232f44',border:'1px solid rgba(255,255,255,.16)',borderRadius:'16px 16px 16px 4px',padding:'14px 16px',display:'flex',gap:5,alignItems:'center'}}>
+              {[0,1,2].map(i=><div key={i} style={{width:8,height:8,borderRadius:'50%',background:'#fbbf24',animation:'pulse 1.2s ease-in-out infinite',animationDelay:`${i*.2}s`}}/>)}
             </div>
           </div>
         )}
@@ -3279,32 +3360,32 @@ Cole este texto no Claude.ai para análise completa.
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12,flexShrink:0}}>
               <div>
                 <div style={{fontSize:13,color:'#60a5fa',fontFamily:"'DM Mono',monospace",letterSpacing:'2px',marginBottom:2}}>📤 EXPORTAR PARA IA</div>
-                <div style={{fontSize:14,color:'#b4c0d1'}}>Copie e cole no Claude.ai para análise completa</div>
+                <div style={{fontSize:14,color:'#e2e8f0'}}>Copie e cole no Claude.ai para análise completa</div>
               </div>
-              <button onClick={()=>setExportModal(false)} style={{padding:'6px 12px',borderRadius:8,border:'1px solid rgba(255,255,255,.1)',background:'transparent',color:'#c2ccd8',fontSize:15,cursor:'pointer'}}>✕</button>
+              <button onClick={()=>setExportModal(false)} style={{padding:'6px 12px',borderRadius:8,border:'1px solid rgba(255,255,255,.1)',background:'transparent',color:'#e2e8f0',fontSize:15,cursor:'pointer'}}>✕</button>
             </div>
-            <textarea readOnly value={exportTxt} style={{flex:1,width:'100%',padding:'12px',borderRadius:10,border:'1px solid rgba(96,165,250,.2)',background:'rgba(96,165,250,.04)',color:'#b4c0d1',fontSize:13,fontFamily:"'DM Mono',monospace",lineHeight:1.6,resize:'none',outline:'none',boxSizing:'border-box',overflowY:'auto',marginBottom:12,minHeight:200}}/>
+            <textarea readOnly value={exportTxt} style={{flex:1,width:'100%',padding:'12px',borderRadius:10,border:'1px solid rgba(96,165,250,.2)',background:'rgba(96,165,250,.04)',color:'#e2e8f0',fontSize:13,fontFamily:"'DM Mono',monospace",lineHeight:1.6,resize:'none',outline:'none',boxSizing:'border-box',overflowY:'auto',marginBottom:12,minHeight:200}}/>
             <div style={{display:'flex',gap:8,flexShrink:0}}>
               <button onClick={copiarExporte} style={{flex:1,padding:'13px',borderRadius:10,border:'none',background:exportCopiado?'#34d399':'#60a5fa',color:'#0f172a',fontSize:15,fontWeight:900,cursor:'pointer',fontFamily:"'DM Mono',monospace"}}>
                 {exportCopiado?'✅ COPIADO!':'📋 COPIAR TUDO'}
               </button>
-              <button onClick={()=>setExportModal(false)} style={{padding:'13px 18px',borderRadius:10,border:'1px solid rgba(255,255,255,.1)',background:'transparent',color:'#aab6c6',fontSize:15,cursor:'pointer'}}>Fechar</button>
+              <button onClick={()=>setExportModal(false)} style={{padding:'13px 18px',borderRadius:10,border:'1px solid rgba(255,255,255,.1)',background:'transparent',color:'#cbd5e1',fontSize:15,cursor:'pointer'}}>Fechar</button>
             </div>
           </div>
         </div>
       )}
 
-      <div style={{display:'flex',gap:8,paddingTop:8,borderTop:'1px solid rgba(255,255,255,.06)',flexShrink:0}}>
+      <div style={{display:'flex',gap:8,paddingTop:8,borderTop:'1px solid rgba(255,255,255,.12)',flexShrink:0}}>
         <textarea ref={inputRef}
           value={inputVal}
           onChange={e=>setInputVal(e.target.value)}
-          placeholder="Responda o que quiser, como quiser..."
+          placeholder="Escreva sua pergunta…"
           rows={1}
           onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();if(inputVal.trim()){enviar(inputVal);setInputVal('');}}}}
-          onInput={e=>{e.target.style.height='auto';e.target.style.height=Math.min(e.target.scrollHeight,100)+'px';}}
-          style={{flex:1,border:'1px solid rgba(255,255,255,.1)',borderRadius:20,padding:'10px 13px',fontFamily:"'DM Sans',sans-serif",fontSize:15,color:'#f1f5f9',background:'rgba(148,163,184,.28)',resize:'none',outline:'none',lineHeight:1.5}}/>
-        <button onClick={()=>{if(inputVal.trim()){enviar(inputVal);setInputVal('');}}}
-          style={{width:42,height:42,borderRadius:'50%',background:'linear-gradient(135deg,#c8850a,#fbbf24)',border:'none',fontSize:20,cursor:'pointer',flexShrink:0,color:'#050a14',fontWeight:900,alignSelf:'flex-end'}}>↑</button>
+          onInput={e=>{e.target.style.height='auto';e.target.style.height=Math.min(e.target.scrollHeight,120)+'px';}}
+          style={{flex:1,border:'1px solid rgba(255,255,255,.22)',borderRadius:20,padding:'10px 14px',fontFamily:"'DM Sans',sans-serif",fontSize:16,color:'#f8fafc',background:'#1b2536',resize:'none',outline:'none',lineHeight:1.45}}/>
+        <button onClick={()=>{if(inputVal.trim()){enviar(inputVal);setInputVal('');}}} aria-label="Enviar"
+          style={{width:44,height:44,borderRadius:'50%',background:'linear-gradient(135deg,#c8850a,#fbbf24)',border:'none',fontSize:20,cursor:'pointer',flexShrink:0,color:'#050a14',fontWeight:900,alignSelf:'flex-end'}}>↑</button>
       </div>
     </div>
   );
