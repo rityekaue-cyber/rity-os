@@ -242,7 +242,7 @@ const _w=console.warn;console.warn=(...a)=>{if(String(a[0]||'').includes('Babel'
 const{useState,useEffect,useRef,useMemo,useCallback}=React;
 
 // ─── CONSTANTES ───────────────────────────────────────────────
-const CICLO_INI_MS=new Date(2026,10,12).setHours(0,0,0,0); // Meta 1 SEFAZ-RS (Consolidar a base) — dia 1 = qui 12/11/2026 · dia 4 = dom 15/11 (livre) · dia 7 = qua 18/11
+const CICLO_INI_MS=new Date(2026,10,19).setHours(0,0,0,0); // Meta 2 SEFAZ-RS (Consolidar a base) — dia 1 = qui 19/11/2026 · dia 3 = sáb 21/11 (viagem) · dia 4 = dom 22/11 (prova SC, sem estudo) · dia 7 = qua 25/11
 const NIVEL_INI_MS=new Date(2026,9,12).setHours(0,0,0,0); // registros de questões contam desde a Meta 1 (12/10)
 // ── CICLO — PLANO 02/11–08/11/2026 · refeito em 03/11 (férias até a prova): 5 atividades por dia = TI + difícil + média + fácil + 1 reforço (30 no total) · TI e Previdenciário em prioridade ──
 // Regras (combinadas com a Ritchely): 1h30 = matéria difícil e de peso (Previdenciário) · 1h = bom peso e facilidade,
@@ -256,7 +256,7 @@ const MAT_TI='Tecnologia da Informação';
 const ehTINova=i=>i.mat===MAT_TI&&!/teste|favoritas|revis/i.test(i.conteudo||'');   // Teste/Favoritas/Revisão = revisão, não conta como meta nova
 const REGRAS_PLANO=[
   {ic:'🧠',t:'Revisão refeita em 13/11: o que cada sub-aba faz',d:'Reforços = lista do Guruja. Questões = caderno de erros do TEC, 30 min na quarta, sexta e domingo, da matéria mais difícil para a mais fácil. Memorização = baralho filtrado de 100 notas, montado toda segunda, contador "restam N". Passiva = 2 áudios por dia (1 do que você estudou + 1 da matéria de menor contato), calculados uma vez por dia. Profunda = segunda, 1h30, lista sua. Estratégia = fechamento da semana e fila única de lacunas. O teto é 5h por dia; o que sobra até 300 min é folga.'},
-  {ic:'🎯',t:'Foco no SEFAZ-RS desde 12/11 (pré-edital, banca FCC)',d:'Decisão sua com o mentor: o plano passou a ser o planejamento "Consolidar a base" do Guruja (Meta 1, 20 atividades), de quinta 12/11 a quarta 18/11, com domingo só com o caderno de erros (30 min). A prova do SEFAZ-SC em 22/11 vira treino. A Meta 5 do SC fica pendente e inativa no portal.'},
+  {ic:'🎯',t:'Foco no SEFAZ-RS desde 12/11 (pré-edital, banca FCC)',d:'Decisão sua com o mentor: o plano é o planejamento "Consolidar a base" do Guruja. A Meta 1 (20 atividades) fechou em 18/11. A Meta 2 (20 atividades) está distribuída de quinta 19/11 a quarta 25/11 em uma semana atípica: 4 atividades na quinta, 3 na sexta, 2 fáceis no sábado (viagem), domingo de prova (SEFAZ-SC, só treino), 2 fáceis na segunda, 3 na terça e 4 na quarta. Ficam 2 de fora (Dir. Penal e Dir. Empresarial, questões), para 26/11. A Meta 5 do SC fica pendente e inativa no portal.'},
   {ic:'⏱',t:'Rotina do dia: 1h de TI + 2h de Contabilidade + 1h de revisão das outras matérias',d:'São até 5h por dia (o Anki profundo das 05h, 30 min, fica fora; o que sobrar até 5h é folga). O dia tem sempre esta ordem: TI primeiro, depois Contabilidade, e a hora de revisão por último.'},
   {ic:'🧱',t:'Ordem de pré-requisitos',d:'Contabilidade vem antes de Auditoria (a Auditoria só entra a partir de segunda 16/11, depois da base contábil). Direito Tributário vem antes de Legislação Tributária Estadual.'},
   {ic:'🧪',t:'Os minutos são estimativa minha',d:'O Guruja não informa quanto tempo leva cada atividade. As linhas "Questões FCC" marcadas como rotina do mentor não são do Guruja: elas completam a carga de Contabilidade e de TI e são as primeiras a cortar se o dia apertar.'},
@@ -265,7 +265,7 @@ const REGRAS_PLANO=[
 ];
 const CAP_DIA_PADRAO=240, TOL_DIA=15;
 // Minutos planejados por dia (seg..dom) = soma do plano (sábado e domingo refeitos em 07/11 de manhã com os dados do conector). Dá para mudar em Estudo › Ciclo › Horas por dia.
-const CAP_PLANO=[240,270,240,30,285,240,270]; // qui12 sex13 sáb14 dom15 seg16 ter17 qua18 · plano de cada dia (Meta 1 + caderno qua/sex/dom + Profunda seg). O teto é 5h por dia: o que sobra até 300 é folga (tempo livre).
+const CAP_PLANO=[210,165,60,0,180,195,210]; // qui19 sex20 sáb21 dom22 seg23 ter24 qua25 · semana atípica (viagem e prova do SC): 4, 3, 2 fáceis, prova, 2 fáceis + Profunda, 3 e 4 atividades da Meta 2. O teto continua 5h por dia: o que sobra é folga.
 const MAT_INFO={
   'Dir. Constitucional':{ic:'📜'},'Dir. Administrativo':{ic:'🏛️'},'Dir. Financeiro / AFO':{ic:'📈'},
   'Dir. Previdenciário':{ic:'🛡️'},'Dir. Civil':{ic:'📘'},'Dir. Penal':{ic:'⚖️'},'Reforma Tributária':{ic:'🧾'},
@@ -291,39 +291,27 @@ function gurujaLabel(o){
   return{longo:o,curto:o};
 }
 const PLANO_RAW=[
-  [109351, "Tecnologia da Informação", "[TI I] Conceitos Básicos de Banco de Dados (parte 1)", 60, 4, 1, 99, "Teoria", "Meta 1 · Consolidar a base", "1h de TI do dia. Tempo estimado por mim (o Guruja não informa minutos)."],
-  [78591, "Contabilidade Geral", "Histórico da Contabilidade, Conceitos introdutórios e Técnicas contábeis", 75, 5, 1, 99, "Teoria", "Meta 1 · Consolidar a base", "Base de Contabilidade: vem antes de Auditoria. Tempo estimado por mim (o Guruja não informa minutos)."],
-  [78647, "Contabilidade Geral", "Conceitos, Objetivos e Finalidades — Questões", 45, 4, 1, 99, "Questões", "Meta 1 · Consolidar a base", "Fixa o que acabou de ver. Tempo estimado por mim (o Guruja não informa minutos)."],
-  [118437, "Dir. Tributário", "Conceito, Classificação, Natureza Jurídica e Espécies de Tributos", 60, 4, 1, 99, "Questões", "Meta 1 · Consolidar a base", "Dir. Tributário vem antes de Legislação Tributária Estadual. Tempo estimado por mim (o Guruja não informa minutos)."],
-  [109353, "Tecnologia da Informação", "[TI I] Conceitos Básicos de Banco de Dados (parte 2)", 60, 4, 2, 99, "Teoria", "Meta 1 · Consolidar a base", "1h de TI do dia. Tempo estimado por mim (o Guruja não informa minutos)."],
-  [78664, "Contabilidade Geral", "Patrimônio. Componentes Patrimoniais", 90, 5, 2, 99, "Teoria", "Meta 1 · Consolidar a base", "Núcleo da Contabilidade: bens, direitos e obrigações. Tempo estimado por mim (o Guruja não informa minutos)."],
-  [801, "Contabilidade Geral", "Questões de Contabilidade Geral (FCC) — Conceitos e Patrimônio", 30, 3, 2, 10, "Questões", "Plano · rotina do mentor", "Rotina do seu mentor: 1h TI + 2h Contabilidade + 1h de revisão por dia. Questões FCC do que você viu no dia. Se o dia apertar, esta linha é a primeira a cortar."],
-  [118180, "Dir. Administrativo", "Conceitos iniciais, Regime Jurídico e Princípios", 30, 4, 2, 99, "Questões", "Meta 1 · Consolidar a base", "Tempo estimado por mim (o Guruja não informa minutos)."],
-  [118356, "Dir. Constitucional", "Teoria Geral do Direito Constitucional", 30, 3, 2, 99, "Questões", "Meta 1 · Consolidar a base", "Tempo estimado por mim (o Guruja não informa minutos)."],
-  [811, "Revisão · Caderno de erros", "Caderno de erros do TEC — 30 min (matéria da vez em Revisão › Questões)", 30, 4, 2, 99, "Revisão", "Plano · rotina de revisão", "Rotina de revisão: caderno de erros 3×30 min (qua/sex/dom), da matéria mais difícil para a mais fácil."],
-  [109358, "Tecnologia da Informação", "[TI I] Mapeamento — Aula 02", 30, 4, 3, 99, "Mapeamento", "Meta 1 · Consolidar a base", "Mapa mental da aula 02. Tempo estimado por mim (o Guruja não informa minutos)."],
-  [109356, "Tecnologia da Informação", "[TI I] Revisão — Aula 02", 30, 3, 3, 99, "Revisão", "Meta 1 · Consolidar a base", "Fecha a Aula 02 de TI. Tempo estimado por mim (o Guruja não informa minutos)."],
-  [78669, "Contabilidade Geral", "Representação Gráfica e Equiparação Patrimonial", 75, 5, 3, 99, "Teoria", "Meta 1 · Consolidar a base", "Tempo estimado por mim (o Guruja não informa minutos)."],
-  [802, "Contabilidade Geral", "Questões de Contabilidade Geral (FCC) — Representação gráfica e equação patrimonial", 45, 3, 3, 9, "Questões", "Plano · rotina do mentor", "Rotina do seu mentor: 1h TI + 2h Contabilidade + 1h de revisão por dia. Questões FCC do que você viu no dia. Se o dia apertar, esta linha é a primeira a cortar."],
-  [106235, "Raciocínio Lógico", "Introdução às proposições", 30, 5, 3, 99, "Teoria", "Meta 1 · Consolidar a base", "Tempo estimado por mim (o Guruja não informa minutos)."],
-  [106236, "Raciocínio Lógico", "Distinção entre proposição, sentença e expressão", 30, 5, 3, 99, "Teoria", "Meta 1 · Consolidar a base", "Tempo estimado por mim (o Guruja não informa minutos)."],
-  [812, "Revisão · Caderno de erros", "Caderno de erros do TEC — 30 min (matéria da vez em Revisão › Questões)", 30, 4, 4, 99, "Revisão", "Plano · rotina de revisão", "Rotina de revisão: caderno de erros 3×30 min (qua/sex/dom). Domingo só tem isto."],
-  [803, "Tecnologia da Informação", "Questões de TI (FCC) — Banco de Dados: conceitos básicos", 60, 3, 5, 7, "Questões", "Plano · rotina do mentor", "Rotina do seu mentor: 1h TI + 2h Contabilidade + 1h de revisão por dia. Questões de TI sobre o que você viu até sábado. Se o dia apertar, esta linha é a primeira a cortar."],
-  [78679, "Contabilidade Geral", "Patrimônio, Componentes Patrimoniais e Equiparação — Questões (CESPE e FGV)", 60, 4, 5, 99, "Questões", "Meta 1 · Consolidar a base", "Tempo estimado por mim (o Guruja não informa minutos)."],
-  [105748, "Auditoria", "Contextualização e Classificação de Auditoria", 30, 3, 5, 99, "Teoria", "Meta 1 · Consolidar a base", "Só depois da base de Contabilidade. Tempo estimado por mim (o Guruja não informa minutos)."],
-  [105750, "Auditoria", "Classificação de Auditoria. NBC TA 200", 45, 4, 5, 99, "Teoria", "Meta 1 · Consolidar a base", "Tempo estimado por mim (o Guruja não informa minutos)."],
-  [813, "Revisão · Profunda", "Revisão Profunda de segunda — 1h30 (TI, Contabilidade e as 3 prioridades da semana)", 90, 4, 5, 99, "Revisão", "Plano · rotina de revisão", "Rotina de revisão: Profunda 1h30 toda segunda, sobre as matérias com mais dificuldade. Cobre o que seria o bloco de questões de Contabilidade de segunda."],
-  [805, "Tecnologia da Informação", "Questões de TI (FCC) — Mapeamento e revisão da Aula 02", 60, 3, 6, 5, "Questões", "Plano · rotina do mentor", "Rotina do seu mentor: 1h TI + 2h Contabilidade + 1h de revisão por dia. Questões de TI. Se o dia apertar, esta linha é a primeira a cortar."],
-  [806, "Contabilidade Geral", "Questões de Contabilidade Geral (FCC) — bloco 1 da semana", 60, 3, 6, 6, "Questões", "Plano · rotina do mentor", "Rotina do seu mentor: 1h TI + 2h Contabilidade + 1h de revisão por dia. Questões FCC de tudo que você viu em Contabilidade. Se o dia apertar, esta linha é a primeira a cortar."],
-  [809, "Contabilidade Geral", "Questões de Contabilidade Geral (FCC) — bloco 2 da semana", 45, 3, 6, 4, "Questões", "Plano · rotina do mentor", "Rotina do seu mentor: 1h TI + 2h Contabilidade + 1h de revisão por dia. Questões FCC de tudo que você viu em Contabilidade. Se o dia apertar, esta linha é a primeira a cortar."],
-  [106101, "Auditoria", "NBC TA 200: Definições", 45, 5, 6, 99, "Teoria", "Meta 1 · Consolidar a base", "Tempo estimado por mim (o Guruja não informa minutos)."],
-  [117720, "Português", "Ortografia e Formação das Palavras", 30, 3, 6, 99, "Questões", "Meta 1 · Consolidar a base", "Tempo estimado por mim (o Guruja não informa minutos)."],
-  [807, "Tecnologia da Informação", "Questões de TI (FCC) — misto da semana", 60, 3, 7, 2, "Questões", "Plano · rotina do mentor", "Rotina do seu mentor: 1h TI + 2h Contabilidade + 1h de revisão por dia. Questões de TI. Se o dia apertar, esta linha é a primeira a cortar."],
-  [808, "Contabilidade Geral", "Revisão de Contabilidade Geral — erros da semana (refazer)", 60, 3, 7, 3, "Revisão", "Plano · rotina do mentor", "Rotina do seu mentor: 1h TI + 2h Contabilidade + 1h de revisão por dia. Fecha a semana: refaz o que errou. Se o dia apertar, esta linha é a primeira a cortar."],
-  [810, "Contabilidade Geral", "Revisão de Contabilidade Geral — questões FCC para fechar a semana", 45, 3, 7, 1, "Revisão", "Plano · rotina do mentor", "Rotina do seu mentor: 1h TI + 2h Contabilidade + 1h de revisão por dia. Fecha a semana: refaz o que errou. Se o dia apertar, esta linha é a primeira a cortar."],
-  [117775, "Português", "Morfologia, Formação das Palavras, Colocação Pronominal e Pontuação", 30, 3, 7, 99, "Questões", "Meta 1 · Consolidar a base", "Tempo estimado por mim (o Guruja não informa minutos)."],
-  [118483, "Dir. Civil", "LINDB", 45, 5, 7, 99, "Questões", "Meta 1 · Consolidar a base", "Tempo estimado por mim (o Guruja não informa minutos)."],
-  [814, "Revisão · Caderno de erros", "Caderno de erros do TEC — 30 min (matéria da vez em Revisão › Questões)", 30, 4, 7, 99, "Revisão", "Plano · rotina de revisão", "Rotina de revisão: caderno de erros 3×30 min (qua/sex/dom)."],
+  [110737, "Tecnologia da Informação", "[TI I] Conceitos Básicos de Banco de Dados — Questões", 45, 4, 1, 99, "Questões", "Meta 2 · Consolidar a base", "1h de TI do dia: começa pelas questões do que você já viu. Tempo estimado por mim (o Guruja não informa minutos)."],
+  [72830, "Contabilidade Geral", "Aspectos Introdutórios da Contabilidade", 75, 4, 1, 99, "Teoria", "Meta 2 · Consolidar a base", "Abre a Meta 2 de Contabilidade: é a base do resto. Tempo estimado por mim (o Guruja não informa minutos)."],
+  [72831, "Contabilidade Geral", "Mapeamento — Aula 00", 30, 3, 1, 99, "Mapeamento", "Meta 2 · Consolidar a base", "Mapa mental logo depois da teoria, enquanto está fresco. Tempo estimado por mim (o Guruja não informa minutos)."],
+  [118438, "Dir. Tributário", "Limitações Constitucionais ao Poder de Tributar — Questões", 60, 5, 1, 99, "Questões", "Meta 2 · Consolidar a base", "Direito Tributário tem peso na prova da SEFAZ e hoje é o dia em que você rende mais. Tempo estimado por mim (o Guruja não informa minutos)."],
+  [110738, "Tecnologia da Informação", "[TI I] Conceitos Básicos de Banco de Dados — Questões (2ª série)", 45, 4, 2, 99, "Questões", "Meta 2 · Consolidar a base", "1h de TI do dia. Tempo estimado por mim (o Guruja não informa minutos)."],
+  [73408, "Contabilidade Geral", "Aspectos introdutórios da Contabilidade — Questões", 45, 4, 2, 99, "Questões", "Meta 2 · Consolidar a base", "Fixa a teoria e o mapa de ontem. Tempo estimado por mim (o Guruja não informa minutos)."],
+  [106237, "Raciocínio Lógico", "Proposições compostas. Conectivos lógicos.", 45, 5, 2, 99, "Teoria", "Meta 2 · Consolidar a base", "Raciocínio Lógico começa aqui para fechar com os conectivos de quarta. Tempo estimado por mim (o Guruja não informa minutos)."],
+  [821, "Revisão · Caderno de erros", "Caderno de erros do TEC — 30 min (matéria da vez em Revisão › Questões)", 30, 4, 2, 99, "Revisão", "Plano · rotina de revisão", "Rotina de revisão: caderno de erros 30 min na quarta e na sexta. Domingo (22/11) não tem: é dia de prova."],
+  [106115, "Auditoria", "Revisão — Aula 00", 30, 3, 3, 3, "Revisão", "Meta 2 · Consolidar a base", "Sábado de viagem: atividade fácil, só revisão do que já foi visto. Tempo estimado por mim (o Guruja não informa minutos)."],
+  [117961, "Português", "Morfologia: Pronomes, Preposição, Conjunção e Colocação Pronominal — Questões", 30, 4, 3, 2, "Questões", "Meta 2 · Consolidar a base", "Sábado de viagem: questões leves. Se o dia não render, é a primeira a cortar. Tempo estimado por mim (o Guruja não informa minutos)."],
+  [118193, "Dir. Administrativo", "Organização Administrativa — Questões", 45, 5, 5, 99, "Questões", "Meta 2 · Consolidar a base", "Segunda depois da prova: Direito em questões, sem conteúdo novo pesado. Tempo estimado por mim (o Guruja não informa minutos)."],
+  [118383, "Dir. Constitucional", "Princípios Fundamentais — Questões", 45, 5, 5, 99, "Questões", "Meta 2 · Consolidar a base", "Segunda depois da prova: questões de Direito. Tempo estimado por mim (o Guruja não informa minutos)."],
+  [823, "Revisão · Profunda", "Revisão Profunda de segunda — 1h30 (TI, Contabilidade e as 3 prioridades da semana)", 90, 4, 5, 1, "Revisão", "Plano · rotina de revisão", "Rotina de revisão: Profunda de segunda, 1h30. Depois da prova, é o primeiro bloco a cortar se o dia estiver pesado."],
+  [109363, "Tecnologia da Informação", "[TI I] Modelagem Conceitual (MER) — Teoria (parte 1)", 60, 3, 6, 99, "Teoria", "Meta 2 · Consolidar a base", "1h de TI do dia: assunto novo, por isso vai com a cabeça fresca. Tempo estimado por mim (o Guruja não informa minutos)."],
+  [72832, "Contabilidade Geral", "Patrimônio: componentes patrimoniais", 90, 5, 6, 99, "Teoria", "Meta 2 · Consolidar a base", "Núcleo da Contabilidade: bens, direitos e obrigações. Entra depois dos aspectos introdutórios. Tempo estimado por mim (o Guruja não informa minutos)."],
+  [118490, "Dir. Civil", "Pessoas Naturais — Questões", 45, 5, 6, 99, "Questões", "Meta 2 · Consolidar a base", "Questões de Direito Civil para fechar o dia. Tempo estimado por mim (o Guruja não informa minutos)."],
+  [109364, "Tecnologia da Informação", "[TI I] Modelagem Conceitual (MER) — Teoria (parte 2)", 60, 3, 7, 99, "Teoria", "Meta 2 · Consolidar a base", "1h de TI do dia: continua o MER de ontem. Tempo estimado por mim (o Guruja não informa minutos)."],
+  [109366, "Tecnologia da Informação", "[TI I] Mapeamento — Aula 03", 30, 4, 7, 99, "Mapeamento", "Meta 2 · Consolidar a base", "Fecha o MER com o mapa mental. Tempo estimado por mim (o Guruja não informa minutos)."],
+  [106242, "Raciocínio Lógico", "Conectivos Lógicos: Disjunção Exclusiva, Condicional.", 45, 5, 7, 99, "Teoria", "Meta 2 · Consolidar a base", "Continua os conectivos de sexta. Tempo estimado por mim (o Guruja não informa minutos)."],
+  [106120, "Auditoria", "Princípios Éticos. Ceticismo Profissional.", 45, 4, 7, 99, "Teoria", "Meta 2 · Consolidar a base", "Auditoria só depois da base de Contabilidade (já vista em quinta, sexta e terça). Tempo estimado por mim (o Guruja não informa minutos)."],
+  [824, "Revisão · Caderno de erros", "Caderno de erros do TEC — 30 min (matéria da vez em Revisão › Questões)", 30, 4, 7, 99, "Revisão", "Plano · rotina de revisão", "Rotina de revisão: caderno de erros 30 min na quarta e na sexta."],
 ];
 const CICLO_BASE=PLANO_RAW.map(([id,mat,conteudo,min,est,diaPlano,corte,tipo,origem,por],idx)=>{
   const f=faixaMin(min);
@@ -540,6 +528,14 @@ const CICLO=(()=>{
       localStorage.setItem('ciclo_versao',JSON.stringify('v59'));
     }
   }catch(e){}
+  // v60 (19/11): Meta 2 distribuída de qui 19/11 a qua 25/11 (semana atípica). Os ids novos já ignoram o que foi marcado na Meta 1; limpa só horas por dia e o briefing da IA.
+  try{
+    if(cv<60){
+      localStorage.removeItem('horas_dia');localStorage.removeItem('ia_dia');localStorage.removeItem('ia_briefing');localStorage.removeItem('ciclo_volta');
+      localStorage.setItem('cicloNum',JSON.stringify(2));
+      localStorage.setItem('ciclo_versao',JSON.stringify('v60'));
+    }
+  }catch(e){}
   try{seedRegistro101((k,v)=>localStorage.setItem(k,JSON.stringify(v)),false);}catch(e){}
   try{seedRegistroEtica((k,v)=>localStorage.setItem(k,JSON.stringify(v)),false);}catch(e){}
   let dw=lsj('dias_trabalho',[2,4,5]);
@@ -613,7 +609,8 @@ const LEGISLACAO_ALVO=[
 
 const CRONOGRAMA_MACRO=[
   {periodo:'NOV/2026 — Virada para o SEFAZ-RS',eventos:[
-    {data:'12-18/11',acao:'Meta 1 do planejamento "Consolidar a base" — 20 atividades, até 5h por dia (1h TI + 2h Contabilidade + revisão; caderno qua/sex/dom, Profunda segunda 1h30), domingo só caderno',tipo:'estudo'},
+    {data:'12-18/11',acao:'Meta 1 do planejamento "Consolidar a base" — 20 atividades, concluída em 18/11',tipo:'estudo'},
+    {data:'19-25/11',acao:'Meta 2 — semana atípica: 4, 3, 2 fáceis (sáb, viagem), domingo prova, 2 fáceis + Profunda (seg), 3 e 4 atividades; caderno de erros na sexta e na quarta',tipo:'estudo'},
     {data:'13/11',acao:'📋 SEFAZ-SC: Edital de Convocação — confirmar local da prova',tipo:'edital'},
     {data:'20-21/11',acao:'Viagem a Florianópolis (sem conteúdo novo)',tipo:'descanso'},
     {data:'22/11',acao:'📋 Prova SEFAZ-SC como treino FCC — manhã Gerais (4h) · tarde Específicos (5h)',tipo:'prova',alerta:'alto'},
@@ -6898,7 +6895,7 @@ function CadernoTEC({onAddHoras,onSyncHistorico,onConcluir}){
       const rid=`${hoje}_cadtec_${agora}`;
       lsSet('historico_diario',[...lsGet('historico_diario',[]),{id:rid,materia:escolhida,assunto:'Caderno de erros (TEC)',tempo:'30',questoes:String(nq),acertei:String(na),dificuldade:0,obs:'Sessão do caderno de erros',dia:hoje,dt:agora,origem:'caderno_tec'}].sort((x,y)=>(x.dt||0)-(y.dt||0)));
     }
-    try{const fs=lsGet('feitos',[]);const it=CICLO.find(c=>[811,812,814].includes(c.id)&&!fs.includes(c.id)&&diaCicloLabel(c.dia).endsWith(hoje.slice(8)+'/'+hoje.slice(5,7)));if(it&&onConcluir)onConcluir(it.id);}catch(e){}
+    try{const fs=lsGet('feitos',[]);const it=CICLO.find(c=>[821,824].includes(c.id)&&!fs.includes(c.id)&&diaCicloLabel(c.dia).endsWith(hoje.slice(8)+'/'+hoje.slice(5,7)));if(it&&onConcluir)onConcluir(it.id);}catch(e){}
     if(onSyncHistorico)onSyncHistorico();
     setQ('');setA('');setMat(null);
   };
@@ -7110,7 +7107,8 @@ function calcFechamentoSemana(){
   const mm=minutosPorDia(dias);
   const porDia=dias.map(dk=>({dk,total:mm[dk].total,ti:mm[dk].porMat[MAT_TI]||0,ct:mm[dk].porMat['Contabilidade Geral']||0}));
   const diaHojeIdx=Math.min(7,Math.max(1,Math.round((new Date().setHours(0,0,0,0)-CICLO_INI_MS)/86400000)+1));
-  const diasPlano=[1,2,3,5,6,7].filter(d=>d<=diaHojeIdx).length; // domingo não tem TI/Contab
+  const diasPlano=[...new Set(CICLO_BASE.filter(i=>!i.rotina&&i.diaPlano<=diaHojeIdx).map(i=>i.diaPlano))].length; // dias do plano que têm atividade, até hoje
+  const planMin=m=>CICLO_BASE.filter(i=>i.mat===m&&i.diaPlano<=diaHojeIdx).reduce((x,i)=>x+i.min,0);
   const totTI=porDia.reduce((s,d)=>s+d.ti,0),totCT=porDia.reduce((s,d)=>s+d.ct,0);
   const cad=(lsGet('cad_rot',{hist:[]}).hist||[]).filter(h=>h.dia>=dias[0]).length;
   const nlm=lsGet('rev_nlm',[]).filter(r=>r.dia>=dias[0]).length;
@@ -7120,14 +7118,14 @@ function calcFechamentoSemana(){
   const metaFeitas=Math.max(ma?ma.atividades_concluidas||0:0,feitosApp);
   const metaTotal=ma?ma.atividades_totais||20:20;
   const mediaHoras=porDia.length?Math.round(porDia.reduce((s,d)=>s+d.total,0)/porDia.length):0;
-  return{porDia,diasPlano,totTI,totCT,metaTI:60*diasPlano,metaCT:120*diasPlano,cad,nlm,filtro,metaFeitas,metaTotal,mediaHoras};
+  return{porDia,diasPlano,totTI,totCT,metaTI:planMin(MAT_TI),metaCT:planMin('Contabilidade Geral'),cad,nlm,filtro,metaFeitas,metaTotal,mediaHoras};
 }
 function decisaoDaSemana(F){
   const diaHojeIdx=Math.min(7,Math.max(1,Math.round((new Date().setHours(0,0,0,0)-CICLO_INI_MS)/86400000)+1));
   const esperado=Math.round(F.metaTotal*Math.min(1,diaHojeIdx/7));
-  if(F.metaFeitas<esperado-2){const c=(typeof calcOrdemCorte==='function'?calcOrdemCorte():[])[0];return{t:'A Meta 1 está atrasada',x:`${F.metaFeitas} de ${F.metaTotal} feitas; o ritmo pediria ~${esperado}. Decisão: ${c?`cortar “${(c.conteudo||'').slice(0,60)}” (${c.mat}) primeiro ou`:'cortar o que for de menor peso ou'} esticar o dia.`};}
-  if(F.diasPlano>=3&&F.totCT<F.metaCT*0.7)return{t:'Contabilidade abaixo do combinado',x:`${fmtMinG(F.totCT)} de ${fmtMinG(F.metaCT)} (2h por dia). Decisão: onde encaixar o que faltou — folga até 5h ou tirar de outra matéria.`};
-  if(F.diasPlano>=3&&F.totTI<F.metaTI*0.7)return{t:'TI abaixo do combinado',x:`${fmtMinG(F.totTI)} de ${fmtMinG(F.metaTI)} (1h por dia). Decisão: repor na folga ou aceitar o atraso.`};
+  if(F.metaFeitas<esperado-2){const c=(typeof calcOrdemCorte==='function'?calcOrdemCorte():[])[0];return{t:'A Meta 2 está atrasada',x:`${F.metaFeitas} de ${F.metaTotal} feitas; o ritmo pediria ~${esperado}. Decisão: ${c?`cortar “${(c.conteudo||'').slice(0,60)}” (${c.mat}) primeiro ou`:'cortar o que for de menor peso ou'} esticar o dia.`};}
+  if(F.diasPlano>=3&&F.totCT<F.metaCT*0.7)return{t:'Contabilidade abaixo do combinado',x:`${fmtMinG(F.totCT)} de ${fmtMinG(F.metaCT)} (planejado até hoje). Decisão: onde encaixar o que faltou — folga até 5h ou tirar de outra matéria.`};
+  if(F.diasPlano>=3&&F.totTI<F.metaTI*0.7)return{t:'TI abaixo do combinado',x:`${fmtMinG(F.totTI)} de ${fmtMinG(F.metaTI)} (planejado até hoje). Decisão: repor na folga ou aceitar o atraso.`};
   if(F.filtro&&F.filtro.restam>F.filtro.total*0.6&&new Date().getDay()>=4)return{t:'Filtro do Anki atrasado',x:`Restam ${F.filtro.restam} de ${F.filtro.total} e a semana está acabando. Decisão: dobrar o Anki nos próximos dias.`};
   return{t:'Sem desvio grande nesta semana',x:'Decisão única: manter o plano como está. Se quiser mexer em algo, que seja na folga até 5h.'};
 }
@@ -7169,12 +7167,12 @@ function EstrategiaSemana(){
             </div>);})}
         </div>
         <div style={{fontSize:12,color:'var(--text4)',marginBottom:10}}>Média: {fmtMinG(F.mediaHoras)} por dia. A 5ª hora é do caderno e da Profunda; o que sobra é folga.</div>
-        {linha('TI (1h por dia de plano)',`${fmtMinG(F.totTI)} / ${fmtMinG(F.metaTI)}`,F.totTI,F.metaTI)}
-        {linha('Contabilidade (2h por dia de plano)',`${fmtMinG(F.totCT)} / ${fmtMinG(F.metaCT)}`,F.totCT,F.metaCT)}
-        {linha('Caderno de erros (3×30 min)',`${F.cad} / 3`,F.cad,3)}
+        {linha('TI (planejado até hoje)',`${fmtMinG(F.totTI)} / ${fmtMinG(F.metaTI)}`,F.totTI,F.metaTI)}
+        {linha('Contabilidade (planejado até hoje)',`${fmtMinG(F.totCT)} / ${fmtMinG(F.metaCT)}`,F.totCT,F.metaCT)}
+        {linha('Caderno de erros (2×30 min)',`${F.cad} / 2`,F.cad,2)}
         {linha('Áudios NotebookLM (2 por dia)',`${F.nlm} / 14`,F.nlm,14)}
         {F.filtro?linha('Baralho filtrado do Anki',`${F.filtro.total-F.filtro.restam} / ${F.filtro.total}`,F.filtro.total-F.filtro.restam,F.filtro.total,F.filtro.restam===0?'zerado ✅':`restam ${F.filtro.restam}`):<div style={{fontSize:13,color:'var(--text4)',marginBottom:8}}>Baralho filtrado: ainda não montado nesta semana (Revisão › Memorização).</div>}
-        {linha('Meta 1 (Consolidar a base)',`${F.metaFeitas} / ${F.metaTotal}`,F.metaFeitas,F.metaTotal)}
+        {linha('Meta 2 (Consolidar a base)',`${F.metaFeitas} / ${F.metaTotal}`,F.metaFeitas,F.metaTotal)}
       </div>
       <div style={{padding:'12px 14px',borderRadius:12,background:'rgba(248,113,113,.06)',border:'1px solid rgba(248,113,113,.25)',marginBottom:12}}>
         <div style={{fontSize:13,color:'#f87171',fontFamily:mono,fontWeight:800,letterSpacing:'1px',marginBottom:6}}>🎯 3 PRIORIDADES DA SEMANA → alimentam a Profunda de segunda</div>
@@ -8126,7 +8124,7 @@ function TabDiscursiva({onRapido,rapidoVer}){
       {sub==='disp'&&!CICLO_DISP.length&&(
         <div style={{padding:'12px 14px',borderRadius:12,background:'rgba(96,165,250,.07)',border:'1px solid rgba(96,165,250,.3)'}}>
           <div style={{fontSize:13,color:'#60a5fa',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:5}}>📦 FORA DO CICLO</div>
-          <div style={{fontSize:14,color:'var(--text3)',lineHeight:1.6}}>Nada fora do ciclo. As 20 atividades da Meta 1 (Consolidar a base) estão todas no plano de 12 a 18/11. O ciclo antigo do SEFAZ-SC foi arquivado.</div>
+          <div style={{fontSize:14,color:'var(--text3)',lineHeight:1.6}}>Fora do plano de 19 a 25/11: Dir. Penal (Princípios, aplicação da lei penal — questões) e Dir. Empresarial (teoria da empresa — questões), da Meta 2. Ficam para quinta 26/11. O ciclo antigo do SEFAZ-SC foi arquivado.</div>
         </div>
       )}
       {sub==='disp'&&CICLO_DISP.length>0&&(()=>{
