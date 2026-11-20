@@ -1,43 +1,71 @@
 {
  "versao": 1,
- "gerado_em": "2026-11-16T16:27:47Z",
+ "gerado_em": "2026-11-20T12:06:40Z",
  "origem": "chrome meio-dia",
  "planejamento_id": 105325,
  "total": {
-  "erros": 12,
-  "com_motivo": 12,
-  "cobertura_pct": 100.0,
+  "erros": 21,
+  "com_motivo": 18,
+  "cobertura_pct": 85.7,
   "motivo_predominante": "Desconhecimento",
-  "motivo_predominante_pct": 58.3
+  "motivo_predominante_pct": 44.4
  },
  "motivos": [
   {
    "motivo": "Desconhecimento",
-   "n": 7,
-   "pct": 58.3
+   "n": 8,
+   "pct": 44.4
   },
   {
    "motivo": "Confusão conceitual",
-   "n": 2,
-   "pct": 16.7
+   "n": 6,
+   "pct": 33.3
   },
   {
    "motivo": "Esquecimento",
-   "n": 1,
-   "pct": 8.3
+   "n": 2,
+   "pct": 11.1
   },
   {
    "motivo": "Erro de interpretação",
    "n": 1,
-   "pct": 8.3
+   "pct": 5.6
   },
   {
    "motivo": "Falta de atenção",
    "n": 1,
-   "pct": 8.3
+   "pct": 5.6
   }
  ],
  "disciplinas": [
+  {
+   "nome": "Direito Tributário",
+   "erros": 8,
+   "com_motivo": 8,
+   "cobertura_pct": 100.0,
+   "motivo_predominante": "Confusão conceitual",
+   "motivo_predominante_pct": 50.0,
+   "atividades": [
+    {
+     "codigo": "DTRIB.4306.118437",
+     "meta": 1,
+     "assunto": "Conceito, Classificação, Natureza Jurídica e Espécies de Tributos",
+     "q": 25,
+     "a": 23,
+     "erros": 2,
+     "motivo_predominante": "Desconhecimento"
+    },
+    {
+     "codigo": "DTRIB.4306.118438",
+     "meta": 2,
+     "assunto": "Limitações Constitucionais ao Poder de Tributar",
+     "q": 25,
+     "a": 19,
+     "erros": 6,
+     "motivo_predominante": "Confusão conceitual"
+    }
+   ]
+  },
   {
    "nome": "Direito Constitucional",
    "erros": 4,
@@ -77,29 +105,10 @@
    ]
   },
   {
-   "nome": "Direito Tributário",
-   "erros": 2,
-   "com_motivo": 2,
-   "cobertura_pct": 100.0,
-   "motivo_predominante": "Desconhecimento",
-   "motivo_predominante_pct": 100.0,
-   "atividades": [
-    {
-     "codigo": "DTRIB.4306.118437",
-     "meta": 1,
-     "assunto": "Conceito, Classificação, Natureza Jurídica e Espécies de Tributos",
-     "q": 25,
-     "a": 23,
-     "erros": 2,
-     "motivo_predominante": "Desconhecimento"
-    }
-   ]
-  },
-  {
    "nome": "Português",
-   "erros": 2,
+   "erros": 5,
    "com_motivo": 2,
-   "cobertura_pct": 100.0,
+   "cobertura_pct": 40.0,
    "motivo_predominante": "Confusão conceitual",
    "motivo_predominante_pct": 50.0,
    "atividades": [
@@ -111,13 +120,22 @@
      "a": 17,
      "erros": 2,
      "motivo_predominante": "Confusão conceitual"
+    },
+    {
+     "codigo": "PORT.4262.117775",
+     "meta": 1,
+     "assunto": "Morfologia: Substantivo, Adjetivo, Advérbio, Artigo, Numeral, Interjeição e Palavras Especiais",
+     "q": 18,
+     "a": 15,
+     "erros": 3,
+     "motivo_predominante": null
     }
    ]
   },
   {
    "nome": "Contabilidade Geral e Avançada",
    "erros": 0,
-   "com_motivo": null,
+   "com_motivo": 0,
    "cobertura_pct": null,
    "motivo_predominante": null,
    "motivo_predominante_pct": null,
@@ -126,7 +144,7 @@
   {
    "nome": "Auditoria Privada",
    "erros": 0,
-   "com_motivo": null,
+   "com_motivo": 0,
    "cobertura_pct": null,
    "motivo_predominante": null,
    "motivo_predominante_pct": null,
@@ -135,7 +153,25 @@
   {
    "nome": "Direito Administrativo",
    "erros": 0,
-   "com_motivo": null,
+   "com_motivo": 0,
+   "cobertura_pct": null,
+   "motivo_predominante": null,
+   "motivo_predominante_pct": null,
+   "atividades": []
+  },
+  {
+   "nome": "Direito Penal",
+   "erros": 0,
+   "com_motivo": 0,
+   "cobertura_pct": null,
+   "motivo_predominante": null,
+   "motivo_predominante_pct": null,
+   "atividades": []
+  },
+  {
+   "nome": "Direito Empresarial (Comercial)",
+   "erros": 0,
+   "com_motivo": 0,
    "cobertura_pct": null,
    "motivo_predominante": null,
    "motivo_predominante_pct": null,
@@ -144,7 +180,7 @@
   {
    "nome": "Tecnologia da Informação",
    "erros": 0,
-   "com_motivo": null,
+   "com_motivo": 0,
    "cobertura_pct": null,
    "motivo_predominante": null,
    "motivo_predominante_pct": null,
@@ -153,7 +189,7 @@
   {
    "nome": "Raciocínio Lógico",
    "erros": 0,
-   "com_motivo": null,
+   "com_motivo": 0,
    "cobertura_pct": null,
    "motivo_predominante": null,
    "motivo_predominante_pct": null,
