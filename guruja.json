@@ -1,6 +1,6 @@
 {
  "versao": 1,
- "gerado_em": "2026-11-19T07:12:09Z",
+ "gerado_em": "2026-11-20T07:12:11Z",
  "origem": "tarefa agendada",
  "planejamento_id": 105325,
  "meta_atual": {
@@ -11,12 +11,12 @@
   "vezes_adiada": 0,
   "status": "ontime",
   "atividades_totais": 20,
-  "atividades_concluidas": 0,
-  "atividades_pendentes": 20,
+  "atividades_concluidas": 4,
+  "atividades_pendentes": 16,
   "atividades_ignoradas": 0,
-  "questoes": 0,
-  "acertos": 0,
-  "minutos": 0
+  "questoes": 25,
+  "acertos": 19,
+  "minutos": 240
  },
  "metas": [
   {
@@ -26,11 +26,11 @@
    "data_inicio": "2026-11-18T20:25:21.8833333",
    "data_conclusao": null,
    "atividades_totais": 20,
-   "atividades_concluidas": 0,
+   "atividades_concluidas": 4,
    "atividades_ignoradas": 0,
-   "questoes": 0,
-   "acertos": 0,
-   "minutos": 0,
+   "questoes": 25,
+   "acertos": 19,
+   "minutos": 240,
    "atividades": [
     {
      "aid": 110737,
@@ -57,10 +57,10 @@
      "tipo": "Teoria",
      "rel": 4,
      "prio": null,
-     "q": null,
-     "a": null,
-     "min": 0,
-     "concluida": false,
+     "q": 0,
+     "a": 0,
+     "min": 60,
+     "concluida": true,
      "ignorada": false,
      "link": null
     },
@@ -89,10 +89,10 @@
      "tipo": "Mapeamento",
      "rel": 3,
      "prio": null,
-     "q": null,
-     "a": null,
-     "min": 0,
-     "concluida": false,
+     "q": 0,
+     "a": 0,
+     "min": 60,
+     "concluida": true,
      "ignorada": false,
      "link": null
     },
@@ -169,10 +169,10 @@
      "tipo": "Teoria",
      "rel": 3,
      "prio": null,
-     "q": null,
-     "a": null,
-     "min": 0,
-     "concluida": false,
+     "q": 0,
+     "a": 0,
+     "min": 60,
+     "concluida": true,
      "ignorada": false,
      "link": null
     },
@@ -265,10 +265,10 @@
      "tipo": "Questões",
      "rel": 5,
      "prio": null,
-     "q": null,
-     "a": null,
-     "min": 0,
-     "concluida": false,
+     "q": 25,
+     "a": 19,
+     "min": 60,
+     "concluida": true,
      "ignorada": false,
      "link": null
     },
@@ -700,20 +700,8 @@
    "q": 24,
    "a": 20,
    "pct": 83.33,
-   "media": 67.59,
+   "media": 67.53,
    "mediana": 72,
-   "decil": 10,
-   "tendencia": null
-  },
-  {
-   "sigla": "DTRIB",
-   "disciplina": "Direito Tributário",
-   "peso": 0,
-   "q": 25,
-   "a": 23,
-   "pct": 92,
-   "media": 77.02,
-   "mediana": 80,
    "decil": 10,
    "tendencia": null
   },
@@ -724,21 +712,21 @@
    "q": 20,
    "a": 20,
    "pct": 100,
-   "media": 86.45,
+   "media": 86.42,
    "mediana": 85,
    "decil": 10,
    "tendencia": null
   },
   {
-   "sigla": "PORT",
-   "disciplina": "Português",
+   "sigla": "DTRIB",
+   "disciplina": "Direito Tributário",
    "peso": 0,
-   "q": 37,
-   "a": 32,
-   "pct": 86.48,
-   "media": 85.11,
-   "mediana": 86.4,
-   "decil": 6,
+   "q": 50,
+   "a": 42,
+   "pct": 84,
+   "media": 79.19,
+   "mediana": 80,
+   "decil": 7,
    "tendencia": null
   },
   {
@@ -752,30 +740,46 @@
    "mediana": 84,
    "decil": 6,
    "tendencia": null
+  },
+  {
+   "sigla": "PORT",
+   "disciplina": "Português",
+   "peso": 0,
+   "q": 37,
+   "a": 32,
+   "pct": 86.48,
+   "media": 85.23,
+   "mediana": 86.4,
+   "decil": 6,
+   "tendencia": null
   }
  ],
  "tempo": {
-  "total_min": 1520,
+  "total_min": 1760,
   "por_tipo": {
-   "Teoria": 950,
-   "Questões": 390,
-   "Revisão": 90,
-   "Mapeamento": 60
+   "Teoria": 1070,
+   "Questões": 450,
+   "Mapeamento": 120,
+   "Revisão": 90
   },
   "reforcos_min": 0,
   "aprofundamentos_min": 30,
   "disciplinas": [
    {
-    "sigla": "TINFO",
-    "min": 390
+    "sigla": "CTBGA",
+    "min": 480
    },
    {
-    "sigla": "CTBGA",
-    "min": 360
+    "sigla": "TINFO",
+    "min": 450
    },
    {
     "sigla": "AUD",
     "min": 290
+   },
+   {
+    "sigla": "DTRIB",
+    "min": 150
    },
    {
     "sigla": "PORT",
@@ -783,10 +787,6 @@
    },
    {
     "sigla": "DCON",
-    "min": 90
-   },
-   {
-    "sigla": "DTRIB",
     "min": 90
    },
    {
@@ -824,12 +824,21 @@
  },
  "fracos": [
   {
+   "titulo": "Limitações Constitucionais ao Poder de Tributar",
+   "sigla": "DTRIB",
+   "q": 25,
+   "a": 19,
+   "pct": 76.0,
+   "media": 81.3,
+   "link": null
+  },
+  {
    "titulo": "Morfologia: Substantivo, Adjetivo, Advérbio, Artigo, Numeral, Interjeição e Palavras Especiais",
    "sigla": "PORT",
    "q": 18,
    "a": 15,
    "pct": 83.3,
-   "media": 83.7,
+   "media": 83.8,
    "link": null
   }
  ],
