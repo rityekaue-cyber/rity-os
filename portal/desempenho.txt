@@ -1,10 +1,7 @@
-# desempenho — lido em 2026-11-20T12:06Z
+# desempenho — lido em 2026-11-20T15:07Z
 Desempenho Acumulado — Consolidar a base (todas as disciplinas)
-Desempenho atingido 86,5% | Horas estudadas 29h 20m | Questões resolvidas 156 | Média diária 3h 35m
-Totais: 156 questões, 135 acertos, 86,5% | Atividades 1h12m | Aprofundamentos 30m | Tempo total 29h20m
-Linhas legíveis: 20/20 100,0% (tempo 30m); 25/21 84,0% (1h); 24/20 83,3% (1h30m); 50/42 84,0% (1h15m); 37/32 86,4% (1h)
-(a tabela vem sem rótulo de disciplina por linha no texto; ordem das disciplinas: Auditoria Privada, Contabilidade Geral e Avançada, Direito Administrativo, Direito Civil, Direito Constitucional, Direito Empresarial, Direito Penal, Direito Tributário, Português, Raciocínio Lógico, Tecnologia da Informação)
-Tempo médio por dia da semana: Dom 2h20m | Seg 3h | Ter 1h30m | Qua 5h30m | Qui 3h30m | Sex 5h | Sáb 5h
-Questões por disciplina: CTBGA 27,2% | TINFO 25,5% | AUD 16,4% | DTRIB 8,5% | PORT 6,8% | DCON 5,1% | RLOG 5,1% | DCIV 3,4%
-Sistemática de revisão: Revisou 14,2% | Não revisou 85,7% | Não informado 0,0%
-Sistemática de conferência: A cada questão 71,4% | Só ao final 28,5% | Não informado 0,0%
+Desempenho atingido 87,8% | Horas estudadas 30h 20m | Questões resolvidas 181 | Média diária 3h 39m
+Totais: 181 questões, 159 acertos, 87,8% | Atividades 1h12m | Aprofundamentos 30m | Tempo total 30h20m
+Tempo médio por dia da semana: Dom 2h20m | Seg 3h | Ter 1h30m | Qua 5h30m | Qui 3h30m | Sex 3h | Sáb 5h
+Questões resolvidas por disciplina: CTBGA 26,3% | TINFO 24,7% | AUD 15,9% | DTRIB 8,2% | PORT 6,5% | DCON 4,9% | RLOG 4,9% | DCIV 3,2% | DEMP 3,2% | DADM 1,6%
+Sistemática de revisão: revisou 12,5% | não revisou 87,5%. Conferência: a cada questão 62,5% | só ao final 37,5%.

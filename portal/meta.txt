@@ -1,26 +1,26 @@
-# meta — lido em 2026-11-20T12:06Z
+# meta — lido em 2026-11-20T15:07Z
 Meta - 2ª Meta: Consolidar a base • Início em 18 de novembro
-4 / 20 atividades | 16 pendentes | 0 reforços | 1 aprofundamento | 11 disciplinas
-Desempenho atingido 76,0% | Horas estudadas 4h | Questões resolvidas 25 | Média diária 2h 37m
-3ª Meta: prevista para 25 de novembro (Bloqueada) | Sequência de estudos: 14 dias consecutivos
-Atividades (status|disciplina|tipo|título|relevância|tempo|desempenho|código):
-Pendente|Tecnologia da Informação|Questões|[TI I] Conceitos Básicos de Banco de Dados|4/5|00h00m||TINFO.3857.110737
-Concluída|Contabilidade Geral e Avançada|Teoria|Aspectos Introdutórios da Contabilidade|4/5|01h00m||CTBGA.2551.72830
-Pendente|Raciocínio Lógico|Teoria|Proposições compostas. Conectivos lógicos.|5/5|00h00m||RLOG.3723.106237
-Concluída|Contabilidade Geral e Avançada|Mapeamento|Mapeamento Aula 00|3/5|01h00m||CTBGA.2551.72831
-Pendente|Tecnologia da Informação|Questões|[TI I] Conceitos Básicos de Banco de Dados|4/5|00h00m||TINFO.3857.110738
-Pendente|Auditoria Privada|Revisão|Revisão Aula 00|3/5|00h00m||AUD.3709.106115
-Pendente|Contabilidade Geral e Avançada|Questões|Aspectos introdutórios da Contabilidade|4/5|00h00m||CTBGA.2551.73408
-Pendente|Direito Empresarial (Comercial)|Questões|Definições iniciais; Teoria da Empresa e Empresário; Estabelecimento|4/5|00h00m||DEMP.4281.118400
-Concluída|Tecnologia da Informação|Teoria|[TI I] Modelagem Conceitual (MER)|3/5|01h00m||TINFO.3857.109363
-Pendente|Contabilidade Geral e Avançada|Teoria|Patrimônio: componentes patrimoniais|5/5|00h00m||CTBGA.2551.72832
-Pendente|Direito Penal|Questões|Princípios do Direito Penal. Aplicação da Lei Penal.|4/5|00h00m||DPEN.4327.118299
-Pendente|Direito Constitucional|Questões|Princípios Fundamentais|5/5|00h00m||DCON.4299.118383
-Pendente|Tecnologia da Informação|Teoria|[TI I] Modelagem Conceitual (MER)|3/5|00h00m||TINFO.3857.109364
-Pendente|Direito Administrativo|Questões|Organização Administrativa.|5/5|00h00m||DADM.4290.118193
-Concluída|Direito Tributário|Questões|Limitações Constitucionais ao Poder de Tributar|5/5|01h00m|76,0%|DTRIB.4306.118438
-Pendente|Direito Civil|Questões|Pessoas Naturais|5/5|00h00m||DCIV.4273.118490
-Pendente|Tecnologia da Informação|Mapeamento|[TI I] Mapeamento Aula 03|4/5|00h00m||TINFO.3857.109366
-Pendente|Raciocínio Lógico|Teoria|Conectivos Lógicos: Disjunção Exclusiva, Condicional.|5/5|00h00m||RLOG.3723.106242
-Pendente|Português|Questões|Morfologia: Pronomes, Preposição, Conjunção e Colocação Pronominal|4/5|00h00m||PORT.4262.117961
-Pendente|Auditoria Privada|Teoria|Princípios Éticos. Ceticismo Profissional.|4/5|00h00m||AUD.3709.106120
+5 / 20 atividades | 15 pendentes | 0 reforços | 1 aprofundamento | 11 disciplinas
+Desempenho atingido 86,0% | Horas estudadas 5h | Questões resolvidas 50 | Média diária 3h 01m
+3ª Meta: prevista para 25 de novembro (Bloqueada) | Sequência de estudos: 15 dias consecutivos
+Atividades (#|disciplina|tipo|tempo|desempenho|código) — concluídas = tempo 01h:
+1|Tecnologia da Informação|Questões|00h|-|TINFO.3857.110737
+2|Contabilidade Geral e Avançada|Teoria|01h|-|CTBGA.2551.72830
+3|Raciocínio Lógico|Teoria|00h|-|RLOG.3723.106237
+4|Contabilidade Geral e Avançada|Mapeamento|01h|-|CTBGA.2551.72831
+5|Tecnologia da Informação|Questões|00h|-|TINFO.3857.110738
+6|Auditoria Privada|Revisão|00h|-|AUD.3709.106115
+7|Contabilidade Geral e Avançada|Questões|00h|-|CTBGA.2551.73408
+8|Direito Empresarial (Comercial)|Questões|01h|96,0%|DEMP.4281.118400
+9|Tecnologia da Informação|Teoria|01h|-|TINFO.3857.109363
+10|Contabilidade Geral e Avançada|Teoria|00h|-|CTBGA.2551.72832
+11|Direito Penal|Questões|00h|-|DPEN.4327.118299
+12|Direito Constitucional|Questões|00h|-|DCON.4299.118383
+13|Tecnologia da Informação|Teoria|00h|-|TINFO.3857.109364
+14|Direito Administrativo|Questões|00h|-|DADM.4290.118193
+15|Direito Tributário|Questões|01h|76,0%|DTRIB.4306.118438
+16|Direito Civil|Questões|00h|-|DCIV.4273.118490
+17|Tecnologia da Informação|Mapeamento|00h|-|TINFO.3857.109366
+18|Raciocínio Lógico|Teoria|00h|-|RLOG.3723.106242
+19|Português|Questões|00h|-|PORT.4262.117961
+20|Auditoria Privada|Teoria|00h|-|AUD.3709.106120

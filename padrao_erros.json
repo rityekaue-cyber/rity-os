@@ -1,40 +1,40 @@
 {
  "versao": 1,
- "gerado_em": "2026-11-20T12:06:40Z",
+ "gerado_em": "2026-11-20T15:07:54Z",
  "origem": "chrome meio-dia",
  "planejamento_id": 105325,
  "total": {
-  "erros": 21,
-  "com_motivo": 18,
-  "cobertura_pct": 85.7,
+  "erros": 22,
+  "com_motivo": 19,
+  "cobertura_pct": 86.4,
   "motivo_predominante": "Desconhecimento",
-  "motivo_predominante_pct": 44.4
+  "motivo_predominante_pct": 42.1
  },
  "motivos": [
   {
    "motivo": "Desconhecimento",
    "n": 8,
-   "pct": 44.4
+   "pct": 42.1
   },
   {
    "motivo": "Confusão conceitual",
-   "n": 6,
-   "pct": 33.3
+   "n": 7,
+   "pct": 36.8
   },
   {
    "motivo": "Esquecimento",
    "n": 2,
-   "pct": 11.1
+   "pct": 10.5
   },
   {
    "motivo": "Erro de interpretação",
    "n": 1,
-   "pct": 5.6
+   "pct": 5.3
   },
   {
    "motivo": "Falta de atenção",
    "n": 1,
-   "pct": 5.6
+   "pct": 5.3
   }
  ],
  "disciplinas": [
@@ -133,9 +133,28 @@
    ]
   },
   {
+   "nome": "Direito Empresarial (Comercial)",
+   "erros": 1,
+   "com_motivo": 1,
+   "cobertura_pct": 100.0,
+   "motivo_predominante": "Confusão conceitual",
+   "motivo_predominante_pct": 100.0,
+   "atividades": [
+    {
+     "codigo": "DEMP.4281.118400",
+     "meta": 2,
+     "assunto": "Definições iniciais; Teoria da Empresa e Empresário; Estabelecimento",
+     "q": 25,
+     "a": 24,
+     "erros": 1,
+     "motivo_predominante": "Confusão conceitual"
+    }
+   ]
+  },
+  {
    "nome": "Contabilidade Geral e Avançada",
    "erros": 0,
-   "com_motivo": 0,
+   "com_motivo": null,
    "cobertura_pct": null,
    "motivo_predominante": null,
    "motivo_predominante_pct": null,
@@ -144,7 +163,7 @@
   {
    "nome": "Auditoria Privada",
    "erros": 0,
-   "com_motivo": 0,
+   "com_motivo": null,
    "cobertura_pct": null,
    "motivo_predominante": null,
    "motivo_predominante_pct": null,
@@ -153,7 +172,7 @@
   {
    "nome": "Direito Administrativo",
    "erros": 0,
-   "com_motivo": 0,
+   "com_motivo": null,
    "cobertura_pct": null,
    "motivo_predominante": null,
    "motivo_predominante_pct": null,
@@ -162,16 +181,7 @@
   {
    "nome": "Direito Penal",
    "erros": 0,
-   "com_motivo": 0,
-   "cobertura_pct": null,
-   "motivo_predominante": null,
-   "motivo_predominante_pct": null,
-   "atividades": []
-  },
-  {
-   "nome": "Direito Empresarial (Comercial)",
-   "erros": 0,
-   "com_motivo": 0,
+   "com_motivo": null,
    "cobertura_pct": null,
    "motivo_predominante": null,
    "motivo_predominante_pct": null,
@@ -180,7 +190,7 @@
   {
    "nome": "Tecnologia da Informação",
    "erros": 0,
-   "com_motivo": 0,
+   "com_motivo": null,
    "cobertura_pct": null,
    "motivo_predominante": null,
    "motivo_predominante_pct": null,
@@ -189,7 +199,7 @@
   {
    "nome": "Raciocínio Lógico",
    "erros": 0,
-   "com_motivo": 0,
+   "com_motivo": null,
    "cobertura_pct": null,
    "motivo_predominante": null,
    "motivo_predominante_pct": null,
