@@ -1,6 +1,6 @@
 {
  "versao": 1,
- "gerado_em": "2026-11-20T07:12:11Z",
+ "gerado_em": "2026-11-21T07:11:38Z",
  "origem": "tarefa agendada",
  "planejamento_id": 105325,
  "meta_atual": {
@@ -11,12 +11,12 @@
   "vezes_adiada": 0,
   "status": "ontime",
   "atividades_totais": 20,
-  "atividades_concluidas": 4,
-  "atividades_pendentes": 16,
+  "atividades_concluidas": 7,
+  "atividades_pendentes": 13,
   "atividades_ignoradas": 0,
-  "questoes": 25,
-  "acertos": 19,
-  "minutos": 240
+  "questoes": 93,
+  "acertos": 77,
+  "minutos": 480
  },
  "metas": [
   {
@@ -26,11 +26,11 @@
    "data_inicio": "2026-11-18T20:25:21.8833333",
    "data_conclusao": null,
    "atividades_totais": 20,
-   "atividades_concluidas": 4,
+   "atividades_concluidas": 7,
    "atividades_ignoradas": 0,
-   "questoes": 25,
-   "acertos": 19,
-   "minutos": 240,
+   "questoes": 93,
+   "acertos": 77,
+   "minutos": 480,
    "atividades": [
     {
      "aid": 110737,
@@ -41,10 +41,10 @@
      "tipo": "Questões",
      "rel": 4,
      "prio": null,
-     "q": null,
-     "a": null,
-     "min": 0,
-     "concluida": false,
+     "q": 20,
+     "a": 16,
+     "min": 60,
+     "concluida": true,
      "ignorada": false,
      "link": null
     },
@@ -137,10 +137,10 @@
      "tipo": "Questões",
      "rel": 4,
      "prio": null,
-     "q": null,
-     "a": null,
-     "min": 0,
-     "concluida": false,
+     "q": 23,
+     "a": 18,
+     "min": 120,
+     "concluida": true,
      "ignorada": false,
      "link": null
     },
@@ -153,10 +153,10 @@
      "tipo": "Questões",
      "rel": 4,
      "prio": null,
-     "q": null,
-     "a": null,
-     "min": 0,
-     "concluida": false,
+     "q": 25,
+     "a": 24,
+     "min": 60,
+     "concluida": true,
      "ignorada": false,
      "link": null
     },
@@ -700,8 +700,8 @@
    "q": 24,
    "a": 20,
    "pct": 83.33,
-   "media": 67.53,
-   "mediana": 72,
+   "media": 67.38,
+   "mediana": 68,
    "decil": 10,
    "tendencia": null
   },
@@ -712,9 +712,33 @@
    "q": 20,
    "a": 20,
    "pct": 100,
-   "media": 86.42,
+   "media": 86.55,
    "mediana": 85,
    "decil": 10,
+   "tendencia": null
+  },
+  {
+   "sigla": "DEMP",
+   "disciplina": "Direito Empresarial (Comercial)",
+   "peso": 0,
+   "q": 25,
+   "a": 24,
+   "pct": 96,
+   "media": 83.13,
+   "mediana": 84,
+   "decil": 10,
+   "tendencia": null
+  },
+  {
+   "sigla": "TINFO",
+   "disciplina": "Tecnologia da Informação",
+   "peso": 0,
+   "q": 20,
+   "a": 16,
+   "pct": 80,
+   "media": 69.96,
+   "mediana": 70,
+   "decil": 8,
    "tendencia": null
   },
   {
@@ -724,8 +748,20 @@
    "q": 50,
    "a": 42,
    "pct": 84,
-   "media": 79.19,
+   "media": 79.14,
    "mediana": 80,
+   "decil": 7,
+   "tendencia": null
+  },
+  {
+   "sigla": "CTBGA",
+   "disciplina": "Contabilidade Geral e Avançada",
+   "peso": 0,
+   "q": 23,
+   "a": 18,
+   "pct": 78.26,
+   "media": 74.22,
+   "mediana": 73.9,
    "decil": 7,
    "tendencia": null
   },
@@ -736,7 +772,7 @@
    "q": 25,
    "a": 21,
    "pct": 84,
-   "media": 82.02,
+   "media": 81.98,
    "mediana": 84,
    "decil": 6,
    "tendencia": null
@@ -748,17 +784,17 @@
    "q": 37,
    "a": 32,
    "pct": 86.48,
-   "media": 85.23,
+   "media": 85.31,
    "mediana": 86.4,
    "decil": 6,
    "tendencia": null
   }
  ],
  "tempo": {
-  "total_min": 1760,
+  "total_min": 2000,
   "por_tipo": {
    "Teoria": 1070,
-   "Questões": 450,
+   "Questões": 690,
    "Mapeamento": 120,
    "Revisão": 90
   },
@@ -767,11 +803,11 @@
   "disciplinas": [
    {
     "sigla": "CTBGA",
-    "min": 480
+    "min": 600
    },
    {
     "sigla": "TINFO",
-    "min": 450
+    "min": 510
    },
    {
     "sigla": "AUD",
@@ -798,15 +834,15 @@
     "min": 60
    },
    {
+    "sigla": "DEMP",
+    "min": 60
+   },
+   {
     "sigla": "DADM",
     "min": 30
    },
    {
     "sigla": "DPEN",
-    "min": 0
-   },
-   {
-    "sigla": "DEMP",
     "min": 0
    }
   ]
@@ -838,7 +874,7 @@
    "q": 18,
    "a": 15,
    "pct": 83.3,
-   "media": 83.8,
+   "media": 83.9,
    "link": null
   }
  ],

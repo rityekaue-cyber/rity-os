@@ -2,7 +2,7 @@
  "versao": 1,
  "planejamento_id": 105325,
  "ultimo": {
-  "gerado_em": "2026-11-20T07:12:11Z",
+  "gerado_em": "2026-11-21T07:11:38Z",
   "mat": {
    "DCON": {
     "q": 24,
@@ -14,10 +14,25 @@
     "a": 20,
     "min": 30
    },
+   "DEMP": {
+    "q": 25,
+    "a": 24,
+    "min": 60
+   },
+   "TINFO": {
+    "q": 20,
+    "a": 16,
+    "min": 510
+   },
    "DTRIB": {
     "q": 50,
     "a": 42,
     "min": 150
+   },
+   "CTBGA": {
+    "q": 23,
+    "a": 18,
+    "min": 600
    },
    "DCIV": {
     "q": 25,
@@ -28,16 +43,6 @@
     "q": 37,
     "a": 32,
     "min": 120
-   },
-   "CTBGA": {
-    "q": 0,
-    "a": 0,
-    "min": 480
-   },
-   "TINFO": {
-    "q": 0,
-    "a": 0,
-    "min": 450
    },
    "AUD": {
     "q": 0,
@@ -53,22 +58,17 @@
     "q": 0,
     "a": 0,
     "min": 0
-   },
-   "DEMP": {
-    "q": 0,
-    "a": 0,
-    "min": 0
    }
   },
   "tipo": {
    "Teoria": 1070,
-   "Questões": 450,
+   "Questões": 690,
    "Mapeamento": 120,
    "Revisão": 90,
    "Reforços": 0,
    "Aprofundamentos": 30
   },
-  "atividades": 24
+  "atividades": 27
  },
  "dias": {
   "2026-11-12": {
@@ -251,6 +251,29 @@
     "Teoria": 120,
     "Questões": 60,
     "Mapeamento": 60
+   }
+  },
+  "2026-11-20": {
+   "atividades": 3,
+   "mat": {
+    "DEMP": {
+     "q": 25,
+     "a": 24,
+     "min": 60
+    },
+    "TINFO": {
+     "q": 20,
+     "a": 16,
+     "min": 60
+    },
+    "CTBGA": {
+     "q": 23,
+     "a": 18,
+     "min": 120
+    }
+   },
+   "tipo": {
+    "Questões": 240
    }
   }
  }
