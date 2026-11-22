@@ -2,7 +2,7 @@
  "versao": 1,
  "planejamento_id": 105325,
  "ultimo": {
-  "gerado_em": "2026-11-21T07:11:38Z",
+  "gerado_em": "2026-11-22T07:11:27Z",
   "mat": {
    "DCON": {
     "q": 24,
@@ -275,6 +275,11 @@
    "tipo": {
     "Questões": 240
    }
+  },
+  "2026-11-21": {
+   "atividades": 0,
+   "mat": {},
+   "tipo": {}
   }
  }
 }
