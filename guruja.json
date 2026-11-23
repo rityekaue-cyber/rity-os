@@ -1,6 +1,6 @@
 {
  "versao": 1,
- "gerado_em": "2026-11-22T07:11:27Z",
+ "gerado_em": "2026-11-23T07:14:42Z",
  "origem": "tarefa agendada",
  "planejamento_id": 105325,
  "meta_atual": {
@@ -11,12 +11,12 @@
   "vezes_adiada": 0,
   "status": "ontime",
   "atividades_totais": 20,
-  "atividades_concluidas": 7,
-  "atividades_pendentes": 13,
+  "atividades_concluidas": 9,
+  "atividades_pendentes": 11,
   "atividades_ignoradas": 0,
-  "questoes": 93,
-  "acertos": 77,
-  "minutos": 480
+  "questoes": 137,
+  "acertos": 113,
+  "minutos": 630
  },
  "metas": [
   {
@@ -26,11 +26,11 @@
    "data_inicio": "2026-11-18T20:25:21.8833333",
    "data_conclusao": null,
    "atividades_totais": 20,
-   "atividades_concluidas": 7,
+   "atividades_concluidas": 9,
    "atividades_ignoradas": 0,
-   "questoes": 93,
-   "acertos": 77,
-   "minutos": 480,
+   "questoes": 137,
+   "acertos": 113,
+   "minutos": 630,
    "atividades": [
     {
      "aid": 110737,
@@ -249,10 +249,10 @@
      "tipo": "Questões",
      "rel": 5,
      "prio": null,
-     "q": null,
-     "a": null,
-     "min": 0,
-     "concluida": false,
+     "q": 20,
+     "a": 16,
+     "min": 60,
+     "concluida": true,
      "ignorada": false,
      "link": null
     },
@@ -329,10 +329,10 @@
      "tipo": "Questões",
      "rel": 4,
      "prio": null,
-     "q": null,
-     "a": null,
-     "min": 0,
-     "concluida": false,
+     "q": 24,
+     "a": 20,
+     "min": 90,
+     "concluida": true,
      "ignorada": false,
      "link": null
     },
@@ -694,30 +694,6 @@
  ],
  "desempenho": [
   {
-   "sigla": "DCON",
-   "disciplina": "Direito Constitucional",
-   "peso": 0,
-   "q": 24,
-   "a": 20,
-   "pct": 83.33,
-   "media": 67.38,
-   "mediana": 68,
-   "decil": 10,
-   "tendencia": null
-  },
-  {
-   "sigla": "DADM",
-   "disciplina": "Direito Administrativo",
-   "peso": 0,
-   "q": 20,
-   "a": 20,
-   "pct": 100,
-   "media": 86.57,
-   "mediana": 85,
-   "decil": 10,
-   "tendencia": null
-  },
-  {
    "sigla": "DEMP",
    "disciplina": "Direito Empresarial (Comercial)",
    "peso": 0,
@@ -730,26 +706,38 @@
    "tendencia": null
   },
   {
+   "sigla": "DCON",
+   "disciplina": "Direito Constitucional",
+   "peso": 0,
+   "q": 24,
+   "a": 20,
+   "pct": 83.33,
+   "media": 67.47,
+   "mediana": 70.8,
+   "decil": 10,
+   "tendencia": null
+  },
+  {
    "sigla": "TINFO",
    "disciplina": "Tecnologia da Informação",
    "peso": 0,
    "q": 20,
    "a": 16,
    "pct": 80,
-   "media": 69.92,
+   "media": 70,
    "mediana": 70,
    "decil": 8,
    "tendencia": null
   },
   {
-   "sigla": "DTRIB",
-   "disciplina": "Direito Tributário",
+   "sigla": "DADM",
+   "disciplina": "Direito Administrativo",
    "peso": 0,
-   "q": 50,
-   "a": 42,
-   "pct": 84,
-   "media": 79.12,
-   "mediana": 80,
+   "q": 40,
+   "a": 36,
+   "pct": 90,
+   "media": 86.25,
+   "mediana": 87.5,
    "decil": 7,
    "tendencia": null
   },
@@ -760,8 +748,20 @@
    "q": 23,
    "a": 18,
    "pct": 78.26,
-   "media": 74.16,
+   "media": 74.18,
    "mediana": 73.9,
+   "decil": 7,
+   "tendencia": null
+  },
+  {
+   "sigla": "DTRIB",
+   "disciplina": "Direito Tributário",
+   "peso": 0,
+   "q": 50,
+   "a": 42,
+   "pct": 84,
+   "media": 79.09,
+   "mediana": 80,
    "decil": 7,
    "tendencia": null
   },
@@ -781,20 +781,20 @@
    "sigla": "PORT",
    "disciplina": "Português",
    "peso": 0,
-   "q": 37,
-   "a": 32,
-   "pct": 86.48,
-   "media": 84.99,
-   "mediana": 86.4,
-   "decil": 6,
+   "q": 61,
+   "a": 52,
+   "pct": 85.24,
+   "media": 84.22,
+   "mediana": 85.2,
+   "decil": 5,
    "tendencia": null
   }
  ],
  "tempo": {
-  "total_min": 2000,
+  "total_min": 2150,
   "por_tipo": {
    "Teoria": 1070,
-   "Questões": 690,
+   "Questões": 840,
    "Mapeamento": 120,
    "Revisão": 90
   },
@@ -814,12 +814,16 @@
     "min": 290
    },
    {
+    "sigla": "PORT",
+    "min": 210
+   },
+   {
     "sigla": "DTRIB",
     "min": 150
    },
    {
-    "sigla": "PORT",
-    "min": 120
+    "sigla": "DADM",
+    "min": 90
    },
    {
     "sigla": "DCON",
@@ -836,10 +840,6 @@
    {
     "sigla": "DEMP",
     "min": 60
-   },
-   {
-    "sigla": "DADM",
-    "min": 30
    },
    {
     "sigla": "DPEN",
@@ -866,6 +866,15 @@
    "a": 19,
    "pct": 76.0,
    "media": 81.3,
+   "link": null
+  },
+  {
+   "titulo": "Organização Administrativa.",
+   "sigla": "DADM",
+   "q": 20,
+   "a": 16,
+   "pct": 80.0,
+   "media": 85.9,
    "link": null
   }
  ],
