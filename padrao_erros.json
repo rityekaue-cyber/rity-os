@@ -1,12 +1,12 @@
 {
  "versao": 1,
- "gerado_em": "2026-11-20T15:07:54Z",
+ "gerado_em": "2026-11-24T10:09:45Z",
  "origem": "chrome meio-dia",
  "planejamento_id": 105325,
  "total": {
-  "erros": 22,
+  "erros": 39,
   "com_motivo": 19,
-  "cobertura_pct": 86.4,
+  "cobertura_pct": 48.7,
   "motivo_predominante": "Desconhecimento",
   "motivo_predominante_pct": 42.1
  },
@@ -106,9 +106,9 @@
   },
   {
    "nome": "Português",
-   "erros": 5,
+   "erros": 9,
    "com_motivo": 2,
-   "cobertura_pct": 40.0,
+   "cobertura_pct": 22.2,
    "motivo_predominante": "Confusão conceitual",
    "motivo_predominante_pct": 50.0,
    "atividades": [
@@ -128,6 +128,15 @@
      "q": 18,
      "a": 15,
      "erros": 3,
+     "motivo_predominante": null
+    },
+    {
+     "codigo": "PORT.4262.117961",
+     "meta": 2,
+     "assunto": "Morfologia: Pronomes, Preposição, Conjunção e Colocação Pronominal",
+     "q": 24,
+     "a": 20,
+     "erros": 4,
      "motivo_predominante": null
     }
    ]
@@ -153,17 +162,27 @@
   },
   {
    "nome": "Contabilidade Geral e Avançada",
-   "erros": 0,
-   "com_motivo": null,
+   "erros": 5,
+   "com_motivo": 0,
    "cobertura_pct": null,
    "motivo_predominante": null,
    "motivo_predominante_pct": null,
-   "atividades": []
+   "atividades": [
+    {
+     "codigo": "CTBGA.2551.73408",
+     "meta": 2,
+     "assunto": "Aspectos introdutórios da Contabilidade",
+     "q": 23,
+     "a": 18,
+     "erros": 5,
+     "motivo_predominante": null
+    }
+   ]
   },
   {
    "nome": "Auditoria Privada",
    "erros": 0,
-   "com_motivo": null,
+   "com_motivo": 0,
    "cobertura_pct": null,
    "motivo_predominante": null,
    "motivo_predominante_pct": null,
@@ -171,17 +190,27 @@
   },
   {
    "nome": "Direito Administrativo",
-   "erros": 0,
-   "com_motivo": null,
+   "erros": 4,
+   "com_motivo": 0,
    "cobertura_pct": null,
    "motivo_predominante": null,
    "motivo_predominante_pct": null,
-   "atividades": []
+   "atividades": [
+    {
+     "codigo": "DADM.4290.118193",
+     "meta": 2,
+     "assunto": "Organização Administrativa.",
+     "q": 20,
+     "a": 16,
+     "erros": 4,
+     "motivo_predominante": null
+    }
+   ]
   },
   {
    "nome": "Direito Penal",
    "erros": 0,
-   "com_motivo": null,
+   "com_motivo": 0,
    "cobertura_pct": null,
    "motivo_predominante": null,
    "motivo_predominante_pct": null,
@@ -189,17 +218,27 @@
   },
   {
    "nome": "Tecnologia da Informação",
-   "erros": 0,
-   "com_motivo": null,
+   "erros": 4,
+   "com_motivo": 0,
    "cobertura_pct": null,
    "motivo_predominante": null,
    "motivo_predominante_pct": null,
-   "atividades": []
+   "atividades": [
+    {
+     "codigo": "TINFO.3857.110737",
+     "meta": 2,
+     "assunto": "[TI I] Conceitos Básicos de Banco de Dados",
+     "q": 20,
+     "a": 16,
+     "erros": 4,
+     "motivo_predominante": null
+    }
+   ]
   },
   {
    "nome": "Raciocínio Lógico",
    "erros": 0,
-   "com_motivo": null,
+   "com_motivo": 0,
    "cobertura_pct": null,
    "motivo_predominante": null,
    "motivo_predominante_pct": null,

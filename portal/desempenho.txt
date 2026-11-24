@@ -1,7 +1,8 @@
-# desempenho — lido em 2026-11-20T15:07Z
-Desempenho Acumulado — Consolidar a base (todas as disciplinas)
-Desempenho atingido 87,8% | Horas estudadas 30h 20m | Questões resolvidas 181 | Média diária 3h 39m
-Totais: 181 questões, 159 acertos, 87,8% | Atividades 1h12m | Aprofundamentos 30m | Tempo total 30h20m
-Tempo médio por dia da semana: Dom 2h20m | Seg 3h | Ter 1h30m | Qua 5h30m | Qui 3h30m | Sex 3h | Sáb 5h
-Questões resolvidas por disciplina: CTBGA 26,3% | TINFO 24,7% | AUD 15,9% | DTRIB 8,2% | PORT 6,5% | DCON 4,9% | RLOG 4,9% | DCIV 3,2% | DEMP 3,2% | DADM 1,6%
-Sistemática de revisão: revisou 12,5% | não revisou 87,5%. Conferência: a cada questão 62,5% | só ao final 37,5%.
+# desempenho — lido em 2026-11-24T10:09Z
+Desempenho Acumulado — Consolidar a base
+Desempenho atingido 85,4% | Horas estudadas 35h50m | Questões resolvidas 268 | Média diária 2h57m
+Tabela por disciplina (valores brutos lidos, ordem de colunas: Atividades, Reforços, Aprofundamentos, Totais, Questões, Acertos, Desempenho): Contabilidade 4h50m 23 q 18 ac 78,2%; demais linhas da tabela vêm sem rótulo de disciplina no texto extraído e não foram associadas.
+Total geral: 8h30m (atividades) | 268 q | 229 | 85,4% | 1h13m | 30m aprofundamentos | 35h50m
+Tempo médio por dia da semana: Dom 2h25m, Seg 3h, Ter 1h30m, Qua 5h30m, Qui 3h30m, Sex 4h30m, Sáb 5h
+Questões resolvidas por disciplina: CTBGA 27,9%, TINFO 23,7%, AUD 13,4%, PORT 9,7%, DTRIB 6,9%, DADM 4,1%, DCON 4,1%, RLOG 4,1%, DCIV 2,7%, DEMP 2,7%
+Sistemática de revisão: revisou 8,3%, não revisou 91,6%. Conferência: a cada questão 50,0%, só ao final 50,0%.
