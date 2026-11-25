@@ -1,7 +1,7 @@
 {
  "versao": 1,
- "gerado_em": "2026-11-25T07:12:03Z",
- "origem": "tarefa agendada",
+ "gerado_em": "2026-11-25T19:22:55Z",
+ "origem": "conversa (pedido da Ritchely)",
  "planejamento_id": 105325,
  "meta_atual": {
   "ordem": 2,
@@ -11,12 +11,12 @@
   "vezes_adiada": 0,
   "status": "ontime",
   "atividades_totais": 20,
-  "atividades_concluidas": 14,
-  "atividades_pendentes": 6,
+  "atividades_concluidas": 16,
+  "atividades_pendentes": 4,
   "atividades_ignoradas": 0,
-  "questoes": 197,
-  "acertos": 169,
-  "minutos": 930
+  "questoes": 217,
+  "acertos": 188,
+  "minutos": 1080
  },
  "metas": [
   {
@@ -26,11 +26,11 @@
    "data_inicio": "2026-11-18T20:25:21.8833333",
    "data_conclusao": null,
    "atividades_totais": 20,
-   "atividades_concluidas": 14,
+   "atividades_concluidas": 16,
    "atividades_ignoradas": 0,
-   "questoes": 197,
-   "acertos": 169,
-   "minutos": 930,
+   "questoes": 217,
+   "acertos": 188,
+   "minutos": 1080,
    "atividades": [
     {
      "aid": 110737,
@@ -185,10 +185,10 @@
      "tipo": "Teoria",
      "rel": 5,
      "prio": null,
-     "q": null,
-     "a": null,
-     "min": 0,
-     "concluida": false,
+     "q": 0,
+     "a": 0,
+     "min": 90,
+     "concluida": true,
      "ignorada": false,
      "link": null
     },
@@ -201,10 +201,10 @@
      "tipo": "Questões",
      "rel": 4,
      "prio": null,
-     "q": null,
-     "a": null,
-     "min": 0,
-     "concluida": false,
+     "q": 20,
+     "a": 19,
+     "min": 60,
+     "concluida": true,
      "ignorada": false,
      "link": null
     },
@@ -694,75 +694,15 @@
  ],
  "desempenho": [
   {
-   "sigla": "DEMP",
-   "disciplina": "Direito Empresarial (Comercial)",
+   "sigla": "PORT",
+   "disciplina": "Português",
    "peso": 0,
-   "q": 25,
-   "a": 24,
-   "pct": 96,
-   "media": 82.86,
-   "mediana": 84,
-   "decil": 10,
-   "tendencia": null
-  },
-  {
-   "sigla": "TINFO",
-   "disciplina": "Tecnologia da Informação",
-   "peso": 0,
-   "q": 39,
-   "a": 34,
-   "pct": 87.17,
-   "media": 75.45,
-   "mediana": 76.9,
-   "decil": 10,
-   "tendencia": null
-  },
-  {
-   "sigla": "DCON",
-   "disciplina": "Direito Constitucional",
-   "peso": 0,
-   "q": 49,
-   "a": 44,
-   "pct": 89.79,
-   "media": 79.66,
-   "mediana": 80,
-   "decil": 9,
-   "tendencia": null
-  },
-  {
-   "sigla": "DTRIB",
-   "disciplina": "Direito Tributário",
-   "peso": 0,
-   "q": 50,
-   "a": 42,
-   "pct": 84,
-   "media": 79.05,
-   "mediana": 80,
-   "decil": 7,
-   "tendencia": null
-  },
-  {
-   "sigla": "CTBGA",
-   "disciplina": "Contabilidade Geral e Avançada",
-   "peso": 0,
-   "q": 23,
-   "a": 18,
-   "pct": 78.26,
-   "media": 74.24,
-   "mediana": 73.9,
-   "decil": 7,
-   "tendencia": null
-  },
-  {
-   "sigla": "DADM",
-   "disciplina": "Direito Administrativo",
-   "peso": 0,
-   "q": 40,
-   "a": 36,
-   "pct": 90,
-   "media": 86.26,
-   "mediana": 87.5,
-   "decil": 7,
+   "q": 61,
+   "a": 52,
+   "pct": 85.24,
+   "media": 84.26,
+   "mediana": null,
+   "decil": null,
    "tendencia": null
   },
   {
@@ -772,29 +712,101 @@
    "q": 41,
    "a": 35,
    "pct": 85.36,
-   "media": 82.26,
-   "mediana": 84,
-   "decil": 6,
+   "media": 82.24,
+   "mediana": null,
+   "decil": null,
    "tendencia": null
   },
   {
-   "sigla": "PORT",
-   "disciplina": "Português",
+   "sigla": "DADM",
+   "disciplina": "Direito Administrativo",
    "peso": 0,
-   "q": 61,
-   "a": 52,
-   "pct": 85.24,
-   "media": 84.27,
-   "mediana": 85.2,
-   "decil": 5,
+   "q": 40,
+   "a": 36,
+   "pct": 90,
+   "media": 86.25,
+   "mediana": null,
+   "decil": null,
+   "tendencia": null
+  },
+  {
+   "sigla": "CTBGA",
+   "disciplina": "Contabilidade Geral e Avançada",
+   "peso": 0,
+   "q": 23,
+   "a": 18,
+   "pct": 78.26,
+   "media": 74.25,
+   "mediana": null,
+   "decil": null,
+   "tendencia": null
+  },
+  {
+   "sigla": "DTRIB",
+   "disciplina": "Direito Tributário",
+   "peso": 0,
+   "q": 50,
+   "a": 42,
+   "pct": 84,
+   "media": 79.03,
+   "mediana": null,
+   "decil": null,
+   "tendencia": null
+  },
+  {
+   "sigla": "DPEN",
+   "disciplina": "Direito Penal",
+   "peso": 0,
+   "q": 20,
+   "a": 19,
+   "pct": 95,
+   "media": 87.45,
+   "mediana": null,
+   "decil": null,
+   "tendencia": null
+  },
+  {
+   "sigla": "DCON",
+   "disciplina": "Direito Constitucional",
+   "peso": 0,
+   "q": 49,
+   "a": 44,
+   "pct": 89.79,
+   "media": 79.6,
+   "mediana": null,
+   "decil": null,
+   "tendencia": null
+  },
+  {
+   "sigla": "TINFO",
+   "disciplina": "Tecnologia da Informação",
+   "peso": 0,
+   "q": 39,
+   "a": 34,
+   "pct": 87.17,
+   "media": 75.44,
+   "mediana": null,
+   "decil": null,
+   "tendencia": null
+  },
+  {
+   "sigla": "DEMP",
+   "disciplina": "Direito Empresarial (Comercial)",
+   "peso": 0,
+   "q": 25,
+   "a": 24,
+   "pct": 96,
+   "media": 83.09,
+   "mediana": null,
+   "decil": null,
    "tendencia": null
   }
  ],
  "tempo": {
-  "total_min": 2450,
+  "total_min": 2600,
   "por_tipo": {
-   "Teoria": 1190,
-   "Questões": 1020,
+   "Teoria": 1280,
+   "Questões": 1080,
    "Mapeamento": 120,
    "Revisão": 90
   },
@@ -803,7 +815,7 @@
   "disciplinas": [
    {
     "sigla": "CTBGA",
-    "min": 600
+    "min": 690
    },
    {
     "sigla": "TINFO",
@@ -843,7 +855,7 @@
    },
    {
     "sigla": "DPEN",
-    "min": 0
+    "min": 60
    }
   ]
  },
@@ -874,7 +886,7 @@
    "q": 20,
    "a": 16,
    "pct": 80.0,
-   "media": 86.0,
+   "media": 85.9,
    "link": null
   },
   {
