@@ -1,6 +1,6 @@
 {
  "versao": 1,
- "gerado_em": "2026-11-24T07:12:06Z",
+ "gerado_em": "2026-11-25T07:12:03Z",
  "origem": "tarefa agendada",
  "planejamento_id": 105325,
  "meta_atual": {
@@ -11,12 +11,12 @@
   "vezes_adiada": 0,
   "status": "ontime",
   "atividades_totais": 20,
-  "atividades_concluidas": 9,
-  "atividades_pendentes": 11,
+  "atividades_concluidas": 14,
+  "atividades_pendentes": 6,
   "atividades_ignoradas": 0,
-  "questoes": 137,
-  "acertos": 113,
-  "minutos": 630
+  "questoes": 197,
+  "acertos": 169,
+  "minutos": 930
  },
  "metas": [
   {
@@ -26,11 +26,11 @@
    "data_inicio": "2026-11-18T20:25:21.8833333",
    "data_conclusao": null,
    "atividades_totais": 20,
-   "atividades_concluidas": 9,
+   "atividades_concluidas": 14,
    "atividades_ignoradas": 0,
-   "questoes": 137,
-   "acertos": 113,
-   "minutos": 630,
+   "questoes": 197,
+   "acertos": 169,
+   "minutos": 930,
    "atividades": [
     {
      "aid": 110737,
@@ -73,10 +73,10 @@
      "tipo": "Teoria",
      "rel": 5,
      "prio": null,
-     "q": null,
-     "a": null,
-     "min": 0,
-     "concluida": false,
+     "q": 0,
+     "a": 0,
+     "min": 60,
+     "concluida": true,
      "ignorada": false,
      "link": null
     },
@@ -105,10 +105,10 @@
      "tipo": "Questões",
      "rel": 4,
      "prio": null,
-     "q": null,
-     "a": null,
-     "min": 0,
-     "concluida": false,
+     "q": 19,
+     "a": 18,
+     "min": 60,
+     "concluida": true,
      "ignorada": false,
      "link": null
     },
@@ -217,10 +217,10 @@
      "tipo": "Questões",
      "rel": 5,
      "prio": null,
-     "q": null,
-     "a": null,
-     "min": 0,
-     "concluida": false,
+     "q": 25,
+     "a": 24,
+     "min": 60,
+     "concluida": true,
      "ignorada": false,
      "link": null
     },
@@ -281,10 +281,10 @@
      "tipo": "Questões",
      "rel": 5,
      "prio": null,
-     "q": null,
-     "a": null,
-     "min": 0,
-     "concluida": false,
+     "q": 16,
+     "a": 14,
+     "min": 60,
+     "concluida": true,
      "ignorada": false,
      "link": null
     },
@@ -313,10 +313,10 @@
      "tipo": "Teoria",
      "rel": 5,
      "prio": null,
-     "q": null,
-     "a": null,
-     "min": 0,
-     "concluida": false,
+     "q": 0,
+     "a": 0,
+     "min": 60,
+     "concluida": true,
      "ignorada": false,
      "link": null
     },
@@ -694,18 +694,6 @@
  ],
  "desempenho": [
   {
-   "sigla": "DCON",
-   "disciplina": "Direito Constitucional",
-   "peso": 0,
-   "q": 24,
-   "a": 20,
-   "pct": 83.33,
-   "media": 67.2,
-   "mediana": 68,
-   "decil": 10,
-   "tendencia": null
-  },
-  {
    "sigla": "DEMP",
    "disciplina": "Direito Empresarial (Comercial)",
    "peso": 0,
@@ -721,12 +709,24 @@
    "sigla": "TINFO",
    "disciplina": "Tecnologia da Informação",
    "peso": 0,
-   "q": 20,
-   "a": 16,
-   "pct": 80,
-   "media": 70.01,
-   "mediana": 70,
-   "decil": 8,
+   "q": 39,
+   "a": 34,
+   "pct": 87.17,
+   "media": 75.45,
+   "mediana": 76.9,
+   "decil": 10,
+   "tendencia": null
+  },
+  {
+   "sigla": "DCON",
+   "disciplina": "Direito Constitucional",
+   "peso": 0,
+   "q": 49,
+   "a": 44,
+   "pct": 89.79,
+   "media": 79.66,
+   "mediana": 80,
+   "decil": 9,
    "tendencia": null
   },
   {
@@ -736,7 +736,7 @@
    "q": 50,
    "a": 42,
    "pct": 84,
-   "media": 79.06,
+   "media": 79.05,
    "mediana": 80,
    "decil": 7,
    "tendencia": null
@@ -748,7 +748,7 @@
    "q": 23,
    "a": 18,
    "pct": 78.26,
-   "media": 74.21,
+   "media": 74.24,
    "mediana": 73.9,
    "decil": 7,
    "tendencia": null
@@ -760,7 +760,7 @@
    "q": 40,
    "a": 36,
    "pct": 90,
-   "media": 86.29,
+   "media": 86.26,
    "mediana": 87.5,
    "decil": 7,
    "tendencia": null
@@ -769,10 +769,10 @@
    "sigla": "DCIV",
    "disciplina": "Direito Civil",
    "peso": 0,
-   "q": 25,
-   "a": 21,
-   "pct": 84,
-   "media": 82.14,
+   "q": 41,
+   "a": 35,
+   "pct": 85.36,
+   "media": 82.26,
    "mediana": 84,
    "decil": 6,
    "tendencia": null
@@ -784,17 +784,17 @@
    "q": 61,
    "a": 52,
    "pct": 85.24,
-   "media": 84.2,
+   "media": 84.27,
    "mediana": 85.2,
    "decil": 5,
    "tendencia": null
   }
  ],
  "tempo": {
-  "total_min": 2150,
+  "total_min": 2450,
   "por_tipo": {
-   "Teoria": 1070,
-   "Questões": 840,
+   "Teoria": 1190,
+   "Questões": 1020,
    "Mapeamento": 120,
    "Revisão": 90
   },
@@ -807,7 +807,7 @@
    },
    {
     "sigla": "TINFO",
-    "min": 510
+    "min": 570
    },
    {
     "sigla": "AUD",
@@ -818,24 +818,24 @@
     "min": 210
    },
    {
+    "sigla": "RLOG",
+    "min": 210
+   },
+   {
+    "sigla": "DCON",
+    "min": 150
+   },
+   {
     "sigla": "DTRIB",
     "min": 150
    },
    {
+    "sigla": "DCIV",
+    "min": 120
+   },
+   {
     "sigla": "DADM",
     "min": 90
-   },
-   {
-    "sigla": "DCON",
-    "min": 90
-   },
-   {
-    "sigla": "RLOG",
-    "min": 90
-   },
-   {
-    "sigla": "DCIV",
-    "min": 60
    },
    {
     "sigla": "DEMP",
@@ -865,7 +865,7 @@
    "q": 25,
    "a": 19,
    "pct": 76.0,
-   "media": 81.3,
+   "media": 81.2,
    "link": null
   },
   {
@@ -875,6 +875,15 @@
    "a": 16,
    "pct": 80.0,
    "media": 86.0,
+   "link": null
+  },
+  {
+   "titulo": "Morfologia: Substantivo, Adjetivo, Advérbio, Artigo, Numeral, Interjeição e Palavras Especiais",
+   "sigla": "PORT",
+   "q": 18,
+   "a": 15,
+   "pct": 83.3,
+   "media": 83.3,
    "link": null
   }
  ],
