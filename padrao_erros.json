@@ -1,12 +1,12 @@
 {
  "versao": 1,
- "gerado_em": "2026-11-24T10:09:45Z",
- "origem": "chrome meio-dia",
+ "gerado_em": "2026-11-25T19:25:29Z",
+ "origem": "chrome (conversa)",
  "planejamento_id": 105325,
  "total": {
-  "erros": 39,
+  "erros": 44,
   "com_motivo": 19,
-  "cobertura_pct": 48.7,
+  "cobertura_pct": 43.2,
   "motivo_predominante": "Desconhecimento",
   "motivo_predominante_pct": 42.1
  },
@@ -68,9 +68,9 @@
   },
   {
    "nome": "Direito Constitucional",
-   "erros": 4,
+   "erros": 5,
    "com_motivo": 4,
-   "cobertura_pct": 100.0,
+   "cobertura_pct": 80.0,
    "motivo_predominante": "Desconhecimento",
    "motivo_predominante_pct": 100.0,
    "atividades": [
@@ -82,14 +82,23 @@
      "a": 20,
      "erros": 4,
      "motivo_predominante": "Desconhecimento"
+    },
+    {
+     "codigo": "DCON.4299.118383",
+     "meta": 2,
+     "assunto": "Princípios Fundamentais",
+     "q": 25,
+     "a": 24,
+     "erros": 1,
+     "motivo_predominante": null
     }
    ]
   },
   {
    "nome": "Direito Civil",
-   "erros": 4,
+   "erros": 6,
    "com_motivo": 4,
-   "cobertura_pct": 100.0,
+   "cobertura_pct": 66.7,
    "motivo_predominante": "Desconhecimento",
    "motivo_predominante_pct": 25.0,
    "atividades": [
@@ -101,6 +110,15 @@
      "a": 21,
      "erros": 4,
      "motivo_predominante": "Desconhecimento"
+    },
+    {
+     "codigo": "DCIV.4273.118490",
+     "meta": 2,
+     "assunto": "Pessoas Naturais",
+     "q": 16,
+     "a": 14,
+     "erros": 2,
+     "motivo_predominante": null
     }
    ]
   },
@@ -209,16 +227,26 @@
   },
   {
    "nome": "Direito Penal",
-   "erros": 0,
+   "erros": 1,
    "com_motivo": 0,
    "cobertura_pct": null,
    "motivo_predominante": null,
    "motivo_predominante_pct": null,
-   "atividades": []
+   "atividades": [
+    {
+     "codigo": "DPEN.4327.118299",
+     "meta": 2,
+     "assunto": "Princípios do Direito Penal. Aplicação da Lei Penal.",
+     "q": 20,
+     "a": 19,
+     "erros": 1,
+     "motivo_predominante": null
+    }
+   ]
   },
   {
    "nome": "Tecnologia da Informação",
-   "erros": 4,
+   "erros": 5,
    "com_motivo": 0,
    "cobertura_pct": null,
    "motivo_predominante": null,
@@ -231,6 +259,15 @@
      "q": 20,
      "a": 16,
      "erros": 4,
+     "motivo_predominante": null
+    },
+    {
+     "codigo": "TINFO.3857.110738",
+     "meta": 2,
+     "assunto": "[TI I] Conceitos Básicos de Banco de Dados",
+     "q": 19,
+     "a": 18,
+     "erros": 1,
      "motivo_predominante": null
     }
    ]
