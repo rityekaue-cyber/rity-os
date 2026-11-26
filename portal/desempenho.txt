@@ -1,8 +1,20 @@
-# desempenho — lido em 2026-11-24T10:09Z
+# desempenho — lido em 2026-11-26T10:30Z
 Desempenho Acumulado — Consolidar a base
-Desempenho atingido 85,4% | Horas estudadas 35h50m | Questões resolvidas 268 | Média diária 2h57m
-Tabela por disciplina (valores brutos lidos, ordem de colunas: Atividades, Reforços, Aprofundamentos, Totais, Questões, Acertos, Desempenho): Contabilidade 4h50m 23 q 18 ac 78,2%; demais linhas da tabela vêm sem rótulo de disciplina no texto extraído e não foram associadas.
-Total geral: 8h30m (atividades) | 268 q | 229 | 85,4% | 1h13m | 30m aprofundamentos | 35h50m
-Tempo médio por dia da semana: Dom 2h25m, Seg 3h, Ter 1h30m, Qua 5h30m, Qui 3h30m, Sex 4h30m, Sáb 5h
-Questões resolvidas por disciplina: CTBGA 27,9%, TINFO 23,7%, AUD 13,4%, PORT 9,7%, DTRIB 6,9%, DADM 4,1%, DCON 4,1%, RLOG 4,1%, DCIV 2,7%, DEMP 2,7%
-Sistemática de revisão: revisou 8,3%, não revisou 91,6%. Conferência: a cada questão 50,0%, só ao final 50,0%.
+Desempenho atingido 87,3% | Horas estudadas 43h20m | Questões resolvidas 348 | Média diária 3h04m
+Disciplina | questões | acertos | desempenho | atividades | reforços | aprofundamentos | tempo total
+Auditoria Privada | - | - | - | 1h37m | - | - | 4h50m
+Contabilidade Geral e Avançada | 23 | 18 | 78,2% | 1h17m | - | - | 11h30m
+Direito Administrativo | 40 | 36 | 90,0% | 45m | - | - | 1h30m
+Direito Civil | 41 | 35 | 85,3% | 1h | - | - | 2h
+Direito Constitucional | 49 | 44 | 89,7% | 1h15m | - | - | 2h30m
+Direito Empresarial (Comercial) | 25 | 24 | 96,0% | 1h | - | - | 1h
+Direito Penal | 20 | 19 | 95,0% | 1h | - | - | 1h
+Direito Tributário | 50 | 42 | 84,0% | 1h15m | - | - | 2h30m
+Português | 61 | 52 | 85,2% | 1h10m | - | - | 3h30m
+Raciocínio Lógico | - | - | - | 53m | - | - | 3h30m
+Tecnologia da Informação | 39 | 34 | 87,1% | 1h17m | - | 30m | 9h30m
+Total | 348 | 304 | 87,3% | 1h11m | - | 30m | 43h20m
+Tempo médio por dia da semana: Dom 2h25m; Seg 3h; Ter 3h15m; Qua 4h; Qui 3h30m; Sex 4h30m; Sáb 5h
+Distribuição por disciplina (gráfico, como exibido): CTBGA 26,5%; TINFO 21,9%; AUD 11,1%; PORT 8,0%; RLOG 8,0%; DCON 5,7%; DTRIB 5,7%; DCIV 4,6%; DADM 3,4%; DEMP 2,3%; DPEN 2,3%
+Sistemática de revisão: revisou 12,5%; não revisou 87,5%; não informado 0,0%
+Sistemática de conferência: a cada questão 56,2%; só ao final 43,7%; não informado 0,0%
