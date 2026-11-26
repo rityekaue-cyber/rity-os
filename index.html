@@ -556,13 +556,13 @@ const CONCURSOS_ALVO=[
     alerta:'Foco desde 12/11/2026 (decisão com o mentor). Quando o edital sair, os pesos, o mapa e o plano são refeitos em cima dele'
   },
   {
-    codigo:'SEFAZ-SC',prioridade:'estrategico',status:'Prova 22/11/2026 · Florianópolis · inscrição confirmada — vira treino',
+    codigo:'SEFAZ-SC',prioridade:'finalizado',status:'Prova feita em 22/11/2026 · quase 80% da prova · não deu para passar, mas foi um grande salto',
     banca:'FCC',vagas:8,cargo:'Auditor Estadual de Finanças Públicas — Direito (E05)',salario:25337.61,edital:'01/2026',
-    alerta:'Mesma banca do RS: use como primeira medida real de Direito e Português em prova FCC. Sem preparo específico'
+    alerta:'Mesma banca do RS (FCC). Sem preparo específico, bateu perto de 80%: é a primeira medida real em prova FCC. Registre o acerto por matéria para ver onde perdeu'
   },
   {
-    codigo:'TCE-SP',prioridade:'finalizado',status:'Prova realizada em 11/10/2026 — aguardando gabarito e resultado',
-    banca:'Vunesp',alerta:'Quando o gabarito sair, conferir contra o que você marcou'
+    codigo:'TCE-SP',prioridade:'finalizado',status:'Prova de 11/10/2026 · não passou na discursiva',
+    banca:'Vunesp',alerta:'A discursiva é o ponto fraco já conhecido. Antes de uma próxima prova com discursiva (TCE-RJ), treinar escrita com correção'
   },
   {
     codigo:'PGM Jundiaí',prioridade:'estrategico',status:'Prova 01/11/2026 — ir "a frio", sem preparo específico',
@@ -607,8 +607,9 @@ const CRONOGRAMA_MACRO=[
     {data:'26-27/11',acao:'Fim da Meta 2: hoje a Revisão de Auditoria; sexta com prioridade TI (MER e Mapeamento Aula 03) + Auditoria (Princípios Éticos) + caderno de erros',tipo:'estudo'},
     {data:'13/11',acao:'📋 SEFAZ-SC: Edital de Convocação — confirmar local da prova',tipo:'edital'},
     {data:'20-21/11',acao:'Viagem a Florianópolis (sem conteúdo novo)',tipo:'descanso'},
-    {data:'22/11',acao:'📋 Prova SEFAZ-SC como treino FCC — manhã Gerais (4h) · tarde Específicos (5h)',tipo:'prova',alerta:'alto'},
-    {data:'23/11',acao:'Gabarito do SEFAZ-SC a partir das 17h: conferir e usar como diagnóstico de Direito e Português',tipo:'edital'},
+    {data:'22/11',acao:'✅ Prova SEFAZ-SC feita como treino FCC: quase 80% da prova. Não bastou para passar, mas é um grande salto',tipo:'prova'},
+    {data:'23/11',acao:'Gabarito do SEFAZ-SC: conferir e usar como diagnóstico de Direito e Português',tipo:'edital'},
+    {data:'26/11',acao:'📋 TCE-SP: resultado da discursiva — não passou. Reforça o plano de treinar discursiva antes do TCE-RJ',tipo:'edital'},
   ]},
   {periodo:'A PARTIR DE 23/11 — Base do SEFAZ-RS',eventos:[
     {data:'meta a meta',acao:'Seguir as metas do Guruja, uma por vez. Checkpoint: 75% ou mais em questões FCC de Contabilidade',tipo:'estudo'},
@@ -2040,6 +2041,7 @@ const TIPOS_DIA={
 };
 const SEMANA_CFG_PADRAO={ferias:{de:'2026-11-03',ate:'2026-11-22'},trabalho:[2,4,5],excecoes:{'2026-11-21':'viagem','2026-11-22':'prova'},min:{}};
 const DATA_PROVA_MS=new Date(2026,10,22).getTime();
+const hojeDk22=()=>{const t=new Date();return t.getFullYear()===2026&&t.getMonth()===10&&t.getDate()===22;};
 const ALVO_NOTA_PADRAO=208; // 80% de 260
 const MAT_CURTO={'Dir. Previdenciário':'Previdenciário','Dir. Penal':'Penal','Dir. Administrativo':'Administrativo','Dir. Constitucional':'Constitucional','Dir. Civil':'Civil','Dir. Financeiro / AFO':'AFO','Ciência e Análise de Dados':'TI','Português':'Português','Ética Pública':'Ética','Conhecimentos Regionais de SC':'Geografia SC','Reforma Tributária':'Reforma Trib.','Raciocínio Lógico':'RL','Contabilidade Geral':'Contab','Auditoria':'Auditoria','Dir. Tributário':'Tributário','Legislação Tributária Estadual':'LTE','Tecnologia da Informação':'TI','Direito Empresarial (Comercial)':'Empresarial','Matemática Financeira e Estatística':'MatFin/Estatística','Orientações Gerais':'Orientações'};
 const matCurto=m=>MAT_CURTO[m]||m;
@@ -2224,7 +2226,7 @@ function calcRiscos(){
 // ── Textos (fallback sem IA + bloco de contexto compartilhado com a IA e o chat) ──
 function textoBriefingAuto(E){
   const T=TIPOS_DIA[E.tipo];const p=[];
-  p.push(`${rotuloDk(E.dk)} · ${T.ic} ${T.nome} · faltam ${E.diasProva} dias para a prova.`);
+  p.push(`${rotuloDk(E.dk)} · ${T.ic} ${T.nome} · ${E.diasProva>0?`faltam ${E.diasProva} dias para a prova`:'SEFAZ-SC já feito (quase 80% da prova)'}.`);
   if(E.tipo==='prova')return 'Hoje é a prova. Nada de conteúdo novo: acorde, coma leve, confira documentos e local, respire. Você já fez o que dava para fazer.';
   if(!E.noPlano){
     p.push('O plano de 02–08/11 acabou. Peça “atualiza” no Claude para eu subir o plano da próxima semana. Enquanto isso: Anki profundo e questões das matérias de risco (abaixo).');
@@ -2267,7 +2269,7 @@ function blocoMentora(){
     return L.join('\n');
   }catch(e){return '';}
 }
-const IA_REGRAS_COMUNS=`Você é a mentora da Ritchely: concurseira com foco no SEFAZ-RS (Auditor-Fiscal da Receita Estadual, banca FCC, edital ainda não publicado e sem data de prova; a prova do SEFAZ-SC em 22/11/2026 é só treino), advogada, mãe solo do Kauê (Colégio Naval). Rotina combinada com o mentor: 1h de TI + 2h de Contabilidade + 1h de revisão das outras matérias por dia. Tom: direto, caloroso, sem motivação vazia e sem elogio sem número. Use só os dados abaixo; se um dado não está lá, não invente. Nunca cite quantidade de alunos da plataforma e nunca fale de metas futuras do Guruja. Você NÃO altera o plano: quando algo precisa mudar, diga que a proposta aparece nos botões e que ela decide.`;
+const IA_REGRAS_COMUNS=`Você é a mentora da Ritchely: concurseira com foco no SEFAZ-RS (Auditor-Fiscal da Receita Estadual, banca FCC, edital ainda não publicado e sem data de prova; o SEFAZ-SC (22/11/2026) foi só treino e ela acertou quase 80% da prova (não bastou para passar, mas foi um grande salto na FCC); no TCE-SP ela não passou na discursiva, o ponto fraco já conhecido), advogada, mãe solo do Kauê (Colégio Naval). Rotina combinada com o mentor: 1h de TI + 2h de Contabilidade + 1h de revisão das outras matérias por dia. Tom: direto, caloroso, sem motivação vazia e sem elogio sem número. Use só os dados abaixo; se um dado não está lá, não invente. Nunca cite quantidade de alunos da plataforma e nunca fale de metas futuras do Guruja. Você NÃO altera o plano: quando algo precisa mudar, diga que a proposta aparece nos botões e que ela decide.`;
 function promptAbertura(){
   return `${IA_REGRAS_COMUNS}
 
@@ -2474,7 +2476,7 @@ function PainelMentora({onRapido,onSetTab,onAbrirChat,rapidoVer}){
           <div>
             <div style={{fontSize:12,color:'rgba(251,191,36,.55)',letterSpacing:'3px',fontFamily:mono,fontWeight:700}}>MENTORA · SEFAZ-RS</div>
             <div style={{fontFamily:"'DM Serif Display',serif",color:'#f0e6d0',fontSize:19,marginTop:2}}>{rotuloDk(E.dk)} · {T.ic} {T.nome}</div>
-            <div style={{fontSize:13,color:'#aab6c8',marginTop:3,fontFamily:mono}}>{E.diasProva>0?`faltam ${E.diasProva} dias para a prova`:'dia da prova'}{E.noPlano?` · plano dia ${E.diaIdx}/7`:' · plano encerrado'}</div>
+            <div style={{fontSize:13,color:'#aab6c8',marginTop:3,fontFamily:mono}}>{E.diasProva>0?`faltam ${E.diasProva} dias para a prova`:(hojeDk22()?'dia da prova':'SEFAZ-SC feito: quase 80%')}{E.noPlano?` · plano dia ${E.diaIdx}/7`:' · plano encerrado'}</div>
           </div>
           <button onClick={abrirSemana} style={{background:'rgba(148,163,184,.18)',border:'1px solid rgba(255,255,255,.12)',borderRadius:9,padding:'7px 10px',fontFamily:mono,fontSize:13,fontWeight:800,color:'#c2ccd8',cursor:'pointer',flexShrink:0}}>⚙️ Semana</button>
         </div>
@@ -2831,7 +2833,7 @@ function ChatIA({appCtx,onMIT,embed}){
     const decLog=lsGet('ia_decisoes_historico',[]).slice(-4);
     const decTxt=decLog.length?decLog.map(l=>`${l.data}: ${l.itens.join(' · ')}`).join(' | '):'nenhuma decisão registrada ainda';
 
-    return `Você é a Assessora IA pessoal da Ritchely — mentora de alto desempenho com foco no SEFAZ-RS (Auditor-Fiscal da Receita Estadual, banca FCC, edital ainda não publicado e sem data de prova; a prova do SEFAZ-SC em 22/11/2026 é só treino). Matérias: núcleo fiscal (Contabilidade Geral, Auditoria, Direito Tributário, Legislação Tributária Estadual) e base (TI/Banco de Dados, Português, Raciocínio Lógico, Constitucional, Administrativo, Civil, Penal, Empresarial). Não há edital: pesos e número de questões são provisórios (edital de 2018), e não existe corte oficial. Regras: Contabilidade antes de Auditoria; Direito Tributário antes de Legislação Tributária Estadual; rotina de 1h TI + 2h Contabilidade + 1h revisão.
+    return `Você é a Assessora IA pessoal da Ritchely — mentora de alto desempenho com foco no SEFAZ-RS (Auditor-Fiscal da Receita Estadual, banca FCC, edital ainda não publicado e sem data de prova; o SEFAZ-SC (22/11/2026) foi só treino e ela acertou quase 80% da prova (não bastou para passar, mas foi um grande salto na FCC); no TCE-SP ela não passou na discursiva, o ponto fraco já conhecido). Matérias: núcleo fiscal (Contabilidade Geral, Auditoria, Direito Tributário, Legislação Tributária Estadual) e base (TI/Banco de Dados, Português, Raciocínio Lógico, Constitucional, Administrativo, Civil, Penal, Empresarial). Não há edital: pesos e número de questões são provisórios (edital de 2018), e não existe corte oficial. Regras: Contabilidade antes de Auditoria; Direito Tributário antes de Legislação Tributária Estadual; rotina de 1h TI + 2h Contabilidade + 1h revisão.
 
 PERFIL: Ritchely, mãe solo do Kauê (Colégio Naval). Acorda cedo pro Bloco Ouro. Trabalha em dias configuráveis no app (varia por semana — confira ehDiaTrabalho, não presuma Ter/Qui/Sex fixo).
 
@@ -4228,7 +4230,7 @@ Anki: ${ankiMaterias.map(m=>`${m.mat}(${m.cards}cards)`).join(', ')}.
 TEC hoje: ${tecHoje.d3.length} itens vencendo, ${tecHoje.d15.length} próximos.
 NLM urgente: ${nlmSugerido?.mat||'-'} (${nlmSugerido?.pct||'?'}%, ${nlmSugerido?.diasNlm||0}d sem NLM).
 ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
-      const res=await chamarClaude(`Você é assessora de estudos da Ritchely, com foco no SEFAZ-RS (Auditor-Fiscal da Receita Estadual, banca FCC, edital ainda não publicado e sem data de prova; a prova do SEFAZ-SC em 22/11/2026 é só treino). Prioridade: núcleo fiscal (Contabilidade, Auditoria, Dir. Tributário, Legislação Tributária Estadual) e TI. Sem edital: pesos provisórios, sem corte oficial. TEC=caderno sem datas, só dificuldade. ANKI=75 cards/dia em 3 matérias. Rev.1h30=Obsidian+TEC+Anki. Responda em 3 linhas diretas. ${cobrar?'Cobre o que não foi feito ontem.':''}` ,
+      const res=await chamarClaude(`Você é assessora de estudos da Ritchely, com foco no SEFAZ-RS (Auditor-Fiscal da Receita Estadual, banca FCC, edital ainda não publicado e sem data de prova; o SEFAZ-SC (22/11/2026) foi só treino e ela acertou quase 80% da prova (não bastou para passar, mas foi um grande salto na FCC); no TCE-SP ela não passou na discursiva, o ponto fraco já conhecido). Prioridade: núcleo fiscal (Contabilidade, Auditoria, Dir. Tributário, Legislação Tributária Estadual) e TI. Sem edital: pesos provisórios, sem corte oficial. TEC=caderno sem datas, só dificuldade. ANKI=75 cards/dia em 3 matérias. Rev.1h30=Obsidian+TEC+Anki. Responda em 3 linhas diretas. ${cobrar?'Cobre o que não foi feito ontem.':''}` ,
         [{role:'user',content:ctx}],120);
       lsSet(`despacho_ia_${hoje}`,res);setDespacho(res);
     }catch(e){console.log(e);}
@@ -4386,11 +4388,11 @@ ${cobrar?`Não fez ontem: ${cobrar}.`:''}`;
             <div style={{padding:'10px 14px',background:'rgba(255,255,255,.03)',borderBottom:'1px solid rgba(255,255,255,.06)',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
               <div>
                 <div style={{fontSize:13,fontWeight:800,color:'var(--text)',fontFamily:"'DM Mono',monospace",letterSpacing:'1px'}}>SEFAZ-RS · FCC · {dataMeta}</div>
-                <div style={{fontSize:13,color:faseColor,marginTop:1}}>📍 Auditor-Fiscal da Receita Estadual · treino FCC: prova do SEFAZ-SC em 22/11</div>
+                <div style={{fontSize:13,color:faseColor,marginTop:1}}>📍 Auditor-Fiscal da Receita Estadual · SEFAZ-SC (22/11, treino FCC): quase 80% da prova</div>
               </div>
               <div style={{textAlign:'right'}}>
-                <div style={{fontSize:21,fontWeight:900,color:'#f87171',fontFamily:"'DM Mono',monospace",lineHeight:1}}>{diasRestantes}</div>
-                <div style={{fontSize:13,color:'var(--text4)'}}>{diasRestantes>0?'dias p/ o treino':'—'}</div>
+                <div style={{fontSize:21,fontWeight:900,color:'#f87171',fontFamily:"'DM Mono',monospace",lineHeight:1}}>{diasRestantes>0?diasRestantes:'~80%'}</div>
+                <div style={{fontSize:13,color:'var(--text4)'}}>{diasRestantes>0?'dias p/ o treino':'SEFAZ-SC'}</div>
               </div>
             </div>
             <div style={{padding:'10px 14px',display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
@@ -7197,7 +7199,7 @@ function EstrategiaSemana(){
       </div>
       <div style={{padding:'12px 14px',borderRadius:12,background:'rgba(52,211,153,.05)',border:'1px solid rgba(52,211,153,.25)',marginBottom:12}}>
         <div style={{fontSize:13,color:'#34d399',fontFamily:mono,fontWeight:800,letterSpacing:'1px',marginBottom:4}}>🧭 MARCOS</div>
-        <div style={{fontSize:14,color:'#c2ccd8',lineHeight:1.6}}>• <b>22/11</b> — prova SEFAZ-SC como treino FCC. Ao sair o gabarito, registre acertos por matéria: é o primeiro diagnóstico de prova real.<br/>• <b>Edital do RS</b> — quando sair, os pesos e as matérias provisórios precisam ser trocados.</div>
+        <div style={{fontSize:14,color:'#c2ccd8',lineHeight:1.6}}>• <b>22/11</b> — prova SEFAZ-SC feita como treino FCC: quase 80% da prova. Registre os acertos por matéria: é o primeiro diagnóstico de prova real.<br/>• <b>TCE-SP</b> — não passou na discursiva: o ponto fraco já conhecido.<br/>• <b>Edital do RS</b> — quando sair, os pesos e as matérias provisórios precisam ser trocados.</div>
         {!saiu?<button onClick={()=>{const n={em:Date.now()};lsSet('edital_rs_saiu',n);setSaiu(n);}} style={{marginTop:8,padding:'9px 12px',borderRadius:8,border:'1px solid rgba(52,211,153,.4)',background:'rgba(52,211,153,.1)',color:'#34d399',fontSize:14,fontWeight:800,cursor:'pointer'}}>📣 Saiu o edital do RS</button>
         :<div style={{marginTop:8,padding:'9px 12px',borderRadius:8,background:'rgba(251,191,36,.1)',border:'1px solid rgba(251,191,36,.4)',fontSize:14,color:'#fbbf24',lineHeight:1.5}}>📣 Edital marcado como publicado. Me peça no chat: “atualiza o app com o edital do RS” — eu troco matérias, pesos e a projeção. <button onClick={()=>{lsSet('edital_rs_saiu',null);setSaiu(null);}} style={{marginLeft:6,padding:'2px 8px',borderRadius:5,border:'1px solid var(--border)',background:'transparent',color:'var(--text4)',fontSize:12,cursor:'pointer'}}>desfazer</button></div>}
       </div>
@@ -9178,6 +9180,27 @@ function ModalConfig({fechar}){
                 <div style={{fontSize:15,color:a.cor,fontWeight:800}}>{a.msg}</div>
               </div>
             ))}
+
+            {/* Resultados das provas */}
+            <div style={{padding:'12px',borderRadius:11,background:'rgba(96,165,250,.06)',border:'1px solid rgba(96,165,250,.28)'}}>
+              <div style={{fontSize:13,color:'#60a5fa',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:8}}>📊 RESULTADOS DE PROVAS</div>
+              <div style={{padding:'8px 10px',borderRadius:9,background:'rgba(52,211,153,.07)',border:'1px solid rgba(52,211,153,.28)',marginBottom:8}}>
+                <div style={{display:'flex',justifyContent:'space-between',gap:8,marginBottom:2}}>
+                  <span style={{fontSize:15,fontWeight:800,color:'#34d399'}}>SEFAZ-SC · FCC</span>
+                  <span style={{fontSize:13,color:'#c2ccd8',fontFamily:"'DM Mono',monospace"}}>prova 22/11/2026</span>
+                </div>
+                <div style={{fontSize:15,color:'var(--text)',fontWeight:800,marginBottom:3}}>Quase 80% da prova</div>
+                <div style={{fontSize:13,color:'#b4c0d1',lineHeight:1.55}}>Não foi suficiente para passar, mas é um grande salto. Era treino, sem preparo específico, e a banca é a mesma do SEFAZ-RS. Falta registrar o acerto por matéria para ver onde se perdeu pontos.</div>
+              </div>
+              <div style={{padding:'8px 10px',borderRadius:9,background:'rgba(248,113,113,.07)',border:'1px solid rgba(248,113,113,.3)'}}>
+                <div style={{display:'flex',justifyContent:'space-between',gap:8,marginBottom:2}}>
+                  <span style={{fontSize:15,fontWeight:800,color:'#f87171'}}>TCE-SP · Vunesp</span>
+                  <span style={{fontSize:13,color:'#c2ccd8',fontFamily:"'DM Mono',monospace"}}>prova 11/10/2026</span>
+                </div>
+                <div style={{fontSize:15,color:'var(--text)',fontWeight:800,marginBottom:3}}>Não passou na discursiva</div>
+                <div style={{fontSize:13,color:'#b4c0d1',lineHeight:1.55}}>Confirma o ponto fraco que já se sabia: a discursiva. No TCE-MG o gap também foi nela. Vale reservar treino de escrita com correção antes de qualquer prova que tenha discursiva (TCE-RJ).</div>
+              </div>
+            </div>
 
             {/* TCE-MG Status */}
             <div style={{padding:'12px',borderRadius:11,background:'rgba(52,211,153,.06)',border:'1px solid rgba(52,211,153,.25)'}}>
