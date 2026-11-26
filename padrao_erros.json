@@ -1,6 +1,6 @@
 {
  "versao": 1,
- "gerado_em": "2026-11-26T10:30:46Z",
+ "gerado_em": "2026-11-26T15:07:54Z",
  "origem": "chrome meio-dia",
  "planejamento_id": 105325,
  "total": {
@@ -243,6 +243,15 @@
      "motivo_predominante": null
     }
    ]
+  },
+  {
+   "nome": "Matemática Financeira",
+   "erros": 0,
+   "com_motivo": 0,
+   "cobertura_pct": null,
+   "motivo_predominante": null,
+   "motivo_predominante_pct": null,
+   "atividades": []
   },
   {
    "nome": "Tecnologia da Informação",

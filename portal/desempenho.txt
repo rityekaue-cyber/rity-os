@@ -1,8 +1,8 @@
-# desempenho — lido em 2026-11-26T10:30Z
+# desempenho — lido em 2026-11-26T15:07Z
 Desempenho Acumulado — Consolidar a base
-Desempenho atingido 87,3% | Horas estudadas 43h20m | Questões resolvidas 348 | Média diária 3h04m
+Desempenho atingido 87,3% | Horas estudadas 47h 20m | Questões resolvidas 348 | Média diária 3h 18m
 Disciplina | questões | acertos | desempenho | atividades | reforços | aprofundamentos | tempo total
-Auditoria Privada | - | - | - | 1h37m | - | - | 4h50m
+Auditoria Privada | - | - | - | 1h22m | - | - | 6h50m
 Contabilidade Geral e Avançada | 23 | 18 | 78,2% | 1h17m | - | - | 11h30m
 Direito Administrativo | 40 | 36 | 90,0% | 45m | - | - | 1h30m
 Direito Civil | 41 | 35 | 85,3% | 1h | - | - | 2h
@@ -10,11 +10,11 @@ Direito Constitucional | 49 | 44 | 89,7% | 1h15m | - | - | 2h30m
 Direito Empresarial (Comercial) | 25 | 24 | 96,0% | 1h | - | - | 1h
 Direito Penal | 20 | 19 | 95,0% | 1h | - | - | 1h
 Direito Tributário | 50 | 42 | 84,0% | 1h15m | - | - | 2h30m
+Matemática Financeira | - | - | - | - | - | - | -
 Português | 61 | 52 | 85,2% | 1h10m | - | - | 3h30m
 Raciocínio Lógico | - | - | - | 53m | - | - | 3h30m
-Tecnologia da Informação | 39 | 34 | 87,1% | 1h17m | - | 30m | 9h30m
-Total | 348 | 304 | 87,3% | 1h11m | - | 30m | 43h20m
-Tempo médio por dia da semana: Dom 2h25m; Seg 3h; Ter 3h15m; Qua 4h; Qui 3h30m; Sex 4h30m; Sáb 5h
-Distribuição por disciplina (gráfico, como exibido): CTBGA 26,5%; TINFO 21,9%; AUD 11,1%; PORT 8,0%; RLOG 8,0%; DCON 5,7%; DTRIB 5,7%; DCIV 4,6%; DADM 3,4%; DEMP 2,3%; DPEN 2,3%
-Sistemática de revisão: revisou 12,5%; não revisou 87,5%; não informado 0,0%
-Sistemática de conferência: a cada questão 56,2%; só ao final 43,7%; não informado 0,0%
+Tecnologia da Informação | 39 | 34 | 87,1% | 1h13m | - | 30m | 11h30m
+Total | 348 | 304 | 87,3% | 1h10m | - | 30m | 47h20m
+Distribuição por disciplina (tempo): CTBGA 24,2% | TINFO 24,2% | AUD 14,4% | PORT 7,3% | RLOG 7,3% | DCON 5,2% | DTRIB 5,2% | DCIV 4,2% | DADM 3,1% | DEMP 2,1% | DPEN 2,1%
+Sistemática de revisão (consolidado): Revisou 12,5% | Não revisou 87,5% | Não informado 0,0%
+Sistemática de conferência (consolidado): A cada questão 56,2% | Só ao final 43,7% | Não informado 0,0%

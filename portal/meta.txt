@@ -1,25 +1,27 @@
-# meta — lido em 2026-11-26T10:30Z
-2ª Meta — Consolidar a base (início 18 de novembro) — 16 / 20 atividades; 4 pendentes | 1 reforço | 1 aprofundamento | 11 disciplinas
-Desempenho atingido 86,6% | Horas estudadas 18h | Questões resolvidas 217 | Média diária 2h 24m
-3ª Meta: prevista para 27 de novembro, bloqueada. Sequência de estudos: 2 dias consecutivos.
-Atividades (status | disciplina | tipo | título | relevância | tempo | desempenho | código):
-Concluída | TI | Questões | [TI I] Conceitos Básicos de Banco de Dados | 4/5 | 01h00 | 80,0% | TINFO.3857.110737
-Concluída | Contabilidade | Teoria | Aspectos Introdutórios da Contabilidade | 4/5 | 01h00 | - | CTBGA.2551.72830
-Concluída | Raciocínio Lógico | Teoria | Proposições compostas. Conectivos lógicos. | 5/5 | 01h00 | - | RLOG.3723.106237
-Concluída | Contabilidade | Mapeamento | Mapeamento Aula 00 | 3/5 | 01h00 | - | CTBGA.2551.72831
-Concluída | TI | Questões | [TI I] Conceitos Básicos de Banco de Dados | 4/5 | 01h00 | 94,7% | TINFO.3857.110738
-Pendente | Auditoria Privada | Revisão | Revisão Aula 00 | 3/5 | 00h00 | - | AUD.3709.106115
-Concluída | Contabilidade | Questões | Aspectos introdutórios da Contabilidade | 4/5 | 02h00 | 78,2% | CTBGA.2551.73408
-Concluída | Dir. Empresarial | Questões | Definições iniciais; Teoria da Empresa e Empresário; Estabelecimento | 4/5 | 01h00 | 96,0% | DEMP.4281.118400
-Concluída | TI | Teoria | [TI I] Modelagem Conceitual (MER) | 3/5 | 01h00 | - | TINFO.3857.109363
-Concluída | Contabilidade | Teoria | Patrimônio: componentes patrimoniais | 5/5 | 01h30 | - | CTBGA.2551.72832
-Concluída | Dir. Penal | Questões | Princípios do Direito Penal. Aplicação da Lei Penal. | 4/5 | 01h00 | 95,0% | DPEN.4327.118299
-Concluída | Dir. Constitucional | Questões | Princípios Fundamentais | 5/5 | 01h00 | 96,0% | DCON.4299.118383
-Pendente | TI | Teoria | [TI I] Modelagem Conceitual (MER) | 3/5 | 00h00 | - | TINFO.3857.109364
-Concluída | Dir. Administrativo | Questões | Organização Administrativa. | 5/5 | 01h00 | 80,0% | DADM.4290.118193
-Concluída | Dir. Tributário | Questões | Limitações Constitucionais ao Poder de Tributar | 5/5 | 01h00 | 76,0% | DTRIB.4306.118438
-Concluída | Dir. Civil | Questões | Pessoas Naturais | 5/5 | 01h00 | 87,5% | DCIV.4273.118490
-Pendente | TI | Mapeamento | [TI I] Mapeamento Aula 03 | 4/5 | 00h00 | - | TINFO.3857.109366
-Concluída | Raciocínio Lógico | Teoria | Conectivos Lógicos: Disjunção Exclusiva, Condicional. | 5/5 | 01h00 | - | RLOG.3723.106242
-Concluída | Português | Questões | Morfologia: Pronomes, Preposição, Conjunção e Colocação Pronominal | 4/5 | 01h30 | 83,3% | PORT.4262.117961
-Pendente | Auditoria Privada | Teoria | Princípios Éticos. Ceticismo Profissional. | 4/5 | 00h00 | - | AUD.3709.106120
+# meta — lido em 2026-11-26T15:07Z
+3ª Meta — Consolidar a base (início 26 de novembro) — 0 / 22 atividades; 22 pendentes | 1 reforço | 1 aprofundamento | 9 disciplinas
+Desempenho atingido 0% | Horas estudadas 0h | Questões resolvidas 0 | Média diária 0h
+4ª Meta: prevista para 03 de dezembro, bloqueada. Sequência de estudos: 3 dias consecutivos.
+Atividades (# | disciplina | tipo | título | código) — todas com tempo 00h 00m e desempenho "-":
+1|Contabilidade Geral e Avançada|Mapeamento|Mapeamento Aula 01|CTBGA.2551.72834
+2|Tecnologia da Informação|Revisão|[TI I] Revisão Aula 03|TINFO.3857.109365
+3|Raciocínio Lógico|Revisão|Revisão Aula 00 (Parte I)|RLOG.3723.106240
+4|Tecnologia da Informação|Questões|[TI I] Modelagem Conceitual|TINFO.3857.110739
+5|Contabilidade Geral e Avançada|Questões|Patrimônio: componentes patrimoniais|CTBGA.2551.73410
+6|Auditoria Privada|Teoria|Julgamento Profissional. Evidência. Riscos.|AUD.3709.106121
+7|Tecnologia da Informação|Questões|[TI I] Modelagem Conceitual|TINFO.3857.110741
+8|Raciocínio Lógico|Teoria|Conectivos Lógicos: Bicondicional|RLOG.3723.106243
+9|Contabilidade Geral e Avançada|Teoria|Contas contábeis. Teoria das contas.|CTBGA.2551.72843
+10|Auditoria Privada|Revisão|Revisão Aula 00|AUD.3709.106122
+11|Tecnologia da Informação|Teoria|[TI I] Modelagem Lógica (parte 1)|TINFO.3857.109367
+12|Direito Penal|Questões|Teoria do Crime - Fato típico e Iter Criminis.|DPEN.4327.118300
+13|Contabilidade Geral e Avançada|Mapeamento|Contas contábeis. Teoria das contas.|CTBGA.2551.72844
+14|Matemática Financeira|Questões|Porcentagem|MATFI.4292.118229
+15|Direito Administrativo|Questões|Terceiro Setor e Parcerias.|DADM.4290.118319
+16|Direito Tributário|Questões|Competência Tributária|DTRIB.4306.118440
+17|Contabilidade Geral e Avançada|Questões|Plano de Contas. Teoria das Contas|CTBGA.2551.73428
+18|Português|Questões|Morfologia: Verbos|PORT.4262.118136
+19|Raciocínio Lógico|Teoria|Conversão para a Linguagem Proposicional. Ordem de Precedência dos Conectivos. Tabela-Verdade.|RLOG.3723.106245
+20|Contabilidade Geral e Avançada|Revisão|Revisão Aulas 00, 01 e 02|CTBGA.2551.72845
+21|Auditoria Privada|Mapeamento|Mapeamento Aula 00|AUD.3709.106124
+22|Tecnologia da Informação|Teoria|[TI I] Modelagem Lógica (parte 2)|TINFO.3857.109368
