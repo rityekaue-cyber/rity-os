@@ -2,7 +2,7 @@
  "versao": 1,
  "planejamento_id": 105325,
  "ultimo": {
-  "gerado_em": "2026-11-26T07:11:51Z",
+  "gerado_em": "2026-11-26T12:58:25Z",
   "mat": {
    "PORT": {
     "q": 61,
@@ -42,7 +42,7 @@
    "TINFO": {
     "q": 39,
     "a": 34,
-    "min": 570
+    "min": 690
    },
    "DEMP": {
     "q": 25,
@@ -52,23 +52,28 @@
    "AUD": {
     "q": 0,
     "a": 0,
-    "min": 290
+    "min": 410
    },
    "RLOG": {
     "q": 0,
     "a": 0,
     "min": 210
+   },
+   "MATFI": {
+    "q": 0,
+    "a": 0,
+    "min": 0
    }
   },
   "tipo": {
-   "Teoria": 1280,
+   "Teoria": 1400,
    "Questões": 1080,
-   "Mapeamento": 120,
-   "Revisão": 90,
+   "Mapeamento": 180,
+   "Revisão": 150,
    "Reforços": 0,
    "Aprofundamentos": 30
   },
-  "atividades": 36
+  "atividades": 40
  },
  "dias": {
   "2026-11-12": {
@@ -350,6 +355,26 @@
    "tipo": {
     "Teoria": 90,
     "Questões": 60
+   }
+  },
+  "2026-11-26": {
+   "atividades": 4,
+   "mat": {
+    "TINFO": {
+     "q": 0,
+     "a": 0,
+     "min": 120
+    },
+    "AUD": {
+     "q": 0,
+     "a": 0,
+     "min": 120
+    }
+   },
+   "tipo": {
+    "Teoria": 120,
+    "Mapeamento": 60,
+    "Revisão": 60
    }
   }
  }
