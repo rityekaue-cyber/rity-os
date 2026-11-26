@@ -1,15 +1,15 @@
 {
  "versao": 1,
- "gerado_em": "2026-11-25T19:22:55Z",
- "origem": "conversa (pedido da Ritchely)",
+ "gerado_em": "2026-11-26T07:11:51Z",
+ "origem": "tarefa agendada",
  "planejamento_id": 105325,
  "meta_atual": {
   "ordem": 2,
   "target_id": 1083877,
   "data_inicio": "2026-11-18T20:25:21.8833333",
-  "dias_atraso": 0,
+  "dias_atraso": 2,
   "vezes_adiada": 0,
-  "status": "ontime",
+  "status": "postponed",
   "atividades_totais": 20,
   "atividades_concluidas": 16,
   "atividades_pendentes": 4,
@@ -353,7 +353,20 @@
      "link": null
     }
    ],
-   "reforcos": []
+   "reforcos": [
+    {
+     "aid": 118438,
+     "titulo": "Limitações Constitucionais ao Poder de Tributar",
+     "disciplina": "Direito Tributário",
+     "tipo_reforco": "Easy",
+     "concluido": false,
+     "ignorado": false,
+     "q": 25,
+     "a": 19,
+     "min": 0,
+     "link": null
+    }
+   ]
   },
   {
    "ordem": 1,
@@ -700,9 +713,9 @@
    "q": 61,
    "a": 52,
    "pct": 85.24,
-   "media": 84.26,
-   "mediana": null,
-   "decil": null,
+   "media": 84.17,
+   "mediana": 85.2,
+   "decil": 6,
    "tendencia": null
   },
   {
@@ -712,9 +725,9 @@
    "q": 41,
    "a": 35,
    "pct": 85.36,
-   "media": 82.24,
-   "mediana": null,
-   "decil": null,
+   "media": 82.26,
+   "mediana": 84,
+   "decil": 6,
    "tendencia": null
   },
   {
@@ -724,9 +737,9 @@
    "q": 40,
    "a": 36,
    "pct": 90,
-   "media": 86.25,
-   "mediana": null,
-   "decil": null,
+   "media": 86.27,
+   "mediana": 87.5,
+   "decil": 7,
    "tendencia": null
   },
   {
@@ -736,9 +749,9 @@
    "q": 23,
    "a": 18,
    "pct": 78.26,
-   "media": 74.25,
-   "mediana": null,
-   "decil": null,
+   "media": 74.24,
+   "mediana": 73.9,
+   "decil": 7,
    "tendencia": null
   },
   {
@@ -748,9 +761,9 @@
    "q": 50,
    "a": 42,
    "pct": 84,
-   "media": 79.03,
-   "mediana": null,
-   "decil": null,
+   "media": 79.02,
+   "mediana": 80,
+   "decil": 7,
    "tendencia": null
   },
   {
@@ -760,9 +773,9 @@
    "q": 20,
    "a": 19,
    "pct": 95,
-   "media": 87.45,
-   "mediana": null,
-   "decil": null,
+   "media": 87.56,
+   "mediana": 90,
+   "decil": 8,
    "tendencia": null
   },
   {
@@ -772,9 +785,9 @@
    "q": 49,
    "a": 44,
    "pct": 89.79,
-   "media": 79.6,
-   "mediana": null,
-   "decil": null,
+   "media": 79.56,
+   "mediana": 80,
+   "decil": 9,
    "tendencia": null
   },
   {
@@ -784,9 +797,9 @@
    "q": 39,
    "a": 34,
    "pct": 87.17,
-   "media": 75.44,
-   "mediana": null,
-   "decil": null,
+   "media": 75.41,
+   "mediana": 76.9,
+   "decil": 10,
    "tendencia": null
   },
   {
@@ -797,8 +810,8 @@
    "a": 24,
    "pct": 96,
    "media": 83.09,
-   "mediana": null,
-   "decil": null,
+   "mediana": 84,
+   "decil": 10,
    "tendencia": null
   }
  ],
@@ -863,7 +876,7 @@
   "meu_ritmo": null,
   "meus_dias_por_meta": null,
   "mediana_dias_por_meta": null,
-  "dias_atraso": 0,
+  "dias_atraso": 2,
   "decil_progresso": null,
   "meus_min_por_meta": null,
   "mediana_min_por_meta": null,
@@ -886,7 +899,7 @@
    "q": 20,
    "a": 16,
    "pct": 80.0,
-   "media": 85.9,
+   "media": 86,
    "link": null
   },
   {
