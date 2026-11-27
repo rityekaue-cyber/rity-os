@@ -846,7 +846,7 @@ let _syncSt='idle';
 const canon=v=>{if(Array.isArray(v))return '['+v.map(canon).join(',')+']';if(v&&typeof v==='object')return '{'+Object.keys(v).sort().map(k=>JSON.stringify(k)+':'+canon(v[k])).join(',')+'}';return JSON.stringify(v);};
 const canonRaw=raw=>{try{return canon(JSON.parse(raw));}catch(e){return String(raw);}};
 const hsh=s=>{let h=5381;for(let i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))|0;return h+':'+s.length;};
-const SYNC_KEYS=['feitos','feitos_dt','fora_feitos','ciclo_volta','cicloNum','horas','horas_dia','dias_trabalho','historico_diario','rev_anki','rev_nlm','rev_caderno','rev_1h30','rev_topicos','anki_meta','dif_base_materias','criticos_manuais','edital_status','guruja_data','plano_semanal','urgentes_ia','ia_hist','theme_mode','ciclo_versao','ciclo_extras','rev_profunda_hist','decisao_cfg','mit','semana_cfg','ia_ajustes','ia_combinados','ia_briefing','ia_fechamentos','ia_dia','alvo_nota','cad_rot','anki_filtro','anki_filtro_hist','lacunas_semana','edital_rs_saiu'];
+const SYNC_KEYS=['feitos','feitos_dt','fora_feitos','ciclo_volta','cicloNum','horas','horas_dia','dias_trabalho','historico_diario','rev_anki','rev_nlm','rev_caderno','rev_1h30','rev_topicos','anki_meta','dif_base_materias','criticos_manuais','edital_status','guruja_data','plano_semanal','urgentes_ia','ia_hist','theme_mode','ciclo_versao','ciclo_extras','rev_profunda_hist','decisao_cfg','mit','semana_cfg','ia_ajustes','ia_combinados','ia_briefing','ia_fechamentos','ia_dia','alvo_nota','cad_rot','anki_filtro','anki_filtro_hist','lacunas_semana','edital_rs_saiu','rev_sessoes','anki_dias','cad_dias'];
 const SYNC_VOLATEIS=new Set(['ultimo_acesso']);   // por aparelho: nunca sincroniza
 const SYNC_LAYOUT=new Set(['feitos','feitos_dt','ciclo_volta','horas_dia','dias_trabalho']);
 const _mkClient=()=>{const{url,key}=Sync.getCfg();return window.supabase.createClient(url,key);};
@@ -6556,7 +6556,7 @@ function CardGurujaImport(){
 }
 
 // ─── REVISÃO PROFUNDA — componente próprio (hooks válidos) ───
-function TabRevProfunda({totalBlocos}){
+function TabRevProfunda({totalBlocos,onAddHoras}){
   const fila=getFilaRevProfunda();
   const proxima=fila[0];
   const deveAgora=deveRevisaoProfunda(totalBlocos);
@@ -6568,7 +6568,8 @@ function TabRevProfunda({totalBlocos}){
   // Formulário de registro
   const[matSel,setMatSel]=useState('');
   const[slot1,setSlot1]=useState({fonte:'Obsidian',assunto:'',tempo:'45'});
-  const[slot2,setSlot2]=useState({questoes:'',acertei:'',dif:0});
+  const[slot2,setSlot2]=useState({questoes:'',acertei:'',dif:0,tempo:'45'});
+  const[slot2Causas,setSlot2Causas]=useState({});const[slot2Cards,setSlot2Cards]=useState('');
   const[slot3cards,setSlot3Cards]=useState('');
   const[salvo,setSalvo]=useState(false);
 
@@ -6602,11 +6603,13 @@ function TabRevProfunda({totalBlocos}){
       id:'rp_'+Date.now(),mat:matSel,
       cicloRef:totalBlocos,data:getDK(),dt:Date.now(),
       slot1:{...slot1},
-      slot2:{...slot2,pct:slot2.questoes&&slot2.acertei?Math.round(parseInt(slot2.acertei)/parseInt(slot2.questoes)*100):null},
+      slot2:{...slot2,causas:totalCausas(slot2Causas)>0?slot2Causas:undefined,pct:slot2.questoes&&slot2.acertei?Math.round(parseInt(slot2.acertei)/parseInt(slot2.questoes)*100):null},
       slot3cards:parseInt(slot3cards)||0,
     };
     const n=[...hist,novo];
     lsSet('rev_profunda_hist',n);setHist(n);
+    {const qq=parseInt(slot2.questoes)||0,aa=Math.min(qq,parseInt(slot2.acertei)||0),mm=(parseInt(slot1.tempo)||0)+(parseInt(slot2.tempo)||0);
+     if(qq>0||mm>0)addSessao({area:'profunda',mat:matSel,assunto:slot1.assunto,q:qq,a:aa,min:mm,causas:totalCausas(slot2Causas)>0?slot2Causas:null,cardsErro:slot2Cards},onAddHoras);}
     if(itemSel){gravaManual(manual.map(x=>x.id===itemSel?{...x,feito:true,feitoEm:Date.now()}:x));setItemSel(null);}
     // Adiciona os cards Anki ao registro de sessão do dia
     if(parseInt(slot3cards)>0){
@@ -6614,7 +6617,7 @@ function TabRevProfunda({totalBlocos}){
       lsSet('rev_anki',[...ankiRegs,{mat:matSel,cards:parseInt(slot3cards),dif:slot2.dif||3,dia:getDK(),dt:Date.now(),tempo:'15',origem:'rev1h30'}]);
     }
     setSalvo(true);
-    setTimeout(()=>{setSalvo(false);setMatSel('');setSlot1({fonte:'Obsidian',assunto:'',tempo:'45'});setSlot2({questoes:'',acertei:'',dif:0});setSlot3Cards('');},2500);
+    setTimeout(()=>{setSalvo(false);setMatSel('');setSlot1({fonte:'Obsidian',assunto:'',tempo:'45'});setSlot2({questoes:'',acertei:'',dif:0,tempo:'45'});setSlot2Causas({});setSlot2Cards('');setSlot3Cards('');},2500);
   };
 
   if(!proxima&&!matSel){}
@@ -6702,6 +6705,10 @@ function TabRevProfunda({totalBlocos}){
             <input value={slot1.assunto} onChange={e=>setSlot1(s=>({...s,assunto:e.target.value}))}
               placeholder={`Assunto específico que vai revisar em ${matSel}...`}
               style={{width:'100%',padding:'10px 12px',borderRadius:9,border:'1px solid rgba(96,165,250,.25)',background:'rgba(96,165,250,.05)',color:'var(--text)',fontSize:15,outline:'none',boxSizing:'border-box'}}/>
+            <div style={{display:'flex',alignItems:'center',gap:8,marginTop:8}}>
+              <span style={{fontSize:13,color:'var(--text4)'}}>TEMPO (min)</span>
+              <input type="number" value={slot1.tempo} onChange={e=>setSlot1(s=>({...s,tempo:e.target.value}))} style={{width:80,padding:'8px',borderRadius:8,border:'1px solid rgba(96,165,250,.3)',background:'rgba(96,165,250,.06)',color:'#60a5fa',fontSize:17,fontWeight:800,textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
+            </div>
           </div>
 
           {/* SLOT 2 — TEC Questões */}
@@ -6730,6 +6737,11 @@ function TabRevProfunda({totalBlocos}){
                 {Math.round(parseInt(slot2.acertei)/parseInt(slot2.questoes)*100)}% de acerto
               </div>
             )}
+            <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
+              <span style={{fontSize:13,color:'var(--text4)'}}>TEMPO (min)</span>
+              <input type="number" value={slot2.tempo} onChange={e=>setSlot2(s=>({...s,tempo:e.target.value}))} style={{width:80,padding:'8px',borderRadius:8,border:'1px solid rgba(248,113,113,.3)',background:'rgba(248,113,113,.06)',color:'#f87171',fontSize:17,fontWeight:800,textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
+            </div>
+            {slot2.acertei!==''&&(parseInt(slot2.questoes)||0)-(parseInt(slot2.acertei)||0)>0&&<CausasErro erros={(parseInt(slot2.questoes)||0)-(parseInt(slot2.acertei)||0)} valor={slot2Causas} onChange={setSlot2Causas} cardsErro={slot2Cards} onCards={setSlot2Cards}/>}
             <div style={{fontSize:13,color:'var(--text4)',marginBottom:5}}>DIFICULDADE</div>
             <div style={{display:'flex',gap:4}}>
               {[1,2,3,4,5].map(n=>(
@@ -6839,7 +6851,499 @@ function minutosPorDia(dias){ // {dk:{total,porMat}} a partir do histórico (+ h
 }
 
 // ── Reforços do Guruja (lista do que tenho que fazer) ──
-function ReforcosCiclo({onRapido,ver}){
+// ═══ REVISÃO 2.0 · 27/11 — registro unificado, causa do erro, revisão espaçada, Anki por dia, lei seca, mini-simulado ═══
+const CAUSAS_ERRO=[
+  {id:'nao_sabia',ic:'📚',l:'Não sabia (conteúdo)',cor:'#f87171',rem:'voltar na teoria do ponto e criar card.'},
+  {id:'pegadinha',ic:'🔎',l:'Pegadinha / letra de lei',cor:'#fb923c',rem:'card de lei seca com a palavra exata (artigo, prazo, exceção).'},
+  {id:'interpretacao',ic:'🧠',l:'Interpretação do enunciado',cor:'#fbbf24',rem:'treinar a leitura do comando: sublinhar “exceto”, “incorreta”, “somente”.'},
+  {id:'desatencao',ic:'⚡',l:'Desatenção / chute',cor:'#60a5fa',rem:'ritmo e marcação: reler enunciado e alternativa antes de marcar.'}
+];
+const INTERVALOS_REV=[1,7,30];
+const DECOREBA_MATS=['Dir. Tributário','Legislação Tributária Estadual','Auditoria','Dir. Financeiro / AFO'];
+const parseDK=dk=>{const m=String(dk||'').match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);return m?new Date(+m[1],+m[2]-1,+m[3]):null;};
+const difDias=(a,b)=>{const x=parseDK(a),y=parseDK(b);if(!x||!y)return 0;return Math.round((y-x)/86400000);}; // b − a
+const fmtDM=dk=>{const d=parseDK(dk);return d?`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`:'';};
+const dkDoReg=r=>(r&&(r.dia||(r.dt?dkDe(new Date(r.dt)):'')))||'';
+function totalCausas(c){return c?CAUSAS_ERRO.reduce((s,x)=>s+(parseInt(c[x.id])||0),0):0;}
+function causaDominanteDe(c){if(!c||!totalCausas(c))return null;return CAUSAS_ERRO.map(x=>({id:x.id,n:parseInt(c[x.id])||0})).sort((a,b)=>b.n-a.n)[0].id;}
+
+// Registro único de sessões (questões, tempo, acertos, causas dos erros) + histórico + horas, sem contar duas vezes.
+function addSessao(s,onAddHoras){
+  const agora=Date.now(),dia=getDK();
+  const q=Math.max(0,parseInt(s.q)||0),a=Math.max(0,Math.min(q,parseInt(s.a)||0)),min=Math.max(0,parseInt(s.min)||0);
+  const id=s.id||`${dia}_rs_${s.area}_${agora}`;
+  const reg={id,dt:agora,dia,area:s.area,mat:s.mat||'',assunto:s.assunto||'',q,a,min,causas:s.causas||null,cards:parseInt(s.cards)||0,cardsErro:parseInt(s.cardsErro)||0,obs:s.obs||''};
+  lsSet('rev_sessoes',[...lsGet('rev_sessoes',[]),reg].slice(-500));
+  if(!s.semHist&&s.mat&&(q>0||min>0)){
+    lsSet('historico_diario',[...lsGet('historico_diario',[]),{id,materia:s.mat,assunto:s.assunto||`Revisão — ${s.area}`,tempo:String(min),questoes:q?String(q):'',acertei:q?String(a):'',dificuldade:0,obs:s.obs||`Registro rápido (${s.area})`,dia,dt:agora,origem:'rev_'+s.area}].sort((x,y)=>(x.dt||0)-(y.dt||0)));
+    if(min>0&&!s.semHoras){const e={mat:s.mat,min,dt:agora,rid:id};if(onAddHoras)onAddHoras(e);else lsSet('horas',[...lsGet('horas',[]),e]);}
+  }else if(min>0&&!s.semHoras){
+    const e={mat:s.rotuloHoras||s.mat||'Revisão',min,dt:agora};if(onAddHoras)onAddHoras(e);else lsSet('horas',[...lsGet('horas',[]),e]);
+  }
+  return reg;
+}
+
+// Dias marcados à mão (true = fiz, false = não fiz) + dedução automática pelos registros do dia
+function estadoDiaQuestoes(dk){
+  const m=lsGet('cad_dias',{});
+  if(m[dk]===false)return 'nao';if(m[dk]===true)return 'sim';
+  const auto=lsGet('historico_diario',[]).some(r=>r&&(parseInt(r.questoes)||0)>0&&r.origem!=='guruja_simulado'&&dkDoReg(r)===dk)||lsGet('rev_sessoes',[]).some(s=>s&&s.q>0&&s.dia===dk);
+  return auto?'auto':null;
+}
+function estadoDiaAnki(dk){
+  const m=lsGet('anki_dias',{});
+  if(m[dk]===false)return 'nao';if(m[dk]===true)return 'sim';
+  const auto=lsGet('rev_anki',[]).some(r=>r&&dkDoReg(r)===dk&&((parseInt(r.tempo)||0)>0||(parseInt(r.cards)||0)>0))||!!lsGet('anki_feito_'+dk,null);
+  return auto?'auto':null;
+}
+const feitoEstado=e=>e==='sim'||e==='auto';
+function ciclarDiaMarca(chave,dk){
+  const m={...lsGet(chave,{})};
+  if(m[dk]===true)m[dk]=false;else if(m[dk]===false)delete m[dk];else m[dk]=true;
+  lsSet(chave,m);
+}
+function diasSemAnki(){ // dias seguidos sem Anki até ontem; feito hoje → 0
+  const hoje=getDK();
+  if(feitoEstado(estadoDiaAnki(hoje)))return{sem:0,feitoHoje:true};
+  let n=0;for(let i=1;i<=60;i++){if(feitoEstado(estadoDiaAnki(diaDK(-i))))break;n++;}
+  return{sem:n,feitoHoje:false};
+}
+function sequenciaAnkiDias(){
+  const hoje=getDK();let i=feitoEstado(estadoDiaAnki(hoje))?0:1,n=0;
+  while(i<=60&&feitoEstado(estadoDiaAnki(diaDK(-i)))){n++;i++;}
+  return n;
+}
+
+// Erro dominante por matéria (últimos N dias), a partir das causas registradas nas sessões
+function errosDominantes(dias=28){
+  const ini=diaDK(-dias);const por={};
+  lsGet('rev_sessoes',[]).forEach(s=>{
+    if(!s||!s.causas||!s.mat||(s.dia||'')<ini)return;
+    const m=por[s.mat]=por[s.mat]||{mat:s.mat,total:0,por:{}};
+    CAUSAS_ERRO.forEach(c=>{const n=parseInt(s.causas[c.id])||0;if(n){m.por[c.id]=(m.por[c.id]||0)+n;m.total+=n;}});
+  });
+  return Object.values(por).filter(m=>m.total>0).map(m=>{
+    const[id,n]=Object.entries(m.por).sort((a,b)=>b[1]-a[1])[0];
+    return{...m,dom:CAUSAS_ERRO.find(c=>c.id===id),domN:n,pct:Math.round(n/m.total*100)};
+  }).sort((a,b)=>b.total-a.total);
+}
+// Ponte Questões → Anki: erros de “não sabia”/“pegadinha” pedem card; cards criados abatem
+function pontePorMateria(dias=14){
+  const ini=diaDK(-dias);const m={};
+  lsGet('rev_sessoes',[]).forEach(s=>{
+    if(!s||!s.mat||(s.dia||'')<ini)return;
+    const o=m[s.mat]=m[s.mat]||{mat:s.mat,devidos:0,criados:0};
+    if(s.causas)o.devidos+=(parseInt(s.causas.nao_sabia)||0)+(parseInt(s.causas.pegadinha)||0);
+    o.criados+=parseInt(s.cardsErro)||0;
+  });
+  return Object.values(m).filter(o=>o.devidos>0||o.criados>0).map(o=>({...o,falta:Math.max(0,o.devidos-o.criados)})).sort((a,b)=>b.falta-a.falta);
+}
+// Revisão espaçada dos erros do caderno: D+1 → D+7 → dominado após 2 acertos (≥80%) em dias diferentes → reteste D+30
+function statusProxItem(t,hoje){
+  if(t.dominado&&t.reteste&&!t.retestado){const d=difDias(hoje,t.reteste);return d<=0?{txt:'🧪 reteste D+30 hoje',cor:'#60a5fa',venc:true}:{txt:`🧪 reteste em ${d}d`,cor:'#94a3b8',venc:false};}
+  if(!t.prox)return{txt:'sem agenda — faça uma tentativa',cor:'#94a3b8',venc:false};
+  const d=difDias(hoje,t.prox);
+  if(d<0)return{txt:`🔁 atrasado ${-d}d`,cor:'#f87171',venc:true};
+  if(d===0)return{txt:'🔁 volta hoje',cor:'#f87171',venc:true};
+  return{txt:`volta em ${d}d (${fmtDM(t.prox)})`,cor:'#94a3b8',venc:false};
+}
+function leisecaMateriaAlvo(){
+  const mats=DECOREBA_MATS.filter(m=>EDITAL_MATS.includes(m));
+  const niv=mats.map(m=>({mat:m,pct:Math.round(nivelRealMat(m).pct)})).sort((a,b)=>a.pct-b.pct);
+  return niv[0]?{...niv[0],estimado:nivelRealMat(niv[0].mat).origem==='estimado'}:null;
+}
+// Prioridades da aba Questões, cada uma com o porquê
+function calcPrioridadesQuestoes(){
+  const hoje=getDK();const out=[];
+  const cad=lsGet('rev_caderno',[]).filter(t=>EDITAL_MATS.includes(t.mat));
+  const venc=cad.filter(t=>!t.dominado&&t.prox&&t.prox<=hoje).sort((a,b)=>String(a.prox).localeCompare(String(b.prox)));
+  if(venc.length){const t0=venc[0];const at=difDias(t0.prox,hoje);out.push({score:100+venc.length,ic:'🔁',titulo:`${venc.length} erro(s) do caderno voltam hoje`,mat:t0.mat,motivo:`Revisão espaçada (D+1 → D+7 → 2 acertos): “${String(t0.assunto||t0.obs||t0.mat).slice(0,60)}” ${at>0?`era para ${fmtDM(t0.prox)} (${at} dia(s) de atraso)`:'vence hoje'}. Erro que não volta no prazo se perde de novo.`});}
+  const ret=cad.filter(t=>t.dominado&&t.reteste&&!t.retestado&&t.reteste<=hoje);
+  if(ret.length)out.push({score:70,ic:'🧪',titulo:`${ret.length} reteste(s) de 30 dias`,mat:ret[0].mat,motivo:`“${String(ret[0].assunto||ret[0].mat).slice(0,60)}” foi dado como dominado há 30 dias. O reteste confirma que não voltou a esquecer.`});
+  try{
+    const rf=reforcosDoSnapshot()||[];const ff=lsGet('fora_feitos',{});
+    const pend=rf.filter(r=>!r.concluido&&!ff['rf'+r.aid]);
+    if(pend.length){const cr=pend.filter(r=>String(r.tipo_reforco||'').includes('5'));
+      out.push({score:cr.length?95:55,ic:'🚨',titulo:`${pend.length} reforço(s) do Guruja pendente(s)${cr.length?` — ${cr.length} crítico(s) 5★`:''}`,mat:(cr[0]||pend[0]).mat,motivo:cr.length?'Regra de ouro: reforço 5★ para tudo, trata antes de avançar.':'O Guruja gerou o reforço porque o acerto caiu nesse assunto; 5 questões + 5 cards fecham o buraco.'});}
+  }catch(e){}
+  const qp=calcQuestoesPrioridade(lsGet('historico_diario',[]));
+  if(qp.top)out.push({score:90,ic:'📉',titulo:`${qp.top.mat}: ${qp.top.pct}% nos últimos 7 dias`,mat:qp.top.mat,motivo:`Pior desempenho ponderado pelo peso na prova (${qp.top.questoes} questões; ontem e hoje pesam mais). Cada questão aqui rende mais ponto por minuto.`});
+  const ed=errosDominantes(28).find(m=>m.total>=5&&m.pct>=40);
+  if(ed)out.push({score:85,ic:'🧬',titulo:`${ed.mat}: seu erro dominante é “${ed.dom.l}” (${ed.pct}% de ${ed.total})`,mat:ed.mat,motivo:`O remédio é diferente de “fazer mais questões”: ${ed.dom.rem}`});
+  const ult={};lsGet('historico_diario',[]).forEach(r=>{if(r&&(parseInt(r.questoes)||0)>0&&r.materia){const dk=dkDoReg(r);if(dk&&dk>(ult[r.materia]||''))ult[r.materia]=dk;}});
+  materiasIniciadasPorDificuldade().slice(0,6).forEach(x=>{const u=ult[x.mat];const d=u?difDias(u,hoje):99;
+    if(d>=4)out.push({score:60+Math.min(d,14)*0.5-(x.pct/10),ic:'⏳',titulo:u?`${x.mat}: ${d} dias sem questões`:`${x.mat}: nenhuma questão registrada ainda`,mat:x.mat,motivo:`Está entre as 6 matérias de menor nível (${Math.round(x.pct)}%). Acerto só se mantém com questão recente.`});});
+  const sem=semanaChave();const sess=lsGet('rev_sessoes',[]).filter(s=>(s.dia||'')>=sem);const dow=new Date().getDay();
+  if(!sess.some(s=>s.area==='simulado')&&(dow===5||dow===6||dow===0))out.push({score:75,ic:'📝',titulo:'Mini-simulado misto da semana ainda não foi feito',mat:'Misto',motivo:'20 questões misturadas e cronometradas mostram quanto do seu acerto sobrevive quando você não sabe o assunto de antemão.'});
+  if(!sess.some(s=>s.area==='leiseca')&&(dow>=3||dow===0)){const al=leisecaMateriaAlvo();if(al)out.push({score:72,ic:'📜',titulo:`Lei seca FCC (30 min) da semana: ${al.mat}`,mat:al.mat,motivo:`É a matéria de decoreba com menor nível (${al.pct}%). A FCC cobra a palavra exata da lei; leia o trecho e responda só questões de literalidade.`});}
+  return out.sort((a,b)=>b.score-a.score).slice(0,6);
+}
+function ultimasQuestoes(n=7){
+  const m=new Map();
+  lsGet('historico_diario',[]).forEach(r=>{
+    if(!r)return;const q=parseInt(r.questoes)||0;if(q<=0||r.origem==='guruja_simulado')return;
+    const id=r.id||('h'+(r.dt||Math.random()));
+    m.set(id,{id,dt:r.dt||0,dia:dkDoReg(r),mat:r.materia||'—',assunto:r.assunto||'',q,a:parseInt(r.acertei)||0,min:parseInt(r.tempo)||0,origem:r.origem||'app'});
+  });
+  lsGet('rev_sessoes',[]).forEach(s=>{
+    if(!s||!(s.q>0))return;const cur=m.get(s.id);
+    if(cur){if(s.min&&!cur.min)cur.min=s.min;return;}
+    m.set(s.id,{id:s.id,dt:s.dt||0,dia:s.dia||'',mat:s.mat||'—',assunto:s.assunto||'',q:s.q,a:s.a||0,min:s.min||0,origem:s.area});
+  });
+  return [...m.values()].sort((x,y)=>(y.dt||0)-(x.dt||0)).slice(0,n);
+}
+const ROTULO_ORIGEM={caderno_tec:'caderno TEC',guruja:'Guruja',questoes:'questões',reforcos:'reforço',profunda:'profunda',leiseca:'lei seca',simulado:'simulado',passiva:'passiva',rev_questoes:'questões',rev_reforcos:'reforço',rev_profunda:'profunda',rev_leiseca:'lei seca',app:'app'};
+
+// ── UI: causa do erro ──
+function CausasErro({erros,valor,onChange,cardsErro,onCards}){
+  const v=valor||{};const tot=totalCausas(v);const mono="'DM Mono',monospace";
+  const mexe=(id,d)=>{const at=parseInt(v[id])||0;if(d>0&&(erros<=0||tot>=erros))return;onChange({...v,[id]:Math.max(0,at+d)});};
+  const domId=causaDominanteDe(v);const dom=domId?CAUSAS_ERRO.find(c=>c.id===domId):null;
+  const precisaCard=(parseInt(v.nao_sabia)||0)+(parseInt(v.pegadinha)||0);
+  const bt={width:30,height:30,borderRadius:8,border:'1px solid rgba(251,146,60,.4)',background:'rgba(251,146,60,.08)',color:'#fb923c',fontSize:18,fontWeight:900,cursor:'pointer',lineHeight:1};
+  return(
+    <div style={{padding:'10px 12px',borderRadius:10,background:'rgba(251,146,60,.06)',border:'1px solid rgba(251,146,60,.25)',marginBottom:8}}>
+      <div style={{fontSize:12,color:'#fb923c',fontFamily:mono,fontWeight:800,letterSpacing:'1px',marginBottom:4}}>🧬 POR QUE ERROU? {erros>0?`· ${tot}/${erros} erro(s) classificado(s)`:'· preencha questões e acertos'}</div>
+      {CAUSAS_ERRO.map(c=>(
+        <div key={c.id} style={{display:'flex',alignItems:'center',gap:8,padding:'3px 0'}}>
+          <span style={{flex:1,fontSize:14,color:'var(--text)'}}>{c.ic} {c.l}</span>
+          <button onClick={()=>mexe(c.id,-1)} style={bt}>−</button>
+          <b style={{width:24,textAlign:'center',fontFamily:mono,fontSize:16,color:c.cor}}>{parseInt(v[c.id])||0}</b>
+          <button onClick={()=>mexe(c.id,1)} style={{...bt,opacity:(erros>0&&tot<erros)?1:.35}}>+</button>
+        </div>))}
+      {dom&&<div style={{fontSize:13,color:'#c2ccd8',marginTop:5,lineHeight:1.5}}>Para “{dom.l}”: {dom.rem}</div>}
+      {precisaCard>0&&<div style={{display:'flex',alignItems:'center',gap:8,marginTop:6}}>
+        <span style={{flex:1,fontSize:13,color:'#a78bfa',lineHeight:1.4}}>🃏 {precisaCard} erro(s) pedem card no Anki. Cards que você criou:</span>
+        <input type="number" value={cardsErro||''} onChange={e=>onCards(e.target.value)} placeholder="0" style={{width:60,padding:'7px 6px',borderRadius:7,border:'1px solid rgba(167,139,250,.4)',background:'rgba(167,139,250,.06)',color:'#a78bfa',fontSize:16,fontWeight:800,textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
+      </div>}
+    </div>
+  );
+}
+
+// ── UI: registro rápido (questões · tempo · acertos) reutilizável em qualquer sub-aba ──
+function RegistroQTA({area,titulo,cor='#60a5fa',matsLista,matFixa,matInicial,qPadrao,minPadrao,mostraRitmo=false,semHist=false,rotuloHoras,aviso,onAddHoras,onSalvo,botao='💾 Registrar'}){
+  const[mat,setMat]=useState(matFixa||matInicial||'');
+  const[assunto,setAssunto]=useState('');
+  const[q,setQ]=useState(qPadrao?String(qPadrao):'');const[a,setA]=useState('');const[min,setMin]=useState(minPadrao?String(minPadrao):'');
+  const[causas,setCausas]=useState({});const[cardsErro,setCardsErro]=useState('');
+  const[ok,setOk]=useState(false);
+  const mono="'DM Mono',monospace";
+  const qn=parseInt(q)||0,an=Math.min(qn,parseInt(a)||0),mn=parseInt(min)||0;
+  const erros=Math.max(0,qn-an);
+  const pct=qn>0?Math.round(an/qn*100):null;
+  const matUso=matFixa||mat;
+  const pronto=!!matUso&&(qn>0||mn>0);
+  const inp=c=>({width:'100%',padding:'9px 6px',borderRadius:8,border:`1px solid ${cor}55`,background:`${cor}0d`,color:c||'#f1f5f9',fontSize:17,fontWeight:800,textAlign:'center',outline:'none',boxSizing:'border-box',fontFamily:mono});
+  const salvar=()=>{
+    if(!pronto)return;
+    addSessao({area,mat:matUso,assunto,q:qn,a:an,min:mn,causas:totalCausas(causas)>0?causas:null,cardsErro,semHist,rotuloHoras},onAddHoras);
+    setQ(qPadrao?String(qPadrao):'');setA('');setMin(minPadrao?String(minPadrao):'');setAssunto('');setCausas({});setCardsErro('');
+    if(!matFixa&&!matInicial)setMat('');
+    setOk(true);setTimeout(()=>setOk(false),2200);if(onSalvo)onSalvo();
+  };
+  return(
+    <div style={{padding:'12px',borderRadius:12,background:`${cor}0f`,border:`1px solid ${cor}44`,marginBottom:12}}>
+      <div style={{fontSize:13,color:cor,fontFamily:mono,fontWeight:800,letterSpacing:'1px',marginBottom:4}}>{titulo}</div>
+      {aviso&&<div style={{fontSize:13,color:'var(--text4)',lineHeight:1.5,marginBottom:8}}>{aviso}</div>}
+      {matFixa?<div style={{fontSize:14,fontWeight:800,color:'var(--text)',marginBottom:8}}>{matFixa}</div>
+        :matsLista?<div style={{display:'flex',flexWrap:'wrap',gap:5,marginBottom:8}}>{matsLista.map(m=>(<button key={m} onClick={()=>setMat(m)} style={{padding:'6px 10px',borderRadius:7,border:`1px solid ${mat===m?cor:'var(--border)'}`,background:mat===m?`${cor}26`:'transparent',color:mat===m?cor:'var(--text4)',fontSize:13,fontWeight:700,cursor:'pointer'}}>{m}</button>))}</div>
+        :<div style={{marginBottom:8}}><MatBtn value={mat} onChange={setMat} placeholder="Ou digitar matéria..."/></div>}
+      <input value={assunto} onChange={e=>setAssunto(e.target.value)} placeholder="assunto (opcional)" style={{width:'100%',padding:'8px 10px',borderRadius:8,border:`1px solid ${cor}33`,background:'transparent',color:'var(--text)',fontSize:14,outline:'none',boxSizing:'border-box',marginBottom:8}}/>
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8,marginBottom:6}}>
+        <div><div style={{fontSize:12,color:'var(--text4)',marginBottom:3}}>QUESTÕES</div><input type="number" value={q} onChange={e=>setQ(e.target.value)} placeholder="0" style={inp()}/></div>
+        <div><div style={{fontSize:12,color:'var(--text4)',marginBottom:3}}>ACERTOS</div><input type="number" value={a} onChange={e=>setA(e.target.value)} placeholder="0" style={inp('#34d399')}/></div>
+        <div><div style={{fontSize:12,color:'var(--text4)',marginBottom:3}}>TEMPO (min)</div><input type="number" value={min} onChange={e=>setMin(e.target.value)} placeholder="0" style={inp()}/></div>
+      </div>
+      {pct!=null&&a!==''&&<div style={{fontSize:14,fontWeight:800,fontFamily:mono,textAlign:'center',color:pct>=80?'#34d399':pct>=60?'#fbbf24':'#f87171',marginBottom:6}}>{pct}% de acerto{mostraRitmo&&mn>0?` · ${Math.round(mn*60/qn)} s por questão`:''}</div>}
+      {a!==''&&erros>0&&<CausasErro erros={erros} valor={causas} onChange={setCausas} cardsErro={cardsErro} onCards={setCardsErro}/>}
+      <button onClick={salvar} disabled={!pronto} style={{width:'100%',padding:'12px',borderRadius:9,border:'none',background:pronto?cor:'rgba(148,163,184,.2)',color:pronto?'#0f172a':'#aab6c8',fontSize:15,fontWeight:900,cursor:pronto?'pointer':'default'}}>{ok?'✅ SALVO!':botao}</button>
+      {!pronto&&<div style={{fontSize:12,color:'#fb923c',textAlign:'center',marginTop:5}}>Falta: {!matUso?'escolher a matéria':'questões ou tempo'}</div>}
+    </div>
+  );
+}
+
+// ── UI: tentativa de um erro do caderno (substitui o prompt) ──
+function TentativaForm({t,onSave,onCancel}){
+  const[q,setQ]=useState('');const[a,setA]=useState('');const[min,setMin]=useState('');
+  const[causas,setCausas]=useState({});const[cardsErro,setCardsErro]=useState('');
+  const mono="'DM Mono',monospace";
+  const qn=parseInt(q)||0,an=Math.min(qn,parseInt(a)||0);
+  const pct=qn>0?Math.round(an/qn*100):null;
+  const inp=c=>({width:'100%',padding:'8px 6px',borderRadius:8,border:'1px solid rgba(96,165,250,.35)',background:'rgba(96,165,250,.06)',color:c||'#f1f5f9',fontSize:16,fontWeight:800,textAlign:'center',outline:'none',boxSizing:'border-box',fontFamily:mono});
+  return(
+    <div style={{marginTop:8}}>
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8,marginBottom:6}}>
+        <div><div style={{fontSize:12,color:'var(--text4)',marginBottom:3}}>QUESTÕES</div><input type="number" value={q} onChange={e=>setQ(e.target.value)} style={inp()}/></div>
+        <div><div style={{fontSize:12,color:'var(--text4)',marginBottom:3}}>ACERTOS</div><input type="number" value={a} onChange={e=>setA(e.target.value)} style={inp('#34d399')}/></div>
+        <div><div style={{fontSize:12,color:'var(--text4)',marginBottom:3}}>TEMPO (min)</div><input type="number" value={min} onChange={e=>setMin(e.target.value)} style={inp()}/></div>
+      </div>
+      {pct!=null&&a!==''&&<div style={{fontSize:13,textAlign:'center',marginBottom:6,color:pct>=80?'#34d399':'#f87171',fontFamily:mono}}>{pct}% — {pct>=80?'conta como acerto (≥ 80%): avança na revisão':'não conta: volta amanhã'}</div>}
+      {a!==''&&qn-an>0&&<CausasErro erros={qn-an} valor={causas} onChange={setCausas} cardsErro={cardsErro} onCards={setCardsErro}/>}
+      <div style={{display:'flex',gap:6}}>
+        <button onClick={()=>{if(qn>0)onSave({q:qn,a:an,min:parseInt(min)||0,causas,cardsErro});}} disabled={!qn} style={{flex:2,padding:'10px',borderRadius:8,border:'none',background:qn?'#60a5fa':'rgba(148,163,184,.2)',color:qn?'#0f172a':'#aab6c8',fontSize:14,fontWeight:900,cursor:qn?'pointer':'default'}}>🔁 Registrar tentativa</button>
+        <button onClick={onCancel} style={{flex:1,padding:'10px',borderRadius:8,border:'1px solid var(--border)',background:'transparent',color:'var(--text4)',fontSize:14,cursor:'pointer'}}>cancelar</button>
+      </div>
+    </div>
+  );
+}
+
+// ── UI: Questões · dias da semana, prioridades com o porquê, últimas 7, erro dominante ──
+function SemanaQuestoes(){
+  const[,setV]=useState(0);
+  const hoje=getDK();const sem=semanaChave();const mono="'DM Mono',monospace";
+  const dias=[...Array(7)].map((_,i)=>somaDias(sem,i));
+  const feitos=dias.filter(dk=>feitoEstado(estadoDiaQuestoes(dk))).length;
+  return(
+    <div style={{padding:'12px 14px',borderRadius:12,background:'rgba(96,165,250,.06)',border:'1px solid rgba(96,165,250,.3)',marginBottom:10}}>
+      <div style={{display:'flex',alignItems:'center',marginBottom:6}}>
+        <div style={{flex:1,fontSize:13,color:'#60a5fa',fontFamily:mono,fontWeight:800,letterSpacing:'1px'}}>📅 QUESTÕES NA SEMANA — fiz ou não fiz</div>
+        <div style={{fontSize:15,fontWeight:900,color:'var(--text)',fontFamily:mono}}>{feitos}/7</div>
+      </div>
+      <div style={{display:'flex',gap:4}}>
+        {dias.map(dk=>{const e=estadoDiaQuestoes(dk);const fut=dk>hoje;const eh=dk===hoje;const nomes=NOMES_DIA3[parseDK(dk).getDay()];
+          const ic=e==='sim'?'✅':e==='auto'?'✔':e==='nao'?'❌':fut?'·':'⬜';
+          const cor=e==='sim'||e==='auto'?'#34d399':e==='nao'?'#f87171':'#94a3b8';
+          return(<button key={dk} disabled={fut} onClick={()=>{ciclarDiaMarca('cad_dias',dk);setV(x=>x+1);}} style={{flex:1,padding:'7px 0',borderRadius:9,border:`2px solid ${eh?'#60a5fa':'var(--border)'}`,background:e?`${cor}1a`:'transparent',color:cor,cursor:fut?'default':'pointer',opacity:fut?.45:1}}>
+            <div style={{fontSize:11,fontFamily:mono,color:'var(--text4)'}}>{nomes}</div>
+            <div style={{fontSize:17,lineHeight:1.2}}>{ic}</div>
+            <div style={{fontSize:10,fontFamily:mono,color:'var(--text4)'}}>{fmtDM(dk).slice(0,2)}</div>
+          </button>);})}
+      </div>
+      <div style={{fontSize:12,color:'var(--text4)',marginTop:6,lineHeight:1.5}}>Toque no dia: ✅ fiz → ❌ não fiz → limpa. ✔ = o app achou questões registradas naquele dia (você pode trocar para ❌ se estiver errado).</div>
+    </div>
+  );
+}
+function PrioridadesQuestoes(){
+  const lista=calcPrioridadesQuestoes();const mono="'DM Mono',monospace";
+  return(
+    <div style={{padding:'12px 14px',borderRadius:12,background:'rgba(248,113,113,.06)',border:'1px solid rgba(248,113,113,.3)',marginBottom:10}}>
+      <div style={{fontSize:13,color:'#f87171',fontFamily:mono,fontWeight:800,letterSpacing:'1px',marginBottom:6}}>🎯 PRIORIDADES DE QUESTÕES — e por quê</div>
+      {lista.length===0&&<div style={{fontSize:14,color:'var(--text4)',lineHeight:1.5}}>Sem prioridade urgente agora. Registre questões (e a causa dos erros) para o app apontar o que fazer primeiro.</div>}
+      {lista.map((p,i)=>(
+        <div key={i} style={{display:'flex',gap:8,padding:'7px 0',borderTop:i?'1px solid rgba(148,163,184,.12)':'none'}}>
+          <b style={{fontFamily:mono,color:'#f87171',width:16}}>{i+1}</b>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{fontSize:14,fontWeight:800,color:'var(--text)'}}>{p.ic} {p.titulo}</div>
+            <div style={{fontSize:13,color:'#c2ccd8',lineHeight:1.5,marginTop:1}}>{p.motivo}</div>
+          </div>
+        </div>))}
+    </div>
+  );
+}
+function UltimasQuestoes(){
+  const lista=ultimasQuestoes(7);const mono="'DM Mono',monospace";const hoje=getDK();
+  const pc=(a,q)=>q>0?Math.round(a/q*100):null;
+  const cor=p=>p==null?'#aab6c6':p>=80?'#34d399':p>=60?'#fbbf24':'#f87171';
+  const tq=lista.reduce((s,r)=>s+r.q,0),ta=lista.reduce((s,r)=>s+r.a,0),tm=lista.reduce((s,r)=>s+r.min,0);
+  return(
+    <div style={{padding:'12px 14px',borderRadius:12,background:'rgba(255,255,255,.02)',border:'1px solid var(--border)',marginBottom:10}}>
+      <div style={{display:'flex',alignItems:'center',marginBottom:6}}>
+        <div style={{flex:1,fontSize:13,color:'var(--text4)',fontFamily:mono,fontWeight:800,letterSpacing:'1px'}}>🗂️ ÚLTIMAS 7 SESSÕES DE QUESTÕES</div>
+        {lista.length>0&&<div style={{fontSize:13,fontFamily:mono,color:cor(pc(ta,tq))}}>{ta}/{tq} · {pc(ta,tq)}%{tm>0?` · ${tm}min`:''}</div>}
+      </div>
+      {lista.length===0&&<div style={{fontSize:14,color:'var(--text4)'}}>Nenhuma sessão com questões registrada ainda.</div>}
+      {lista.map(r=>{const p=pc(r.a,r.q);return(
+        <div key={r.id} style={{display:'flex',alignItems:'center',gap:8,padding:'6px 0',borderTop:'1px solid rgba(148,163,184,.1)'}}>
+          <span style={{fontSize:12,fontFamily:mono,color:'var(--text4)',width:38,flexShrink:0}}>{r.dia===hoje?'hoje':fmtDM(r.dia)}</span>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{fontSize:14,color:'var(--text)',fontWeight:700,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{r.mat}</div>
+            <div style={{fontSize:12,color:'var(--text4)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{ROTULO_ORIGEM[r.origem]||r.origem}{r.assunto?` · ${r.assunto}`:''}</div>
+          </div>
+          <div style={{textAlign:'right',flexShrink:0}}>
+            <div style={{fontSize:14,fontWeight:900,fontFamily:mono,color:cor(p)}}>{r.a}/{r.q} · {p}%</div>
+            <div style={{fontSize:12,color:'var(--text4)',fontFamily:mono}}>{r.min>0?`${r.min} min`:'— min'}</div>
+          </div>
+        </div>);})}
+    </div>
+  );
+}
+function ErroDominantePainel(){
+  const lista=errosDominantes(28);const mono="'DM Mono',monospace";
+  return(
+    <div style={{padding:'12px 14px',borderRadius:12,background:'rgba(251,146,60,.06)',border:'1px solid rgba(251,146,60,.3)',marginBottom:10}}>
+      <div style={{fontSize:13,color:'#fb923c',fontFamily:mono,fontWeight:800,letterSpacing:'1px',marginBottom:6}}>🧬 SEU ERRO DOMINANTE POR MATÉRIA (28 dias)</div>
+      {lista.length===0&&<div style={{fontSize:14,color:'var(--text4)',lineHeight:1.5}}>Ainda não há erros classificados. Ao registrar questões, distribua os erros em: não sabia · pegadinha · interpretação · desatenção. Em 2 a 3 semanas aparece aqui o remédio certo para cada matéria.</div>}
+      {lista.slice(0,6).map(m=>(
+        <div key={m.mat} style={{padding:'6px 0',borderTop:'1px solid rgba(148,163,184,.1)'}}>
+          <div style={{display:'flex',alignItems:'center',gap:8}}>
+            <span style={{flex:1,fontSize:14,fontWeight:800,color:'var(--text)'}}>{m.mat}</span>
+            <span style={{fontSize:13,fontFamily:mono,color:m.dom.cor}}>{m.dom.ic} {m.pct}% · {m.domN}/{m.total}</span>
+          </div>
+          <div style={{fontSize:13,color:'#c2ccd8',lineHeight:1.5}}>Predomina “{m.dom.l}”: {m.dom.rem}</div>
+        </div>))}
+    </div>
+  );
+}
+
+// ── UI: Memorização · Anki por dia, últimas 7 por matéria, ponte erro → card ──
+function AnkiDiasPainel(){
+  const[,setV]=useState(0);
+  const hoje=getDK();const mono="'DM Mono',monospace";
+  const info=diasSemAnki();const seq=sequenciaAnkiDias();
+  const dias=[...Array(7)].map((_,i)=>diaDK(-(6-i)));
+  const marcarHoje=()=>{const m={...lsGet('anki_dias',{})};m[hoje]=true;lsSet('anki_dias',m);setV(x=>x+1);};
+  const feitosN=dias.filter(dk=>feitoEstado(estadoDiaAnki(dk))).length;
+  const alerta=!info.feitoHoje&&info.sem>=2;
+  return(
+    <div style={{padding:'12px 14px',borderRadius:12,background:alerta?'rgba(248,113,113,.1)':'rgba(167,139,250,.08)',border:`2px solid ${alerta?'rgba(248,113,113,.55)':'rgba(167,139,250,.4)'}`,marginBottom:12}}>
+      <div style={{display:'flex',alignItems:'center',marginBottom:4}}>
+        <div style={{flex:1,fontSize:13,color:alerta?'#f87171':'#a78bfa',fontFamily:mono,fontWeight:800,letterSpacing:'1px'}}>{alerta?'🚨 ANKI É A PRIORIDADE DE HOJE':'🃏 ANKI — FIZ HOJE?'}</div>
+        <div style={{fontSize:14,fontWeight:900,color:'var(--text)',fontFamily:mono}}>{feitosN}/7</div>
+      </div>
+      {alerta&&<div style={{fontSize:14,color:'#fecaca',lineHeight:1.5,marginBottom:8}}>{info.sem>=60?'Mais de 60':info.sem} dias seguidos sem Anki. Faça o Anki antes de qualquer matéria nova: o que não é revisto vira esquecimento e volta como erro na prova.</div>}
+      {!alerta&&!info.feitoHoje&&<div style={{fontSize:13,color:'var(--text4)',marginBottom:8}}>{info.sem===1?'Ontem ficou sem Anki. Hoje fecha o buraco.':'Anki de hoje ainda não marcado.'}</div>}
+      {info.feitoHoje?<div style={{padding:'10px 12px',borderRadius:9,background:'rgba(52,211,153,.1)',border:'1px solid rgba(52,211,153,.35)',fontSize:14,color:'#34d399',fontWeight:800,marginBottom:8}}>✅ Anki de hoje feito{seq>1?` · sequência de ${seq} dias`:''}</div>
+        :<button onClick={marcarHoje} style={{width:'100%',padding:'13px',borderRadius:10,border:'none',background:alerta?'#f87171':'#a78bfa',color:'#0f172a',fontSize:16,fontWeight:900,cursor:'pointer',marginBottom:8}}>✅ Fiz o Anki hoje</button>}
+      <div style={{display:'flex',gap:4}}>
+        {dias.map(dk=>{const e=estadoDiaAnki(dk);const eh=dk===hoje;const nomes=NOMES_DIA3[parseDK(dk).getDay()];
+          const ic=e==='sim'?'✅':e==='auto'?'✔':e==='nao'?'❌':'⬜';const cor=feitoEstado(e)?'#34d399':e==='nao'?'#f87171':'#94a3b8';
+          return(<button key={dk} onClick={()=>{ciclarDiaMarca('anki_dias',dk);setV(x=>x+1);}} style={{flex:1,padding:'6px 0',borderRadius:9,border:`2px solid ${eh?'#a78bfa':'var(--border)'}`,background:e?`${cor}1a`:'transparent',color:cor,cursor:'pointer'}}>
+            <div style={{fontSize:11,fontFamily:mono,color:'var(--text4)'}}>{nomes}</div>
+            <div style={{fontSize:16,lineHeight:1.2}}>{ic}</div>
+            <div style={{fontSize:10,fontFamily:mono,color:'var(--text4)'}}>{fmtDM(dk).slice(0,2)}</div>
+          </button>);})}
+      </div>
+      <div style={{fontSize:12,color:'var(--text4)',marginTop:6,lineHeight:1.5}}>✔ = o app achou sessão de Anki registrada no dia. Toque num dia para marcar ✅ ou ❌. Com 2 dias seguidos sem Anki, o app avisa assim que você abre.</div>
+    </div>
+  );
+}
+function AnkiUltimas7(){
+  const mono="'DM Mono',monospace";const hoje=getDK();
+  const regs=lsGet('rev_anki',[]).filter(r=>r&&(r.dt||r.dia));
+  const ord=[...regs].sort((a,b)=>(b.dt||0)-(a.dt||0));
+  const ult7=ord.slice(0,7);
+  const porMat={};ord.forEach(r=>{const m=r.mat||'—';(porMat[m]=porMat[m]||[]).push(r);});
+  const linhas=Object.entries(porMat).map(([m,l])=>({mat:m,l})).sort((a,b)=>(b.l[0].dt||0)-(a.l[0].dt||0));
+  const pcR=r=>{const c=parseInt(r.cards)||0,a=parseInt(r.acertos);return c>0&&!isNaN(a)?Math.round(a/c*100):null;};
+  return(
+    <div style={{padding:'12px 14px',borderRadius:12,background:'rgba(255,255,255,.02)',border:'1px solid var(--border)',marginBottom:12}}>
+      <div style={{fontSize:13,color:'var(--text4)',fontFamily:mono,fontWeight:800,letterSpacing:'1px',marginBottom:6}}>🗂️ ÚLTIMAS 7 SESSÕES DE ANKI</div>
+      {ult7.length===0&&<div style={{fontSize:14,color:'var(--text4)'}}>Nenhuma sessão registrada ainda.</div>}
+      {ult7.map((r,i)=>{const dk=dkDoReg(r);const p=pcR(r);return(
+        <div key={r.id||i} style={{display:'flex',alignItems:'center',gap:8,padding:'6px 0',borderTop:i?'1px solid rgba(148,163,184,.1)':'none'}}>
+          <span style={{fontSize:12,fontFamily:mono,color:'var(--text4)',width:38,flexShrink:0}}>{dk===hoje?'hoje':fmtDM(dk)}</span>
+          <span style={{flex:1,minWidth:0,fontSize:14,fontWeight:700,color:'var(--text)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{r.mat||'—'}</span>
+          <span style={{fontSize:13,fontFamily:mono,color:'#c2ccd8',flexShrink:0}}>{r.cards?`${r.cards} cards`:'— cards'}{p!=null?` · ${p}%`:''}{r.tempo?` · ${r.tempo}min`:''}</span>
+        </div>);})}
+      {linhas.length>0&&<div style={{marginTop:10,paddingTop:8,borderTop:'1px solid var(--border)'}}>
+        <div style={{fontSize:12,color:'#a78bfa',fontFamily:mono,fontWeight:800,letterSpacing:'1px',marginBottom:4}}>POR MATÉRIA — últimas 7 sessões de cada uma</div>
+        {linhas.slice(0,10).map(({mat,l})=>{const dk0=dkDoReg(l[0]);const d=dk0?difDias(dk0,hoje):0;return(
+          <div key={mat} style={{padding:'6px 0',borderTop:'1px solid rgba(148,163,184,.08)'}}>
+            <div style={{display:'flex',alignItems:'center',gap:8}}>
+              <span style={{flex:1,fontSize:14,fontWeight:800,color:'var(--text)'}}>{mat}</span>
+              <span style={{fontSize:12,fontFamily:mono,color:d>=3?'#f87171':'var(--text4)'}}>{d<=0?'hoje':`há ${d} dia(s)`}</span>
+            </div>
+            <div style={{fontSize:12,fontFamily:mono,color:'#c2ccd8',lineHeight:1.6}}>{l.slice(0,7).map(r=>`${fmtDM(dkDoReg(r))}${r.cards?` (${r.cards})`:''}`).join(' · ')}</div>
+          </div>);})}
+      </div>}
+    </div>
+  );
+}
+function PontePainel({onAddHoras}){
+  const[,setV]=useState(0);
+  const lista=pontePorMateria(14);const mono="'DM Mono',monospace";
+  const criar=(mat,n)=>{if(n>0){addSessao({area:'card_erro',mat,cardsErro:n,semHist:true,semHoras:true},onAddHoras);setV(x=>x+1);}};
+  const pend=lista.filter(o=>o.falta>0);
+  return(
+    <div style={{padding:'12px 14px',borderRadius:12,background:'rgba(167,139,250,.06)',border:'1px solid rgba(167,139,250,.3)',marginBottom:12}}>
+      <div style={{fontSize:13,color:'#a78bfa',fontFamily:mono,fontWeight:800,letterSpacing:'1px',marginBottom:4}}>🌉 ERROS QUE VIRAM CARD (14 dias)</div>
+      <div style={{fontSize:13,color:'var(--text4)',lineHeight:1.5,marginBottom:6}}>Erro de “não sabia” ou “pegadinha” sem card volta a errar. Aqui aparece quantos cards ainda faltam por matéria.</div>
+      {lista.length===0&&<div style={{fontSize:14,color:'var(--text4)'}}>Sem erros classificados nos últimos 14 dias. Classifique a causa ao registrar questões (aba Questões).</div>}
+      {lista.slice(0,8).map(o=>(
+        <div key={o.mat} style={{display:'flex',alignItems:'center',gap:8,padding:'6px 0',borderTop:'1px solid rgba(148,163,184,.1)'}}>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{fontSize:14,fontWeight:800,color:'var(--text)'}}>{o.mat}</div>
+            <div style={{fontSize:12,fontFamily:mono,color:o.falta>0?'#fbbf24':'#34d399'}}>{o.devidos} erro(s) pedem card · {o.criados} criado(s) · {o.falta>0?`faltam ${o.falta}`:'em dia ✅'}</div>
+          </div>
+          {o.falta>0&&<button onClick={()=>criar(o.mat,1)} style={{padding:'6px 9px',borderRadius:7,border:'1px solid rgba(167,139,250,.4)',background:'rgba(167,139,250,.1)',color:'#a78bfa',fontSize:12,fontWeight:800,cursor:'pointer'}}>+1</button>}
+          {o.falta>1&&<button onClick={()=>criar(o.mat,o.falta)} style={{padding:'6px 9px',borderRadius:7,border:'1px solid rgba(52,211,153,.4)',background:'rgba(52,211,153,.1)',color:'#34d399',fontSize:12,fontWeight:800,cursor:'pointer'}}>todos</button>}
+        </div>))}
+      {pend.length===0&&lista.length>0&&<div style={{fontSize:13,color:'#34d399',marginTop:6}}>✅ Todo erro classificado já virou card.</div>}
+    </div>
+  );
+}
+
+// ── UI: Estratégia · lei seca FCC semanal e mini-simulado misto ──
+function LeiSeca({onAddHoras}){
+  const[,setV]=useState(0);
+  const sem=semanaChave();const mono="'DM Mono',monospace";
+  const alvo=leisecaMateriaAlvo();
+  const todas=lsGet('rev_sessoes',[]).filter(s=>s.area==='leiseca');
+  const dessa=todas.filter(s=>(s.dia||'')>=sem);
+  const mats=DECOREBA_MATS.filter(m=>EDITAL_MATS.includes(m));
+  const topico=(()=>{try{const snap=snapGuruja();if(!snap||!Array.isArray(snap.fracos)||!alvo)return '';const f=snap.fracos.filter(x=>matDaSigla(x.sigla,x.disciplina)===alvo.mat).sort((a,b)=>(a.pct??100)-(b.pct??100))[0];return f?f.titulo:'';}catch(e){return '';}})();
+  const lit=m=>{const l=todas.filter(s=>s.mat===m&&s.q>0);const q=l.reduce((x,s)=>x+s.q,0),a=l.reduce((x,s)=>x+s.a,0);return q>0?{pct:Math.round(a/q*100),q}:null;};
+  const comDado=mats.map(m=>({mat:m,lit:lit(m),geral:Math.round(nivelRealMat(m).pct)})).filter(x=>x.lit);
+  return(
+    <div style={{padding:'12px 14px',borderRadius:12,background:'rgba(251,146,60,.06)',border:'2px solid rgba(251,146,60,.35)',marginBottom:12}}>
+      <div style={{display:'flex',alignItems:'center',marginBottom:4}}>
+        <div style={{flex:1,fontSize:13,color:'#fb923c',fontFamily:mono,fontWeight:800,letterSpacing:'1px'}}>📜 LEI SECA NO FORMATO FCC · 30 MIN · 1× POR SEMANA</div>
+        <div style={{fontSize:14,fontWeight:900,fontFamily:mono,color:dessa.length?'#34d399':'var(--text)'}}>{dessa.length?'✅':'0/1'}</div>
+      </div>
+      <div style={{fontSize:13,color:'var(--text4)',lineHeight:1.5,marginBottom:8}}>Para matéria de decoreba (tributário, ICMS, auditoria, AFO). 10 min lendo o trecho da lei em voz alta; 20 min só em questões de literalidade (palavra trocada, prazo, exceção). Substitui 1 dos áudios do dia, não soma tempo.</div>
+      {alvo&&<div style={{padding:'9px 11px',borderRadius:9,background:'rgba(251,146,60,.1)',marginBottom:8}}>
+        <div style={{fontSize:12,color:'#fb923c',fontFamily:mono}}>ALVO DESTA SEMANA</div>
+        <div style={{fontSize:16,fontWeight:900,color:'var(--text)'}}>{alvo.mat} <span style={{fontSize:13,fontFamily:mono,color:'var(--text4)'}}>nível {alvo.pct}%{alvo.estimado?' (estimado — ainda sem questões)':''}</span></div>
+        {topico&&<div style={{fontSize:13,color:'#c2ccd8',marginTop:2}}>Ponto mais fraco no Guruja: {topico}</div>}
+      </div>}
+      {dessa.map((s,i)=>(<div key={i} style={{fontSize:14,color:'#34d399',marginBottom:6}}>✅ {fmtDM(s.dia)} · {s.mat}: {s.a}/{s.q}{s.q>0?` (${Math.round(s.a/s.q*100)}% de literalidade)`:''}{s.min?` · ${s.min} min`:''}</div>))}
+      <RegistroQTA key={'ls'+dessa.length} area="leiseca" titulo="✍️ REGISTRAR A LEI SECA" cor="#fb923c" matsLista={mats} matInicial={alvo?alvo.mat:''} minPadrao={30} onAddHoras={onAddHoras} onSalvo={()=>setV(x=>x+1)} botao="💾 Registrar lei seca"/>
+      {comDado.length>0&&<div style={{fontSize:13,color:'#c2ccd8',lineHeight:1.7}}>
+        <div style={{fontSize:12,color:'#fb923c',fontFamily:mono,fontWeight:800,letterSpacing:'1px'}}>LETRA DE LEI × NÍVEL GERAL</div>
+        {comDado.map(x=>(<div key={x.mat}>{x.mat}: <b style={{color:x.lit.pct<x.geral?'#f87171':'#34d399'}}>{x.lit.pct}%</b> em literalidade ({x.lit.q} q) · {x.geral}% no geral</div>))}
+      </div>}
+    </div>
+  );
+}
+function MiniSimulado({onAddHoras}){
+  const[,setV]=useState(0);
+  const sem=semanaChave();const mono="'DM Mono',monospace";
+  const todos=lsGet('rev_sessoes',[]).filter(s=>s.area==='simulado').sort((a,b)=>(b.dt||0)-(a.dt||0));
+  const dessa=todos.find(s=>(s.dia||'')>=sem);
+  const ini=diaDK(-28);let q=0,a=0;
+  lsGet('historico_diario',[]).forEach(r=>{if(!r||r.origem==='guruja_simulado')return;if(dkDoReg(r)<ini)return;const n=parseInt(r.questoes)||0;if(n>0){q+=n;a+=parseInt(r.acertei)||0;}});
+  const pctAssunto=q>=30?Math.round(a/q*100):null;
+  const ult=todos[0];const pctMisto=ult&&ult.q>0?Math.round(ult.a/ult.q*100):null;
+  const gap=pctAssunto!=null&&pctMisto!=null?pctAssunto-pctMisto:null;
+  return(
+    <div style={{padding:'12px 14px',borderRadius:12,background:'rgba(96,165,250,.06)',border:'2px solid rgba(96,165,250,.35)',marginBottom:12}}>
+      <div style={{display:'flex',alignItems:'center',marginBottom:4}}>
+        <div style={{flex:1,fontSize:13,color:'#60a5fa',fontFamily:mono,fontWeight:800,letterSpacing:'1px'}}>📝 MINI-SIMULADO MISTO · 20 QUESTÕES · 1× POR SEMANA</div>
+        <div style={{fontSize:14,fontWeight:900,fontFamily:mono,color:dessa?'#34d399':'var(--text)'}}>{dessa?'✅':'0/1'}</div>
+      </div>
+      <div style={{fontSize:13,color:'var(--text4)',lineHeight:1.5,marginBottom:8}}>20 questões FCC de matérias misturadas, cronometradas, sem saber o assunto antes de ler. O que for erro entra no caderno (aba Questões) para a revisão espaçada. Melhor dia: sábado.</div>
+      {gap!=null&&<div style={{padding:'9px 11px',borderRadius:9,background:gap>8?'rgba(248,113,113,.1)':'rgba(52,211,153,.1)',fontSize:14,color:'var(--text)',marginBottom:8,lineHeight:1.5}}>Por assunto você acerta <b>{pctAssunto}%</b>; no misto, <b>{pctMisto}%</b>. {gap>8?`Distância de ${gap} pontos: é o que você tende a perder na prova real se não treinar o misto.`:'A distância é pequena: o acerto sobrevive à mistura.'}</div>}
+      {dessa&&<div style={{fontSize:14,color:'#34d399',marginBottom:6}}>✅ Feito em {fmtDM(dessa.dia)}: {dessa.a}/{dessa.q}{dessa.q>0?` (${Math.round(dessa.a/dessa.q*100)}%)`:''}{dessa.min&&dessa.q?` · ${Math.round(dessa.min*60/dessa.q)} s por questão`:''}</div>}
+      <RegistroQTA key={'ms'+todos.length} area="simulado" titulo="✍️ REGISTRAR O MINI-SIMULADO" cor="#60a5fa" matFixa="Misto (simulado)" qPadrao={20} mostraRitmo semHist rotuloHoras="Mini-simulado misto" aviso="Tempo-alvo: 50 a 60 min (2,5 a 3 min por questão). Classifique a causa dos erros: ela aparece nas prioridades." onAddHoras={onAddHoras} onSalvo={()=>setV(x=>x+1)} botao="💾 Registrar simulado"/>
+      {todos.length>0&&<div style={{fontSize:13,color:'#c2ccd8',lineHeight:1.7}}>
+        <div style={{fontSize:12,color:'#60a5fa',fontFamily:mono,fontWeight:800,letterSpacing:'1px'}}>ÚLTIMOS SIMULADOS</div>
+        {todos.slice(0,4).map((s,i)=>(<div key={i}>{fmtDM(s.dia)} · {s.a}/{s.q}{s.q>0?` (${Math.round(s.a/s.q*100)}%)`:''}{s.min&&s.q?` · ${s.min} min · ${Math.round(s.min*60/s.q)} s/questão`:''}</div>))}
+      </div>}
+    </div>
+  );
+}
+
+// ── Aviso ao abrir o app: 2+ dias sem Anki ──
+function AlertaAnkiApp({onIr}){
+  const[oculto,setOculto]=useState(()=>{try{return sessionStorage.getItem('anki_alerta_off')===getDK();}catch(e){return false;}});
+  const info=diasSemAnki();
+  if(oculto||info.feitoHoje||info.sem<2)return null;
+  const fechar=()=>{try{sessionStorage.setItem('anki_alerta_off',getDK());}catch(e){}setOculto(true);};
+  const jaFiz=()=>{const m={...lsGet('anki_dias',{})};m[getDK()]=true;lsSet('anki_dias',m);fechar();};
+  return(
+    <div style={{padding:'12px 14px',borderRadius:12,background:'rgba(248,113,113,.12)',border:'2px solid rgba(248,113,113,.6)',marginBottom:12}}>
+      <div style={{fontSize:13,color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:3}}>🚨 ANKI É A PRIORIDADE DE HOJE</div>
+      <div style={{fontSize:14,color:'var(--text)',lineHeight:1.5,marginBottom:8}}>{info.sem>=60?'Mais de 60':info.sem} dias seguidos sem Anki. Faça o Anki antes de qualquer matéria nova.</div>
+      <div style={{display:'flex',gap:6}}>
+        <button onClick={()=>onIr&&onIr()} style={{flex:2,padding:'10px',borderRadius:9,border:'none',background:'#f87171',color:'#0f172a',fontSize:14,fontWeight:900,cursor:'pointer'}}>🃏 Ir para o Anki</button>
+        <button onClick={jaFiz} style={{flex:1,padding:'10px',borderRadius:9,border:'1px solid rgba(52,211,153,.5)',background:'rgba(52,211,153,.1)',color:'#34d399',fontSize:13,fontWeight:800,cursor:'pointer'}}>✅ já fiz</button>
+        <button onClick={fechar} style={{flex:1,padding:'10px',borderRadius:9,border:'1px solid var(--border)',background:'transparent',color:'var(--text4)',fontSize:13,cursor:'pointer'}}>depois</button>
+      </div>
+    </div>
+  );
+}
+
+function ReforcosCiclo({onRapido,ver,onAddHoras}){
   const[tick,setTick]=useState(0);
   useEffect(()=>{const f=()=>setTick(t=>t+1);window.addEventListener('guruja-atualizado',f);return()=>window.removeEventListener('guruja-atualizado',f);},[]);
   const lista=useMemo(()=>reforcosDoSnapshot(),[ver,tick]);
@@ -6889,6 +7393,12 @@ function ReforcosCiclo({onRapido,ver}){
             {r.q>0&&<span style={{fontFamily:mono,color:corPct(p)}}>{r.a}/{r.q} · {p}%</span>}
           </div>);})}
       </div>}
+      <details style={{marginTop:12}}>
+        <summary style={{cursor:'pointer',fontSize:13,color:'var(--text4)',padding:'6px 2px'}}>➕ Registrar um reforço feito fora do ⚡ (questões · tempo · acertos)</summary>
+        <div style={{marginTop:8}}>
+          <RegistroQTA area="reforcos" titulo="🔁 REGISTRAR REFORÇO" cor="#7dd3fc" aviso="Use quando fizer o reforço direto no portal e quiser que o app registre questões, tempo e acertos." onAddHoras={onAddHoras}/>
+        </div>
+      </details>
     </div>
   );
 }
@@ -6898,6 +7408,7 @@ function CadernoTEC({onAddHoras,onSyncHistorico,onConcluir}){
   const hoje=getDK();
   const[rot,setRot]=useState(()=>lsGet('cad_rot',{ultima:null,hist:[]}));
   const[q,setQ]=useState('');const[a,setA]=useState('');
+  const[tempoCad,setTempoCad]=useState('30');const[causasCad,setCausasCad]=useState({});const[cardsCad,setCardsCad]=useState('');
   const mono="'DM Mono',monospace";
   const lista=materiasIniciadasPorDificuldade();
   const feitoHoje=(rot.hist||[]).find(h=>h.dia===hoje);
@@ -6912,18 +7423,21 @@ function CadernoTEC({onAddHoras,onSyncHistorico,onConcluir}){
   const registrar=()=>{
     if(!escolhida)return;
     const agora=Date.now();
-    const nq=parseInt(q)||0,na=parseInt(a)||0;
-    const novo={dia:hoje,dt:agora,mat:escolhida,min:30,q:nq,a:na};
+    const nq=parseInt(q)||0,na=Math.min(nq,parseInt(a)||0);
+    const mm=Math.max(1,parseInt(tempoCad)||30);
+    const novo={dia:hoje,dt:agora,mat:escolhida,min:mm,q:nq,a:na};
     const n={ultima:escolhida,hist:[...(rot.hist||[]),novo].slice(-60)};
     lsSet('cad_rot',n);setRot(n);
-    if(onAddHoras)onAddHoras({mat:`Caderno de erros — ${escolhida}`,min:30,dt:agora});
+    if(onAddHoras)onAddHoras({mat:`Caderno de erros — ${escolhida}`,min:mm,dt:agora});
+    const rid=`${hoje}_cadtec_${agora}`;
     if(nq>0){
-      const rid=`${hoje}_cadtec_${agora}`;
-      lsSet('historico_diario',[...lsGet('historico_diario',[]),{id:rid,materia:escolhida,assunto:'Caderno de erros (TEC)',tempo:'30',questoes:String(nq),acertei:String(na),dificuldade:0,obs:'Sessão do caderno de erros',dia:hoje,dt:agora,origem:'caderno_tec'}].sort((x,y)=>(x.dt||0)-(y.dt||0)));
+      lsSet('historico_diario',[...lsGet('historico_diario',[]),{id:rid,materia:escolhida,assunto:'Caderno de erros (TEC)',tempo:String(mm),questoes:String(nq),acertei:String(na),dificuldade:0,obs:'Sessão do caderno de erros',dia:hoje,dt:agora,origem:'caderno_tec'}].sort((x,y)=>(x.dt||0)-(y.dt||0)));
     }
+    addSessao({id:rid,area:'questoes',mat:escolhida,assunto:'Caderno de erros (TEC)',q:nq,a:na,min:mm,causas:totalCausas(causasCad)>0?causasCad:null,cardsErro:cardsCad,semHist:true,semHoras:true});
+    try{const dm={...lsGet('cad_dias',{})};dm[hoje]=true;lsSet('cad_dias',dm);}catch(e){}
     try{const fs=lsGet('feitos',[]);const it=CICLO.find(c=>[831,832,834].includes(c.id)&&!fs.includes(c.id)&&diaCicloLabel(c.dia).endsWith(hoje.slice(8)+'/'+hoje.slice(5,7)));if(it&&onConcluir)onConcluir(it.id);}catch(e){}
     if(onSyncHistorico)onSyncHistorico();
-    setQ('');setA('');setMat(null);
+    setQ('');setA('');setMat(null);setTempoCad('30');setCausasCad({});setCardsCad('');
   };
   const desfazer=()=>{const h=(rot.hist||[]).filter(x=>x.dia!==hoje);const ult=h.length?h[h.length-1].mat:null;const n={ultima:ult,hist:h};lsSet('cad_rot',n);setRot(n);};
   return(
@@ -6948,8 +7462,10 @@ function CadernoTEC({onAddHoras,onSyncHistorico,onConcluir}){
         <div style={{display:'flex',gap:8,marginBottom:8}}>
           <input type="number" value={q} onChange={e=>setQ(e.target.value)} placeholder="questões (opcional)" style={{flex:1,minWidth:0,padding:'9px 10px',borderRadius:7,border:'1px solid rgba(251,146,60,.3)',background:'rgba(251,146,60,.04)',color:'#f1f5f9',fontSize:15,outline:'none',boxSizing:'border-box'}}/>
           <input type="number" value={a} onChange={e=>setA(e.target.value)} placeholder="acertos" style={{flex:1,minWidth:0,padding:'9px 10px',borderRadius:7,border:'1px solid rgba(251,146,60,.3)',background:'rgba(251,146,60,.04)',color:'#34d399',fontSize:15,outline:'none',boxSizing:'border-box'}}/>
+          <input type="number" value={tempoCad} onChange={e=>setTempoCad(e.target.value)} placeholder="min" style={{width:70,padding:'9px 8px',borderRadius:7,border:'1px solid rgba(251,146,60,.3)',background:'rgba(251,146,60,.04)',color:'#f1f5f9',fontSize:15,outline:'none',boxSizing:'border-box'}}/>
         </div>
-        <button onClick={registrar} style={{width:'100%',padding:'12px',borderRadius:9,border:'none',background:'#fb923c',color:'#0f172a',fontSize:15,fontWeight:900,cursor:'pointer'}}>✅ Fiz os 30 min do caderno</button>
+        {a!==''&&(parseInt(q)||0)-(parseInt(a)||0)>0&&<CausasErro erros={(parseInt(q)||0)-(parseInt(a)||0)} valor={causasCad} onChange={setCausasCad} cardsErro={cardsCad} onCards={setCardsCad}/>}
+        <button onClick={registrar} style={{width:'100%',padding:'12px',borderRadius:9,border:'none',background:'#fb923c',color:'#0f172a',fontSize:15,fontWeight:900,cursor:'pointer'}}>✅ Fiz o caderno ({Math.max(1,parseInt(tempoCad)||30)} min)</button>
       </div>}
       {!sugerida&&<div style={{fontSize:14,color:'var(--text4)'}}>Ainda não há matéria iniciada para montar a fila.</div>}
     </div>
@@ -6962,7 +7478,7 @@ function FiltroCem({onAddHoras}){
   const[f,setF]=useState(()=>lsGet('anki_filtro',null));
   const[hist,setHist]=useState(()=>lsGet('anki_filtro_hist',[]));
   const[tam,setTam]=useState('100');
-  const[cards,setCards]=useState('');const[min,setMin]=useState('30');
+  const[cards,setCards]=useState('');const[min,setMin]=useState('30');const[acertosF,setAcertosF]=useState('');
   const mono="'DM Mono',monospace";
   const atual=f&&f.semana===sem?f:null;
   const anterior=f&&f.semana!==sem?f:null;
@@ -6978,9 +7494,10 @@ function FiltroCem({onAddHoras}){
     if(!c&&!m)return;
     const agora=Date.now();
     const n={...atual,restam:Math.max(0,atual.restam-c)};lsSet('anki_filtro',n);setF(n);
-    lsSet('rev_anki',[...lsGet('rev_anki',[]),{id:agora,dt:agora,dia:hoje,mat:'Baralho filtrado',tempo:String(m),cards:String(c),dif:3,origem:'filtro'}]);
+    lsSet('rev_anki',[...lsGet('rev_anki',[]),{id:agora,dt:agora,dia:hoje,mat:'Baralho filtrado',tempo:String(m),cards:String(c),acertos:acertosF===''?undefined:String(Math.min(c,parseInt(acertosF)||0)),dif:3,origem:'filtro'}]);
+    try{const dm={...lsGet('anki_dias',{})};if(dm[hoje]!==false){dm[hoje]=true;lsSet('anki_dias',dm);}}catch(e){}
     if(m>0&&onAddHoras)onAddHoras({mat:'Anki — Baralho filtrado',min:m,dt:agora});
-    setCards('');
+    setCards('');setAcertosF('');
   };
   const corrigir=v=>{if(!atual)return;const n={...atual,restam:Math.max(0,Math.min(atual.total,v))};lsSet('anki_filtro',n);setF(n);};
   const feitosN=atual?atual.total-atual.restam:0;
@@ -7004,6 +7521,7 @@ function FiltroCem({onAddHoras}){
         {atual.restam===0?<div style={{fontSize:14,color:'#34d399',fontWeight:800,marginBottom:8}}>✅ Filtro zerado. Meta da semana cumprida — segunda tem um novo.</div>:null}
         <div style={{display:'flex',gap:6,marginBottom:8}}>
           <input type="number" value={cards} onChange={e=>setCards(e.target.value)} placeholder="notas feitas" style={{flex:1,minWidth:0,padding:'9px 10px',borderRadius:7,border:'1px solid rgba(167,139,250,.3)',background:'rgba(167,139,250,.05)',color:'#f1f5f9',fontSize:15,outline:'none',boxSizing:'border-box'}}/>
+          <input type="number" value={acertosF} onChange={e=>setAcertosF(e.target.value)} placeholder="acertos" style={{width:78,padding:'9px 8px',borderRadius:7,border:'1px solid rgba(167,139,250,.3)',background:'rgba(167,139,250,.05)',color:'#34d399',fontSize:15,outline:'none',boxSizing:'border-box'}}/>
           <input type="number" value={min} onChange={e=>setMin(e.target.value)} placeholder="min" style={{width:80,padding:'9px 10px',borderRadius:7,border:'1px solid rgba(167,139,250,.3)',background:'rgba(167,139,250,.05)',color:'#f1f5f9',fontSize:15,outline:'none',boxSizing:'border-box'}}/>
           <button onClick={registrar} style={{padding:'9px 14px',borderRadius:8,border:'none',background:'#a78bfa',color:'#0f172a',fontSize:15,fontWeight:900,cursor:'pointer'}}>Somar</button>
         </div>
@@ -7137,6 +7655,10 @@ function calcFechamentoSemana(){
   const planMin=m=>CICLO_BASE.filter(i=>i.mat===m&&i.diaPlano<=diaHojeIdx).reduce((x,i)=>x+i.min,0);
   const totTI=porDia.reduce((s,d)=>s+d.ti,0),totCT=porDia.reduce((s,d)=>s+d.ct,0);
   const cad=(lsGet('cad_rot',{hist:[]}).hist||[]).filter(h=>h.dia>=dias[0]).length;
+  const quesDias=dias.filter(dk=>feitoEstado(estadoDiaQuestoes(dk))).length;
+  const ankiDias=dias.filter(dk=>feitoEstado(estadoDiaAnki(dk))).length;
+  const semK=semanaChave();const sessSem=lsGet('rev_sessoes',[]).filter(x=>(x.dia||'')>=semK);
+  const leiseca=sessSem.some(x=>x.area==='leiseca')?1:0;const simulado=sessSem.some(x=>x.area==='simulado')?1:0;
   const nlm=lsGet('rev_nlm',[]).filter(r=>r.dia>=dias[0]).length;
   const f=lsGet('anki_filtro',null);const filtro=f&&f.semana===semanaChave()?f:null;
   const snap=snapGuruja();const ma=snap&&snap.meta_atual?snap.meta_atual:null;
@@ -7144,7 +7666,7 @@ function calcFechamentoSemana(){
   const metaFeitas=Math.max(ma?ma.atividades_concluidas||0:0,feitosApp);
   const metaTotal=ma?ma.atividades_totais||20:20;
   const mediaHoras=porDia.length?Math.round(porDia.reduce((s,d)=>s+d.total,0)/porDia.length):0;
-  return{porDia,diasPlano,totTI,totCT,metaTI:planMin(MAT_TI),metaCT:planMin('Contabilidade Geral'),cad,nlm,filtro,metaFeitas,metaTotal,mediaHoras};
+  return{porDia,diasPlano,totTI,totCT,metaTI:planMin(MAT_TI),metaCT:planMin('Contabilidade Geral'),cad,nlm,filtro,metaFeitas,metaTotal,mediaHoras,quesDias,ankiDias,leiseca,simulado};
 }
 function decisaoDaSemana(F){
   const diaHojeIdx=Math.min(7,Math.max(1,Math.round((new Date().setHours(0,0,0,0)-CICLO_INI_MS)/86400000)+1));
@@ -7155,7 +7677,7 @@ function decisaoDaSemana(F){
   if(F.filtro&&F.filtro.restam>F.filtro.total*0.6&&new Date().getDay()>=4)return{t:'Filtro do Anki atrasado',x:`Restam ${F.filtro.restam} de ${F.filtro.total} e a semana está acabando. Decisão: dobrar o Anki nos próximos dias.`};
   return{t:'Sem desvio grande nesta semana',x:'Decisão única: manter o plano como está. Se quiser mexer em algo, que seja na folga até 5h.'};
 }
-function EstrategiaSemana(){
+function EstrategiaSemana({onAddHoras}){
   const F=calcFechamentoSemana();
   const proj=calcProjecaoNotaFinal();
   const dec=decisaoDaSemana(F);
@@ -7197,9 +7719,16 @@ function EstrategiaSemana(){
         {linha('Contabilidade (planejado até hoje)',`${fmtMinG(F.totCT)} / ${fmtMinG(F.metaCT)}`,F.totCT,F.metaCT)}
         {linha('Caderno de erros (3×30 min)',`${F.cad} / 3`,F.cad,3)}
         {linha('Áudios NotebookLM (2 por dia)',`${F.nlm} / 14`,F.nlm,14)}
+        {linha('Dias com questões (7 dias)',`${F.quesDias} / 7`,F.quesDias,7)}
+        {linha('Dias com Anki (7 dias)',`${F.ankiDias} / 7`,F.ankiDias,7,F.ankiDias<5?'Anki é diário: menos de 5 dias na semana é prioridade.':'')}
+        {linha('Lei seca FCC (30 min)',`${F.leiseca} / 1`,F.leiseca,1)}
+        {linha('Mini-simulado misto (20 q)',`${F.simulado} / 1`,F.simulado,1)}
         {F.filtro?linha('Baralho filtrado do Anki',`${F.filtro.total-F.filtro.restam} / ${F.filtro.total}`,F.filtro.total-F.filtro.restam,F.filtro.total,F.filtro.restam===0?'zerado ✅':`restam ${F.filtro.restam}`):<div style={{fontSize:13,color:'var(--text4)',marginBottom:8}}>Baralho filtrado: ainda não montado nesta semana (Revisão › Memorização).</div>}
         {linha('Meta 3 (Consolidar a base)',`${F.metaFeitas} / ${F.metaTotal}`,F.metaFeitas,F.metaTotal)}
       </div>
+      <LeiSeca onAddHoras={onAddHoras}/>
+      <MiniSimulado onAddHoras={onAddHoras}/>
+      <ErroDominantePainel/>
       <div style={{padding:'12px 14px',borderRadius:12,background:'rgba(248,113,113,.06)',border:'1px solid rgba(248,113,113,.25)',marginBottom:12}}>
         <div style={{fontSize:13,color:'#f87171',fontFamily:mono,fontWeight:800,letterSpacing:'1px',marginBottom:6}}>🎯 3 PRIORIDADES DA SEMANA → alimentam a Profunda de segunda</div>
         {prio.length===0&&<div style={{fontSize:14,color:'var(--text4)'}}>Sem lacunas detectadas ainda. Elas surgem de atividades do Guruja abaixo de 80%, erros do caderno e do que você digita em Lacunas.</div>}
@@ -7269,7 +7798,8 @@ function FilaLacunas(){
 
 function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,ankiSugestoes=[],nlmSugestao=null,onRapido,rapidoVer,onConcluir}){
   const hoje=getDK();
-  const[aba,setAba]=useState('reforcos');
+  const[aba,setAba]=useState(()=>{try{const x=sessionStorage.getItem('rev_aba_ini');if(x){sessionStorage.removeItem('rev_aba_ini');return x;}}catch(e){}return 'reforcos';});
+  useEffect(()=>{const f=e=>{if(e&&e.detail)setAba(e.detail);};window.addEventListener('rev-ir-aba',f);return()=>window.removeEventListener('rev-ir-aba',f);},[]);
   const[ankiRegs,setAnkiRegs]=useState(()=>lsGet('rev_anki',[]));
   const[nlmRegs,setNlmRegs]=useState(()=>lsGet('rev_nlm',[]));
   const[rev1h30Regs,setRev1h30Regs]=useState(()=>lsGet('rev_1h30',[]));
@@ -7282,11 +7812,13 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
   const[critForm,setCritForm]=useState({mat:'',assunto:'',motivo:'',prioridade:'alta'});
   const[critSalvo,setCritSalvo]=useState(false);
   const[criticoIALoad,setCriticoIALoad]=useState(false);
-  const[ankiForm,setAnkiForm]=useState({mat:'',tempo:'',cards:'',questoes:'',dif:0});
+  const[ankiForm,setAnkiForm]=useState({mat:'',tempo:'',cards:'',acertos:'',questoes:'',dif:0});
   const[ankiSalvo,setAnkiSalvo]=useState(false);
-  const[nlmForm,setNlmForm]=useState({mat:'',oque:'',tempo:'',questoes:'',dif:0,fonte:'NLM',pct:''});
+  const[nlmForm,setNlmForm]=useState({mat:'',oque:'',tempo:'',questoes:'',acertos:'',dif:0,fonte:'NLM',pct:''});
   const[nlmSalvo,setNlmSalvo]=useState(false);
   const[cadForm,setCadForm]=useState({mat:'',assunto:'',questoes:'',acertei:'',dificuldade:3,obs:''});
+  const[cadCausas,setCadCausas]=useState({});const[cadCards,setCadCards]=useState('');
+  const[tentId,setTentId]=useState(null);
   const[cadSalvo,setCadSalvo]=useState(false);
   const[slots,setSlots]=useState([{mat:'',oque:[],tempo:'',questoes:'',dif:0,salvo:false},{mat:'',oque:[],tempo:'',questoes:'',dif:0,salvo:false},{mat:'',oque:[],tempo:'',questoes:'',dif:0,salvo:false}]);
   const[slotSalvo,setSlotSalvo]=useState(false);
@@ -7371,16 +7903,19 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
     if(!ankiForm.mat||!ankiForm.dif)return;
     const novo={...ankiForm,id:Date.now(),dt:Date.now(),dia:hoje};
     const n=[...ankiRegs,novo];setAnkiRegs(n);lsSet('rev_anki',n);
+    try{const dm={...lsGet('anki_dias',{})};if(dm[hoje]!==false){dm[hoje]=true;lsSet('anki_dias',dm);}}catch(e){}
     const mins=parseInt(ankiForm.tempo)||Math.round((parseInt(ankiForm.cards)||0)*0.4+(parseInt(ankiForm.questoes)||0)*0.5);
     if(mins>0&&onAddHoras)onAddHoras({mat:`Anki — ${ankiForm.mat}`,min:mins,dt:Date.now()});
     else if(mins>0){const h=lsGet('horas',[]);lsSet('horas',[...h,{mat:`Anki — ${ankiForm.mat}`,min:mins,dt:Date.now()}]);}
-    setAnkiForm({mat:'',tempo:'',cards:'',questoes:'',dif:0});
+    setAnkiForm({mat:'',tempo:'',cards:'',acertos:'',questoes:'',dif:0});
     setAnkiSalvo(true);setTimeout(()=>setAnkiSalvo(false),2000);
   };
   const salvarNlm=()=>{
     if(!nlmForm.mat||!nlmForm.dif)return;
-    const pctNum=nlmForm.pct!==''&&nlmForm.pct!=null?parseInt(nlmForm.pct):null;
+    const qN=parseInt(nlmForm.questoes)||0,aN=Math.min(qN,parseInt(nlmForm.acertos)||0);
+    const pctNum=nlmForm.pct!==''&&nlmForm.pct!=null?parseInt(nlmForm.pct):(qN>0?Math.round(aN/qN*100):null);
     const novo={...nlmForm,pct:pctNum,id:Date.now(),dt:Date.now(),dia:hoje};
+    if(qN>0)addSessao({area:'passiva',mat:nlmForm.mat,assunto:nlmForm.oque,q:qN,a:aN,min:parseInt(nlmForm.tempo)||0,semHist:true,semHoras:true});
     const n=[...nlmRegs,novo];setNlmRegs(n);lsSet('rev_nlm',n);
     const mins=parseInt(nlmForm.tempo)||0;
     const rotulo=nlmForm.fonte&&nlmForm.fonte!=='NLM'?nlmForm.fonte:'NLM';
@@ -7397,7 +7932,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
       }
       lsSet('rev_caderno',caderno);
     }
-    setNlmForm({mat:'',oque:'',tempo:'',questoes:'',dif:0,fonte:'NLM',pct:''});
+    setNlmForm({mat:'',oque:'',tempo:'',questoes:'',acertos:'',dif:0,fonte:'NLM',pct:''});
     setNlmSalvo(true);setTimeout(()=>setNlmSalvo(false),2000);
   };
   const salvarCaderno=()=>{
@@ -7410,7 +7945,8 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
       id:Date.now(),mat:cadForm.mat,assunto:cadForm.assunto||cadForm.obs||'',
       feitas:q,acertei:a,pct,dificuldade:dif,
       tentativas:1,dominado:false,dia:hoje,obs:cadForm.obs||'',origem:'caderno',
-      historico:[{data:getDK(),questoes:q,acertos:a,dificuldade:dif}]
+      causa:causaDominanteDe(cadCausas),seqOk:0,ultOk:null,prox:somaDias(hoje,1),
+      historico:[{data:getDK(),questoes:q,acertos:a,dificuldade:dif,causas:totalCausas(cadCausas)>0?cadCausas:undefined}]
     };
     const caderno=[...lsGet('rev_caderno',[]),novo];
     lsSet('rev_caderno',caderno);
@@ -7418,6 +7954,8 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
     const mins=parseInt(cadForm.tempo)||0;
     if(mins>0&&onAddHoras)onAddHoras({mat:cadForm.mat,min:mins,dt:Date.now()});
     else if(mins>0){const h=lsGet('horas',[]);lsSet('horas',[...h,{mat:cadForm.mat,min:mins,dt:Date.now()}]);}
+    if(q>0||mins>0)addSessao({area:'questoes',mat:cadForm.mat,assunto:novo.assunto,q,a,min:mins,causas:totalCausas(cadCausas)>0?cadCausas:null,cardsErro:cadCards,semHist:true,semHoras:true});
+    setCadCausas({});setCadCards('');
     setCadForm({mat:'',assunto:'',questoes:'',acertei:'',dificuldade:0,prazo:'D+3',obs:'',tempo:''});
     setCadSalvo(true);setTimeout(()=>setCadSalvo(false),2000);
   };
@@ -7436,10 +7974,38 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
   const marcarDominadoCaderno=(id)=>{
     const caderno=lsGet('rev_caderno',[]).map(t=>{
       if(t.id!==id)return t;
-      return{...t,dominado:true,historico:[...(t.historico||[]),{data:getDK(),acao:'dominado'}]};
+      return{...t,dominado:true,semProva:true,dominadoEm:getDK(),historico:[...(t.historico||[]),{data:getDK(),acao:'dominado_sem_prova'}]};
     });
     lsSet('rev_caderno',caderno);
     setCadRegs(caderno);
+  };
+  // Tentativa com prova: ≥ 80% conta como acerto (1 por dia); 2 acertos em dias diferentes = dominado + reteste D+30; errou = volta amanhã
+  const registrarTentativa=(id,d)=>{
+    const hj=getDK();let alvo=null;
+    const caderno=lsGet('rev_caderno',[]).map(t=>{
+      if(t.id!==id)return t;
+      alvo=t;
+      const q=d.q,a=d.a;const ok=q>0&&a/q>=0.8;
+      let seqOk=t.seqOk||0,prox=t.prox||somaDias(hj,1),dominado=!!t.dominado,reteste=t.reteste||null,retestado=!!t.retestado,dominadoEm=t.dominadoEm||null,ultOk=t.ultOk||null;
+      if(t.dominado&&t.reteste&&!t.retestado){
+        if(ok){retestado=true;}else{dominado=false;seqOk=0;prox=somaDias(hj,1);reteste=null;retestado=false;dominadoEm=null;}
+      }else if(ok){
+        if(ultOk!==hj){seqOk+=1;ultOk=hj;}
+        if(seqOk>=2){dominado=true;dominadoEm=hj;reteste=somaDias(hj,30);retestado=false;}
+        else prox=somaDias(hj,INTERVALOS_REV[Math.min(seqOk,INTERVALOS_REV.length-1)]);
+      }else{seqOk=0;prox=somaDias(hj,1);}
+      const feitas=(t.feitas||0)+q,ac=(t.acertei||0)+a;
+      const dom=causaDominanteDe(d.causas);
+      return{...t,feitas,acertei:ac,pct:feitas>0?Math.round(ac/feitas*100):null,tentativas:(t.tentativas||0)+1,seqOk,prox,dominado,reteste,retestado,dominadoEm,ultOk,causa:dom||t.causa||null,
+        historico:[...(t.historico||[]),{data:hj,questoes:q,acertos:a,dificuldade:t.dificuldade||3,ok,causas:totalCausas(d.causas)>0?d.causas:undefined}]};
+    });
+    lsSet('rev_caderno',caderno);setCadRegs(caderno);
+    if(alvo){
+      addSessao({area:'questoes',mat:alvo.mat,assunto:alvo.assunto||alvo.obs||'',q:d.q,a:d.a,min:d.min,causas:totalCausas(d.causas)>0?d.causas:null,cardsErro:d.cardsErro,semHist:true,semHoras:true});
+      if(d.min>0&&onAddHoras)onAddHoras({mat:alvo.mat,min:d.min,dt:Date.now()});
+      try{const dm={...lsGet('cad_dias',{})};if(dm[hj]!==false){dm[hj]=true;lsSet('cad_dias',dm);}}catch(e){}
+    }
+    setTentId(null);
   };
   const salvarSlotIndividual=(i)=>{
     const s=slots[i];
@@ -7480,7 +8046,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
   const ABAS_REV=[
     {id:'reforcos',l:'🔁 Reforços'},
     {id:'caderno',l:`📕 Questões${(()=>{const n=lsGet('rev_caderno',[]).filter(x=>!x.dominado).length;return n>0?` (${n})`:'';})()}`},
-    {id:'anki',   l:'🃏 Memorização'},
+    {id:'anki',   l:`🃏 Memorização${(()=>{const i=diasSemAnki();return !i.feitoHoje&&i.sem>=2?' 🚨':'';})()}`},
     {id:'passiva',l:'🎧 Passiva'},
     {id:'rev1h30',l:`🔄 Profunda${(()=>{const n=lsGet('rev_manual',[]).filter(x=>!x.feito).length;return n>0?` (${n})`:'';})()}`},
     {id:'estrategia',l:`🎯 Estratégia${criticosManuais.length>0?` (${criticosManuais.length})`:''}`},
@@ -7497,7 +8063,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
         );})}
       </div>
 
-      {aba==='reforcos'&&<ReforcosCiclo onRapido={onRapido} ver={rapidoVer}/>}
+      {aba==='reforcos'&&<ReforcosCiclo onRapido={onRapido} ver={rapidoVer} onAddHoras={onAddHoras}/>}
 
       {/* ═══ QUESTÕES — Caderno de Erros TEC ═══ */}
       {aba==='caderno'&&(()=>{
@@ -7508,6 +8074,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
         const dominados=todosItens.filter(t=>t.dominado);
         const questPrior=calcQuestoesPrioridade(lsGet('historico_diario',[]));
         const matPrioritaria=questPrior.top?.mat||null;
+        const retestes=todosItens.filter(t=>t.dominado&&t.reteste&&!t.retestado&&t.reteste<=hoje&&noEscopo(t));
         const scoreItem=t=>{
           const dif=t.dificuldade||3;
           const pct=t.pct??50;
@@ -7515,7 +8082,8 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
           const boost=t.mat===matPrioritaria?1.5:1;
           return (dif*8+distancia)*pesoGate(t.mat)*boost;
         };
-        const ordenados=[...ativos].sort((a,b)=>scoreItem(b)-scoreItem(a));
+        const vencido=t=>statusProxItem(t,hoje).venc;
+        const ordenados=[...ativos,...retestes].sort((a,b)=>(vencido(b)-vencido(a))||(scoreItem(b)-scoreItem(a)));
         const seteAtras=new Date();seteAtras.setDate(seteAtras.getDate()-7);
         const seteAtrasStr=seteAtras.toISOString().split('T')[0];
         let questoesSemana=0;
@@ -7523,6 +8091,10 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
         return(
           <div>
             <CadernoTEC onAddHoras={onAddHoras} onSyncHistorico={onSyncHistorico} onConcluir={onConcluir}/>
+            <SemanaQuestoes/>
+            <PrioridadesQuestoes/>
+            <UltimasQuestoes/>
+            <ErroDominantePainel/>
             {questPrior.top&&(
               <div style={{padding:'11px 14px',borderRadius:12,background:'rgba(248,113,113,.07)',border:'1px solid rgba(248,113,113,.3)',marginBottom:10}}>
                 <div style={{fontSize:13,color:'#f87171',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:3}}>🎯 PRIORIDADE DA SEMANA</div>
@@ -7577,6 +8149,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
                   <input type="number" value={cadForm.tempo||''} onChange={e=>setCadForm(f=>({...f,tempo:e.target.value}))} placeholder="0" style={{width:'100%',padding:'9px 10px',borderRadius:7,border:'1px solid rgba(248,113,113,.15)',background:'rgba(248,113,113,.03)',color:'#f1f5f9',fontSize:16,fontWeight:700,textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
                 </div>
               </div>
+              {cadForm.acertei!==''&&cadForm.acertei!=null&&(parseInt(cadForm.questoes)||0)-(parseInt(cadForm.acertei)||0)>0&&<CausasErro erros={(parseInt(cadForm.questoes)||0)-(parseInt(cadForm.acertei)||0)} valor={cadCausas} onChange={setCadCausas} cardsErro={cadCards} onCards={setCadCards}/>}
               <div style={{marginBottom:10}}>
                 <div style={{fontSize:13,color:'#c2ccd8',marginBottom:6}}>DIFICULDADE</div>
                 <Estrelas val={cadForm.dificuldade||0} onChange={v=>setCadForm(f=>({...f,dificuldade:v}))}/>
@@ -7587,17 +8160,19 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
             </div>
 
             {/* Lista ordenada por urgência */}
-            <div style={{fontSize:13,color:'var(--text4)',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:8,letterSpacing:'1px'}}>FILA — urgência (gate × dificuldade × distância de 80%) · verde = praticado hoje</div>
+            <div style={{fontSize:13,color:'var(--text4)',fontFamily:"'DM Mono',monospace",fontWeight:700,marginBottom:8,letterSpacing:'1px'}}>FILA — o que volta hoje primeiro (revisão D+1 → D+7 → 2 acertos), depois por urgência · verde = praticado hoje</div>
             {ordenados.length===0&&<div style={{padding:'16px',textAlign:'center',fontSize:14,color:'var(--text4)'}}>Nenhum item pendente. Registre um erro acima quando errar uma questão.</div>}
             {ordenados.map(t=>{
               const exp=cadExpandidos.has(t.id);
               const feitoHoje=(t.historico||[]).some(h=>h.data===hoje);
+              const sp=statusProxItem(t,hoje);const causaIt=CAUSAS_ERRO.find(c=>c.id===t.causa);
               return(
                 <div key={t.id} style={{padding:'11px 13px',borderRadius:10,background:feitoHoje?'rgba(52,211,153,.10)':'rgba(255,255,255,.02)',border:`1px solid ${feitoHoje?'rgba(52,211,153,.3)':'rgba(148,163,184,.12)'}`,marginBottom:6}}>
                   <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',cursor:'pointer'}} onClick={()=>setCadExpandidos(s=>{const n=new Set(s);n.has(t.id)?n.delete(t.id):n.add(t.id);return n;})}>
                     <div style={{flex:1,minWidth:0}}>
                       <div style={{fontSize:14,fontWeight:800,color:feitoHoje?'#34d399':'var(--text)',display:'flex',alignItems:'center'}}>{feitoHoje?'✅ ':''}{t.mat}<BadgeMateria mat={t.mat}/></div>
                       <div style={{fontSize:13,color:'var(--text4)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{t.assunto||t.obs||'—'}</div>
+                      <div style={{fontSize:12,fontFamily:"'DM Mono',monospace",color:sp.cor,marginTop:1}}>{sp.txt}{causaIt?` · ${causaIt.ic} ${causaIt.l.split(' ')[0]}`:''}{(t.seqOk||0)>0&&!t.dominado?` · ${t.seqOk}/2 acertos seguidos`:''}</div>
                     </div>
                     <div style={{textAlign:'right',flexShrink:0,marginLeft:8}}>
                       <div style={{fontSize:15,fontWeight:900,color:t.pct!=null&&t.pct<50?'#f87171':t.pct!=null&&t.pct<70?'#fb923c':'#fbbf24'}}>{t.pct!=null?`${t.pct}%`:'—'}</div>
@@ -7605,9 +8180,13 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
                     </div>
                   </div>
                   {exp&&(
-                    <div style={{marginTop:10,paddingTop:10,borderTop:'1px solid rgba(148,163,184,.1)',display:'flex',gap:6}}>
-                      <button onClick={()=>marcarDominadoCaderno(t.id)} style={{flex:1,padding:'9px',borderRadius:8,border:'none',background:'rgba(52,211,153,.15)',color:'#34d399',fontSize:14,fontWeight:700,cursor:'pointer'}}>✅ Dominei</button>
-                      <button onClick={()=>{const q=parseInt(prompt('Quantas questões você fez agora?')||'0');if(!q)return;const a=parseInt(prompt('Quantas acertou?')||'0');registrarRevisaoCaderno(t.id,q,a,t.dificuldade||3);}} style={{flex:1,padding:'9px',borderRadius:8,border:'1px solid rgba(96,165,250,.3)',background:'transparent',color:'#60a5fa',fontSize:14,fontWeight:700,cursor:'pointer'}}>🔁 Registrar nova tentativa</button>
+                    <div style={{marginTop:10,paddingTop:10,borderTop:'1px solid rgba(148,163,184,.1)'}}>
+                      <div style={{fontSize:13,color:'#c2ccd8',lineHeight:1.5,marginBottom:8}}>Para sair da fila: <b>2 acertos (≥ 80%) em dias diferentes</b>. Errou, volta amanhã. Depois de dominado, um reteste confirma em 30 dias.</div>
+                      {tentId!==t.id&&<div style={{display:'flex',gap:6}}>
+                        <button onClick={()=>setTentId(t.id)} style={{flex:2,padding:'9px',borderRadius:8,border:'1px solid rgba(96,165,250,.4)',background:'rgba(96,165,250,.1)',color:'#60a5fa',fontSize:14,fontWeight:800,cursor:'pointer'}}>🔁 Registrar tentativa</button>
+                        <button onClick={()=>{if(window.confirm('Marcar como dominado SEM prova? Isso tira o item da fila sem os 2 acertos.'))marcarDominadoCaderno(t.id);}} style={{flex:1,padding:'9px',borderRadius:8,border:'1px solid var(--border)',background:'transparent',color:'var(--text4)',fontSize:12,cursor:'pointer'}}>dominei sem prova</button>
+                      </div>}
+                      {tentId===t.id&&<TentativaForm t={t} onSave={d=>registrarTentativa(t.id,d)} onCancel={()=>setTentId(null)}/>}
                     </div>
                   )}
                 </div>
@@ -7627,7 +8206,10 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
         const filaMem=calcFilaMemorizacao();
         return(
           <div>
+            <AnkiDiasPainel/>
             <FiltroCem onAddHoras={onAddHoras}/>
+            <AnkiUltimas7/>
+            <PontePainel onAddHoras={onAddHoras}/>
             <details style={{marginBottom:12}}><summary style={{cursor:'pointer',fontSize:13,color:'var(--text4)',padding:'6px 2px'}}>🗂️ Apoio: fila por matéria (opcional — o foco agora é o baralho filtrado)</summary>
             <div style={{padding:'11px 14px',borderRadius:12,background:'rgba(167,139,250,.07)',border:'1px solid rgba(167,139,250,.3)',marginBottom:12}}>
               <div style={{fontSize:13,color:'#a78bfa',fontFamily:"'DM Mono',monospace",fontWeight:800,letterSpacing:'1px',marginBottom:6}}>🃏 FILA POR MATÉRIA — da mais difícil pra você até a mais fácil</div>
@@ -7678,6 +8260,10 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
                   <input type="number" value={ankiForm.cards||''} onChange={e=>setAnkiForm(f=>({...f,cards:e.target.value}))} placeholder="25" style={{width:'100%',padding:'9px 10px',borderRadius:7,border:'1px solid rgba(167,139,250,.2)',background:'rgba(167,139,250,.04)',color:'#f1f5f9',fontSize:16,fontWeight:700,textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
                 </div>
                 <div style={{flex:1}}>
+                  <div style={{fontSize:13,color:'#c2ccd8',marginBottom:4}}>ACERTOS</div>
+                  <input type="number" value={ankiForm.acertos||''} onChange={e=>setAnkiForm(f=>({...f,acertos:e.target.value}))} placeholder="20" style={{width:'100%',padding:'9px 10px',borderRadius:7,border:'1px solid rgba(167,139,250,.2)',background:'rgba(167,139,250,.04)',color:'#34d399',fontSize:16,fontWeight:700,textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
+                </div>
+                <div style={{flex:1}}>
                   <div style={{fontSize:13,color:'#c2ccd8',marginBottom:4}}>TEMPO (min)</div>
                   <input type="number" value={ankiForm.tempo||''} onChange={e=>setAnkiForm(f=>({...f,tempo:e.target.value}))} placeholder="15" style={{width:'100%',padding:'9px 10px',borderRadius:7,border:'1px solid rgba(167,139,250,.2)',background:'rgba(167,139,250,.04)',color:'#f1f5f9',fontSize:16,fontWeight:700,textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
                 </div>
@@ -7712,6 +8298,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
       )}
 
       {aba==='passiva'&&subPassiva==='motor'&&<div>
+        {(()=>{const feita=lsGet('rev_sessoes',[]).some(x=>x.area==='leiseca'&&(x.dia||'')>=semanaChave());return(<div style={{padding:'9px 12px',borderRadius:10,background:feita?'rgba(52,211,153,.08)':'rgba(251,146,60,.08)',border:`1px solid ${feita?'rgba(52,211,153,.3)':'rgba(251,146,60,.3)'}`,fontSize:13,color:'#c2ccd8',lineHeight:1.5,marginBottom:10}}>{feita?'✅ Lei seca FCC da semana já feita.':'📜 Esta semana, 1 dos áudios vira lei seca de 30 min (matéria de decoreba, questões de literalidade). Registre em Estratégia › Semana.'}</div>);})()}
         <PassivaDoDia onSyncNlm={()=>setNlmRegs(lsGet('rev_nlm',[]))}/>
       {/* PASSIVA — motor novo: decoreba + dificuldade jurídica, ponderado pelo peso do gate */}
       {(()=>{
@@ -7796,8 +8383,18 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
                   ))}
                 </div>
               </div>
+              <div style={{display:'flex',gap:8,marginBottom:8}}>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:13,color:'#c2ccd8',marginBottom:4}}>QUESTÕES (autoteste)</div>
+                  <input type="number" value={nlmForm.questoes||''} onChange={e=>setNlmForm(f=>({...f,questoes:e.target.value}))} placeholder="0" style={{width:'100%',padding:'10px',borderRadius:8,border:'1px solid rgba(52,211,153,.25)',background:'rgba(52,211,153,.04)',color:'#f1f5f9',fontSize:17,fontWeight:800,textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
+                </div>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:13,color:'#c2ccd8',marginBottom:4}}>ACERTOS</div>
+                  <input type="number" value={nlmForm.acertos||''} onChange={e=>setNlmForm(f=>({...f,acertos:e.target.value}))} placeholder="0" style={{width:'100%',padding:'10px',borderRadius:8,border:'1px solid rgba(52,211,153,.25)',background:'rgba(52,211,153,.04)',color:'#34d399',fontSize:17,fontWeight:800,textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
+                </div>
+              </div>
               <div style={{marginBottom:8}}>
-                <div style={{fontSize:13,color:'#c2ccd8',marginBottom:4}}>🎯 % DE ACERTOS <span style={{color:'#aab6c6'}}>(opcional — se fez autoteste)</span></div>
+                <div style={{fontSize:13,color:'#c2ccd8',marginBottom:4}}>🎯 % DE ACERTOS <span style={{color:'#aab6c6'}}>(opcional — se você preencheu questões e acertos, calculo sozinho)</span></div>
                 <input type="number" min="0" max="100" value={nlmForm.pct||''} onChange={e=>setNlmForm(f=>({...f,pct:e.target.value}))} placeholder="ex: 70" style={{width:'100%',padding:'11px',borderRadius:8,border:'1px solid rgba(52,211,153,.25)',background:'rgba(52,211,153,.04)',color:'#34d399',fontSize:18,fontWeight:800,fontFamily:"'DM Mono',monospace",textAlign:'center',outline:'none',boxSizing:'border-box'}}/>
                 {nlmForm.pct!==''&&nlmForm.pct!=null&&nlmForm.oque&&<div style={{fontSize:13,color:'#34d399',marginTop:4,textAlign:'center'}}>✓ Isso vai alimentar a priorização — "{nlmForm.oque}" sobe/desce conforme esse %</div>}
                 {nlmForm.pct!==''&&nlmForm.pct!=null&&!nlmForm.oque&&<div style={{fontSize:13,color:'#fb923c',marginTop:4,textAlign:'center'}}>⚠️ Preencha "assunto estudado" acima pra esse % contar na priorização</div>}
@@ -7821,7 +8418,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
                 <div>
                   <div style={{fontSize:14,color:'var(--text)',fontWeight:700}}>{r.mat}{r.fonte&&r.fonte!=='NLM'?<span style={{fontSize:13,color:'#c2ccd8',fontWeight:400}}> · {r.fonte}</span>:''}</div>
                   {r.oque&&<div style={{fontSize:13,color:'#34d399',marginTop:1}}>{r.oque}</div>}
-                  <div style={{fontSize:13,color:'#c2ccd8'}}>{r.tempo?`${r.tempo}min`:'—'}{r.dif?` · ${'⭐'.repeat(r.dif)}`:''}{r.pct!=null?` · ${r.pct}% acerto`:''}</div>
+                  <div style={{fontSize:13,color:'#c2ccd8'}}>{r.tempo?`${r.tempo}min`:'—'}{r.dif?` · ${'⭐'.repeat(r.dif)}`:''}{r.questoes&&r.acertos!==undefined&&r.acertos!==''?` · ${r.acertos}/${r.questoes}`:''}{r.pct!=null?` · ${r.pct}% acerto`:''}</div>
                 </div>
                 <div style={{fontSize:13,color:'var(--text4)',fontFamily:"'DM Mono',monospace",flexShrink:0}}>{r.dia===hoje?'hoje':r.dia}</div>
               </div>
@@ -7831,7 +8428,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
       })()}
 
       {/* SEMANAL — motor novo: delta da semana, cobertura do edital, decisão sugerida */}
-      {aba==='estrategia'&&subEstrategia==='semanal'&&<EstrategiaSemana/>}
+      {aba==='estrategia'&&subEstrategia==='semanal'&&<EstrategiaSemana onAddHoras={onAddHoras}/>}
 
       {aba==='estrategia'&&subEstrategia==='lacunas'&&<div>
         <FilaLacunas/>
@@ -7977,7 +8574,7 @@ function TabRevisao({totalBlocos,tmSugestao,tmIA,onSyncHistorico,onAddHoras,anki
       {/* TÓPICOS PARA REVISITAR */}
       {/* TÓPICOS PARA REVISITAR — agora dentro de Estratégia > Revisitar */}
       {/* ═══ PROFUNDA ═══ */}
-      {aba==='rev1h30'&&<TabRevProfunda totalBlocos={totalBlocos}/>}
+      {aba==='rev1h30'&&<TabRevProfunda totalBlocos={totalBlocos} onAddHoras={onAddHoras}/>}
 
       {aba==='estrategia'&&subEstrategia==='lacunas'&&<div style={{marginTop:14}}>
         <div style={{padding:'10px 12px',borderRadius:10,background:'rgba(251,191,36,.06)',border:'1px solid rgba(251,191,36,.2)',marginBottom:12}}>
@@ -10257,6 +10854,7 @@ function App(){
       </div>
 
       <div style={{flex:1,overflowY:'auto',padding:'16px 16px 0',background:'var(--bg)'}}>
+        {tab!=='revisao'&&<AlertaAnkiApp onIr={()=>{try{sessionStorage.setItem('rev_aba_ini','anki');}catch(e){}setTab('revisao');setTimeout(()=>{try{window.dispatchEvent(new CustomEvent('rev-ir-aba',{detail:'anki'}));}catch(e){}},60);}}/>}
         {tab==='ia'     &&<TabIA     appCtx={appCtx} onMIT={saveMIT} onRapido={setRapido} onSetTab={setTab} rapidoVer={rapidoVer}/>}
         {tab==='estudo' &&<TabEstudo feitos={feitos} cicloNum={cicloNum} horas={horas} onConcluir={concluir} onIrPara={irPara} onDesmarcar={desmarcar} onAddHoras={addHoras} onSyncHistorico={syncHistorico} mit={mit} planoSemana={planoSemana} onSavePlano={savePlano} onSetTab={setTab} onRapido={setRapido}/>}
         {tab==='hoje'   &&<TabHoje feitos={feitos} onAddHoras={addHoras} onSetTab={setTab} onRapido={setRapido} rapidoVer={rapidoVer}/>}
