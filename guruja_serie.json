@@ -2,7 +2,7 @@
  "versao": 1,
  "planejamento_id": 105325,
  "ultimo": {
-  "gerado_em": "2026-11-26T12:58:25Z",
+  "gerado_em": "2026-11-27T07:11:38Z",
   "mat": {
    "PORT": {
     "q": 61,
@@ -14,15 +14,15 @@
     "a": 35,
     "min": 120
    },
+   "CTBGA": {
+    "q": 47,
+    "a": 38,
+    "min": 810
+   },
    "DADM": {
     "q": 40,
     "a": 36,
     "min": 90
-   },
-   "CTBGA": {
-    "q": 23,
-    "a": 18,
-    "min": 690
    },
    "DTRIB": {
     "q": 50,
@@ -52,7 +52,7 @@
    "AUD": {
     "q": 0,
     "a": 0,
-    "min": 410
+    "min": 470
    },
    "RLOG": {
     "q": 0,
@@ -66,14 +66,14 @@
    }
   },
   "tipo": {
-   "Teoria": 1400,
-   "Questões": 1080,
-   "Mapeamento": 180,
+   "Teoria": 1460,
+   "Questões": 1140,
+   "Mapeamento": 240,
    "Revisão": 150,
    "Reforços": 0,
    "Aprofundamentos": 30
   },
-  "atividades": 40
+  "atividades": 43
  },
  "dias": {
   "2026-11-12": {
@@ -358,7 +358,7 @@
    }
   },
   "2026-11-26": {
-   "atividades": 4,
+   "atividades": 7,
    "mat": {
     "TINFO": {
      "q": 0,
@@ -368,13 +368,19 @@
     "AUD": {
      "q": 0,
      "a": 0,
+     "min": 180
+    },
+    "CTBGA": {
+     "q": 24,
+     "a": 20,
      "min": 120
     }
    },
    "tipo": {
-    "Teoria": 120,
-    "Mapeamento": 60,
-    "Revisão": 60
+    "Teoria": 180,
+    "Mapeamento": 120,
+    "Revisão": 60,
+    "Questões": 60
    }
   }
  }

@@ -1,6 +1,6 @@
 {
  "versao": 1,
- "gerado_em": "2026-11-26T12:58:25Z",
+ "gerado_em": "2026-11-27T07:11:38Z",
  "origem": "tarefa agendada",
  "planejamento_id": 105325,
  "meta_atual": {
@@ -11,12 +11,12 @@
   "vezes_adiada": 0,
   "status": "ontime",
   "atividades_totais": 22,
-  "atividades_concluidas": 0,
-  "atividades_pendentes": 22,
+  "atividades_concluidas": 3,
+  "atividades_pendentes": 19,
   "atividades_ignoradas": 0,
-  "questoes": 0,
-  "acertos": 0,
-  "minutos": 0
+  "questoes": 24,
+  "acertos": 20,
+  "minutos": 180
  },
  "metas": [
   {
@@ -26,11 +26,11 @@
    "data_inicio": "2026-11-26T09:17:15.13",
    "data_conclusao": null,
    "atividades_totais": 22,
-   "atividades_concluidas": 0,
+   "atividades_concluidas": 3,
    "atividades_ignoradas": 0,
-   "questoes": 0,
-   "acertos": 0,
-   "minutos": 0,
+   "questoes": 24,
+   "acertos": 20,
+   "minutos": 180,
    "atividades": [
     {
      "aid": 72834,
@@ -41,10 +41,10 @@
      "tipo": "Mapeamento",
      "rel": 5,
      "prio": null,
-     "q": null,
-     "a": null,
-     "min": 0,
-     "concluida": false,
+     "q": 0,
+     "a": 0,
+     "min": 60,
+     "concluida": true,
      "ignorada": false,
      "link": null
     },
@@ -105,10 +105,10 @@
      "tipo": "Questões",
      "rel": 5,
      "prio": null,
-     "q": null,
-     "a": null,
-     "min": 0,
-     "concluida": false,
+     "q": 24,
+     "a": 20,
+     "min": 60,
+     "concluida": true,
      "ignorada": false,
      "link": null
     },
@@ -121,10 +121,10 @@
      "tipo": "Teoria",
      "rel": 5,
      "prio": null,
-     "q": null,
-     "a": null,
-     "min": 0,
-     "concluida": false,
+     "q": 0,
+     "a": 0,
+     "min": 60,
+     "concluida": true,
      "ignorada": false,
      "link": null
     },
@@ -1081,9 +1081,9 @@
    "q": 61,
    "a": 52,
    "pct": 85.24,
-   "media": 84.17,
+   "media": 84.24,
    "mediana": 85.2,
-   "decil": 6,
+   "decil": 5,
    "tendencia": null
   },
   {
@@ -1099,26 +1099,26 @@
    "tendencia": null
   },
   {
+   "sigla": "CTBGA",
+   "disciplina": "Contabilidade Geral e Avançada",
+   "peso": 0,
+   "q": 47,
+   "a": 38,
+   "pct": 80.85,
+   "media": 77.6,
+   "mediana": 79.1,
+   "decil": 6,
+   "tendencia": null
+  },
+  {
    "sigla": "DADM",
    "disciplina": "Direito Administrativo",
    "peso": 0,
    "q": 40,
    "a": 36,
    "pct": 90,
-   "media": 86.27,
+   "media": 86.28,
    "mediana": 87.5,
-   "decil": 7,
-   "tendencia": null
-  },
-  {
-   "sigla": "CTBGA",
-   "disciplina": "Contabilidade Geral e Avançada",
-   "peso": 0,
-   "q": 23,
-   "a": 18,
-   "pct": 78.26,
-   "media": 74.24,
-   "mediana": 73.9,
    "decil": 7,
    "tendencia": null
   },
@@ -1129,7 +1129,7 @@
    "q": 50,
    "a": 42,
    "pct": 84,
-   "media": 79.02,
+   "media": 79.01,
    "mediana": 80.0,
    "decil": 7,
    "tendencia": null
@@ -1141,7 +1141,7 @@
    "q": 20,
    "a": 19,
    "pct": 95,
-   "media": 87.56,
+   "media": 87.67,
    "mediana": 90.0,
    "decil": 8,
    "tendencia": null
@@ -1153,9 +1153,9 @@
    "q": 49,
    "a": 44,
    "pct": 89.79,
-   "media": 79.56,
+   "media": 79.47,
    "mediana": 80.0,
-   "decil": 9,
+   "decil": 10,
    "tendencia": null
   },
   {
@@ -1165,7 +1165,7 @@
    "q": 39,
    "a": 34,
    "pct": 87.17,
-   "media": 75.44,
+   "media": 75.46,
    "mediana": 76.9,
    "decil": 10,
    "tendencia": null
@@ -1177,18 +1177,18 @@
    "q": 25,
    "a": 24,
    "pct": 96,
-   "media": 83.09,
+   "media": 83.38,
    "mediana": 84.0,
    "decil": 10,
    "tendencia": null
   }
  ],
  "tempo": {
-  "total_min": 2840,
+  "total_min": 3020,
   "por_tipo": {
-   "Teoria": 1400,
-   "Questões": 1080,
-   "Mapeamento": 180,
+   "Teoria": 1460,
+   "Questões": 1140,
+   "Mapeamento": 240,
    "Revisão": 150
   },
   "reforcos_min": 0,
@@ -1196,7 +1196,7 @@
   "disciplinas": [
    {
     "sigla": "CTBGA",
-    "min": 690
+    "min": 810
    },
    {
     "sigla": "TINFO",
@@ -1204,7 +1204,7 @@
    },
    {
     "sigla": "AUD",
-    "min": 410
+    "min": 470
    },
    {
     "sigla": "PORT",
@@ -1271,7 +1271,7 @@
    "q": 20,
    "a": 16,
    "pct": 80.0,
-   "media": 86.0,
+   "media": 85.9,
    "link": null
   },
   {
