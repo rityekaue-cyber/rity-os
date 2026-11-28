@@ -1,6 +1,6 @@
 {
  "versao": 1,
- "gerado_em": "2026-11-27T07:11:38Z",
+ "gerado_em": "2026-11-28T07:11:50Z",
  "origem": "tarefa agendada",
  "planejamento_id": 105325,
  "meta_atual": {
@@ -11,12 +11,12 @@
   "vezes_adiada": 0,
   "status": "ontime",
   "atividades_totais": 22,
-  "atividades_concluidas": 3,
-  "atividades_pendentes": 19,
+  "atividades_concluidas": 6,
+  "atividades_pendentes": 16,
   "atividades_ignoradas": 0,
   "questoes": 24,
   "acertos": 20,
-  "minutos": 180
+  "minutos": 390
  },
  "metas": [
   {
@@ -26,11 +26,11 @@
    "data_inicio": "2026-11-26T09:17:15.13",
    "data_conclusao": null,
    "atividades_totais": 22,
-   "atividades_concluidas": 3,
+   "atividades_concluidas": 6,
    "atividades_ignoradas": 0,
    "questoes": 24,
    "acertos": 20,
-   "minutos": 180,
+   "minutos": 390,
    "atividades": [
     {
      "aid": 72834,
@@ -169,10 +169,10 @@
      "tipo": "Teoria",
      "rel": 4,
      "prio": null,
-     "q": null,
-     "a": null,
-     "min": 0,
-     "concluida": false,
+     "q": 0,
+     "a": 0,
+     "min": 90,
+     "concluida": true,
      "ignorada": false,
      "link": null
     },
@@ -185,10 +185,10 @@
      "tipo": "Revisão",
      "rel": 3,
      "prio": null,
-     "q": null,
-     "a": null,
-     "min": 0,
-     "concluida": false,
+     "q": 0,
+     "a": 0,
+     "min": 60,
+     "concluida": true,
      "ignorada": false,
      "link": null
     },
@@ -361,10 +361,10 @@
      "tipo": "Mapeamento",
      "rel": 3,
      "prio": null,
-     "q": null,
-     "a": null,
-     "min": 0,
-     "concluida": false,
+     "q": 0,
+     "a": 0,
+     "min": 60,
+     "concluida": true,
      "ignorada": false,
      "link": null
     },
@@ -1081,9 +1081,9 @@
    "q": 61,
    "a": 52,
    "pct": 85.24,
-   "media": 84.24,
+   "media": 84.13,
    "mediana": 85.2,
-   "decil": 5,
+   "decil": 6,
    "tendencia": null
   },
   {
@@ -1093,8 +1093,8 @@
    "q": 41,
    "a": 35,
    "pct": 85.36,
-   "media": 82.26,
-   "mediana": 84.0,
+   "media": 82.28,
+   "mediana": 84,
    "decil": 6,
    "tendencia": null
   },
@@ -1117,7 +1117,7 @@
    "q": 40,
    "a": 36,
    "pct": 90,
-   "media": 86.28,
+   "media": 86.25,
    "mediana": 87.5,
    "decil": 7,
    "tendencia": null
@@ -1129,8 +1129,8 @@
    "q": 50,
    "a": 42,
    "pct": 84,
-   "media": 79.01,
-   "mediana": 80.0,
+   "media": 79.02,
+   "mediana": 80,
    "decil": 7,
    "tendencia": null
   },
@@ -1142,7 +1142,7 @@
    "a": 19,
    "pct": 95,
    "media": 87.67,
-   "mediana": 90.0,
+   "mediana": 90,
    "decil": 8,
    "tendencia": null
   },
@@ -1153,8 +1153,8 @@
    "q": 49,
    "a": 44,
    "pct": 89.79,
-   "media": 79.47,
-   "mediana": 80.0,
+   "media": 79.53,
+   "mediana": 80,
    "decil": 10,
    "tendencia": null
   },
@@ -1177,26 +1177,26 @@
    "q": 25,
    "a": 24,
    "pct": 96,
-   "media": 83.38,
-   "mediana": 84.0,
+   "media": 83.39,
+   "mediana": 84,
    "decil": 10,
    "tendencia": null
   }
  ],
  "tempo": {
-  "total_min": 3020,
+  "total_min": 3230,
   "por_tipo": {
-   "Teoria": 1460,
+   "Teoria": 1550,
    "Questões": 1140,
-   "Mapeamento": 240,
-   "Revisão": 150
+   "Mapeamento": 300,
+   "Revisão": 210
   },
   "reforcos_min": 0,
   "aprofundamentos_min": 30,
   "disciplinas": [
    {
     "sigla": "CTBGA",
-    "min": 810
+    "min": 900
    },
    {
     "sigla": "TINFO",
@@ -1204,7 +1204,7 @@
    },
    {
     "sigla": "AUD",
-    "min": 470
+    "min": 590
    },
    {
     "sigla": "PORT",
@@ -1261,7 +1261,7 @@
    "sigla": "DTRIB",
    "q": 25,
    "a": 19,
-   "pct": 76.0,
+   "pct": 76,
    "media": 81.2,
    "link": null
   },
@@ -1270,17 +1270,8 @@
    "sigla": "DADM",
    "q": 20,
    "a": 16,
-   "pct": 80.0,
+   "pct": 80,
    "media": 85.9,
-   "link": null
-  },
-  {
-   "titulo": "Morfologia: Substantivo, Adjetivo, Advérbio, Artigo, Numeral, Interjeição e Palavras Especiais",
-   "sigla": "PORT",
-   "q": 18,
-   "a": 15,
-   "pct": 83.3,
-   "media": 83.3,
    "link": null
   }
  ],
